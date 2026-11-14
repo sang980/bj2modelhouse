@@ -828,7 +828,19 @@ wall(1.2, 5.1, 4.5, 5.1, TI, []);                                               
 pbox(0, 1.2, 0, H, 4.49, 5.16, M.wall, structure); wallBoxes.push({ minX: WX(0), maxX: WX(1.2), minZ: WZ(4.49), maxZ: WZ(5.16) }); // 주방 북서쪽 벽체(설비 공간)
 wall(4.5, 1.71, 7.0, 1.71, TI, [{ from: 4.62, to: 5.37, kind: 'door', hinge: 'a', side: -1 }]); // 욕실1
 wall(5.67, 1.71, 5.67, 3.16, TI, []);                                              // 현관창고 서쪽
-wall(5.67, 3.16, 7.0, 3.16, TI, [{ from: 5.82, to: 6.62, kind: 'door', hinge: 'a', side: -1, name: '현관창고 문', open: false }]);
+wall(5.67, 3.16, 7.0, 3.16, TI, [{ from: 5.78, to: 6.88, y1: 2.3, kind: 'open' }]);   // 현관창고: 양여닫이 문(아래)
+// 현관창고 양여닫이(사진): 흰 문짝 2개, 현관 쪽(바깥)으로 당겨 여는 방식 · 기본 닫힘
+{ const g = structure, dx0 = 5.78, dx1 = 6.88, wz0 = 3.1, wz1 = 3.22, trim = std(0xf3f2ee, .5);
+  pbox(dx0 - .045, dx0, 0, 2.345, wz1, wz1 + .012, trim, g); pbox(dx1, dx1 + .045, 0, 2.345, wz1, wz1 + .012, trim, g); pbox(dx0 - .045, dx1 + .045, 2.3, 2.345, wz1, wz1 + .012, trim, g);
+  pbox(dx0, dx1, 2.28, 2.3, wz0, wz1, trim, g);
+  for (const x of [dx0, dx1 - .012]) pbox(x, x + .012, 0, 2.3, wz0, wz1, trim, g);
+  const half = (dx1 - dx0 - .024) / 2 - .003;
+  for (const [hu, du] of [[dx0 + .013, 1], [dx1 - .013, -1]]) {
+    const d = makeDoor({ parent: g, horiz: true, line: 3.16, t: .12, hu, du, side: 1, lw: half, lh: 2.27, lt: .03, mat: M.door, from: dx0, to: dx1, name: '현관창고 문', handle: false, startOpen: false });
+    const k = mesh(BX(.02, .3, .03), M.chrome, half - .06, 1.05, du * .03, d.pivot); k.userData.door = d; doorMeshes.push(k);                 // 현관 쪽 손잡이
+    for (const y of [.25, 1.1, 2.0]) mesh(BX(.035, .05, .012), M.chrome, .03, y, -du * .02, d.pivot);                                          // 안쪽 경첩(사진)
+  }
+}
 wall(5.67, 4.75, 7.9, 4.75, TI, []);                                               // 욕실2 북쪽
 wall(5.67, 4.75, 5.67, 7.13, TI, []);                                              // 욕실2 서쪽(복도)
 wall(5.67, 7.13, 7.6, 7.13, TI, []);                                               // 욕실2 남쪽
