@@ -1316,6 +1316,7 @@ function plantGeos() {
     const L = .11 + rnd() * .09, W = L * (.32 + rnd() * .1);
     const s = new THREE.Shape(); s.moveTo(0, 0); s.quadraticCurveTo(W, L * .35, 0, L); s.quadraticCurveTo(-W, L * .35, 0, 0);
     const lg = new THREE.ShapeGeometry(s, 8), p = lg.attributes.position, droop = .8 + rnd() * 1.6;
+    { const uv = lg.attributes.uv; for (let v = 0; v < uv.count; v++) uv.setXY(v, .5 + p.getX(v) / (2 * W), p.getY(v) / L); } // 잎맥 텍스처용 UV(잎 모양에 맞춤)
     for (let v = 0; v < p.count; v++) { const x = p.getX(v), y = p.getY(v); p.setZ(v, -droop * y * y + Math.abs(x) * .55); }
     lg.computeVertexNormals();
     // 바깥으로 기울기: 안쪽 잎은 곧게, 바깥 잎은 눕게
@@ -1325,9 +1326,9 @@ function plantGeos() {
     m4.compose(new THREE.Vector3(-Math.sin(yaw) * baseR, baseH, -Math.cos(yaw) * baseR), q, new THREE.Vector3(1, 1, 1));
     const yl = []; for (let v = 0; v < p.count; v++) yl.push(p.getY(v) / L); // 잎 끝으로 갈수록 살짝 밝게
     lg.applyMatrix4(m4);
-    col.setHSL(.27 + rnd() * .05, .45 + rnd() * .15, .24 + rnd() * .1);
+    col.setHSL(.27 + rnd() * .05, .45 + rnd() * .15, .3 + rnd() * .1);
     const c = new Float32Array(p.count * 3); for (let v = 0; v < p.count; v++) { const t = .85 + .3 * yl[v]; c[v * 3] = col.r * t; c[v * 3 + 1] = col.g * t; c[v * 3 + 2] = col.b * t; }
-    lg.setAttribute('color', new THREE.BufferAttribute(c, 3)); lg.deleteAttribute('uv');
+    lg.setAttribute('color', new THREE.BufferAttribute(c, 3));
     leaves.push(lg);
     const sg = new THREE.CylinderGeometry(.0018, .0025, baseH, 4, 1, true); sg.translate(-Math.sin(yaw) * baseR, baseH / 2, -Math.cos(yaw) * baseR); sg.deleteAttribute('uv'); stems.push(sg);
   }
@@ -1335,7 +1336,15 @@ function plantGeos() {
   _plantGeo = { leaves: mergeGeometries(leaves, false), stems: mergeGeometries(stems, false), pot };
   return _plantGeo;
 }
-const plantLeafMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .55, side: THREE.DoubleSide });
+// 잎 텍스처(모든 화분 공통): 가운데 잎맥 + 옆 잎맥(밝게) + 가장자리 살짝 어둡게. 잎마다 색은 정점색으로 다르게 곱해짐
+const leafTex = toTex((() => { const c = mkCanvas(64, 128), x = c.getContext('2d');
+  const gr = x.createLinearGradient(0, 128, 0, 0); gr.addColorStop(0, '#a9b496'); gr.addColorStop(1, '#c6cfb4'); x.fillStyle = gr; x.fillRect(0, 0, 64, 128);
+  x.strokeStyle = 'rgba(245,250,225,.9)'; x.lineWidth = 2.4; x.beginPath(); x.moveTo(32, 128); x.lineTo(32, 3); x.stroke();
+  x.lineWidth = 1.1; x.strokeStyle = 'rgba(235,245,210,.6)';
+  for (let i = 0; i < 9; i++) { const y = 120 - i * 12.5; for (const s of [-1, 1]) { x.beginPath(); x.moveTo(32, y); x.quadraticCurveTo(32 + s * 12, y - 9, 32 + s * 31, y - 22); x.stroke(); } }
+  const eg = x.createRadialGradient(32, 70, 14, 32, 70, 64); eg.addColorStop(0, 'rgba(0,0,0,0)'); eg.addColorStop(1, 'rgba(10,30,0,.28)'); x.fillStyle = eg; x.fillRect(0, 0, 64, 128);
+  return c; })());
+const plantLeafMat = new THREE.MeshStandardMaterial({ vertexColors: true, map: leafTex, roughness: .48, side: THREE.DoubleSide });
 const plantPotMat = std(0xe7e3dc, .6), plantSoilMat = std(0x3b2c22, .95), plantStemMat = std(0x5f7a3c, .7);
 function tablePlant(parent, x, y, z) {
   const pg = plantGeos(), g = new THREE.Group(); g.position.set(x, y, z); parent.add(g);

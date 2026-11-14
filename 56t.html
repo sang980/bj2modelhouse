@@ -1195,9 +1195,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   pbox(x - .45, x - .03, .05, .42, 5.6, 7.95, tvw, g); pbox(x - .452, x - .45, .12, .36, 5.7, 7.85, mint, g, { cast: false });
   pbox(x - .454, x - .452, .12, .36, 6.775 - .003, 6.775 + .003, std(0xe6e4df, .4), g, { cast: false });
   wallBoxes.push({ minX: WX(x - .45), maxX: WX(x), minZ: WZ(5.6), maxZ: WZ(7.95) });
-  // TV장 소품: 흰 링 오브제 + 화분
-  { const r = new THREE.Mesh(new THREE.TorusGeometry(.12, .035, 12, 32), std(0xe9c94a, .4)); r.position.set(WX(x - .25), .55, WZ(7.6)); g.add(r);
-    mesh(CY(.06, .07, .25, 20), M.whiteGloss, WX(x - .25), .545, WZ(6.0), g); mesh(new THREE.SphereGeometry(.12, 12, 8), M.plant, WX(x - .25), .8, WZ(6.0), g).scale.set(1, 1.3, 1); }
+  // TV장 소품은 화분 함수들이 정의된 뒤(아래 '거실 소품(VR)')에서 배치
   // 우물천장(테두리 내림) + 숨은 간접등
   const t = .09, b = .4, X0 = 5.25, X1 = 8.75, Z0 = 4.6, Z1 = 8.07;
   for (const [x0, x1, z0, z1] of [[X0, X1, Z0, Z0 + b], [X0, X1, Z1 - b, Z1], [X0, X0 + b, Z0, Z1], [X1 - b, X1, Z0, Z1]]) pbox(x0, x1, H - t, H, z0, z1, M.ceil, ceilingGroup, { cast: false });
@@ -1362,6 +1360,7 @@ function plantGeos() {
     const L = .11 + rnd() * .09, W = L * (.32 + rnd() * .1);
     const s = new THREE.Shape(); s.moveTo(0, 0); s.quadraticCurveTo(W, L * .35, 0, L); s.quadraticCurveTo(-W, L * .35, 0, 0);
     const lg = new THREE.ShapeGeometry(s, 8), p = lg.attributes.position, droop = .8 + rnd() * 1.6;
+    { const uv = lg.attributes.uv; for (let v = 0; v < uv.count; v++) uv.setXY(v, .5 + p.getX(v) / (2 * W), p.getY(v) / L); } // 잎맥 텍스처용 UV(잎 모양에 맞춤)
     for (let v = 0; v < p.count; v++) { const x = p.getX(v), y = p.getY(v); p.setZ(v, -droop * y * y + Math.abs(x) * .55); }
     lg.computeVertexNormals();
     // 바깥으로 기울기: 안쪽 잎은 곧게, 바깥 잎은 눕게
@@ -1371,9 +1370,9 @@ function plantGeos() {
     m4.compose(new THREE.Vector3(-Math.sin(yaw) * baseR, baseH, -Math.cos(yaw) * baseR), q, new THREE.Vector3(1, 1, 1));
     const yl = []; for (let v = 0; v < p.count; v++) yl.push(p.getY(v) / L); // 잎 끝으로 갈수록 살짝 밝게
     lg.applyMatrix4(m4);
-    col.setHSL(.27 + rnd() * .05, .45 + rnd() * .15, .24 + rnd() * .1);
+    col.setHSL(.27 + rnd() * .05, .45 + rnd() * .15, .3 + rnd() * .1);
     const c = new Float32Array(p.count * 3); for (let v = 0; v < p.count; v++) { const t = .85 + .3 * yl[v]; c[v * 3] = col.r * t; c[v * 3 + 1] = col.g * t; c[v * 3 + 2] = col.b * t; }
-    lg.setAttribute('color', new THREE.BufferAttribute(c, 3)); lg.deleteAttribute('uv');
+    lg.setAttribute('color', new THREE.BufferAttribute(c, 3));
     leaves.push(lg);
     const sg = new THREE.CylinderGeometry(.0018, .0025, baseH, 4, 1, true); sg.translate(-Math.sin(yaw) * baseR, baseH / 2, -Math.cos(yaw) * baseR); sg.deleteAttribute('uv'); stems.push(sg);
   }
@@ -1381,7 +1380,15 @@ function plantGeos() {
   _plantGeo = { leaves: mergeGeometries(leaves, false), stems: mergeGeometries(stems, false), pot };
   return _plantGeo;
 }
-const plantLeafMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .55, side: THREE.DoubleSide });
+// 잎 텍스처(모든 화분 공통): 가운데 잎맥 + 옆 잎맥(밝게) + 가장자리 살짝 어둡게. 잎마다 색은 정점색으로 다르게 곱해짐
+const leafTex = toTex((() => { const c = mkCanvas(64, 128), x = c.getContext('2d');
+  const gr = x.createLinearGradient(0, 128, 0, 0); gr.addColorStop(0, '#a9b496'); gr.addColorStop(1, '#c6cfb4'); x.fillStyle = gr; x.fillRect(0, 0, 64, 128);
+  x.strokeStyle = 'rgba(245,250,225,.9)'; x.lineWidth = 2.4; x.beginPath(); x.moveTo(32, 128); x.lineTo(32, 3); x.stroke();
+  x.lineWidth = 1.1; x.strokeStyle = 'rgba(235,245,210,.6)';
+  for (let i = 0; i < 9; i++) { const y = 120 - i * 12.5; for (const s of [-1, 1]) { x.beginPath(); x.moveTo(32, y); x.quadraticCurveTo(32 + s * 12, y - 9, 32 + s * 31, y - 22); x.stroke(); } }
+  const eg = x.createRadialGradient(32, 70, 14, 32, 70, 64); eg.addColorStop(0, 'rgba(0,0,0,0)'); eg.addColorStop(1, 'rgba(10,30,0,.28)'); x.fillStyle = eg; x.fillRect(0, 0, 64, 128);
+  return c; })());
+const plantLeafMat = new THREE.MeshStandardMaterial({ vertexColors: true, map: leafTex, roughness: .48, side: THREE.DoubleSide });
 const plantPotMat = std(0xe7e3dc, .6), plantSoilMat = std(0x3b2c22, .95), plantStemMat = std(0x5f7a3c, .7);
 function tablePlant(parent, x, y, z) {
   const pg = plantGeos(), g = new THREE.Group(); g.position.set(x, y, z); parent.add(g);
@@ -1389,6 +1396,55 @@ function tablePlant(parent, x, y, z) {
   mesh(CY(.06, .06, .006, 24), plantSoilMat, 0, .1, 0, g, { cast: false });
   const st = new THREE.Mesh(pg.stems, plantStemMat); st.position.y = .1; g.add(st);
   const lv = new THREE.Mesh(pg.leaves, plantLeafMat); lv.position.y = .1; lv.castShadow = true; lv.receiveShadow = true; g.add(lv);
+  return g;
+}
+// ── 거실 소품(VR) ──
+// 큰 잎 열대식물: 화병 가운데에서 솟은 줄기가 바깥으로 휘고, 끝에 넓은 타원 잎(가운데 접힘·끝 처짐·잎맥 텍스처)
+function tropicalPlantGeo(n, seed) {
+  const leaves = [], stems = [], col = new THREE.Color(), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
+  for (let i = 0; i < n; i++) {
+    const yaw = i * 2.39996 + seed, out = .3 + (i % 3) * .17 + rnd() * .08, hgt = .12 + rnd() * .12 + (2 - i % 3) * .05; // VR: 잎이 화병 바로 위에서 옆으로 넓게 퍼짐
+    const len = .24 + rnd() * .1, wid = len * (.58 + rnd() * .08), dx = Math.sin(yaw), dz = Math.cos(yaw);
+    const p2 = new THREE.Vector3(dx * out * .55, hgt, dz * out * .55);
+    const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(dx * .006, 0, dz * .006), new THREE.Vector3(dx * .03, hgt * .75, dz * .03), p2);
+    const tg = new THREE.TubeGeometry(curve, 10, .0032, 5, false); tg.deleteAttribute('uv'); stems.push(tg);
+    const s = new THREE.Shape(); s.moveTo(0, 0); s.bezierCurveTo(wid * .62, len * .1, wid * .56, len * .8, 0, len); s.bezierCurveTo(-wid * .56, len * .8, -wid * .62, len * .1, 0, 0);
+    const lg = new THREE.ShapeGeometry(s, 14), p = lg.attributes.position, uv = lg.attributes.uv;
+    for (let v = 0; v < p.count; v++) { const x = p.getX(v), y = p.getY(v) / len; uv.setXY(v, .5 + x / (wid * 1.1), y); p.setZ(v, Math.abs(x) * .18 - .45 * y * y * len + .04 * Math.sin(x * 60) * y * len * .2); }
+    lg.computeVertexNormals();
+    const elev = .5 - out * .7; // 바깥 잎일수록 눕고 처짐
+    q.setFromEuler(new THREE.Euler(-(Math.PI / 2 - elev), yaw + Math.PI, 0, 'YXZ')); m4.compose(p2, q, one); lg.applyMatrix4(m4);
+    col.setHSL(.29 + rnd() * .04, .48 + rnd() * .14, .33 + rnd() * .08);
+    const c = new Float32Array(p.count * 3); for (let v = 0; v < p.count; v++) { c[v * 3] = col.r; c[v * 3 + 1] = col.g; c[v * 3 + 2] = col.b; }
+    lg.setAttribute('color', new THREE.BufferAttribute(c, 3)); leaves.push(lg);
+  }
+  return { leaves: mergeGeometries(leaves, false), stems: mergeGeometries(stems, false) };
+}
+// 위쪽 절반에 물결 질감이 있는 흰 세라믹 화병(VR TV장 왼쪽)
+function texturedVaseGeo(h, r) {
+  const pts = [new THREE.Vector2(0, 0)]; for (let i = 0; i <= 24; i++) { const t = i / 24; pts.push(new THREE.Vector2(r * (1 - .06 * Math.sin(t * Math.PI)), t * h)); }
+  pts.push(new THREE.Vector2(r * .82, h), new THREE.Vector2(r * .78, h - .04));
+  const g = new THREE.LatheGeometry(pts, 56), p = g.attributes.position;
+  for (let v = 0; v < p.count; v++) { const x = p.getX(v), y = p.getY(v), z = p.getZ(v), a = Math.atan2(z, x), t = y / h; if (t > .4 && t < .985) { const k = 1 + .05 * Math.sin(a * 16 + Math.sin(t * 22) * 2.2) * Math.min(1, (t - .4) * 5); p.setX(v, x * k); p.setZ(v, z * k); } }
+  g.computeVertexNormals(); return g;
+}
+// 둥근 잎(필레아처럼): 가는 줄기 끝에 컵 모양 둥근 잎, 가운데가 진하고 가장자리가 연두
+const roundLeafTex = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); const gr = x.createRadialGradient(32, 32, 2, 32, 32, 32); gr.addColorStop(0, '#3f5a1c'); gr.addColorStop(.55, '#7aa32e'); gr.addColorStop(1, '#b9d25a'); x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
+  x.strokeStyle = 'rgba(225,240,170,.5)'; x.lineWidth = 1; for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2; x.beginPath(); x.moveTo(32, 32); x.lineTo(32 + Math.cos(a) * 30, 32 + Math.sin(a) * 30); x.stroke(); } return c; })());
+function roundLeafPlant(parent, x, y, z) {
+  const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g);
+  mesh(new THREE.LatheGeometry([[0, 0], [.045, 0], [.062, .03], [.066, .07], [.05, .115], [.034, .145], [.037, .155], [.031, .155]].map(([a, b]) => new THREE.Vector2(a, b)), 36), std(0xe7bd47, .28), 0, 0, 0, g);
+  const leaves = [], stems = [];
+  for (let i = 0; i < 9; i++) {
+    const yaw = i * 2.39996, h = .12 + (i % 4) * .045 + rnd() * .03, out = .035 + (i % 3) * .035;
+    const p2 = new THREE.Vector3(Math.sin(yaw) * out, .15 + h, Math.cos(yaw) * out);
+    const tg = new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(new THREE.Vector3(0, .13, 0), new THREE.Vector3(Math.sin(yaw) * out * .15, .15 + h * .65, Math.cos(yaw) * out * .15), p2), 8, .002, 4, false); tg.deleteAttribute('uv'); stems.push(tg);
+    const r = .042 + rnd() * .022, cg = new THREE.CircleGeometry(r, 22), p = cg.attributes.position;
+    for (let v = 0; v < p.count; v++) { const d = Math.hypot(p.getX(v), p.getY(v)) / r; p.setZ(v, d * d * r * .38); }
+    cg.computeVertexNormals(); cg.applyQuaternion(new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + .25 + rnd() * .35, yaw, 0, 'YXZ'))); cg.translate(p2.x, p2.y, p2.z); leaves.push(cg);
+  }
+  const lv = new THREE.Mesh(mergeGeometries(leaves, false), new THREE.MeshStandardMaterial({ map: roundLeafTex, roughness: .5, side: THREE.DoubleSide })); lv.castShadow = true; g.add(lv);
+  g.add(new THREE.Mesh(mergeGeometries(stems, false), plantStemMat));
   return g;
 }
 // 주방 상판 소품(사진): 레트로 커피머신, 전기주전자, 블랙 레일 도구, 끝쪽 블랙 보틀·양념병·은색 볼·화이트 볼 화분
@@ -1547,10 +1603,19 @@ function dresser(x, z, rot) {
 { const s = sofa(5.75, 6.75, Math.PI / 2); s.scale.x = -1;
   // VR: 쿠션 5개(노랑 · 연두 무늬 · 흰색 · 연노랑 · 흰색) — 기본 쿠션은 숨김
   s.traverse(o => { if (o.isMesh && (o.material === M.check || o.material === M.navy)) o.visible = false; });
-  const leafTex = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#f6f6ef'; x.fillRect(0, 0, 64, 64); x.strokeStyle = '#a9c43a'; x.lineWidth = 3; for (let i = 0; i < 6; i++) { x.beginPath(); x.ellipse(10 + i * 10, 32 + (i % 2 ? 12 : -12), 9, 4, i, 0, 6.3); x.stroke(); } return c; })());
-  [[-1.0, std(0xe8d13a, .9)], [-.55, std(0xffffff, .9, 0, { map: leafTex })], [-.08, std(0xf7f6f2, .9)], [.38, std(0xf0cf80, .9)], [.85, std(0xf7f6f2, .9)]].forEach(([px, m], i) => {
+  const leafTex = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#f6f6ef'; x.fillRect(0, 0, 64, 64); x.strokeStyle = '#a9c43a'; x.lineWidth = 2.6; x.lineJoin = 'round'; for (let r = 0; r < 5; r++) { x.beginPath(); for (let k = 0; k <= 16; k++) { const px = 3 + k * 3.7, py = 8 + r * 12 + Math.sin(k * 1.7 + r * 2) * 4 + (k % 2 ? 3 : -3); k ? x.lineTo(px, py) : x.moveTo(px, py); } x.stroke(); } return c; /* VR: 연두 지그재그 낙서 무늬 */ })());
+  [[-.5, std(0xe8d13a, .9)], [-.14, std(0xffffff, .9, 0, { map: leafTex })], [.22, std(0xf7f6f2, .9)], [.55, std(0xf0cf80, .9)], [.82, std(0xf7f6f2, .9)]].forEach(([px, m], i) => {
     const p = mesh(RB(.44, .42, .13, .06, 4), m, -px, .62, -.2 + (i % 2) * .03, s); p.rotation.set(-.22, (i - 2) * .05, (i % 2 ? .06 : -.05)); });
   // (작은 사이드 선반은 팔걸이 속에 묻혀 끝면이 팔걸이 옆면과 겹쳐 검은 줄이 깜빡였음 → 삭제)
+  // VR: 창 쪽 끝 낮은 받침 위 검은 테 흑백 사진 액자 + 받침 양끝 칸에 꽂힌 잡지(옆면에 잡지 등)
+  const bw = toTex((() => { const c = mkCanvas(64, 48), x = c.getContext('2d'); const gr = x.createLinearGradient(0, 0, 0, 48); gr.addColorStop(0, '#d9d9d9'); gr.addColorStop(1, '#6d6d6d'); x.fillStyle = gr; x.fillRect(0, 0, 64, 48);
+    x.fillStyle = '#2b2b2b'; x.fillRect(0, 34, 64, 14); x.beginPath(); x.ellipse(24, 22, 4, 4, 0, 0, 7); x.fill(); x.fillRect(20, 26, 8, 14); x.beginPath(); x.ellipse(40, 24, 3.5, 3.5, 0, 0, 7); x.fill(); x.fillRect(37, 27, 7, 12); return c; })());
+  const pf = new THREE.Group(); pf.position.set(1.0, .46, -.17); pf.rotation.x = -.12; s.add(pf);
+  mesh(BX(.21, .165, .014), std(0x1b1c1e, .4), 0, .0825, 0, pf); mesh(BX(.19, .145, .002), std(0xf6f5f2, .8), 0, .0825, .0075, pf, { cast: false }); mesh(BX(.15, .11, .002), std(0xffffff, .9, 0, { map: bw }), 0, .0825, .0085, pf, { cast: false });
+  const mags = toTex((() => { const c = mkCanvas(128, 64), x = c.getContext('2d'); x.fillStyle = '#1e1f22'; x.fillRect(0, 0, 128, 64); let u = 6;
+    for (const [w, col, ink] of [[9, '#f2f1ec', '#222'], [7, '#1b1b1d', '#eee'], [10, '#e9e6de', '#b33'], [6, '#c9c6bf', '#333'], [11, '#f4f3ef', '#111'], [8, '#2f3a4a', '#ddd'], [9, '#ece9e2', '#2a5'], [7, '#d8d4cb', '#222']]) { x.fillStyle = col; x.fillRect(u, 6, w, 54); x.fillStyle = ink; for (let k = 0; k < 4; k++) x.fillRect(u + w / 2 - 1, 12 + k * 10, 2, 6); u += w + 1; }
+    return c; })());
+  for (const sx of [1.2265, -1.2265]) mesh(BX(.002, .22, .56), std(0xffffff, .8, 0, { map: mags }), sx, .17, .05, s, { cast: false });
 }
 rug(6.85, 6.8, 0);
 // (56T: 커피테이블은 아래 흰 타원형)
@@ -1559,12 +1624,29 @@ rug(6.85, 6.8, 0);
     for (let i = 0; i < 900; i++) { const a = i * .23, r = 4 + i * .2; const px = 150 + Math.cos(a) * r * 1.2 + (i > 500 ? (i - 500) * .45 : 0), py = 150 + Math.sin(a) * r * .55; if (px < 30 || px > 482 || py < 25 || py > 275) continue;
       x.fillStyle = ['#b8d23a', '#d6e27a', '#9cbf3a', '#e9eda6'][i % 4]; x.beginPath(); x.arc(px, py, 1.6 + (i % 3) * .8, 0, 7); x.fill(); } return c; })());
   pbox(5.21, 5.25, 1.2, 1.9, 6.0, 7.5, std(0xc9cbcd, .3, .7), fixed); pbox(5.25, 5.255, 1.24, 1.86, 6.04, 7.46, std(0xffffff, .9, 0, { map: art }), fixed, { cast: false }); }
+// VR 커피테이블: 두꺼운 흰 타원 상판 + 그 아래 연노랑 층 + 흰 받침, 위에 노란 화병 둥근 잎 화분 · 검은 책 2권 + 흰 커피잔
 function coffeeOvalT(x, z) { const g = piece('커피테이블', x, z, 0), w = std(0xf7f6f3, .3);
-  const top = mesh(CY(.5, .5, .05, 48), w, 0, .36, 0, g); top.scale.set(.7, 1, 1.1); const base = mesh(CY(.42, .44, .33, 48), w, 0, .165, 0, g); base.scale.set(.7, 1, 1.1);
-  for (let i = 0; i < 6; i++) { const l = mesh(new THREE.SphereGeometry(.08, 10, 8), std(0x9cbf3a, .6), Math.cos(i) * .08, .48 + (i % 3) * .05, Math.sin(i * 1.3) * .1, g); l.scale.set(.5, 1.5, .25); l.rotation.z = (i - 2.5) * .35; }
-  mesh(CY(.07, .09, .1, 20), M.whiteGloss, 0, .43, 0, g); mesh(BX(.22, .03, .3), std(0x2f3134, .5), .12, .4, .3, g).rotation.y = .3;
+  const top = mesh(CY(.5, .5, .07, 56), w, 0, .37, 0, g); top.scale.set(.7, 1, 1.1);
+  const tier = mesh(CY(.52, .52, .05, 56), std(0xf0d98f, .22), 0, .31, 0, g); tier.scale.set(.7, 1, 1.1);
+  const base = mesh(CY(.3, .33, .285, 40), w, 0, .1425, 0, g); base.scale.set(.7, 1, 1.1);
+  roundLeafPlant(g, -.08, .405, -.12);
+  const bk = new THREE.Group(); bk.position.set(.05, .405, .02); bk.rotation.y = -.35; g.add(bk);
+  mesh(BX(.25, .022, .18), std(0x2c2e31, .55), 0, .011, 0, bk); mesh(BX(.23, .02, .17), std(0x44474c, .5), .006, .032, -.004, bk);
+  mesh(BX(.252, .018, .001), std(0xe9e6df, .8), 0, .011, .0905, bk, { cast: false }); // 책 종이 단면
+  mesh(CY(.06, .052, .008, 28), M.whiteGloss, .02, .046, 0, bk);
+  mesh(new THREE.LatheGeometry([[0, 0], [.03, 0], [.034, .01], [.04, .055], [.036, .055], [.031, .012], [0, .012]].map(([a, b]) => new THREE.Vector2(a, b)), 28), M.whiteGloss, .02, .05, 0, bk);
+  const hdl = mesh(new THREE.TorusGeometry(.016, .004, 8, 16, Math.PI), M.whiteGloss, .062, .078, 0, bk); hdl.rotation.z = -Math.PI / 2;
   return g; }
 coffeeOvalT(6.9, 6.85);
+// TV장 소품(VR): 오른쪽(창 쪽) 흰 돌 링 + 노란 타원 링이 엇갈린 조형물, 왼쪽 흰 질감 화병 2개 + 큰 잎 열대식물
+{ const g = fixed, cx = 8.79 - .24, top = .42;
+  const ceramic = std(0xf3f1ec, .55);
+  const wr = new THREE.Mesh(new THREE.TorusGeometry(.105, .046, 18, 44), ceramic); wr.scale.set(1, 1.12, .72); wr.rotation.y = Math.PI / 2 - .25; wr.position.set(WX(cx + .02), top + .165, WZ(7.62)); wr.castShadow = true; g.add(wr);
+  const yr = new THREE.Mesh(new THREE.TorusGeometry(.072, .021, 14, 40), std(0xe5b33a, .28)); yr.scale.set(1, 1.38, .85); yr.rotation.set(0, Math.PI / 2 + .55, .32); yr.position.set(WX(cx - .02), top + .12, WZ(7.51)); yr.castShadow = true; g.add(yr);
+  const v1 = new THREE.Mesh(texturedVaseGeo(.36, .052), ceramic); v1.position.set(WX(cx + .05), top, WZ(5.76)); v1.castShadow = true; g.add(v1);
+  const v2 = new THREE.Mesh(texturedVaseGeo(.5, .062), ceramic); v2.position.set(WX(cx - .02), top, WZ(5.93)); v2.castShadow = true; g.add(v2);
+  const tp = tropicalPlantGeo(9, .7), pl = new THREE.Group(); pl.position.set(WX(cx - .02), top + .48, WZ(5.93)); g.add(pl);
+  const lv = new THREE.Mesh(tp.leaves, plantLeafMat); lv.castShadow = true; pl.add(lv); pl.add(new THREE.Mesh(tp.stems, plantStemMat)); }
 // 주방 아일랜드(옵션 3-1·3-3, 고정식) — 상판과 나란히, 식탁은 아일랜드 남쪽에 붙임
 { const g = item('b3isl', '아일랜드식탁');
   pbox(6.27, 7.63, .1, .86, 2.22, 2.78, M.kdoor, g); pbox(6.31, 7.59, 0, .1, 2.26, 2.74, M.black, g);
