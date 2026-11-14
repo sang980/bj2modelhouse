@@ -1442,12 +1442,19 @@ nestTables(3.75, 9.65); // 사진: 원형 2단 네스팅 테이블
   for (const x of [x0 + (x1 - x0) / 3, x0 + (x1 - x0) * 2 / 3]) pbox(x - .0015, x + .0015, .1, .86, z1 - .02, z1 - .016, seamMat, g);              // 남면 도어 이음선
 }
 // 4인 식탁: 한쪽 끝을 아일랜드 동쪽 면에 붙이고 동쪽으로(냉장고 쪽에서 보면 가로), 양옆 의자 2개씩
+function boucleChair(parent, cx, cz, rot) { // 사진·VR: 등이 둥근 흰 부클레 의자 + 검은 금속 다리
+  const c = new THREE.Group(); c.position.set(cx, 0, cz); c.rotation.y = rot; parent.add(c); const b = M.boucle;
+  mesh(RB(.46, .09, .44, .04), b, 0, .47, .02, c);
+  const back = new THREE.Mesh(new THREE.CylinderGeometry(.24, .26, .42, 32, 1, true, Math.PI * .75, Math.PI * 1.5), b); back.material.side = THREE.DoubleSide; back.position.set(0, .72, .02); back.scale.set(1, 1, .82); c.add(back);
+  mesh(new THREE.TorusGeometry(.245, .03, 10, 40, Math.PI * 1.5), b, 0, .93, .02, c).rotation.set(Math.PI / 2, 0, Math.PI * .75);
+  for (const [lx, lz] of [[-.17, -.15], [.17, -.15], [-.17, .17], [.17, .17]]) { const l = mesh(CY(.009, .009, .45, 8), M.black, lx, .22, lz, c); l.rotation.set(lz * .35, 0, -lx * .35); }
+  return c; }
 function dining4() {
   const g = piece('식탁(4인)', 0, 0, 0), L = 1.4, W = .8;
   mesh(RB(L, .03, W, .01), M.whiteGloss, -L / 2, .74, 0, g);
   for (const x of [-.05, -L + .05]) for (const z of [-W / 2 + .05, W / 2 - .05]) mesh(BX(.04, .72, .04), M.whiteGloss, x, .36, z, g);
   const cx = [-.38, -1.02];
-  for (const [x, z, r] of [[cx[0], -.4, 0], [cx[1], -.4, 0], [cx[0], .62, Math.PI], [cx[1], .62, Math.PI]]) diningChair(g, x, z, r);
+  for (const [x, z, r] of [[cx[0], -.48, 0], [cx[1], -.48, 0], [cx[0], .48, Math.PI], [cx[1], .48, Math.PI]]) boucleChair(g, x, z, r); // 사진·VR: 부클레 의자
   for (const px of cx) for (const pz of [-.22, .22]) { const m = mesh(CY(.16, .16, .004, 30), std(0x45474b, .8), px, .757, pz, g, { cast: false }); m.scale.set(1.2, 1, 1); mesh(CY(.1, .09, .02, 30), M.whiteGloss, px, .768, pz, g, { cast: false }); }
   tablePlant(g, -.7, .755, 0);
   g.userData.len = L; return g;
