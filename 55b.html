@@ -1114,6 +1114,29 @@ const switches = [];
 M.stoneTile = std(0xffffff, .42, 0, { map: toTex(tileCanvas(2, 4, [172, 172, 169], '#d9d9d5', { j: 5, veins: 16, gap: 3 })) });
 const seamMat = std(0x8f8c87, .8);
 const shelfMatB = std(0xe9e7e2, .5);
+/* ───────── 움푹 파인 기구(욕조·세면기·싱크) 공통 도구 ─────────
+   holeSlab: 상판처럼 넓은 판을 가운데 구멍만 비우고 4조각으로(싱크가 들어갈 자리)
+   rrShape: 둥근 모서리 사각형(가운데 위치 지정 가능), hollowTub: 둥근 사각 테두리 돌출 + 안쪽 바닥(욕조·사각 세면기)
+   bowlLathe: 바깥면·테두리·안쪽면이 이어진 회전체 볼(둥근 세면기) */
+function holeSlab(fn, x0, x1, y0, y1, z0, z1, hx0, hx1, hz0, hz1, mat) {
+  fn(x0, hx0, y0, y1, z0, z1, mat); fn(hx1, x1, y0, y1, z0, z1, mat); fn(hx0, hx1, y0, y1, z0, hz0, mat); fn(hx0, hx1, y0, y1, hz1, z1, mat);
+}
+function rrShape(W, L, r, cx = 0, cy = 0) { const s = new THREE.Shape(), a = W / 2, b = L / 2;
+  s.moveTo(cx - a + r, cy - b); s.lineTo(cx + a - r, cy - b); s.quadraticCurveTo(cx + a, cy - b, cx + a, cy - b + r); s.lineTo(cx + a, cy + b - r); s.quadraticCurveTo(cx + a, cy + b, cx + a - r, cy + b);
+  s.lineTo(cx - a + r, cy + b); s.quadraticCurveTo(cx - a, cy + b, cx - a, cy + b - r); s.lineTo(cx - a, cy - b + r); s.quadraticCurveTo(cx - a, cy - b, cx - a + r, cy - b); return s; }
+// (w 가로, h 높이, l 세로(z), wall 테두리 두께, depth 안쪽 깊이, back: 뒤쪽(−z) 수전 받침 폭, 위치 x,y(바닥),z)
+function hollowTub(parent, w, h, l, wall, depth, x = 0, y = 0, z = 0, mat = M.white, back = 0, floorMat) {
+  const bt = .01, outer = rrShape(w, l, Math.min(.05, w / 6)), hw = w - 2 * wall, hl = l - 2 * wall - back, hy = -back / 2; // 셰이프 y = −z → 구멍을 앞(+z)으로 옮겨 뒤(−z)에 수전 받침
+  outer.holes.push(rrShape(hw, hl, Math.min(.07, hw / 4), 0, hy));
+  const g = new THREE.ExtrudeGeometry(outer, { depth: h - 2 * bt, bevelEnabled: true, bevelThickness: bt, bevelSize: .006, bevelSegments: 2, curveSegments: 8 }); g.rotateX(-Math.PI / 2);
+  mesh(g, mat, x, y + bt, z, parent);
+  const fl = new THREE.ShapeGeometry(rrShape(hw + .01, hl + .01, Math.min(.07, hw / 4), 0, hy), 8); fl.rotateX(-Math.PI / 2);
+  mesh(fl, floorMat || std(0xf2f5f6, .12), x, y + h - depth, z, parent, { cast: false });
+  return { floorY: y + h - depth, cz: z - hy };
+}
+function bowlLathe(R, depth, rimW = .016) { const pts = [[0, -depth - .03], [R * .45, -depth - .025], [R * .78, -depth * .7], [R * .96, -depth * .25], [R, 0], [R, .012], [R - rimW, .012], [R - rimW - .008, 0], [R * .8, -depth * .35], [R * .5, -depth * .85], [0, -depth]];
+  return new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 48); }
+let _basinMat = null; const basinMat = () => _basinMat || (_basinMat = std(0xfbfbfa, .12, 0, { side: THREE.DoubleSide }));
 function toilet(x, z, rot) {
   const g = piece('양변기', x, z, rot, { movable: false });
   mesh(CY(.17, .13, .4), M.white, 0, .2, .05, g).scale.set(1, 1, 1.3);
@@ -1123,14 +1146,14 @@ function toilet(x, z, rot) {
 }
 function roundBasin(x, z, rot) { // 둥근 벽걸이 세면기 + 반다리(VR 욕실1)
   const g = piece('세면기', x, z, rot, { movable: false });
-  const bowl = mesh(new THREE.SphereGeometry(.27, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), M.whiteGloss, 0, .86, .02, g); bowl.rotation.x = Math.PI; bowl.scale.set(1, .5, .85);
-  mesh(CY(.27, .27, .03, 40), M.whiteGloss, 0, .86, .02, g).scale.set(1, 1, .85); mesh(CY(.21, .21, .006, 40), std(0xe9eeef, .1), 0, .875, .04, g).scale.set(1, 1, .8);
+  const bowl = mesh(bowlLathe(.25, .085), basinMat(), 0, .86, .03, g); bowl.scale.set(1, 1, .84); // 움푹 파인 둥근 볼(위가 막히지 않게)
+  mesh(RB(.3, .03, .1, .012), M.whiteGloss, 0, .8595, -.19, g); mesh(CY(.02, .02, .003, 20), M.chrome, 0, .777, .03, g, { cast: false }); // 뒤 수전 받침, 배수구
   mesh(RB(.24, .34, .16, .06), M.whiteGloss, 0, .58, -.1, g);
   mesh(CY(.016, .016, .17, 14), M.chrome, 0, .96, -.15, g); const sp = mesh(CY(.011, .011, .12, 12), M.chrome, 0, 1.035, -.1, g); sp.rotation.x = Math.PI / 2;
   return g; }
 function basin(x, z, rot) { // 반다리형 세면기(사진)
   const g = piece('세면기', x, z, rot, { movable: false });
-  mesh(RB(.52, .15, .42, .05), M.whiteGloss, 0, .8, 0, g); mesh(RB(.42, .02, .3, .03), std(0xe9eeef, .1), 0, .87, .02, g);
+  hollowTub(g, .52, .15, .42, .05, .11, 0, .725, 0, M.whiteGloss, .08, std(0xeef2f3, .1)); mesh(CY(.018, .018, .003, 20), M.chrome, 0, .767, .04, g, { cast: false }); /* 움푹 파인 볼 + 배수구 */
   mesh(RB(.3, .36, .2, .04), M.whiteGloss, 0, .54, -.1, g);
   mesh(CY(.016, .016, .17, 14), M.chrome, 0, .96, -.14, g); const sp = mesh(CY(.011, .011, .1, 12), M.chrome, 0, 1.035, -.1, g); sp.rotation.x = Math.PI / 2;
   return g;
@@ -1139,13 +1162,13 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
 // ── 주방: 서쪽 벽(창 아래 싱크) + 북쪽 벽(쿡탑·후드) ㄱ자, 이어서 키큰장(전자레인지 칸)·냉장고장 ──
 { const g = fixed, kb = (x0, x1, y0, y1, z0, z1, m = M.kdoor) => pbox(x0, x1, y0, y1, z0, z1, m, g);
   // 하부장 + 상판
-  kb(.11, .71, .1, .86, 5.16, 7.34); kb(.71, 2.3, .1, .86, 5.16, 5.76);
+  kb(.11, .71, .1, .66, 5.16, 7.34); holeSlab(kb, .11, .71, .66, .86, 5.16, 7.34, .235, .585, 6.09, 6.71, M.kdoor); /* 싱크 볼 자리 비움 */ kb(.71, 2.3, .1, .86, 5.16, 5.76);
   kb(.15, .67, 0, .1, 5.2, 7.3, M.black); kb(.71, 2.26, 0, .1, 5.2, 5.72, M.black);
-  kb(.11, .74, .86, .9, 5.16, 7.34, M.counter); kb(.74, 2.32, .86, .9, 5.16, 5.79, M.counter);
+  holeSlab(kb, .11, .74, .86, .9, 5.16, 7.34, .235, .585, 6.09, 6.71, M.counter); /* 상판 싱크 구멍 */ kb(.74, 2.32, .86, .9, 5.16, 5.79, M.counter);
   // 싱크(창 가운데 아래) + 수전
   // VR: 스테인리스 싱크볼(배수구) + 양쪽 철망 식기건조대 + 아치형 풀다운 수전 — 상판 위에 얇게 얹어 표현
-  {  const ss = std(0xc3c6c9, .26, .85), bowl = std(0xffffff, .3, .8, { map: toTex((() => { const c = mkCanvas(128, 64), x = c.getContext('2d'); const gr = x.createRadialGradient(64, 32, 4, 64, 32, 70); gr.addColorStop(0, '#6d7277'); gr.addColorStop(.6, '#8d9296'); gr.addColorStop(1, '#b4b8bb'); x.fillStyle = gr; x.fillRect(0, 0, 128, 64); x.strokeStyle = 'rgba(255,255,255,.18)'; for (let i = 0; i < 40; i++) { x.beginPath(); x.moveTo(rnd() * 128, 0); x.lineTo(rnd() * 128, 64); x.stroke(); } x.fillStyle = '#3d4145'; x.beginPath(); x.arc(64, 32, 6, 0, 7); x.fill(); x.fillStyle = '#9ea2a6'; x.beginPath(); x.arc(64, 32, 4, 0, 7); x.fill(); return c; })()) });    kb(.2, .62, .9, .9025, 6.05, 6.75, ss); kb(.235, .585, .9025, .9035, 6.09, 6.71, bowl);
-    for (const [za, zb2] of [[6.1, 6.31], [6.49, 6.7]]) { const y0 = .905, y1 = .975;
+  {  const ss = std(0xc3c6c9, .26, .85), bowl = std(0xffffff, .3, .8, { map: toTex((() => { const c = mkCanvas(128, 64), x = c.getContext('2d'); const gr = x.createRadialGradient(64, 32, 4, 64, 32, 70); gr.addColorStop(0, '#6d7277'); gr.addColorStop(.6, '#8d9296'); gr.addColorStop(1, '#b4b8bb'); x.fillStyle = gr; x.fillRect(0, 0, 128, 64); x.strokeStyle = 'rgba(255,255,255,.18)'; for (let i = 0; i < 40; i++) { x.beginPath(); x.moveTo(rnd() * 128, 0); x.lineTo(rnd() * 128, 64); x.stroke(); } x.fillStyle = '#3d4145'; x.beginPath(); x.arc(64, 32, 6, 0, 7); x.fill(); x.fillStyle = '#9ea2a6'; x.beginPath(); x.arc(64, 32, 4, 0, 7); x.fill(); return c; })()) });    holeSlab(kb, .2, .62, .9, .9025, 6.05, 6.75, .235, .585, 6.09, 6.71, ss); kb(.235, .585, .7, .9, 6.09, 6.71, std(0xbfc3c6, .3, .85, { side: THREE.BackSide })); kb(.245, .575, .7005, .702, 6.1, 6.7, bowl); mesh(CY(.035, .035, .004, 24), std(0x2f3236, .5), WX(.41), .703, WZ(6.4), g, { cast: false }); /* 움푹 파인 싱크 볼 + 배수구 */
+    for (const [za, zb2] of [[6.1, 6.31], [6.49, 6.7]]) { const y0 = .715, y1 = .785; /* 식기건조대는 싱크 볼 안 */
       for (let z = za; z <= zb2 + 1e-6; z += (zb2 - za) / 6) { kb(.245, .249, y0, y1, z - .002, z + .002, M.chrome); kb(.571, .575, y0, y1, z - .002, z + .002, M.chrome); }
       for (const yy of [y0 + .005, y1 - .004]) { kb(.245, .249, yy, yy + .004, za, zb2, M.chrome); kb(.571, .575, yy, yy + .004, za, zb2, M.chrome); kb(.245, .575, yy, yy + .004, za, za + .004, M.chrome); kb(.245, .575, yy, yy + .004, zb2 - .004, zb2, M.chrome); }
       for (let x = .285; x < .56; x += .04) kb(x, x + .003, y0 + .002, y0 + .005, za, zb2, M.chrome); }
@@ -1255,7 +1278,7 @@ await phase('욕실과 발코니를 꾸미는 중', 61);
   pbox(4.58, 6.08, 1.22, 1.25, .11, .24, std(0xc9c6c0, .45, 0, { map: M.marbleW.map }), g);
   pbox(4.58, 6.08, 1.42, 2.08, .11, .25, std(0xdedcd7, .5), g); pbox(4.59, 5.325, 1.43, 2.07, .25, .255, M.mirrorBath1, g, { cast: false }); pbox(5.335, 6.07, 1.43, 2.07, .25, .255, M.mirrorBath1, g, { cast: false }); // VR: 변기~욕조 앞까지 긴 거울장
   const tub = piece('욕조', 6.48, .87, 0, { movable: false });
-  mesh(RB(.76, .55, 1.5, .03), M.white, 0, .275, 0, tub); mesh(RB(.6, .1, 1.34, .05), std(0xe7ecee, .1), 0, .502, 0, tub); // 안쪽 면을 테두리보다 2mm 위로(같은 높이면 깜빡임)
+  hollowTub(tub, .76, .55, 1.5, .08, .4); // 테두리 8cm + 안쪽 깊이 40cm(위가 막히지 않게)
   mesh(CY(.012, .012, .7), M.chrome, .3, 1.35, -.55, tub); mesh(RB(.2, .05, .08, .02), M.chrome, .32, 1.0, -.55, tub);
   ceilingPanel(5.2, 5.7, .6, 1.1, .8, 2.2);
 }
