@@ -1492,7 +1492,7 @@ sideTable(9.22, 5.42, true);
 sideTable(9.22, 7.78, false);
 // 침실2: 창 쪽 싱글 침대(머리 서쪽), 북쪽에 책상
 const bed2 = bed(1.12, 7.45, Math.PI / 2, 1.1, 1.95, '싱글 침대');
-const desk2 = desk(1.0, 6.25, 0);
+const desk2 = desk(2.52, 6.8, -Math.PI / 2); // 동쪽 벽 책상(북쪽 벽은 붙박이장 옵션 자리)
 // 알파룸: 블랙 타원 책상 + 의자
 const alphaDesk = piece('타원 책상', 4.0, 6.9, 0); { const t = alphaDesk;
   const top = mesh(CY(.5, .5, .035, 48), std(0x26272a, .35), 0, .74, 0, t); top.scale.set(1.3, 1, .75);
@@ -1899,40 +1899,85 @@ let b6door = null;
   const d = { pivot: g, thetaC: 0, thetaO: 1, open: true, cur: 1, target: 1, name: '현관중문',
     box: { minX: WX(x0), maxX: WX(x1), minZ: WZ(4.1), maxZ: WZ(4.25) }, apply: v => panels.forEach((p, i) => { p.position.x = xc(i) + (xo(i) - xc(i)) * v; }) };
   d.apply(1); for (const m of parts) { m.userData.door = d; doorMeshes.push(m); } doors.push(d); }
-// 6 침실1 드레스룸(도어 및 시스템선반 설치): 블랙 프레임 슬라이딩 유리문(침실 쪽 벽면, 열면 동쪽으로) + 동쪽 벽 시스템 행거·서랍장 + 서쪽 낮은 선반
-{ const g = item('b6', '드레스룸 슬라이딩도어', false);
-  const ox0 = 10.17, ox1 = 10.97, zf = 4.445, top = 2.12, pw = ox1 - ox0 + .06, ph = top - .02;
-  cab(g, 10.13, 11.6, top, top + .05, 4.42, 4.47, std(0x1b1c1e, .4, .4));
-  const smoke = new THREE.MeshStandardMaterial({ color: 0x24272b, roughness: .18, metalness: .1, transparent: true, opacity: .58, side: THREE.DoubleSide, depthWrite: false });
-  const blk = std(0x151618, .35, .3), p = new THREE.Group(); g.add(p); const parts = [];
-  const add = m => { p.add(m); parts.push(m); return m; };
-  add(mesh(BX(pw - .06, ph - .06, .008), smoke, 0, ph / 2 + .01, 0, null, { cast: false, recv: false }));
-  for (const [w, h, x, y] of [[pw, .035, 0, .0275], [pw, .035, 0, ph - .0075], [.035, ph, -pw / 2 + .0175, ph / 2 + .01], [.035, ph, pw / 2 - .0175, ph / 2 + .01], [pw, .025, 0, ph * .36], [pw, .025, 0, ph * .68]])
-    add(mesh(BX(w, h, .032), blk, x, y, 0));
-  for (const s of [-1, 1]) add(mesh(BX(.022, .5, .02), blk, -pw / 2 + .07, 1.05, s * .03));
-  const xClosed = WX((ox0 + ox1) / 2), xOpen = WX(ox1 + pw / 2 - .02);
-  p.position.set(xClosed, 0, WZ(zf));
-  const d = { pivot: g, thetaC: 0, thetaO: 1, open: true, cur: 1, target: 1, name: '드레스룸 슬라이딩 문',
-    box: { minX: WX(ox0), maxX: WX(ox1), minZ: WZ(4.3), maxZ: WZ(4.42) }, apply: v => { p.position.x = xClosed + (xOpen - xClosed) * v; } };
-  d.apply(1); for (const m of parts) { m.userData.door = d; doorMeshes.push(m); } doors.push(d); b6door = d;
-  const sh = item('b6', '드레스룸 시스템선반'); systemShelf(sh, 11.3, 11.83, 3.04, 4.3, true, { chest: true, chestStart: true, low: true });
-  const lo = item('b6', '낮은 선반'); for (const y of [.05, .45, .85]) cab(lo, 9.76, 10.1, y, y + .025, 3.1, 4.25, shelfMatB); cab(lo, 9.76, 10.1, 0, .9, 3.1, 3.12, shelfMatB); cab(lo, 9.76, 10.1, 0, .9, 4.23, 4.25, shelfMatB);
-  suitcase(item('b6', '캐리어', false), 10.6, 3.5, .2); }
+// 6 침실1 드레스룸(도어 및 시스템선반 설치) — VR 옵션 그림: 검은 테 격자 유리 여닫이문(입구, 침실 쪽으로 열림) + 동쪽 벽 블랙 기둥·화이트 선반(행거)
+{ const g = item('b6', '드레스룸 도어', false), ox0 = 10.17, ox1 = 10.97, lw = ox1 - ox0 - .01, lh = 2.08;
+  const d = makeDoor({ parent: g, horiz: true, line: 4.36, t: .12, hu: ox1 - .005, du: -1, side: 1, lw, lh, lt: .03, style: 'tint', from: ox0, to: ox1, name: '드레스룸 문', handle: false, startOpen: true });
+  for (const y of [.75, 1.4]) { const b = mesh(BX(lw, .03, .034), M.rail, lw / 2, y, 0, d.pivot); b.userData.door = d; doorMeshes.push(b); }
+  { const b = mesh(BX(.03, lh, .034), M.rail, lw / 2, lh / 2 + .01, 0, d.pivot); b.userData.door = d; doorMeshes.push(b); }
+  { const h = mesh(BX(.02, .35, .02), M.rail, .07, 1.05, .04, d.pivot); h.userData.door = d; doorMeshes.push(h); }
+  b6door = d;
+  const sh = item('b6', '드레스룸 시스템선반'), post = std(0x1b1c1e, .4, .3), wsh = std(0xf2f0eb, .5);
+  for (const z of [3.06, 3.68, 4.28]) pbox(11.55, 11.58, 0, 2.2, z - .015, z + .015, post, sh);
+  for (const y of [.35, 1.0, 1.85]) pbox(11.25, 11.83, y, y + .025, 3.06, 4.28, wsh, sh);
+  pbox(11.4, 11.43, 1.75, 1.77, 3.06, 4.28, std(0xc8cacc, .3, .8), sh);                    // 행거 봉
+  for (let i = 0; i < 7; i++) { const z = 3.15 + i * .15; pbox(11.36, 11.66, 1.0 + .07, 1.72, z - .015, z + .015, [std(0xf2efe8, .9), std(0xcdb9a0, .9), std(0x2d2e31, .9)][i % 3], sh); }
+  suitcase(item('b6', '캐리어', false), 10.4, 3.4, .2); }
 // 7-1 침실1 붙박이장(슬라이딩장): 동쪽 벽 전체 6짝
-{ const g = item('b7-1', '침실1 붙박이장'); wardrobe(g, 11.63, 12.21, 4.42, 8.07, 'x-', 6); }
-// 7-2 슬라이딩장 + 화장대: 슬라이딩장 4짝(드레스룸 쪽) + 창 쪽 화장대 칸(벽 속 거울장·2단 서랍·스툴)
-{ const g = item('b7-2', '침실1 붙박이장(화장대)'); wardrobe(g, 11.63, 12.21, 4.42, 6.85, 'x-', 4);
-  const v = item('b7-2', '화장대'), z0 = 6.87, z1 = 8.07, xb = 12.21, top = std(0xf4f3ef, .45);
+{ const g = item('b7-1', '침실1 붙박이장'); wardrobe(g, 11.63, 12.21, 4.42, 8.07, 'x-', 3); } // VR 옵션 그림: 큰 슬라이딩 문 3짝
+// 7-2 슬라이딩장 + 화장대(VR 옵션 그림): 드레스룸 쪽(북쪽) 끝 화장대 칸(벽 속 거울장·2단 서랍·스툴) + 슬라이딩장 2짝
+{ const g = item('b7-2', '침실1 붙박이장(화장대)'); wardrobe(g, 11.63, 12.21, 5.64, 8.07, 'x-', 2); // VR 옵션 그림: 화장대는 드레스룸 쪽(북쪽) 끝, 나머지 슬라이딩 2짝
+  const v = item('b7-2', '화장대'), z0 = 4.42, z1 = 5.62, xb = 12.21, top = std(0xf4f3ef, .45);
   cab(v, 11.63, xb, 2.25, H, z0, z1, M.kdoor); cab(v, 11.63, 11.65, 0, 2.25, z1 - .02, z1, M.kdoor);
   cab(v, 11.73, xb, .68, .72, z0, z1 - .02, top);
-  cab(v, 11.76, xb, .44, .68, z0 + .02, z1 - .04, M.kdoor); cab(v, 11.755, 11.76, .555, .557, z0 + .03, z1 - .05, seamMat); cab(v, 11.75, 11.755, .6, .62, 7.3, 7.65, M.metalDark);
+  cab(v, 11.76, xb, .44, .68, z0 + .02, z1 - .04, M.kdoor); cab(v, 11.755, 11.76, .555, .557, z0 + .03, z1 - .05, seamMat); cab(v, 11.75, 11.755, .6, .62, (z0 + z1) / 2 - .17, (z0 + z1) / 2 + .17, M.metalDark);
   cab(v, 11.9, xb, 1.1, 2.0, z0 + .05, z1 - .07, std(0xdedcd7, .5));
   for (const [a, b] of [[z0 + .06, (z0 + z1) / 2 - .01], [(z0 + z1) / 2 + .002, z1 - .08]]) cab(v, 11.895, 11.9, 1.11, 1.99, a, b, M.mirrorBed1, { cast: false });
   cab(v, 11.89, 11.91, 2.0, 2.02, z0 + .05, z1 - .07, M.ledWarm, { cast: false });
-  const st = piece('스툴', 11.4, 7.45, 0); mesh(CY(.17, .17, .05, 24), std(0xe6e0d6, .9), 0, .45, 0, st); mesh(CY(.02, .02, .42, 10), M.black, 0, .21, 0, st); mesh(CY(.15, .15, .015, 24), M.black, 0, .01, 0, st);
+  const st = piece('스툴', 11.4, 5.05, 0); mesh(CY(.17, .17, .05, 24), std(0xe6e0d6, .9), 0, .45, 0, st); mesh(CY(.02, .02, .42, 10), M.black, 0, .21, 0, st); mesh(CY(.15, .15, .015, 24), M.black, 0, .01, 0, st);
   OG['b7-2st'] = st; }
-// 8 침실2 붙박이장: 북쪽 벽(문 왼쪽) 3짝
-{ const g = item('b8', '침실2 붙박이장'); wardrobe(g, .11, 1.92, 5.38, 5.96, 'z+', 3); }
+// 8 침실2 붙박이장 — VR 옵션 그림: 55A와 같은 유닛(2짝 옷장 | 거울장 니치·서랍 | 문 쪽 오픈칸 기둥), 북쪽 벽 서쪽 끝~문 옆
+//   55A 좌표(벽 z 5.16)로 만든 뒤 56T 침실2 북쪽 벽(면 z 5.38)으로 0.22m 평행 이동
+{ const OGB = og('b8');
+{ const g = item('b8', '침실2 붙박이장'), z0 = 5.16, z1 = 5.76, top = 2.3;
+  const body = std(0xebe9e4, .5), seam = std(0x8f8c87, .8), inner = std(0xdcd9d2, .55), kick = std(0x2a2b2d, .8);
+  const sH = (y, x0, x1) => cab(g, x0, x1, y - .0015, y + .0015, z1, z1 + .003, seam);
+  // 영상 기준: [2짝 옷장(가운데 검정 줄눈, 손잡이 없음)] [거울장 니치: 위 2/3 거울 · 아래 오픈 선반 · 그 밑 서랍 2단] [옆구리 오픈칸 4칸 기둥]
+  cab(g, .13, 1.58, 0, .06, z0, z1 - .04, kick);                                     // 걸레받이
+  // 2짝 옷장
+  cab(g, .11, .91, .06, top, z0, z1, body);
+  cab(g, .507, .513, .06, top - .01, z1 - .01, z1 + .002, M.black);                  // 가운데 검정 줄눈
+  // 거울장 니치(x .91–1.37): 뒤판에 블랙 얇은 테 거울, 아래 오픈 선반, 서랍 2단
+  const nx0 = .91, nx1 = 1.37, nb = 5.36, cnt = .86, my0 = 1.16, my1 = 2.18;
+  cab(g, nx0, nx1, .06, cnt, z0, z1, body);                                          // 서랍장 몸통(상판 = 오픈 선반 바닥)
+  sH(.46, nx0 + .005, nx1 - .005); cab(g, nx0 - .0015, nx0 + .0015, .06, top, z1, z1 + .003, seam);
+  for (const y of [.62, .24]) cab(g, nx0 + .16, nx1 - .16, y + .17, y + .18, z1, z1 + .008, std(0xc9c7c2, .4, .3)); // 서랍 손잡이 홈
+  cab(g, nx0, nx1, my1 + .02, top, z0, z1, body);                                    // 니치 위 막음
+  cab(g, nx0, nx1, cnt, my1 + .02, z0, nb, body);                                    // 니치 뒤 몸통
+  // 위쪽은 거울 문이 달린 수납장(앞면과 거의 같은 면, 클릭/E로 열고 닫기) — 안에 선반 2장
+  cab(g, nx0, nx1, my0 - .02, my0, nb, z1 - .15, body);                             // 거울장 바닥판(= 오픈 선반 천장)
+  cab(g, nx0 + .02, nx1 - .02, my0 - .025, my0 - .02, nb + .02, z1 - .17, M.ledWarm, { cast: false }); // 오픈 선반 비추는 간접등
+  for (const y of [1.5, 1.84]) cab(g, nx0, nx1, y, y + .018, nb, z1 - .155, body);
+  cab(g, nx0 + .03, nx0 + .2, my0, my0 + .12, nb + .05, nb + .2, std(0xd8d2c4, .6)); mesh(CY(.025, .025, .14, 14), M.glass, WX(nx1 - .1), 1.518 + .07, WZ(nb + .12), g, { cast: false });
+  { const mg = new THREE.Group(); mg.position.y = my0; g.add(mg);
+    const lw = nx1 - nx0 - .012, lh = my1 + .02 - my0 - .006;
+    const d = makeDoor({ parent: mg, horiz: true, line: z1 - .135, t: .024, hu: nx0 + .006, du: 1, side: 1, lw, lh, lt: .02, mat: M.mirrorBed2, from: nx0, to: nx1, name: '거울장 문', startOpen: false, handle: false });
+    for (const [w, h, x, y] of [[lw, .006, lw / 2, .013], [lw, .006, lw / 2, lh + .007], [.006, lh, .003, lh / 2 + .01], [.006, lh, lw - .003, lh / 2 + .01]]) {
+      const f = mesh(BX(w, h, .022), M.black, x, y, 0, d.pivot); f.userData.door = d; doorMeshes.push(f); } } // 얇은 블랙 테
+  // 오픈 선반 소품: 화분 + 디퓨저
+  tablePlant(g, WX(nx0 + .12), cnt, WZ(nb + .18)).scale.setScalar(.75);
+  { const dx = nx1 - .12, dz = nb + .2;
+    mesh(new THREE.LatheGeometry([[0, 0], [.035, 0], [.04, .03], [.035, .08], [.012, .1], [.01, .12], [0, .12]].map(([x, y]) => new THREE.Vector2(x, y)), 20), M.glass, WX(dx), cnt, WZ(dz), g, { cast: false });
+    for (let i = 0; i < 5; i++) { const s = mesh(CY(.0018, .0018, .17, 5), M.black, WX(dx), cnt + .18, WZ(dz), g, { cast: false }); s.rotation.set(Math.cos(i * 1.3) * .2, 0, Math.sin(i * 1.3) * .2); } }
+  // 문 쪽 기둥(x 1.37–1.6): 앞은 막힘, 옆구리(문 쪽)에 벽 쪽으로 좁은 오픈칸 4칸
+  const cx0 = 1.37, cx1 = 1.6, cin = 1.39, cz1 = 5.48, y0 = .9, y1 = 2.2;
+  cab(g, cx0, cin, .06, top, z0, z1, body); cab(g, cin, cx1, .06, top, cz1, z1, body);
+  cab(g, cin, cx1, .06, top, z0, z0 + .03, body); cab(g, cin, cx1, .06, y0, z0 + .03, cz1, body); cab(g, cin, cx1, y1, top, z0 + .03, cz1, body);
+  cab(g, cin, cin + .01, y0, y1, z0 + .03, cz1, inner);
+  for (const y of [1.225, 1.55, 1.875]) cab(g, cin, cx1, y - .01, y + .01, z0 + .03, cz1, body);
+  cab(g, cx1, cx1 + .003, y0 - .004, y0 - .001, z0 + .03, cz1, seam);
+  const zc = (z0 + .03 + cz1) / 2;
+  cab(g, cin + .02, cin + .19, y0 + .01, y0 + .26, zc - .1, zc - .065, std(0x1f7a8c, .7)); cab(g, cin + .02, cin + .19, y0 + .01, y0 + .24, zc - .065, zc - .03, std(0x2a8ea0, .7));
+  cab(g, cin + .03, cin + .17, 1.24, 1.34, zc - .06, zc + .07, std(0xf2f2f0, .8, 0, { map: toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#f4f4f2'; x.fillRect(0, 0, 64, 64); x.fillStyle = '#1b1b1b'; for (let i = 0; i < 40; i++) { x.beginPath(); x.arc(rnd() * 64, rnd() * 64, 2 + rnd() * 4, 0, 7); x.fill(); } return c; })()) }));
+  mesh(new THREE.SphereGeometry(.035, 16, 12), std(0x3b4a6b, .4), WX(cin + .11), 1.6, WZ(zc), g);
+  // 문 옆 벽: 온도조절기 2개 + 아래 콘센트(사진)
+  { const g = item('b8', '침실2 스위치', false); // 충돌 없음(벽 장식)
+  const wp = std(0xf7f7f5, .45), scr = new THREE.MeshStandardMaterial({ color: 0x111316, emissive: 0x22303a, emissiveIntensity: .4, roughness: .2 });
+  for (const [y, h] of [[1.42, .14], [1.2, .12]]) { cab(g, 1.66, 1.78, y, y + h, z0, z0 + .014, wp); cab(g, 1.68, 1.76, y + h - .06, y + h - .02, z0 + .014, z0 + .016, scr); }
+  cab(g, 1.68, 1.76, .25, .37, z0, z0 + .012, wp); for (const y of [.285, .335]) mesh(CY(.012, .012, .004, 16), std(0xe6e6e3, .5), WX(1.72), y, WZ(z0 + .014), g, { cast: false }).rotation.x = Math.PI / 2; }
+}
+  const dz = .22; OGB.position.z = dz; OGB.updateMatrixWorld(true);
+  for (const d of doors) if (d.name === '거울장 문' && !d._tMoved) { d.box = { ...d.box, minZ: d.box.minZ + dz, maxZ: d.box.maxZ + dz }; d._tMoved = true; }
+}
 // 9 침실2+알파룸 통합형 붙박이장(1-1 선택 시): 북쪽 벽, 두 방문 사이
 { const g = item('b9', '통합형 붙박이장'); wardrobe(g, 2.84, 4.24, 5.38, 5.96, 'z+', 2); }
 // 10 알파룸 특화형 붙박이장(1-2 선택 시): 꺾인 벽 안쪽(알파룸 쪽), 벽면과 같은 면으로

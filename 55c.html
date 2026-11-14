@@ -155,9 +155,6 @@ body{margin:0;background:var(--stage);color:var(--ink);font-family:var(--body);o
 #mapBox.closed{display:none}
 #mapOpen{display:none;position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(14px);border-radius:12px;padding:9px 12px;font:600 13px var(--body);color:var(--ink);cursor:pointer}
 .map-closed #mapOpen{display:block}
-#headToggle{display:none;position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(14px);border-radius:12px;padding:9px 12px;font:600 13px var(--body);color:var(--ink);cursor:pointer;align-items:center;gap:6px}
-.head-closed #headToggle{display:flex}
-#headToggle svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 @media (max-width:760px){
   #opts{display:none;top:calc(64px + env(safe-area-inset-top,0px));width:auto;left:max(16px,env(safe-area-inset-left,0px));max-height:calc(100% - 140px)}
   #opts.open{display:flex}
@@ -544,9 +541,9 @@ Object.assign(M, {
   boucle: std(0xf1eee7, 1, 0, { map: toTex(noiseCanvas([240, 237, 230], 26), { rep: [6, 6] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 120), { srgb: false, rep: [6, 6] }), bumpScale: 1.2 }),
   navy: std(0x3e5f8a, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 30), { rep: [3, 3] }) }),
   check: std(0xffffff, .95, 0, { map: toTex(checkCanvas(), { rep: [2, 2] }) }),
-  charcoal: std(0xd9cbb6, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [3, 3] }) }),
+  charcoal: std(0x3a3d42, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [3, 3] }) }),
   linen: std(0xf6f5f2, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 14), { rep: [4, 4] }) }),
-  throwBlue: std(0x9b958c, .98, 0, { map: toTex(noiseCanvas([255, 255, 255], 34), { rep: [5, 5] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 90), { srgb: false, rep: [5, 5] }), bumpScale: .8 }),
+  throwBlue: std(0x4a6f9a, .98, 0, { map: toTex(noiseCanvas([255, 255, 255], 34), { rep: [5, 5] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 90), { srgb: false, rep: [5, 5] }), bumpScale: .8 }),
   rug: std(0xb9b8b4, 1, 0, { map: toTex(noiseCanvas([255, 255, 255], 46), { rep: [8, 8] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 140), { srgb: false, rep: [8, 8] }), bumpScale: 2 }),
   walnut: std(0xffffff, .55, 0, { map: toTex(woodCanvas([122, 88, 62], 4)) }),
   oak: std(0xffffff, .55, 0, { map: toTex(woodCanvas([196, 160, 118], 4)) }),
@@ -616,7 +613,7 @@ const stoneCanvas = (() => { const c = marbleCanvas(), x = c.getContext('2d'); x
 const MAT_OPT = {
   mma: { map: null, color: 0xf3f2ee, roughness: .4 },
   stone: { map: toTex(stoneCanvas), color: 0xffffff, roughness: .18 },
-  tile: { map: toTex(tileCanvas(2, 4, [196, 196, 193], '#a8a8a4', { j: 5, veins: 10, gap: 3 }), { rep: [1, 1] }), color: 0xffffff, roughness: .25 }, // 55C(VR): 회색 대형 타일
+  tile: { map: toTex(tileCanvas(4, 8, [240, 239, 236], '#d0cec9', { j: 3, gap: 4 }), { rep: [1, 1] }), color: 0xffffff, roughness: .25 },
 };
 M.counter = std(MAT_OPT.mma.color, MAT_OPT.mma.roughness);
 M.splash = std(0xffffff, .25, 0, { map: MAT_OPT.tile.map });
@@ -938,7 +935,7 @@ await phase('주방을 꾸미는 중', 50);
 // 공통 재질
 M.woodPanel = std(0xffffff, .62, 0, { map: toTex(woodCanvas([214, 206, 194], 6)) });
 M.marbleW = std(0xffffff, .2, 0, { map: toTex(marbleCanvas()) });
-M.curtainGrey = new THREE.MeshStandardMaterial({ color: 0xcdbda6, roughness: 1, side: THREE.DoubleSide, map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [6, 3] }) });
+M.curtainGrey = new THREE.MeshStandardMaterial({ color: 0x9a968f, roughness: 1, side: THREE.DoubleSide, map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [6, 3] }) });
 M.ledWarm = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffd9a8, emissiveIntensity: 5 });
 M.panelLED = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xf4f7ff, emissiveIntensity: 3 });
 M.whiteGloss = std(0xf6f5f2, .3);
@@ -1037,7 +1034,7 @@ kInner(5.46, 6.08, 2.15, H, 2.12, 3.97, M.kdoor);         // 상부 브리지장
 { const fx = 6.06; // 냉장고: 화이트 글라스 4도어 — 앞면 x=fx
   const fWhite = std(0xf1f0ec, .18, .05), fGap = std(0x9a9893, .7);
   kInner(5.5, fx - .02, 0, 1.85, 2.82, 3.9, std(0xe4e2dd, .5));
-  for (const [y0, y1] of [[1.0, 1.85], [.05, .98]]) for (const [z0, z1] of [[2.83, 3.35], [3.37, 3.89]]) kInner(fx - .02, fx, y0, y1, z0, z1, y0 > .5 ? fWhite : std(0xdfd2bf, .3, .05)); // 55C(VR): 위 흰색 · 아래 베이지
+  for (const [y0, y1] of [[1.0, 1.85], [.05, .98]]) for (const [z0, z1] of [[2.83, 3.35], [3.37, 3.89]]) kInner(fx - .02, fx, y0, y1, z0, z1, fWhite);
   kInner(fx - .022, fx - .018, .98, 1.0, 2.83, 3.89, fGap); kInner(fx - .022, fx - .018, .05, 1.85, 3.35, 3.37, fGap);
 }
 // 문 이음선(손잡이 없는 평판 도어 사이의 가는 그림자 줄)
@@ -1080,17 +1077,11 @@ wallBoxes.push({ minX: WX(8.34), maxX: WX(8.82), minZ: WZ(5.35), maxZ: WZ(8.0) }
 { const vz = [[5.55, .32], [5.72, .24]]; for (const [z, h] of vz) { mesh(CY(.06, .08, h, 24), M.whiteGloss, WX(8.52), .42 + h / 2, WZ(z), fixed); } }
 // 소파 뒤 백라이트 아트(사진: 푸른 건물 그림, 테두리 간접광)
 // 소파 뒤 백라이트 아트는 서쪽 벽(x=5.18)
-pbox(5.185, 5.2, 1.08, 2.02, 5.6, 7.55, std(0xf7f6f2, .5), fixed); // 55C(VR): 얇은 흰 액자(간접광 없음)
-// 55C(VR): 소파 위 그림 — 미색 바탕에 베이지·갈색 점이 흩어진 추상화(얇은 흰 액자)
-function artCanvasC() { const W = 512, Hh = 256, c = mkCanvas(W, Hh), x = c.getContext('2d');
-  x.fillStyle = '#f3efe7'; x.fillRect(0, 0, W, Hh);
-  for (let i = 0; i < 520; i++) { const px = 60 + rnd() * 390, py = 40 + rnd() * 170 + Math.sin(px / 60) * 18, r = 1.5 + rnd() * 3.5;
-    x.fillStyle = ['#c9a77a', '#b98a5e', '#d8c3a0', '#a27352', '#e1d2b8'][i % 5]; x.globalAlpha = .55 + rnd() * .4; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill(); }
-  x.globalAlpha = 1; return c; }
-pbox(5.195, 5.23, 1.12, 1.98, 5.64, 7.51, std(0xffffff, .5, 0, { map: toTex(artCanvasC()) }), fixed);
-// (55C: 액자 간접광 없음)
+pbox(5.185, 5.195, 1.08, 2.02, 5.6, 7.55, M.ledWarm, fixed, { cast: false });
+pbox(5.195, 5.23, 1.12, 1.98, 5.64, 7.51, std(0xffffff, .5, 0, { map: toTex(artCanvas2('living')) }), fixed);
+ledRectWall(5.24, 1.55, 6.575, 2.0, 1.0, -1, 0, 0xffd9a8, 1.2, 2.4);
 // 창가 유리구 펜던트 3개
-{ const p = new THREE.Group(); p.visible = false; fixed.add(p); // 55C(VR)에는 없음
+{ const p = new THREE.Group(); fixed.add(p);
   for (const [x, z, y] of [[5.59, 7.62, 1.75], [5.46, 7.78, 1.42], [5.69, 7.85, 1.6]]) {
     mesh(CY(.003, .003, H - y), M.black, WX(x), (H + y) / 2, WZ(z), p, { cast: false });
     mesh(CY(.012, .012, .1), M.chrome, WX(x), y + .05, WZ(z), p, { cast: false });
@@ -1109,27 +1100,22 @@ ceilingPanel(2.4, 2.9, 2.7, 3.2, .9, 2.6);
 await phase('침실을 꾸미는 중', 61);
 // ── 침실1: 루버 헤드보드 + LED, 침대 옆 블랙 펜던트, 평판등, 커튼 ──
 // 평면도 방향: 헤드보드는 서쪽 벽(x=8.88), 침실 문(북서쪽) 바로 남쪽부터
-// 55C(VR): 침대 뒤 서쪽 벽 — 베이지 패브릭 사각 패널 2단(침대보다 넓게) + 위 원목 몰딩, 맞은편 동쪽 벽 흑백 사진 액자 3개
-{ const g = fixed, pan = std(0xb9a892, .95, 0, { map: M.boucle.map }), seam = std(0x9c8c77, .9), oakT = M.oak;
-  const z0 = 5.15, z1 = 7.75, n = 5, ys = [[.42, .9], [.9, 1.38]];
-  pbox(8.88, 8.95, .42, 1.38, z0, z1, pan, g);
-  for (let i = 1; i < n; i++) { const z = z0 + (z1 - z0) * i / n; pbox(8.95, 8.956, .42, 1.38, z - .004, z + .004, seam, g, { cast: false }); }
-  pbox(8.95, 8.956, .896, .904, z0, z1, seam, g, { cast: false });
-  pbox(8.88, 8.97, 1.38, 1.42, z0 - .02, z1 + .02, oakT, g);
-  const photo = k => toTex((() => { const c = mkCanvas(128, 128), x = c.getContext('2d'); x.fillStyle = '#e9e9e7'; x.fillRect(0, 0, 128, 128); x.fillStyle = '#1d1d1d';
-    x.fillRect(24, 30, 80, 66); x.fillStyle = '#9a9a98'; for (let i = 0; i < 6; i++) { x.beginPath(); x.arc(40 + ((i * 37 + k * 13) % 50), 50 + ((i * 23 + k * 7) % 36), 6 + (i % 3) * 3, 0, 7); x.fill(); } return c; })());
-  for (let i = 0; i < 3; i++) { const zc = 6.45 + (i - 1) * .58; pbox(12.17, 12.21, 1.2, 1.7, zc - .25, zc + .25, std(0xf5f5f3, .5), g); pbox(12.165, 12.17, 1.24, 1.66, zc - .21, zc + .21, std(0xffffff, .9, 0, { map: photo(i) }), g, { cast: false }); }
-}
+pbox(8.88, 8.92, 0, 1.15, 5.2, 7.7, M.fluted, fixed).material = M.fluted;
+M.fluted.bumpMap.repeat.set(3, 1);
+pbox(8.88, 8.94, 1.15, 1.19, 5.2, 7.7, M.black, fixed);
+pbox(8.94, 8.95, 1.12, 1.15, 5.25, 7.65, M.ledStrip, fixed, { cast: false });
+pbox(8.88, 8.9, 1.19, H, 5.2, 7.7, std(0xffffff, .8, 0, { map: toTex(grooveCanvas('#e9e6e0', 3)) }), fixed);
+ledRectWall(8.97, 1.6, 6.45, 2.5, .8, 1, 0, 0xffdcb0, .5, 1.6);
+for (const z of [5.3, 7.6]) { const x = 9.17, y = 1.15;
+  mesh(CY(.003, .003, H - y - .2), M.black, WX(x), (H + y + .2) / 2, WZ(z), fixed, { cast: false });
+  mesh(CY(.035, .035, .2, 20), M.black, WX(x), y + .1, WZ(z), fixed);
+  mesh(CY(.03, .03, .004, 20), M.ledWarm, WX(x), y - .002, WZ(z), fixed, { cast: false });
+  ledRect(x - .05, x + .05, z - .05, z + .05, y - .01, -1, 0xffd9a8, .6, 1.4); }
 ceilingPanel(10.25, 10.85, 6.15, 6.75, 1.0, 2.8);
 curtainSet(9.3, 12.0, 9.75, 11.55);
 
-// 55C(VR): 침실2 동쪽 벽 패션 사진 포스터(흰 액자)
-{ const art = toTex((() => { const c = mkCanvas(160, 220), x = c.getContext('2d'); const g = x.createLinearGradient(0, 0, 0, 220); g.addColorStop(0, '#d9d2c8'); g.addColorStop(1, '#a89d90'); x.fillStyle = g; x.fillRect(0, 0, 160, 220);
-    x.fillStyle = '#c7a9a3'; x.fillRect(66, 70, 30, 60); x.fillStyle = '#2b2a2a'; x.fillRect(70, 130, 8, 60); x.fillRect(84, 130, 8, 60); x.fillStyle = '#6b4f3f'; x.beginPath(); x.arc(81, 58, 12, 0, 7); x.fill();
-    x.fillStyle = 'rgba(80,70,60,.35)'; for (let i = 0; i < 6; i++) x.fillRect(10 + i * 26, 20, 14, 120); return c; })());
-  pbox(2.66, 2.7, .95, 1.95, 6.3, 7.0, std(0xf2f0ec, .5), fixed); pbox(2.655, 2.66, 1.0, 1.9, 6.35, 6.95, std(0xffffff, .9, 0, { map: art }), fixed, { cast: false }); }
 // ── 알파룸: 하늘색 백라이트 책장, 원형 테이블, 노란 알파벳 러그, 블라인드 ──
-{ const g = new THREE.Group(); g.userData = { name: '백라이트 책장', solid: true }; fixed.add(g); g.visible = false; // 55C(VR)에는 없음
+{ const g = new THREE.Group(); g.userData = { name: '백라이트 책장', solid: true }; fixed.add(g);
   const x0 = 4.72, x1 = 5.06, z0 = 5.95, z1 = 7.75;
   pbox(x1 - .02, x1, .1, 2.1, z0, z1, M.blueShelf, g);
   for (const y of [.1, .52, .94, 1.36, 1.78, 2.1]) pbox(x0, x1, y, y + .025, z0, z1, M.blueShelf, g);
@@ -1150,25 +1136,6 @@ const alphaTable = piece('원형 테이블', 3.75, 7.15, 0);
   for (const [sx, sz] of [[-.48, .25], [.42, -.3]]) { mesh(CY(.19, .19, .07, 28), std(0xd8d4cc, .95), sx, .46, sz, t); for (const a of [0, 2.1, 4.2]) mesh(CY(.012, .012, .43), M.white, sx + Math.cos(a) * .12, .21, sz + Math.sin(a) * .12, t); } }
 const alphaRug = piece('알파벳 러그', 3.8, 7.2, 0, { solid: false });
 { const r = alphaRug; mesh(CY(.85, .85, .01, 64), std(0xffffff, 1, 0, { map: toTex(rugAlphabet()) }), 0, .006, 0, r, { cast: false }); }
-alphaTable.visible = false; alphaRug.visible = false; // 55C(VR): 원형 테이블·알파벳 러그 없음
-// 55C(VR) 알파룸: 동쪽 벽 전체 붙박이 흰 책상 + 위 오픈 선반 2단(칸막이) + 남쪽 끝 원목 서랍 기둥, 모니터·소품
-{ const g = new THREE.Group(); g.userData = { name: '알파룸 붙박이 책상', solid: true }; fixed.add(g); const w = std(0xf6f5f2, .45), xb = 5.06, z0 = 5.22, z1 = 7.6, zd = 7.15;
-  pbox(xb - .6, xb, .72, .76, z0, zd, w, g);                                         // 책상 상판
-  pbox(xb - .58, xb - .55, 0, .72, z0 + .02, z0 + .05, w, g);                        // 북쪽 측판
-  for (const y of [1.25, 1.72, 2.2]) pbox(xb - .36, xb, y, y + .025, z0, zd, w, g);  // 오픈 선반 3장(2단)
-  for (let i = 0; i <= 4; i++) { const z = z0 + (zd - z0) * i / 4; pbox(xb - .36, xb, 1.25, 2.225, z - .012, z + .012, w, g); }
-  pbox(xb - .01, xb, 1.25, 2.225, z0, zd, std(0xefede8, .6), g);
-  // 남쪽 끝 기둥: 아래 원목 서랍 3단 + 위 오픈칸
-  pbox(xb - .6, xb, 0, 2.25, zd, z1, w, g);
-  for (let i = 0; i < 3; i++) { const y0 = .08 + i * .22; pbox(xb - .605, xb - .6, y0, y0 + .2, zd + .03, z1 - .03, M.oak, g); pbox(xb - .612, xb - .605, y0 + .14, y0 + .16, (zd + z1) / 2 - .06, (zd + z1) / 2 + .06, M.black, g); }
-  pbox(xb - .55, xb - .02, 1.0, 1.9, zd + .03, z1 - .03, std(0xeceae5, .6), g);
-  for (const y of [1.3, 1.6]) pbox(xb - .58, xb, y, y + .02, zd + .03, z1 - .03, w, g);
-  // 모니터·키보드·액자·책
-  pbox(xb - .3, xb - .26, .78, 1.15, 5.85, 6.45, std(0x1d1e20, .3), g); pbox(xb - .305, xb - .3, .8, 1.13, 5.87, 6.43, std(0x6f8fb3, .3, 0, { emissive: 0x2a3a50, emissiveIntensity: .5 }), g, { cast: false });
-  pbox(xb - .22, xb - .16, .76, .8, 6.1, 6.2, std(0xd8d8d6, .4), g); pbox(xb - .48, xb - .4, .76, .772, 5.95, 6.35, std(0xf0f0ee, .4), g);
-  for (let i = 0; i < 6; i++) pbox(xb - .3, xb - .06, 1.725, 1.725 + .22 + (i % 2) * .04, 6.4 + i * .06, 6.44 + i * .06, M.books[i % 5], g);
-  pbox(xb - .05, xb - .02, 1.28, 1.6, 5.4, 5.7, std(0x2b2c2f, .5), g);
-}
 { const g = fixed; const bz = 8.08; // 롤/우드 블라인드 (창 윗부분)
   for (let i = 0; i < 6; i++) pbox(3.38, 4.52, 1.42 + i * .045, 1.45 + i * .045, bz - .03, bz, std(0xf2efe8, .7), g, { cast: false });
   pbox(3.36, 4.54, 1.68, 1.73, bz - .05, bz, M.white, g); }
@@ -1525,11 +1492,11 @@ function sideTable(x, z, withVase) {
 }
 function desk(x, z, rot, name = '책상') {
   const g = piece(name, x, z, rot);
-  mesh(RB(1.1, .03, .55, .01), M.whiteGloss, 0, .73, 0, g); // 55C(VR): 흰 책상
-  for (const [lx, lz] of [[-.52, -.24], [.52, -.24], [-.52, .24], [.52, .24]]) mesh(BX(.03, .72, .03), M.whiteGloss, lx, .36, lz, g);
+  mesh(RB(1.1, .03, .55, .01), M.oak, 0, .73, 0, g);
+  for (const [lx, lz] of [[-.52, -.24], [.52, -.24], [-.52, .24], [.52, .24]]) mesh(BX(.03, .72, .03), M.black, lx, .36, lz, g);
   const ch = new THREE.Group(); ch.position.set(0, 0, .5); g.add(ch);
-  mesh(RB(.44, .05, .44, .02), std(0xf2f0eb, .6), 0, .46, 0, ch);
-  mesh(RB(.42, .38, .04, .02), std(0xf2f0eb, .6), 0, .7, .2, ch);
+  mesh(RB(.44, .05, .44, .02), M.fabricGrey, 0, .46, 0, ch);
+  mesh(RB(.42, .38, .04, .02), M.fabricGrey, 0, .7, .2, ch);
   mesh(CY(.02, .02, .42), M.black, 0, .22, 0, ch);
   mesh(CY(.2, .2, .02), M.black, 0, .02, 0, ch);
   mesh(BX(.34, .02, .24), M.metalDark, .2, .75, -.05, g);
@@ -1553,32 +1520,8 @@ function dresser(x, z, rot) {
 // 평면도 방향: 소파는 서쪽 벽(팔걸이는 북쪽), TV는 동쪽 벽
 { const s = sofa(5.66, 6.55, Math.PI / 2); s.scale.x = -1; }
 rug(6.79, 6.6, 0);
-function coffeeTableC(x, z) { const g = piece('커피테이블', x, z, 0), w = std(0xf6f5f2, .35);
-  mesh(RB(.7, .06, 1.1, .02), w, 0, .36, 0, g); mesh(RB(.62, .3, 1.0, .02), w, 0, .16, 0, g); mesh(BX(.6, .01, .98), std(0xe9e7e2, .5), 0, .315, 0, g);
-  const v = mesh(new THREE.LatheGeometry([[0, 0], [.06, 0], [.09, .08], [.07, .2], [.04, .26], [.045, .3], [0, .3]].map(([a, b]) => new THREE.Vector2(a, b)), 24), M.whiteGloss, 0, .39, -.15, g); v.scale.set(1, 1, .7);
-  for (let i = 0; i < 4; i++) { const l = mesh(new THREE.SphereGeometry(.07, 10, 8), i % 2 ? std(0xe8c547, .6) : M.plant, Math.cos(i * 1.6) * .06, .74 + (i % 2) * .06, -.15 + Math.sin(i * 1.6) * .05, g); l.scale.set(.6, 1.4, .3); l.rotation.z = (i - 1.5) * .4; }
-  mesh(BX(.26, .02, .34), std(0x2b2c2f, .5), .1, .4, .25, g).rotation.y = .2; mesh(BX(.24, .015, .3), std(0xd8d4cc, .6), .1, .418, .25, g).rotation.y = .3;
-  return g; }
-coffeeTableC(6.84, 6.65); // 55C(VR): 흰 사각 커피테이블
+coffeeTable(6.84, 6.65, 0);
 const diningS = diningSmall(), diningL = diningLarge();
-// 55C 사이버 모델하우스(VR): 원목 사각 식탁(남북 방향) + 흰 패브릭 의자 4 + 가운데 리넨 테이블 러너 · 접시 세팅
-function diningWoodC() {
-  const g = piece('식탁(원목)', 0, 0, 0), L = 1.6, W = .85, wood = M.oak;
-  mesh(RB(W, .04, L, .008), wood, 0, .74, 0, g);
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(BX(.06, .72, .06), wood, sx * (W / 2 - .06), .36, sz * (L / 2 - .08), g);
-  for (const sx of [-1, 1]) mesh(BX(.04, .08, L - .2), wood, sx * (W / 2 - .06), .66, 0, g);
-  mesh(BX(.38, .004, L + .3), std(0xd9d2c6, .95), 0, .762, 0, g, { cast: false });                       // 테이블 러너(양끝 늘어짐)
-  for (const sz of [-1, 1]) mesh(BX(.38, .25, .004), std(0xd9d2c6, .95), 0, .64, sz * (L / 2 + .15), g, { cast: false });
-  const fab = std(0xf3f0ea, .95, 0, { map: M.boucle.map });
-  const chair = (cx, cz, rot) => { const c = new THREE.Group(); c.position.set(cx, 0, cz); c.rotation.y = rot; g.add(c);
-    mesh(RB(.46, .1, .46, .04), fab, 0, .46, 0, c); mesh(RB(.46, .48, .08, .04), fab, 0, .76, -.2, c);
-    for (const [lx, lz] of [[-.18, -.18], [.18, -.18], [-.18, .18], [.18, .18]]) mesh(BX(.035, .43, .035), wood, lx, .215, lz, c); };
-  for (const sz of [-.4, .4]) { chair(-(W / 2 + .2), sz, Math.PI / 2); chair(W / 2 + .2, sz, -Math.PI / 2); }
-  for (const [px, pz] of [[-.22, -.4], [-.22, .4], [.22, -.4], [.22, .4]]) { mesh(CY(.13, .13, .012, 30), std(0xc9a77a, .7), px, .768, pz, g, { cast: false }); mesh(CY(.1, .09, .02, 30), M.whiteGloss, px, .78, pz, g, { cast: false }); }
-  tablePlant(g, 0, .765, 0);
-  g.userData.len = L; return g;
-}
-const diningC = diningWoodC();
 const dining = diningS; // (예전 코드 호환용)
 // 평면도 방향: 침대 헤드는 서쪽 벽, 붙박이장(옵션 10)은 동쪽 벽
 bed(9.96, 6.45, Math.PI / 2, 1.6, 2.1, '침대');
@@ -2318,12 +2261,14 @@ function applyOptions() {
   // 식탁: 평평한 끝을 서쪽 벽(왼쪽 벽)에 붙이고 동쪽으로 뻗게(로컬 -x → 월드 +x, 회전 π)
   //  · 현관장+복도팬트리(1) 선택: 서쪽 벽 = 팬트리 벽(x 5.0) → 작은 식탁
   //  · 기본형: 서쪽 벽 = 현관창고 벽(x 4.5)으로 0.5m 여유 → 큰 식탁, 의자 6개(아일랜드와 겹치는 자리는 뺌)
-  // 55C(VR): 원목 사각 식탁을 식당 가운데에 남북 방향으로(양옆 의자 2개씩) — 작은/큰 흰 식탁은 쓰지 않음
-  { diningS.visible = false; diningL.visible = false;
-    if (selected && (selected === diningS || selected === diningL)) select(null);
-    const cx = 6.75, cz = 3.85;
-    diningC.position.set(WX(cx), 0, WZ(cz)); diningC.rotation.y = 0; diningC.userData.home = { x: diningC.position.x, z: diningC.position.z, r: 0 };
-    diningPendant.position.set(WX(cx), 0, WZ(cz)); }
+  { const pantry = s['1'] === '1', d = pantry ? diningS : diningL;
+    diningS.visible = pantry; diningL.visible = !pantry;
+    if (selected && (selected === diningS || selected === diningL) && !selected.visible) select(null);
+    // 북쪽 벽(z 2.66)·아일랜드(z ≤ 2.8)에 의자 등받이가 닿지 않도록 남쪽으로 당김
+    const wallFace = pantry ? 5.06 : 4.56, dz = pantry ? 3.7 : 3.78;
+    d.position.set(WX(wallFace), 0, WZ(dz)); d.rotation.y = Math.PI;
+    d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI };
+    diningPendant.position.set(WX(wallFace + d.userData.len / 2), 0, WZ(dz)); }
   show('o5base', !s['5']); show('o5-1', s['5'] === '5-1'); show('o5-2', s['5'] === '5-2');
   show('o6base', !s['6']); show('o6-1', s['6'] === '6-1'); show('o6-2', s['6'] === '6-2');
   show('o7-1', s['7'] === '7-1'); tagGroup('dress71').visible = s['7'] === '7-1';
@@ -2343,7 +2288,7 @@ function applyOptions() {
       } else { place(bed2, .72, 7.0, Math.PI); place(alphaTable, 3.75, 7.15, 0); place(alphaRug, 3.8, 7.2, 0); } // 견본: 침대 머리는 창 쪽, 창에 붙임
       // 책상: 기본은 동쪽 벽을 따라(의자가 서쪽), 침실2 장(11)이 동쪽 벽에 있거나 통합형(12)이면 창 앞
       if (s['11'] === '11' || s['12'] === '12') place(desk2, 1.85, 7.8, Math.PI); else place(desk2, bent ? 2.02 : 2.42, 7.25, -Math.PI / 2); } } // 꺾음 시공이면 침실2 쪽으로 들어온 벽(면 x 2.30)에 붙임
-  show('b2unit', false); // 55C(VR): 침실2에 붙박이장 유닛·하늘색 벽판 없음
+  show('b2unit', s['12'] !== '12');  // 침실2 장(동쪽 벽)이 있으면 책상을 서쪽으로
   show('o13', s['13'] === '13');
   show('o14base', !s['14']); show('o14', s['14'] === '14');
   const ac = s['15'];
@@ -2375,7 +2320,7 @@ function applyLighting() {
   if (typeof liteOn !== 'undefined' && liteOn) setLiteMaterials(true); // 저사양 재질에도 옵션·조명 변경 반영
 }
 // 모델하우스 견본주택 연출(사진 기준) 옵션 묶음
-const MODEL_PRESET = { '1': '1' }; // 55C 사이버 모델하우스(VR): 현관장+복도팬트리만 설치, 나머지는 기본형(가스쿡탑·냉장고장+김치냉장고장·붙박이장/드레스룸 없음)
+const MODEL_PRESET = { '1': '1', '2': '2-2', '4': '4-3', '5': '5-2', '6': '6-1', '7': '7-1', '8': '8-1', '10': '10-1', '15': '15-3', '16': '16', '17': '17' };
 // 55C 분양 자료 번호: 55A의 9번(파우더룸 화장대)이 없어 10번부터 하나씩 당겨짐
 const numC = c => String(c).replace(/^(\d+)/, n => +n >= 10 ? String(+n - 1) : n);
 function applyPreset() { for (const k in sel) sel[k] = null; Object.assign(sel, MODEL_PRESET); applyOptions(); }
