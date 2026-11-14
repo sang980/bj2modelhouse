@@ -2980,6 +2980,39 @@ await yieldUI(); // 스위치·콘센트 자리 찾기(광선 검사 수십 번)
     [5.09, 1.15, .62, 1, 0, 'out2', .25, .03],   // 다용도실: 건조기 옆 벽(수전 옆)
   ]) PLATE.put(...p);
 }
+await yieldUI();
+/* ───────── 천장 설비(VR): 화재감지기·스프링클러·욕실 환기구 ─────────
+   방 가운데 둘레 후보 자리에서 위로 광선을 쏴, 조명·간접등이 아닌 넓은 천장 면일 때만 붙임(서로 35cm 이상 띄움) */
+{ const rc = new THREE.Raycaster(), up = new THREE.Vector3(0, 1, 0), o3 = new THREE.Vector3(), used = [];
+  const white = std(0xf6f6f3, .5), grey = std(0xd9d9d5, .6), chromeS = std(0xd5d7d9, .25, .9), led = new THREE.MeshStandardMaterial({ color: 0x400000, emissive: 0xff2a1a, emissiveIntensity: .6 }), slat = std(0xb9bab7, .6);
+  const spot = (x, z) => { // 평평한 천장 면의 높이(없으면 null)
+    if (used.some(([ux, uz]) => Math.hypot(ux - x, uz - z) < .35)) return null;
+    rc.set(o3.set(WX(x), 1.6, WZ(z)), up); rc.far = 1.2;
+    const h = rc.intersectObjects([ceilingGroup, structure, fixed], true).find(h => h.object.isMesh && visibleDeep(h.object) && !(h.object.material && h.object.material.transparent));
+    if (!h || h.point.y < 2.15) return null;
+    const m = h.object.material, g = h.object.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
+    if (g.boundingSphere.radius < .7 || (m.emissive && m.emissive.getHex() !== 0) || m.emissiveMap) return null;
+    for (let p = h.object.parent; p; p = p.parent) if (p === fixed) return null; // 붙박이장 윗면 등은 제외
+    const y0 = h.point.y; // 둘레 8cm도 같은 높이의 평평한 천장인지(조명 테두리 바로 옆에 붙지 않게)
+    for (const [dx, dz] of [[.08, 0], [-.08, 0], [0, .08], [0, -.08]]) { rc.set(o3.set(WX(x + dx), 1.6, WZ(z + dz)), up); const k = rc.intersectObjects([ceilingGroup, structure, fixed], true).find(h => h.object.isMesh && visibleDeep(h.object) && !(h.object.material && h.object.material.transparent));
+      if (!k || Math.abs(k.point.y - y0) > .002 || (k.object.material.emissive && k.object.material.emissive.getHex() !== 0)) return null; }
+    return y0; };
+  const place = (r, offs, fn) => { const cx = (r.x0 + r.x1) / 2, cz = (r.z0 + r.z1) / 2;
+    for (const [ox, oz] of offs) { const x = cx + ox * (r.x1 - r.x0) / 2, z = cz + oz * (r.z1 - r.z0) / 2, y = spot(x, z); if (y != null) { used.push([x, z]); fn(WX(x), y, WZ(z)); return true; } } return false; };
+  const detector = (x, y, z) => { mesh(CY(.058, .052, .03, 28), white, x, y - .015, z, ceilingGroup, { cast: false }); mesh(CY(.04, .04, .003, 24), grey, x, y - .0315, z, ceilingGroup, { cast: false });
+    mesh(new THREE.SphereGeometry(.004, 8, 6), led, x + .03, y - .03, z, ceilingGroup, { cast: false }); };
+  const sprinkler = (x, y, z) => { mesh(CY(.032, .032, .005, 24), chromeS, x, y - .0025, z, ceilingGroup, { cast: false }); mesh(CY(.02, .022, .012, 20), white, x, y - .011, z, ceilingGroup, { cast: false }); };
+  const vent = (x, y, z) => { mesh(BX(.25, .008, .25), white, x, y - .004, z, ceilingGroup, { cast: false }); for (let i = -3; i <= 3; i++) mesh(BX(.2, .002, .008), slat, x, y - .0085, z + i * .028, ceilingGroup, { cast: false }); };
+  const hasFan = r => ['o14base', 'o14'].some(k => { if (!OG[k]) return false; const b = new THREE.Box3().setFromObject(OG[k]); if (b.isEmpty()) return false; const c = b.getCenter(new THREE.Vector3()), px = c.x - WX(0), pz = c.z - WZ(0); return px >= r.x0 && px <= r.x1 && pz >= r.z0 && pz <= r.z1; });
+  const ringA = [[.45, .3], [-.45, .3], [.45, -.3], [-.45, -.3], [.3, 0], [-.3, 0], [0, .3], [0, -.3], [.6, .55], [-.6, -.55]], ringB = [[-.35, -.45], [.35, .45], [-.55, .2], [.55, -.2], [0, .55], [0, -.55]];
+  for (const r of rooms) {
+    if (!r.sp || /PIT|실외기|발코니|테라스/.test(r.n)) continue;
+    if (/욕실|파우더|화장실/.test(r.n)) { if (!hasFan(r)) place(r, [[.3, -.3], [-.3, .3], [.3, .3], [-.3, -.3], [0, .4], [0, -.4]], vent); continue; } // 옵션 14 배기팬이 있는 욕실은 그대로
+    place(r, ringA, detector);
+    place(r, ringB, sprinkler);
+    if ((r.x1 - r.x0) * (r.z1 - r.z0) > 9) { const [lx, lz] = used[used.length - 1], cx = (r.x0 + r.x1) / 2, cz = (r.z0 + r.z1) / 2, d = ([a, b]) => Math.hypot(cx + a * (r.x1 - r.x0) / 2 - lx, cz + b * (r.z1 - r.z0) / 2 - lz); place(r, ringB.concat(ringA).sort((a, b) => d(b) - d(a)), sprinkler); } // 넓은 방(거실·주방)은 첫 헤드와 먼 쪽에 하나 더
+  }
+}
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
 // 정적 메시 병합도 묶음마다 양보(한 번에 하면 느린 기기에서 수백 ms 멈춤). 진단용 ?nomerge: 병합 안 함(겹침 검사용)
