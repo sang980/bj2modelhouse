@@ -545,9 +545,9 @@ Object.assign(M, {
   boucle: std(0xf1eee7, 1, 0, { map: toTex(noiseCanvas([240, 237, 230], 26), { rep: [6, 6] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 120), { srgb: false, rep: [6, 6] }), bumpScale: 1.2 }),
   navy: std(0x3e5f8a, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 30), { rep: [3, 3] }) }),
   check: std(0xffffff, .95, 0, { map: toTex(checkCanvas(), { rep: [2, 2] }) }),
-  charcoal: std(0x3a3d42, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [3, 3] }) }),
+  charcoal: std(0xe3d8c6, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [3, 3] }) }),
   linen: std(0xf6f5f2, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 14), { rep: [4, 4] }) }),
-  throwBlue: std(0x4a6f9a, .98, 0, { map: toTex(noiseCanvas([255, 255, 255], 34), { rep: [5, 5] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 90), { srgb: false, rep: [5, 5] }), bumpScale: .8 }),
+  throwBlue: std(0xcfc3ad, .98, 0, { map: toTex(noiseCanvas([255, 255, 255], 34), { rep: [5, 5] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 90), { srgb: false, rep: [5, 5] }), bumpScale: .8 }),
   rug: std(0xb9b8b4, 1, 0, { map: toTex(noiseCanvas([255, 255, 255], 46), { rep: [8, 8] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 140), { srgb: false, rep: [8, 8] }), bumpScale: 2 }),
   walnut: std(0xffffff, .55, 0, { map: toTex(woodCanvas([122, 88, 62], 4)) }),
   oak: std(0xffffff, .55, 0, { map: toTex(woodCanvas([196, 160, 118], 4)) }),
@@ -1183,14 +1183,21 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
 }
 // 침실2·알파룸 창 블라인드(남쪽, 테라스 쪽)
 for (const [x0, x1] of [[.73, 2.22], [3.5, 4.69]]) { for (let i = 0; i < 6; i++) pbox(x0, x1, 1.9 + i * .045, 1.93 + i * .045, 8.0, 8.03, std(0xd7cfc4, .8), fixed, { cast: false }); }
-// ── 침실1: 패브릭 헤드보드 벽판(서쪽 벽) + 위 간접등, 발코니 창 커튼 ──
+// ── 침실1(VR): 박공(집 모양) 흰 헤드보드(원목 테두리) + 위 흑백 추상 액자 2개, 맞은편 동쪽 벽 액자 1개, 흰 속커튼 ──
 { const g = fixed, x = 8.91;
-  pbox(x, x + .06, .45, 1.25, 5.6, 7.6, std(0xe8e4dc, .95), g);
-  for (let z = 5.8; z < 7.6; z += .2) pbox(x + .06, x + .062, .45, 1.25, z - .002, z + .002, std(0xcfcac1, .9), g);
-  pbox(x, x + .1, 1.25, 1.28, 5.6, 7.6, std(0xf2f1ee, .4), g); pbox(x + .02, x + .08, 1.245, 1.25, 5.65, 7.55, M.ledWarm, g, { cast: false });
-  ledRectWall(x + .12, 1.5, 6.6, 1.9, .6, 1, 0, 0xffd9a8, .3, .9);
+  const sh = new THREE.Shape(); sh.moveTo(-.85, 0); sh.lineTo(.85, 0); sh.lineTo(.85, .85); sh.lineTo(0, 1.25); sh.lineTo(-.85, .85); sh.lineTo(-.85, 0);
+  const hg = new THREE.ExtrudeGeometry(sh, { depth: .06, bevelEnabled: true, bevelThickness: .01, bevelSize: .01, bevelSegments: 2 }); hg.rotateY(Math.PI / 2);
+  mesh(hg, std(0xf6f4ef, .6), WX(x), .3, WZ(6.6), g);
+  const fr = new THREE.Shape(); fr.moveTo(-.88, 0); fr.lineTo(.88, 0); fr.lineTo(.88, .87); fr.lineTo(0, 1.29); fr.lineTo(-.88, .87); fr.lineTo(-.88, 0);
+  const hole = new THREE.Path(); hole.moveTo(-.84, .02); hole.lineTo(.84, .02); hole.lineTo(.84, .85); hole.lineTo(0, 1.24); hole.lineTo(-.84, .85); hole.lineTo(-.84, .02); fr.holes.push(hole);
+  const fg = new THREE.ExtrudeGeometry(fr, { depth: .08, bevelEnabled: false }); fg.rotateY(Math.PI / 2); mesh(fg, M.oak, WX(x - .005), .29, WZ(6.6), g);
+  const ab = k => toTex((() => { const c = mkCanvas(128, 128), q = c.getContext('2d'); q.fillStyle = '#f2f2f0'; q.fillRect(0, 0, 128, 128); q.fillStyle = '#151515';
+    q.beginPath(); q.moveTo(20, 100); q.lineTo(60 + k * 10, 20); q.lineTo(80, 70); q.lineTo(110 - k * 8, 30); q.lineTo(100, 108); q.fill(); return c; })());
+  for (const [z, k] of [[6.25, 0], [6.95, 1]]) { pbox(x, x + .03, 1.7, 2.1, z - .25, z + .25, M.black, g); pbox(x + .03, x + .034, 1.73, 2.07, z - .22, z + .22, std(0xffffff, .9, 0, { map: ab(k) }), g, { cast: false }); }
+  const txt = toTex((() => { const c = mkCanvas(128, 128), q = c.getContext('2d'); q.fillStyle = '#f4f1ea'; q.fillRect(0, 0, 128, 128); q.fillStyle = '#8b8378'; for (let i = 0; i < 9; i++) q.fillRect(26, 28 + i * 8, 76 - (i % 3) * 10, 3); return c; })());
+  pbox(12.18, 12.21, 1.25, 1.85, 6.0, 6.6, std(0xdcd3c4, .5), g); pbox(12.175, 12.18, 1.29, 1.81, 6.04, 6.56, std(0xffffff, .9, 0, { map: txt }), g, { cast: false });
   curtain(9.2, 9.75, 8.02, 2.27, fixed, M.sheer); curtain(11.05, 11.6, 8.02, 2.27, fixed, M.sheer);
-  curtain(9.2, 9.6, 7.94, 2.27, fixed, M.curtainGrey, 9, .045); curtain(11.2, 11.6, 7.94, 2.27, fixed, M.curtainGrey, 9, .045);
+  curtain(9.2, 9.6, 7.94, 2.27, fixed, M.sheer, 9, .045); curtain(11.2, 11.6, 7.94, 2.27, fixed, M.sheer, 9, .045);
   pbox(8.97, 11.62, 2.3, H, 7.85, 8.09, M.ceil, fixed, { cast: false });
   ceilingPanel(10.1, 10.8, 6.2, 6.9, 1.0, 2.8);
 }
