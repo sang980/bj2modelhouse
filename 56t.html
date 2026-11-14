@@ -1247,9 +1247,8 @@ function shoeCabinet({ parent, axis, front, back, a0, a1, y0 = .1, y1 = 2.3, n =
   const cw = (a1 - a0) / n; for (let c = 0; c < n; c++) for (let i = 0; i < ys.length; i++) { if (c === n - 1 && i < 2) continue; const u0 = a0 + cw * c + (c ? .009 : t), u1 = a0 + cw * (c + 1) - (c < n - 1 ? .009 : t); box(u0, u1, ys[i], ys[i] + .018, back + s * t, fIn - s * .01, inner); }
   const lv = [y0 + t, ...ys.map(y => y + .018)], ry = axis === 'z' ? (s > 0 ? 0 : Math.PI) : (s > 0 ? Math.PI / 2 : -Math.PI / 2), mid = (back + fIn) / 2 + s * .01, cu = c => a0 + cw * (c + .5);
   const put = (c, l, kind, col, du = 0) => { const [x, z] = P(cu(c) + du, mid); shoePair(parent, x, lv[l] + .001, z, ry + du * .4, kind, col); };
-  // 신발(약 7켤레): 자주 신는 신발은 눈높이 아래, 위칸은 상자·바구니
-  put(0, 0, 'sneaker', 0xf2f1ec); put(1, 0, 'boot', 0x3a2a20); put(0, 1, 'loafer', 0x5a3520); put(1, 1, 'sneaker', 0xb9bcbf);
-  put(0, 2, 'pump', 0xd9c3a3); put(1, 3, 'pump', 0x1d1d1f); if (n > 2) put(n - 1, 3, 'loafer', 0x1f1f21);
+  /* 신발 4켤레만(덜 복잡하게): 아래 칸 운동화 2, 가운데 펌프스, 오른쪽 칸 로퍼 — 나머지 칸은 비우고 위칸은 상자·바구니 */
+  put(0, 0, 'sneaker', 0xf2f1ec); put(1, 1, 'sneaker', 0xb9bcbf); put(0, 2, 'pump', 0xd9c3a3); if (n > 2) put(n - 1, 3, 'loafer', 0x1f1f21);
   // 장우산 2(마지막 칸 아래, 비운 두 단) + 접이식 우산
   { const c = n - 1, [x1, z1] = P(cu(c) - .05, mid), [x2, z2] = P(cu(c) + .05, mid - s * .04); longUmbrella(parent, x1, y0 + t, z1, 0x2f3d55, .06); longUmbrella(parent, x2, y0 + t, z2, 0x1e1e20, -.05, 1.2); }
   { const [x, z] = P(cu(0) - .02, mid); foldUmbrella(parent, x, lv[4], z, 0x8b8f93, ry + Math.PI / 2); const [dx, dz] = P(cu(1), mid); diffuser(parent, dx, lv[4], dz); }
@@ -1279,7 +1278,7 @@ function bowlCavity(a, b, depth, n, v, tilt, pw = 6, pq = .25) { const R = 20, S
   for (let i = 0; i < R; i++) for (let j = 0; j < S; j++) { const p = i * S + j, q = i * S + (j + 1) % S, u = p + S, w = q + S; idx.push(p, u, q, q, u, w); }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
   g.userData.yAt = yAt; return g; }
-const _cavMats = {}; const cavMat = m => _cavMats[m.uuid] || (_cavMats[m.uuid] = std(m.color.getHex(), Math.max(.22, m.roughness), 0, { side: THREE.DoubleSide }));
+const _cavMats = {}; const cavMat = m => _cavMats[m.uuid] || (_cavMats[m.uuid] = std(m.color.getHex(), Math.max(.38, m.roughness), 0, { side: THREE.DoubleSide }));
 // (w 가로, h 높이, l 세로(z), wall 테두리 두께, depth 안쪽 깊이, back: 뒤쪽(−z) 수전 받침 폭, n: 구멍 모양(작을수록 둥긂), v·tilt: 배수구 위치·기울기)
 function hollowTub(parent, w, h, l, wall, depth, x = 0, y = 0, z = 0, mat = M.white, back = 0, _f, n = 6, v = 0, tilt = 0, pw = 6, pq = .25) {
   const bt = .01, outer = rrShape(w, l, Math.min(.05, w / 6)), ha = (w - 2 * wall) / 2, hb = (l - 2 * wall - back) / 2, hy = -back / 2; // 셰이프 y = −z → 구멍을 앞(+z)으로
@@ -1287,7 +1286,7 @@ function hollowTub(parent, w, h, l, wall, depth, x = 0, y = 0, z = 0, mat = M.wh
   const g = new THREE.ExtrudeGeometry(outer, { depth: h - 2 * bt, bevelEnabled: true, bevelThickness: bt, bevelSize: .003, bevelSegments: 2, curveSegments: 8 }); g.rotateX(-Math.PI / 2);
   mesh(g, mat, x, y + bt, z, parent);
   const cg = bowlCavity(ha - .005, hb - .005, depth, n, v, tilt, pw, pq), top = y + h - .002, cz = z + back / 2;
-  mesh(cg, cavMat(mat), x, top, cz, parent, { cast: false });
+  mesh(cg, cavMat(mat), x, top, cz, parent, { cast: false, recv: false }); /* 안쪽 바닥에 그림자가 고여 물처럼 보이지 않게 */
   // 배수구: 가장 낮은 곳(v 위치)에 크롬 테 + 어두운 구멍
   const dz = (hb - .005) * v * .78, dy = top + cg.userData.yAt(Math.abs(v) * .78, dz) + .002;
   const ring = mesh(new THREE.TorusGeometry(.022, .004, 8, 24), M.chrome, x, dy + .002, cz + dz, parent, { cast: false }); ring.rotation.x = Math.PI / 2;
@@ -1603,8 +1602,8 @@ function sofa(x, z, rot) {
   mesh(RB(1.98, .12, .14, .05), M.boucle, -.21, .34, -.39, g); /* 등받이 받침 */
   for (const [sx, sw] of [[-.565, .83], [.275, .83]]) { mesh(pillowG(sw, .15, .74), M.boucle, sx, .35, .08, g); /* 푹신한 좌석 쿠션 */
     const b = mesh(pillowG(sw - .02, .42, .2), M.boucle, sx, .6, -.35, g); b.rotation.x = -.13; } /* 기대는 등 쿠션 */
-  mesh(RB(.24, .42, .92, .09, 4), M.boucle, -1.1, .49, 0, g); /* 팔걸이 */
-  mesh(RB(.5, .12, .7, .05, 4), M.boucle, .95, .4, .05, g);
+  mesh(RB(.25, .7, .94, .07, 4), M.boucle, -1.105, .35, 0, g); /* 팔걸이: 바닥부터 통으로 받침 끝을 감쌈(뜨지 않게) */
+  mesh(RB(.5, .2, .7, .05, 4), M.boucle, .95, .36, .05, g); /* 끝 블록: 받침 위에 바로 붙임 */
   const pil = (m, px, pz, rz, ry, s = .44) => { const p = mesh(pillowG(s, s, .17), m, px, .62, pz, g); p.rotation.set(-.2, ry, rz); };
   pil(M.check, -.7, -.12, .06, .15, .46); pil(M.navy, -.88, -.18, -.04, .3, .4);
   return g;
