@@ -1436,12 +1436,23 @@ diningB.position.set(WX(2.92), 0, WZ(6.75)); diningB.rotation.y = Math.PI; dinin
 const diningPendB = new THREE.Group(); { const p = diningPendB; p.position.set(WX(3.9), 0, WZ(6.75)); fixed.add(p); // 식탁 펜던트
   mesh(CY(.004, .004, .7, 6), M.black, 0, H - .35, 0, p, { cast: false }); mesh(CY(.32, .34, .04, 40), M.white, 0, 1.62, 0, p, { cast: false }); mesh(CY(.3, .3, .004, 40), M.ledWarm, 0, 1.598, 0, p, { cast: false }); }
 // 침실1: 머리는 서쪽 벽(헤드보드 벽판), 양옆 협탁
-bed(6.81, 9.6, Math.PI / 2, 1.6, 2.1, '침대');
-sideTable(5.99, 8.42, true);
-sideTable(5.99, 10.78, false);
+// 침실1(VR): 진회색 이불 + 짙은 초록 쿠션, 양옆 흰 물결무늬(플루팅) 받침 협탁
+const bed1B = bed(6.81, 9.6, Math.PI / 2, 1.6, 2.1, '침대');
+function recolorBed(b, throwC, pillowC, pillow2C) { const t = std(throwC, .98, 0, { map: M.throwBlue.map }), p1 = std(pillowC, .95, 0, { map: M.charcoal.map }), p2 = std(pillow2C, .95, 0, { map: M.charcoal.map });
+  b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = t; else if (o.material === M.charcoal) o.material = p1; else if (o.material === M.check) o.material = p2; }); }
+recolorBed(bed1B, 0x6e7173, 0x1f5446, 0x23604f);
+function flutedPedestal(x, z, withLamp) { const g = piece('사이드 테이블', x, z, 0), w = std(0xf6f5f2, .45);
+  const geo = new THREE.CylinderGeometry(.19, .21, .52, 48, 1); const p = geo.attributes.position; for (let i = 0; i < p.count; i++) { const a = Math.atan2(p.getZ(i), p.getX(i)), r = Math.hypot(p.getX(i), p.getZ(i)); if (r > .05) { const k = 1 + .045 * Math.cos(a * 16); p.setX(i, p.getX(i) * k); p.setZ(i, p.getZ(i) * k); } } geo.computeVertexNormals();
+  mesh(geo, w, 0, .26, 0, g); mesh(CY(.22, .22, .03, 40), w, 0, .535, 0, g);
+  if (withLamp) { mesh(CY(.05, .06, .16, 20), std(0xd8d2c4, .6), .05, .63, 0, g); for (let i = 0; i < 6; i++) { const s = mesh(CY(.003, .003, .3), M.plant, .05 + (i - 3) * .01, .8, (i % 2) * .02, g, { cast: false }); s.rotation.z = (i - 3) * .12; } }
+  return g; }
+flutedPedestal(5.99, 8.42, true);
+flutedPedestal(5.99, 10.78, false);
 // 침실2: 창(서쪽) 아래 싱글 침대, 북쪽 벽 책상
 const bed2 = bed(2.4, .72, Math.PI / 2, 1.1, 2.0, '싱글 침대'); // VR: 북쪽 벽을 따라, 머리는 창(서쪽) 쪽
+recolorBed(bed2, 0x6d8a3e, 0xf2f1ec, 0x7c9a4a); // VR: 침실2 올리브 초록 이불·쿠션
 const desk2 = desk(1.66, 1.88, Math.PI / 2); // VR: 창 아래 책상(의자는 동쪽)
+{ const wt = std(0xf6f5f2, .4), terr = std(0xb5643c, .7); desk2.traverse(o => { if (!o.isMesh) return; if (o.material === M.oak || o.material === M.black) o.material = wt; else if (o.material === M.fabricGrey) o.material = terr; }); } // VR: 흰 책상 + 테라코타 의자
 // 알파룸(사진): 짙은 회색 D자 책상(창 쪽은 판재 다리, 둥근 쪽은 원기둥 다리) + 노트북 + 흰 바탕 검정 마름모 러그
 const alphaDesk = piece('D자 책상', 2.55, 4.0, 0); { const t = alphaDesk, gm = std(0x4a4c50, .55);
   const sh = new THREE.Shape(); sh.moveTo(-.55, -.36); sh.lineTo(.15, -.36); sh.absarc(.15, 0, .36, -Math.PI / 2, Math.PI / 2, false); sh.lineTo(-.55, .36); sh.lineTo(-.55, -.36);
