@@ -1439,7 +1439,7 @@ const alphaDesk = piece('D자 책상', 2.55, 4.0, 0); { const t = alphaDesk, gm 
   const r = piece('러그', 2.55, 4.0, 0, { solid: false }); mesh(BX(1.7, .012, 2.0), std(0xffffff, .95, 0, { map: toTex(c) }), 0, .008, 0, r, { cast: false }); }
 // 알파룸 천장: 사각 평판등(따뜻한 테두리)
 ceilingPanel(2.55, 3.15, 3.6, 4.2, 1.0, 2.6); pbox(2.51, 3.19, H - .045, H - .04, 3.56, 4.24, M.ledWarm, ceilingGroup, { cast: false });
-// 거실(사진): 소파 뒤 백라이트 액자 + 오른쪽(주방 쪽) 플로팅 선반 2단(하부 LED), 창 쪽 종이 스탠드, 원형 2단 네스팅 테이블, 2구 평판등
+// 거실(사진): 소파 뒤 백라이트 액자 + 오른쪽(주방 쪽) 플로팅 선반 2단(하부 LED), 원형 2단 네스팅 테이블, 2구 평판등
 { const g = fixed, x = 2.06;
   const art = toTex((() => { const c = mkCanvas(512, 256), q = c.getContext('2d'); q.fillStyle = '#e9e5de'; q.fillRect(0, 0, 512, 256); q.strokeStyle = 'rgba(150,140,128,.55)'; q.lineWidth = 1.2;
     for (let i = 0; i < 70; i++) { q.beginPath(); const y0 = 40 + i * 2.6; q.moveTo(60, y0); q.bezierCurveTo(180, y0 - 60 + i, 300, y0 + 50 - i * .6, 460, y0 - 20); q.stroke(); } return c; })());
@@ -1447,9 +1447,6 @@ ceilingPanel(2.55, 3.15, 3.6, 4.2, 1.0, 2.6); pbox(2.51, 3.19, H - .045, H - .04
   pbox(x, x + .01, 1.19, 1.91, 8.99, 10.31, M.ledWarm, g, { cast: false }); ledRectWall(x + .05, 1.55, 9.65, 1.4, .8, 1, 0, 0xffd9a8, .3, .9);
   for (const y of [1.45, 1.78]) { pbox(x, x + .2, y, y + .03, 8.05, 8.65, std(0x3a3b3e, .5), g); pbox(x + .02, x + .18, y - .004, y, 8.08, 8.62, M.ledWarm, g, { cast: false }); }
   pbox(x + .03, x + .17, 1.81, 2.0, 8.4, 8.55, std(0xf2efe8, .8), g); pbox(x + .03, x + .15, 1.48, 1.63, 8.3, 8.42, std(0x2a2b2d, .5), g);
-  const lamp = piece('종이 스탠드', 2.32, 11.0, 0); mesh(CY(.12, .13, .02), std(0xc9b48f, .5), 0, .01, 0, lamp); mesh(CY(.008, .008, 1.25), std(0xc9b48f, .4, .4), 0, .63, 0, lamp);
-  const sh = mesh(new THREE.SphereGeometry(.2, 28, 16), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffd6a0, emissiveIntensity: 1.2, roughness: 1 }), 0, 1.35, 0, lamp, { cast: false }); sh.scale.set(1, .7, 1);
-  for (let i = -2; i <= 2; i++) mesh(new THREE.TorusGeometry(.2 * Math.sqrt(1 - (i * .3) ** 2), .004, 6, 32), std(0xe8e0d0, .9), 0, 1.35 + i * .042, 0, lamp, { cast: false }).rotation.x = Math.PI / 2;
   ceilingPanel(3.0, 3.78, 9.0, 9.8, 1.0, 2.8); ceilingPanel(3.86, 4.64, 9.0, 9.8, 1.0, 2.8); pbox(2.95, 4.69, H - .045, H - .04, 8.95, 9.85, M.ledWarm, ceilingGroup, { cast: false });
 }
 function nestTables(x, z) { // 원형 2단 네스팅 테이블(베이지 우드 상판 + 원통 받침)
