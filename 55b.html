@@ -294,6 +294,8 @@ const isTouch = matchMedia('(pointer: coarse)').matches;
 // 렌더러를 만들기 전에 임시 컨텍스트로 GPU를 확인 → CPU(소프트웨어) 렌더링이면 MSAA 안티에일리어싱을 끄고 시작
 const PROBE_SW = (() => { try { const c = document.createElement('canvas'), gl = c.getContext('webgl2') || c.getContext('webgl'); if (!gl) return false; const e = gl.getExtension('WEBGL_debug_renderer_info'); const r = String(e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)); const lose = gl.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext(); return /swiftshader|basic render|llvmpipe|software|warp/i.test(r); } catch (e) { return false; } })();
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: !PROBE_SW, powerPreference: 'high-performance' });
+// 셰이더 오류 검사는 진단(?debug) 때만 — 켜 두면 셰이더마다 결과를 기다리는 동기 호출이 늘어 로딩이 끊김
+renderer.debug.checkShaderErrors = new URLSearchParams(location.search).has('debug');
 // 진단용(?cold): 셰이더 소스에 임의 주석을 붙여 브라우저 셰이더 캐시를 무효화 → 처음 방문한 기기처럼 측정
 if (new URLSearchParams(location.search).has('cold')) { const gl = renderer.getContext(), ss = gl.shaderSource.bind(gl), salt = Math.random(); gl.shaderSource = (s, src) => ss(s, src + '\n// ' + salt); }
 // 휴대폰·CPU 렌더링은 텍스처를 작게(1024→512) 만들어 생성·업로드 시간을 1/4로
@@ -2158,6 +2160,7 @@ acUnit('ac-merged', 2.4, 2.75, .9, false); acUnit('ac-bed2', 2.0, 1.4, .9, false
 // 16 기능성 룸카펫(침실1)
 { const g = item('b16', '룸카펫', false); pbox(5.74, 8.66, .002, .008, 7.2, 11.13, std(0xffffff, .85, 0, { map: toTex(woodCanvas([214, 210, 202], 5), { rep: [2, 2] }) }), g, { cast: false }); } // VR 옵션 그림: 화이트워시 원목무늬 룸카펫
 
+await yieldUI(); // 옵션 모형 만들기와 나머지 준비 사이에 양보(로딩 화면이 멈추지 않게)
 const OPTS = [
   { id: 'S1', type: '공간옵션', name: '침실2/알파룸 선택형', base: '침실2/알파룸 분리', items: [['1-1', '침실2+알파룸 통합', '무상'], ['1-2', '침실2/알파룸 경량벽체 꺾음시공', '유상']], view: [4.2, 4.6, 2.2, 1.6, -.15] },
   { id: '1', name: '시스템선반(현관)', base: '미설치', items: [['1', '현관창고 시스템선반']], view: [6.3, 4.0, 6.3, 2.0, -.2] },
@@ -2337,6 +2340,7 @@ function setEnvIntensity() {
   scene.traverse(o => { if (o.isMesh && o.material && o.material.isMeshStandardMaterial && !mset.has(o.material)) o.material.envMapIntensity = envBoost; });
 }
 
+await yieldUI(); // 반사맵 준비(PMREM, 동기 작업) 앞뒤로 양보
 /* ───────── baked interior reflections / ambient (cube capture of the living room) ───────── */
 const cubeRT = new THREE.WebGLCubeRenderTarget(LOWMEM ? 64 : 256, { type: THREE.HalfFloatType }); // 저사양은 작은 반사 큐브
 const cubeCam = new THREE.CubeCamera(.05, 120, cubeRT);
@@ -2345,6 +2349,7 @@ let bakedEnv = null, bakeTimer = 0, baking = false, bakeAgain = false;
 // (반사맵이 없다가 생기면 모든 재질 셰이더가 한꺼번에 다시 만들어져 페이지가 멈춤)
 const placeholderEnv = pmrem.fromCubemap(cubeRT.texture).texture;
 for (const p of mirrorProbes) p.mat.envMap = placeholderEnv;
+await yieldUI();
 // 큐브 한 면씩 렌더하고 사이사이 양보(한 번에 6면×5곳을 그리면 수 초 멈춤)
 async function captureCube(pos) {
   if (cubeCam.coordinateSystem !== renderer.coordinateSystem) { cubeCam.coordinateSystem = renderer.coordinateSystem; cubeCam.updateCoordinateSystem(); }
@@ -2353,7 +2358,7 @@ async function captureCube(pos) {
   const prev = renderer.getRenderTarget(), xr = renderer.xr.enabled; renderer.xr.enabled = false;
   for (let i = 0; i < 6; i++) {
     renderer.setRenderTarget(cubeRT, i); renderer.render(scene, cubeCam.children[i]);
-    renderer.setRenderTarget(prev); if (tier > 0 || i === 5) await yieldUI(); // 고화질(빠른 GPU)은 6면을 한 번에 → 화면이 멈춰 보이는 시간 1/6
+    renderer.setRenderTarget(prev); if (tier > 0 || i === 5 || !window.__mhLoaded) await yieldUI(); // 로딩 중엔 면마다 양보(로딩 화면이 멈추지 않게), 실행 중 고화질은 6면을 한 번에 // 고화질(빠른 GPU)은 6면을 한 번에 → 화면이 멈춰 보이는 시간 1/6
   }
   renderer.xr.enabled = xr;
   return pmrem.fromCubemap(cubeRT.texture).texture;
@@ -2597,9 +2602,10 @@ applyPreset(); // 처음엔 견본주택(사진)과 같은 옵션 구성으로 �
 
 /* ───────── 웹 최적화: 정적 지오메트리 병합 + 그림자맵 베이크 ───────── */
 // 움직이지 않는 박스·판재를 재질별로 하나의 메시로 합쳐 드로우콜을 크게 줄임
-function mergeStatic(parent) {
-  const buckets = new Map(), victims = [];
-  for (const m of parent.children) {
+async function mergeStatic(parent) { // 8ms마다 양보 — 큰 묶음(고정 가구 등)도 한 번에 수백 ms 멈추지 않게
+  const buckets = new Map(), victims = []; let ts = performance.now();
+  for (const m of [...parent.children]) {
+    if (performance.now() - ts > 8) { await yieldUI(); ts = performance.now(); }
     if (!m.isMesh || m.userData.keep || !m.visible) continue;
     const key = m.material.uuid + '|' + m.castShadow + '|' + m.receiveShadow;
     m.updateMatrix();
@@ -2612,8 +2618,9 @@ function mergeStatic(parent) {
   }
   let before = victims.length, after = 0;
   for (const m of victims) parent.remove(m);
-  for (const b of buckets.values()) {
-    const merged = mergeGeometries(b.geos, false);
+  for (const b of buckets.values()) for (let s = 0; s < b.geos.length; s += 48) { // 큰 묶음(벽 재질 등)은 48개씩 나눠 합침 → 한 번의 합치기가 길게 멈추지 않게(그리기 횟수는 거의 그대로)
+    if (performance.now() - ts > 8) { await yieldUI(); ts = performance.now(); }
+    const merged = mergeGeometries(b.geos.slice(s, s + 48), false);
     if (!merged) continue;
     const mm = new THREE.Mesh(merged, b.mat); mm.castShadow = b.cast; mm.receiveShadow = b.recv; mm.matrixAutoUpdate = false; parent.add(mm); after++;
   }
@@ -2621,13 +2628,16 @@ function mergeStatic(parent) {
 }
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
-const mergeStats = new URLSearchParams(location.search).has('nomerge') ? [] : [structure, fixed, ceilingGroup, ...Object.values(tagGroups)].map(mergeStatic); // 진단용 ?nomerge: 병합 안 함(겹침 검사용)
+// 정적 메시 병합도 묶음마다 양보(한 번에 하면 느린 기기에서 수백 ms 멈춤). 진단용 ?nomerge: 병합 안 함(겹침 검사용)
+const mergeStats = [];
+if (!new URLSearchParams(location.search).has('nomerge')) for (const grp of [structure, fixed, ceilingGroup, ...Object.values(tagGroups)]) { mergeStats.push(await mergeStatic(grp)); await yieldUI(); } // 진단용 ?nomerge: 병합 안 함(겹침 검사용)
 console.info('[55B] merged static meshes', mergeStats.reduce((a, [b, c]) => [a[0] + b, a[1] + c], [0, 0]));
 // 그림자맵은 옵션·시간대·가구 이동 때만 다시 그림(베이크)
 renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;
 // 적응형 해상도: 프레임이 느리면 픽셀비율·AO를 단계적으로 낮춤
 // 성능 자동 감지: 첫 실행에서 프레임을 재서 단계를 고르고, 실행 중에도 20fps 아래로 떨어지면 한 단계씩 낮춤
 const perf = { last: 0, acc: 0, n: 0, cooldown: 45, probed: false, fps: 0, samples: [], lowStreak: 0 };
+let screenWarm = null, screenWarmDone = false; // 고화질 → 일반 전환에 필요한 셰이더를 미리 준비했는지
 function adaptQuality() {
   const now = performance.now(), raw = perf.last ? now - perf.last : 0; perf.last = now;
   if (tierLocked || document.hidden || !raw) return; // 탭 전환 구간은 visibilitychange에서 측정 초기화
@@ -2647,6 +2657,9 @@ function adaptQuality() {
     perf.lowStreak = low ? perf.lowStreak + 1 : 0;
     if (perf.lowStreak >= 2 && tier < 3) { t = tier + 1; perf.lowStreak = 0; } // 두 번 연속 느릴 때만 한 단계 내림
   }
+  // 고화질(후처리) → 일반·가벼움으로 내릴 때 필요한 '화면 직접 출력용' 셰이더를 먼저 조금씩 준비한 뒤 전환(전환 순간 멈춤 방지).
+  // (예전엔 로딩 뒤 무조건 배경에서 준비 → 빠른 PC도 처음 몇십 초 동안 불필요한 작업으로 미세하게 끊김)
+  if (t !== tier && tier === 0 && t > 0 && t < 3 && !screenWarmDone && PARALLEL_SC) { if (!screenWarm) screenWarm = runShaderJobs(shaderJobs([null], false), 4, () => new Promise(r => setTimeout(r, 16))).then(() => { screenWarmDone = true; }, () => { screenWarmDone = true; }); return; }
   if (t !== tier) { applyTier(t); perf.cooldown = fps < 10 ? 3 : 30; perf.last = 0; }
 }
 addEventListener('visibilitychange', () => { perf.last = 0; perf.acc = perf.n = 0; perf.samples.length = 0; perf.cooldown = 10; });
@@ -2689,8 +2702,9 @@ async function runShaderJobs(jobs, budget, onSlice) {
   const props = renderer.properties;
   let j = 0;
   while (j < jobs.length) {
-    const t0 = performance.now(), progs = new Set();
-    while (j < jobs.length && performance.now() - t0 < budget) {
+    // 한 조각에 '새로 만드는' 셰이더는 몇 개만(병렬 컴파일 지원 3개, 미지원 1개) → 느린 기기에서도 한 번에 오래 멈추지 않게
+    const t0 = performance.now(), progs = new Set(), p0 = renderer.info.programs.length, maxNew = PARALLEL_SC ? 8 : 1;
+    while (j < jobs.length && performance.now() - t0 < budget && renderer.info.programs.length - p0 < maxNew) {
       const job = jobs[j++];
       try {
         renderer.setRenderTarget(job.rt);
@@ -2738,8 +2752,7 @@ window.__mh = {
 };
 window.__mhLoaded = true;
 setTimeout(() => loader.classList.add('done'), 250);
-// 로딩 뒤 한가할 때: 화면 직접 출력용 셰이더도 3ms씩 조금씩 미리 → 화질이 '일반'으로 내려가도 그때 멈추지 않음
-if (tier === 0 && PARALLEL_SC) setTimeout(() => { runShaderJobs(shaderJobs([null], false), 3, () => new Promise(r => setTimeout(r, 40))).catch(() => {}); }, 3000);
+// (로딩 뒤 무조건 하던 배경 셰이더 준비는 없앰 — 화질을 내려야 할 때만 adaptQuality에서 준비 후 전환)
 
 } catch (err) {
   console.error(err);
