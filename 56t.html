@@ -1495,8 +1495,8 @@ const diningPendB = new THREE.Group(); { const p = diningPendB; p.position.set(W
   mesh(CY(.004, .004, .7, 6), M.black, 0, H - .35, 0, p, { cast: false }); mesh(CY(.32, .34, .04, 40), M.white, 0, 1.62, 0, p, { cast: false }); mesh(CY(.3, .3, .004, 40), M.ledWarm, 0, 1.598, 0, p, { cast: false }); }
 // 침실1: 머리는 서쪽 벽(헤드보드 벽판), 양옆 협탁
 bed(10.03, 6.6, Math.PI / 2, 1.6, 2.1, '침대');
-sideTable(9.22, 5.42, true);
-sideTable(9.22, 7.78, false);
+// (VR: 침대 옆 협탁 없음) sideTable(9.22, 5.42, true);
+// sideTable(9.22, 7.78, false);
 // 침실2: 창 쪽 싱글 침대(머리 서쪽), 북쪽에 책상
 const bed2 = bed(1.12, 7.45, Math.PI / 2, 1.1, 1.95, '싱글 침대');
 const desk2 = desk(2.52, 6.8, -Math.PI / 2); // 동쪽 벽 책상(북쪽 벽은 붙박이장 옵션 자리)
