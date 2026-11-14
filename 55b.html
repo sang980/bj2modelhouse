@@ -1546,8 +1546,8 @@ document.getElementById('stage').addEventListener('pointerdown', e => {
 canvas.addEventListener('pointermove', e => {
   if (!dragging || e.pointerId !== dragging.id) return;
   setNdc(e); if (!ray.ray.intersectPlane(floorPlane, hitP)) return;
-  selected.position.x = Math.max(WX(.3), Math.min(WX(12.0), hitP.x + dragging.dx));
-  selected.position.z = Math.max(WZ(.3), Math.min(WZ(7.95), hitP.z + dragging.dz));
+  selected.position.x = Math.max(WX(.3), Math.min(WX(9.1), hitP.x + dragging.dx));
+  selected.position.z = Math.max(WZ(.3), Math.min(WZ(11.0), hitP.z + dragging.dz));
   selHelper && selHelper.update();
 });
 const dragEnd = e => { if (dragging && e.pointerId === dragging.id) { dragging = null; rebuildFurnColliders(); queueBake(); } };
