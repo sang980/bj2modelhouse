@@ -891,7 +891,8 @@ function terraceSlide(x0, x1, z, top, name) {
 terraceSlide(5.61, 8.33, 8.15, 2.25, '거실 테라스 문');
 terraceSlide(9.68, 11.13, 8.15, 2.2, '침실1 발코니 문');
 // 테라스: 낮은 난간벽(벽돌) + 유리 난간, 침실 사이 벽돌 기둥
-for (const [x0, x1, z0, z1] of [[-.11, .11, 8.15, 12.31], [-.11, 12.43, 12.09, 12.31], [12.21, 12.43, 9.55, 12.31]]) {
+{ pbox(-.25, .11, 0, 1.75, 8.15, 12.31, M.brick, structure); wallBoxes.push({ minX: WX(-.25), maxX: WX(.11), minZ: WZ(8.15), maxZ: WZ(12.31) }); pbox(-.27, .13, 1.75, 1.8, 8.13, 12.33, std(0x2b2c2e, .5, .4), structure); } // 조감도: 테라스 서쪽은 높은 벽돌 담장
+for (const [x0, x1, z0, z1] of [[-.11, 12.43, 12.09, 12.31], [12.21, 12.43, 9.55, 12.31]]) {
   pbox(x0, x1, 0, .55, z0, z1, M.brick, structure); wallBoxes.push({ minX: WX(x0), maxX: WX(x1), minZ: WZ(z0), maxZ: WZ(z1) });
   const glassR = new THREE.MeshStandardMaterial({ color: 0xdfe9e8, roughness: .05, metalness: .1, transparent: true, opacity: .25, side: THREE.DoubleSide, depthWrite: false });
   const thinX = (x1 - x0) < (z1 - z0), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2; pbox(thinX ? cx - .006 : x0, thinX ? cx + .006 : x1, .55, 1.15, thinX ? z0 : cz - .006, thinX ? z1 : cz + .006, glassR, structure, { cast: false });
