@@ -1333,6 +1333,37 @@ function twistVase(parent, x, y, z, h, r, ribs = 9, twist = 1.4) { const geo = n
 function pearlStrings(parent, x, top, z, n = 6, len = .32, floorY = null) { const bead = new THREE.SphereGeometry(.0058, 8, 6), m = std(0x5d8a3e, .55);
   for (let s = 0; s < n; s++) { const a = s / n * Math.PI * 2 + .3, out = .05 + (s % 2) * .015; let px = x, py = top + .01, pz = z;
     for (let i = 0; i < 32; i++) { const t = i / 31, d = out + t * .05; px = x + Math.cos(a) * d; pz = z + Math.sin(a) * d; py = top + .02 - Math.pow(t, 1.6) * len; if (floorY != null && py < floorY + .008) py = floorY + .008; mesh(bead, m, px, py, pz, parent, { cast: false }); } } }
+/* ───────── 신발장(열리는 문 + 선반 + 신발) ───────── */
+// 신발 한 켤레(로컬 +z가 앞코): 운동화·로퍼·하이힐·앵클부츠
+function shoePair(par, x, y, z, ry, kind, col) { const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; par.add(g);
+  const m = std(col, kind === 'loafer' ? .35 : .75), dark = std(0x231c18, .55);
+  for (const s of [-1, 1]) { const ox = s * .052;
+    if (kind === 'sneaker') { mesh(RB(.09, .028, .26, .012, 2), std(0xf4f3ef, .6), ox, .014, 0, g); mesh(RB(.085, .075, .19, .03, 3), m, ox, .062, -.03, g); mesh(RB(.08, .045, .08, .03, 3), m, ox, .046, .08, g); for (let i = 0; i < 3; i++) mesh(BX(.05, .004, .008), std(0xfafafa, .7), ox, .1 - i * .008, .01 + i * .03, g, { cast: false }); }
+    else if (kind === 'loafer') { mesh(RB(.085, .014, .25, .008, 2), dark, ox, .007, 0, g); mesh(RB(.08, .05, .22, .03, 3), m, ox, .036, .006, g); mesh(BX(.05, .006, .02), dark, ox, .062, .04, g, { cast: false }); }
+    else if (kind === 'heel') { const sl = mesh(BX(.066, .007, .22), dark, ox, .05, 0, g); sl.rotation.x = .4; mesh(CY(.007, .011, .09, 12), dark, ox, .045, -.095, g); mesh(RB(.068, .032, .09, .025, 3), m, ox, .025, .06, g); mesh(RB(.066, .03, .05, .015, 2), m, ox, .085, -.085, g); }
+    else { mesh(RB(.09, .02, .25, .01, 2), dark, ox, .01, 0, g); mesh(RB(.085, .07, .22, .03, 3), m, ox, .045, .005, g); mesh(RB(.085, .16, .1, .03, 3), m, ox, .1, -.07, g); } // 앵클부츠
+  }
+  return g; }
+// 신발장: axis 'z'(앞면이 z=front인 판) | 'x'(앞면이 x=front), back 뒤판 위치, a0..a1 폭, 문 n짝(바깥쪽 경첩, 앞면 쪽으로 열림)
+function shoeCabinet({ parent, axis, front, back, a0, a1, y0 = .1, y1 = 2.3, n = 3, mat = M.kdoor, body = M.kdoor, frame = false, name = '신발장 문' }) {
+  const s = Math.sign(front - back) || 1, inner = std(0xeeebe4, .6), t = .018, fIn = front - s * .004;
+  const box = (u0, u1, yy0, yy1, d0, d1, m) => axis === 'z' ? pbox(u0, u1, yy0, yy1, Math.min(d0, d1), Math.max(d0, d1), m, parent) : pbox(Math.min(d0, d1), Math.max(d0, d1), yy0, yy1, u0, u1, m, parent);
+  box(a0, a1, y0, y1, back, back + s * t, inner);                                                  // 뒤판
+  box(a0, a0 + t, y0, y1, back, fIn, body); box(a1 - t, a1, y0, y1, back, fIn, body);              // 옆판
+  box(a0, a1, y1 - t, y1, back, fIn, body); box(a0, a1, y0, y0 + t, back, fIn, inner);             // 위·아래판
+  for (let i = 1; i < n; i++) { const u = a0 + (a1 - a0) * i / n; box(u - .009, u + .009, y0 + t, y1 - t, back + s * t, fIn - s * .01, inner); } // 칸막이
+  const shelves = []; for (let y = y0 + .33; y < y1 - .15; y += .32) { box(a0 + t, a1 - t, y, y + .018, back + s * t, fIn - s * .01, inner); shelves.push(y + .018); }
+  const ry = axis === 'z' ? (s > 0 ? 0 : Math.PI) : (s > 0 ? Math.PI / 2 : -Math.PI / 2), mid = (back + fIn) / 2 + s * .01;
+  const kinds = ['sneaker', 'loafer', 'heel', 'sneaker', 'boot', 'loafer', 'heel'], pal = { sneaker: [0xf2f1ec, 0xb9b9b5, 0x34465a, 0xe8dccb], loafer: [0x6b4128, 0x1f1f21, 0x8a5a3a], heel: [0xd8c3a5, 0x1d1d1f, 0xb0675a], boot: [0x3a2a20, 0x1e1e20] };
+  let k = 0; for (const yy of [y0 + t, ...shelves.slice(0, -1)]) for (let c = 0; c < n; c++) { const u0 = a0 + (a1 - a0) * c / n + .03, u1 = a0 + (a1 - a0) * (c + 1) / n - .03, cnt = Math.max(1, Math.floor((u1 - u0) / .21));
+    for (let j = 0; j < cnt; j++) { if ((k * 5 + j * 3) % 9 === 4) continue; const u = u0 + (u1 - u0) * (j + .5) / cnt, kind = kinds[(k + j * 2) % kinds.length], col = pal[kind][(k + j) % pal[kind].length], [px, pz] = axis === 'z' ? [u, mid] : [mid, u];
+      shoePair(parent, WX(px), yy + .001, WZ(pz), ry + ((k + j) % 3 - 1) * .05, kind, col); } k++; }
+  const lt = .02, lw = (a1 - a0) / n - .006, lh = y1 - y0 - .006;
+  for (let c = 0; c < n; c++) { const u0 = a0 + (a1 - a0) * c / n + .003, u1 = u0 + lw, left = c < n / 2;
+    const d = makeDoor({ parent, horiz: axis === 'z', line: front, t: 2 * lt + .008, hu: left ? u0 : u1, du: left ? 1 : -1, side: s, lw, lh, lt, mat, from: u0, to: u1, name, startOpen: false, handle: false });
+    d.pivot.position.y = y0 - .007;
+    if (frame) for (const [w, h, x, y] of [[.012, lh, .006, lh / 2], [.012, lh, lw - .006, lh / 2], [lw, .012, lw / 2, .006], [lw, .012, lw / 2, lh - .006]]) { const f = mesh(BX(w, h, lt + .004), M.black, x, y + .01, 0, d.pivot); f.userData.door = d; doorMeshes.push(f); }
+  } }
 function holeSlab(fn, x0, x1, y0, y1, z0, z1, hx0, hx1, hz0, hz1, mat) {
   fn(x0, hx0, y0, y1, z0, z1, mat); fn(hx1, x1, y0, y1, z0, z1, mat); fn(hx0, hx1, y0, y1, z0, hz0, mat); fn(hx0, hx1, y0, y1, hz1, z1, mat);
 }
@@ -2205,8 +2236,9 @@ function doorSeams(g, face, a0, a1, n, y0 = .1, y1 = 2.28) { // face: {axis:'x'|
   face.axis === 'x' ? cab(g, face.at - .004, face.at + .004, y0 - .005, y0, a0, a1, M.ledStrip, { cast: false }) : cab(g, a0, a1, y0 - .005, y0, face.at - .004, face.at + .004, M.ledStrip, { cast: false });
 }
 { const g = item('o1', '현관장'); // west-facing shoe cabinet, full width of the old closet
-  cab(g, 3.34, 3.84, .1, 2.3, 2.66, 4.14); cab(g, 3.38, 3.84, 0, .1, 2.66, 4.14, M.black);
-  doorSeams(g, { axis: 'x', at: 3.34 }, 2.66, 4.14, 3);
+  cab(g, 3.38, 3.84, 0, .1, 2.66, 4.14, M.black);
+  shoeCabinet({ parent: g, axis: 'x', front: 3.34, back: 3.84, a0: 2.66, a1: 4.14, n: 3 }); // 흰 문 3짝(클릭하면 열림) + 안쪽 선반·신발
+  cab(g, 3.336, 3.344, .095, .1, 2.66, 4.14, M.ledStrip, { cast: false }); // 아래 간접등 줄
   cab(g, 3.84, 3.96, 0, H, 2.66, 4.14, M.wall); // partition between 현관장 and pantry
   cab(g, 3.3, 3.46, 2.3, H, 2.66, 4.14, M.wall); // bulkhead above 현관장
 }
