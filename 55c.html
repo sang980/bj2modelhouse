@@ -1640,7 +1640,7 @@ await phase('가구를 들이는 중', 72);
 function sofa(x, z, rot, style = 'arm') {
   const g = piece('소파', x, z, rot); /* VR: 매끈한 흰 가죽 — arm(A·B 실사): 통좌석 + 낮은 등받이 + 창가 쪽(+x)에만 등받이 높이 팔걸이, 반대쪽은 열린 끝 / shelf(C·T): 양끝 같은 높이 낮은 둥근 받침(책 수납) + 좌석·등 쿠션 2개씩 */
   const lea = std(0xf4f2ee, .42), L = 2.45, D = .92;
-  mesh(RB(L - .08, .05, D - .08, .02), std(0xcfccc6, .6), 0, .025, 0, g); /* 바닥 쪽 살짝 들어간 받침 */
+  mesh(RB(style === 'arm' ? L - .08 : 1.8, .05, D - .08, .02), std(0xcfccc6, .6), 0, .025, 0, g); /* 바닥 쪽 살짝 들어간 받침 */
   if (style === 'arm') {
     mesh(RB(L, .37, D, .05, 4), lea, 0, .235, 0, g); /* 통좌석 */
     mesh(RB(1.9, .3, .2, .05, 4), lea, .275, .56, -.36, g); /* 낮은 등받이(열린 끝 쪽 0.55m는 비움) */
@@ -1648,13 +1648,15 @@ function sofa(x, z, rot, style = 'arm') {
   } else {
     mesh(RB(1.85, .27, D, .04, 4), lea, 0, .185, 0, g); /* 좌석 받침 */
     for (const sx of [-.4625, .4625]) { mesh(RB(.91, .13, .8, .05, 4), lea, sx, .385, .06, g); const b = mesh(RB(.9, .3, .17, .07, 4), lea, sx, .56, -.37, g); b.rotation.x = -.08; } /* 좌석·등 쿠션 */
-    const R = .12, bookC = [0xf2f0ea, 0x2b2b2d, 0xd9d4ca, 0x8a8f94, 0xefe9dc, 0x5d6166];
-    for (const sg of [-1, 1]) { const s = new THREE.Shape(); /* 양끝 받침: 바깥 앞 모서리 둥글게, 높이 0.42m로 같게 */
-      if (sg > 0) { s.moveTo(.925, -.46); s.lineTo(1.225, -.46); s.lineTo(1.225, .46 - R); s.absarc(1.225 - R, .46 - R, R, 0, Math.PI / 2, false); s.lineTo(.925, .46); s.lineTo(.925, -.46); }
-      else { s.moveTo(-.925, -.46); s.lineTo(-.925, .46); s.lineTo(-1.225 + R, .46); s.absarc(-1.225 + R, .46 - R, R, Math.PI / 2, Math.PI, false); s.lineTo(-1.225, -.46); s.lineTo(-.925, -.46); }
-      const geo = new THREE.ExtrudeGeometry(s, { depth: .35, bevelEnabled: true, bevelThickness: .01, bevelSize: .01, bevelSegments: 2, curveSegments: 12 }); geo.rotateX(Math.PI / 2); mesh(geo, lea, 0, .41, 0, g);
-      mesh(BX(.004, .25, .5), std(0x3a3a3c, .8), sg * 1.238, .235, -.07, g); /* 바깥 끝면 책 수납칸 */
-      let bz = -.3; for (let i = 0; i < 9; i++) { const w = .03 + (i * 7 % 5) * .006, h = .18 + (i * 5 % 4) * .02; mesh(BX(.012, h, w - .003), std(bookC[(i * 3 + (sg > 0 ? 1 : 0)) % bookC.length], .7), sg * 1.243, .115 + h / 2, bz + w / 2, g); bz += w; if (bz > .16) break; } }
+    /* 양끝 열린 책장(VR): 위판·바닥판(바깥 앞 모서리 둥글게, 위판 높이 0.42m로 양쪽 같게) + 둥근 바깥 벽 + 뒤판, 앞(방 쪽)으로 책등이 보이게 세운 책·잡지 */
+    const R = .14, t = .022, arcP = (cx, cz, r, a0, a1, n = 10) => { const p = []; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; p.push([cx + Math.cos(a) * r, cz + Math.sin(a) * r]); } return p; };
+    const ext = (pts, sg, y0, y1) => { const s = new THREE.Shape(); pts.forEach(([px, pz], i) => i ? s.lineTo(sg * px, pz) : s.moveTo(sg * px, pz)); const geo = new THREE.ExtrudeGeometry(s, { depth: y1 - y0, bevelEnabled: false }); geo.rotateX(Math.PI / 2); return mesh(geo, lea, 0, y1, 0, g); };
+    for (const sg of [-1, 1]) {
+      const slab = [[.925, -.46], [1.225, -.46], ...arcP(1.225 - R, .46 - R, R, 0, Math.PI / 2), [.925, .46]];
+      ext(slab, sg, .39, .45); ext(slab, sg, 0, .035); /* 위판·바닥판 */
+      ext([[1.225, -.46], ...arcP(1.225 - R, .46 - R, R, 0, Math.PI / 4, 6), ...arcP(1.225 - R, .46 - R, R - t, Math.PI / 4, 0, 6), [1.225 - t, -.46]], sg, .035, .39); /* 둥근 바깥 옆벽 */
+      mesh(BX(.3, .355, .02), lea, sg * 1.075, .2125, -.45, g); /* 뒤판 */
+      let bx = .945; for (let i = 0; bx < 1.15; i++) { const bw = .022 + ((i * 7 + (sg > 0 ? 3 : 0)) % 5) * .006, bh = .21 + ((i * 5 + (sg > 0 ? 1 : 0)) % 4) * .03; mesh(BOOK.geo(bw, bh, .24, 'z'), BOOK.mats[[5, 0, 4, 5, 2, 1, 5, 0, 4][(i + (sg > 0 ? 3 : 0)) % 9]], sg * (bx + bw / 2), .036 + bh / 2, .29, g); bx += bw + .003; } }
   }
   const pil = (m, px, pz, rz, ry, s = .44) => { const p = mesh(pillowG(s, s, .17), m, px, .62, pz, g); p.rotation.set(-.2, ry, rz); };
   if (style === 'arm') { pil(M.check, .62, -.12, -.06, -.15, .46); pil(M.navy, .82, -.18, .04, -.3, .4); }
