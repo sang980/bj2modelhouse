@@ -1297,18 +1297,20 @@ function hollowTub(parent, w, h, l, wall, depth, x = 0, y = 0, z = 0, mat = M.wh
 let _basinMat = null; const basinMat = () => _basinMat || (_basinMat = std(0xfbfbfa, .12, 0, { side: THREE.DoubleSide }));
 /* ───────── 천·쿠션·셸 공통 ───────── */
 /* 격자 면 P((nx+1)*(ny+1) 점) → 두께 th 얇은 판(바깥 면 + 안쪽 면 + 테두리 띠), flip이면 앞면 방향을 뒤집음 */
-function thickSurf(P, nx, ny, th, flip = false) { const N = (nx + 1) * (ny + 1), pos = new Float32Array(N * 6), nor = new Float32Array(N * 6), uv = new Float32Array(N * 4), idx = [];
-  pos.set(P); const q = (a, b, c) => flip ? idx.push(a, c, b) : idx.push(a, b, c);
+function thickSurf(P, nx, ny, th, flip = false) { const N = (nx + 1) * (ny + 1), pos = Array.from(P), nor = [], uv = [], idx = [];
+  const q = (a, b, c) => flip ? idx.push(a, c, b) : idx.push(a, b, c);
   for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const a = j * (nx + 1) + i, b = a + 1, c = a + nx + 1, d = c + 1; q(a, c, b); q(b, c, d); }
-  const tmp = new THREE.BufferGeometry(); tmp.setAttribute('position', new THREE.BufferAttribute(pos.slice(0, N * 3), 3)); tmp.setIndex(idx.slice()); tmp.computeVertexNormals(); const tn = tmp.attributes.normal.array; tmp.dispose();
-  for (let k = 0; k < N * 3; k++) { pos[N * 3 + k] = pos[k] - tn[k] * th; nor[k] = tn[k]; nor[N * 3 + k] = -tn[k]; }
+  const tmp = new THREE.BufferGeometry(); tmp.setAttribute('position', new THREE.Float32BufferAttribute(Array.from(P), 3)); tmp.setIndex(idx.slice()); tmp.computeVertexNormals(); const tn = tmp.attributes.normal.array; tmp.dispose();
+  for (let k = 0; k < N * 3; k++) { pos.push(P[k] - tn[k] * th); nor[k] = tn[k]; nor[N * 3 + k] = -tn[k]; }
   for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) { const k = j * (nx + 1) + i; uv[k * 2] = uv[N * 2 + k * 2] = i / nx; uv[k * 2 + 1] = uv[N * 2 + k * 2 + 1] = j / ny; }
   const n0 = idx.length; for (let t = 0; t < n0; t += 3) idx.push(idx[t] + N, idx[t + 2] + N, idx[t + 1] + N);
-  const A = new THREE.Vector3(), B = new THREE.Vector3(), C = new THREE.Vector3(), W = new THREE.Vector3(), pv = (k, o) => o.set(pos[k * 3], pos[k * 3 + 1], pos[k * 3 + 2]);
-  const strip = (u, v, w) => { pv(u, A); pv(v, B).sub(A); pv(u + N, C).sub(A); pv(w, W); W.subVectors(A, W); if (B.cross(C).dot(W) > 0) idx.push(u, v, u + N, v, v + N, u + N); else idx.push(u, u + N, v, v, u + N, v + N); };
+  const A = new THREE.Vector3(), B = new THREE.Vector3(), C = new THREE.Vector3(), W = new THREE.Vector3(), Nn = new THREE.Vector3(), pv = (k, o) => o.set(pos[k * 3], pos[k * 3 + 1], pos[k * 3 + 2]);
+  const strip = (u, v, w) => { pv(u, A); pv(v, B).sub(A); pv(u + N, C).sub(A); pv(w, W); W.subVectors(A, W); Nn.crossVectors(B, C); const ok = Nn.dot(W) > 0; if (!ok) Nn.negate(); Nn.normalize(); /* 테두리 띠: 따로 점을 두고 바깥 방향 법선 */
+    const base = pos.length / 3; for (const k of [u, v, v + N, u + N]) { pos.push(pos[k * 3], pos[k * 3 + 1], pos[k * 3 + 2]); nor.push(Nn.x, Nn.y, Nn.z); uv.push(uv[k * 2], uv[k * 2 + 1]); }
+    if (ok) idx.push(base, base + 1, base + 3, base + 1, base + 2, base + 3); else idx.push(base, base + 3, base + 1, base + 1, base + 3, base + 2); };
   for (let i = 0; i < nx; i++) { strip(i, i + 1, i + nx + 1); const u = ny * (nx + 1) + i; strip(u, u + 1, u - nx - 1); }
   for (let j = 0; j < ny; j++) { const u = j * (nx + 1); strip(u, u + nx + 1, u + 1); strip(u + nx, u + 2 * nx + 1, u + nx - 1); }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.setIndex(idx); return g; }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); return g; }
 /* 침구 천: 매트리스 위(로컬 x 폭, z 길이, y 위)를 덮고 양옆(hang)·발치 z1 쪽(foot)으로 둥글게 흘러내림 — 모서리는 살짝 퍼지고, 처진 부분엔 세로 주름 */
 function drapeCloth(parent, { hx, z0, z1, top, hang = .2, foot = 0, r = .05, th = .03, mat, nx = 40, nz = 44, wr = .006, seed = 1, floor = .02 }) {
   const arc = Math.PI * r / 2, a0x = hx - r, Lz = z1 - z0, a0z = Lz - r, SX = a0x + arc + hang, SZ = foot ? a0z + arc + foot : Lz, P = new Float32Array((nx + 1) * (nz + 1) * 3), hl = Math.max(hang, foot);
@@ -1330,13 +1332,13 @@ function pillowG(w, h, d) { const key = [w, h, d].join(); if (_pillowC.has(key))
     p.setXYZ(i, o[0], o[1], o[2]); uv.setXY(i, o[a1] / S[a1] + .5, o[a2] / S[a2] + .5); }
   g.computeVertexNormals(); _pillowC.set(key, g); return g; }
 /* 몰딩 셸 의자: 한 장 곡면 시트(앞 둥근 턱 → 좌판 → 등받이, 옆이 오목) + 살짝 벌어진 가는 다리 4 — 로컬 앞 +z */
-function shellChair(parent, x, z, ry, mat, legMat = mat) { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; parent.add(g);
+function shellChair(parent, x, z, ry, mat, legMat = mat, th = .012) { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; parent.add(g);
   const C = new THREE.CatmullRomCurve3([[0, .425, .215], [0, .452, .19], [0, .462, .1], [0, .456, -.06], [0, .47, -.16], [0, .53, -.215], [0, .66, -.24], [0, .8, -.25], [0, .86, -.255]].map(([a, b, c]) => new THREE.Vector3(a, b, c)));
   const nx = 20, ny = 40, P = new Float32Array((nx + 1) * (ny + 1) * 3), T = new THREE.Vector3();
-  for (let j = 0; j <= ny; j++) { const t = j / ny, p = C.getPointAt(t); C.getTangentAt(t, T); const ay = -T.z, az = T.y, cup = t < .45 ? .025 : .035;
+  for (let j = 0; j <= ny; j++) { const t = j / ny, p = C.getPointAt(t); C.getTangentAt(t, T); const ay = -T.z, az = T.y, cup = t < .45 ? .025 : .035 * Math.min(1, Math.max(0, (1 - t) / .3));
     const hw = (t < .5 ? .215 : .215 - (t - .5) * .07) * (t > .9 ? .4 + .6 * Math.sqrt(Math.max(0, 1 - ((t - .9) / .1) ** 2)) : 1);
     for (let i = 0; i <= nx; i++) { const u = i / nx * 2 - 1, k = (j * (nx + 1) + i) * 3, off = cup * u * u; P[k] = u * hw; P[k + 1] = p.y + ay * off; P[k + 2] = p.z + az * off; } }
-  mesh(thickSurf(P, nx, ny, .012, true), mat, 0, 0, 0, g);
+  mesh(thickSurf(P, nx, ny, th, true), mat, 0, 0, 0, g);
   const Y = new THREE.Vector3(0, 1, 0), rod = (a, b, r) => { const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), L = A.distanceTo(B), m = mesh(CY(r, r * .8, L, 10), legMat, (A.x + B.x) / 2, (A.y + B.y) / 2, (A.z + B.z) / 2, g); m.quaternion.setFromUnitVectors(Y, A.sub(B).normalize()); return m; };
   for (const sx of [-1, 1]) for (const [z1, z2] of [[.13, .2], [-.13, -.2]]) rod([sx * .15, .45, z1], [sx * .2, 0, z2], .011);
   mesh(CY(.07, .07, .012, 20), legMat, 0, .445, 0, g);
