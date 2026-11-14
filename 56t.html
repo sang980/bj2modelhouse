@@ -622,7 +622,7 @@ const stoneCanvas = (() => { const c = marbleCanvas(), x = c.getContext('2d'); x
 const MAT_OPT = {
   mma: { map: null, color: 0xf3f2ee, roughness: .4 },
   stone: { map: toTex(stoneCanvas), color: 0xffffff, roughness: .18 },
-  tile: { map: toTex(tileCanvas(2, 4, [200, 199, 196], '#acaba7', { j: 5, veins: 10, gap: 3 }), { rep: [1, 1] }), color: 0xffffff, roughness: .25 }, // 56T(VR): 회색 대형 타일
+  tile: { map: toTex(tileCanvas(2, 4, [172, 171, 168], '#8f8e8a', { j: 5, veins: 10, gap: 3 }), { rep: [1, 1] }), color: 0xffffff, roughness: .25 }, // 56T(VR): 회색 대형 타일
 };
 M.counter = std(MAT_OPT.mma.color, MAT_OPT.mma.roughness);
 M.splash = std(0xffffff, .25, 0, { map: MAT_OPT.tile.map });
@@ -809,7 +809,7 @@ wall(0, 1.75, 0, 8.15, TE, []);
 wall(1.92, 1.75, 1.92, 2.47, TE, []);
 wall(1.92, 2.47, 3.45, 2.47, TE, [{ from: 2.4, to: 3.38, y1: 2.1, kind: 'front' }]);               // 현관문(북쪽)
 wall(3.45, .6, 3.45, 2.47, TE, []);
-wall(3.45, .7, 8.35, .7, TE, [{ from: 6.0, to: 6.9, y0: .98, y1: 1.45, kind: 'window', sill: false }]); // 주방 싱크 위 작은 창
+wall(3.45, .7, 8.35, .7, TE, []); // 주방 북쪽 벽(VR: 창 없음)
 wall(8.35, .7, 8.35, .85, TE, []);
 wall(8.35, .85, 10.1, .85, TE, [{ from: 8.7, to: 9.6, y0: 1.5, y1: 2.05, kind: 'window' }]);         // 다용도실 높은 창
 wall(10.1, .56, 10.1, .85, TE, []);
@@ -1058,7 +1058,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   for (let x = 5.86 + .6; x < 8.2; x += .6) kb(x - .0015, x + .0015, .1, .86, zf - .002, zf + .002, seamMat);
   for (const y of [.36, .62]) kb(7.35, 8.29, y - .0015, y + .0015, zf - .002, zf + .002, seamMat);
   // 싱크(창 아래) + 수전
-  kb(6.1, 6.8, .86, .905, zb + .1, zb + .5, M.metalDark);
+  kb(6.1, 6.8, .86, .905, zb + .1, zb + .5, std(0xb9bcbf, .28, .85)); kb(6.14, 6.76, .862, .866, zb + .14, zb + .46, std(0x6f7377, .35, .8)); // VR: 스테인리스 싱크볼
   mesh(CY(.015, .015, .32), M.chrome, WX(6.45), 1.06, WZ(zb + .06), g); const sp = mesh(CY(.012, .012, .2), M.chrome, WX(6.45), 1.22, WZ(zb + .16), g); sp.rotation.x = Math.PI / 2;
   // 쿡탑(옵션 4): 기본 3구 가스쿡탑 / 4-1 하이라이트1+인덕션2 / 4-2 인덕션 3구 + 슬림 후드(공통)
   { const cx0 = 7.45, cx1 = 8.07, cz0 = zb + .05, cz1 = zb + .53;
@@ -1080,7 +1080,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   for (let x = 5.86 + .405; x < 8.25; x += .405) kb(x - .0015, x + .0015, 1.52, 2.28, zb + .35, zb + .354, seamMat); // 상부장 문 이음선(6짝)
   kb(5.88, 8.27, 1.48, 1.5, zb + .01, zb + .33, M.ledWarm); ledRect(5.95, 8.2, zb + .04, zb + .3, 1.47, -1, 0xffe2bd, .8, 1.6);
   // 벽 마감(창 둘레 비움)
-  kb(5.86, 6.0, .9, 1.5, zb, zb + .015, M.splash); kb(6.9, 8.29, .9, 1.5, zb, zb + .015, M.splash); kb(6.0, 6.9, .9, .98, zb, zb + .015, M.splash);
+  kb(5.86, 8.29, .9, 1.5, zb, zb + .015, M.splash); // VR: 상판 위 벽 전체 회색 타일
   // 냉장고장 열(서쪽 벽, 앞면 x 5.86): 북쪽 끝 상판 연결부 → 옵션 5 칸 → 냉장고 → 키큰 수납장
   const xf = 5.86;
   kb(5.21, xf, .1, .86, zb, 1.45); kb(5.21, xf + .03, .86, .9, zb, 1.45, M.counter); kb(5.21, xf, 1.5, H, zb, 1.45);
