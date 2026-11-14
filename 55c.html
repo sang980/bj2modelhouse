@@ -1389,6 +1389,26 @@ washer(4.33, '세탁기', 0xf4f4f2); washer(5.0, '건조기', 0xe6e1d9);
   pbox(4.98, 5.18, 1.34, 1.46, .16, .32, std(0xe4d8c0, .9), g); }
 { const fz = .85; mesh(CY(.05, .05, .02, 20), M.chrome, WX(5.33), 1.1, WZ(fz), fixed).rotation.z = Math.PI / 2; mesh(CY(.012, .012, .1), M.chrome, WX(5.28), 1.1, WZ(fz), fixed).rotation.z = Math.PI / 2; }
 ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
+// ── 욕실 소품(견본주택 사진) ──
+{ const g = fixed;
+  const fiber = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, 64, 64); for (let i = 0; i < 420; i++) { x.fillStyle = `rgba(0,0,0,${.03 + rnd() * .07})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 2); } return c; })());
+  const towelTex = toTex((() => { const c = mkCanvas(64, 128), x = c.getContext('2d'); x.fillStyle = '#f4f3ef'; x.fillRect(0, 0, 64, 128); x.fillStyle = '#a9aaa5'; x.fillRect(0, 88, 64, 40); x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(0, 87, 64, 1.5);
+    for (let i = 0; i < 500; i++) { x.fillStyle = `rgba(0,0,0,${.02 + rnd() * .04})`; x.fillRect(rnd() * 64, rnd() * 128, 1, 2); } return c; })());
+  const blue = std(0x5a7fb0, 1, 0, { map: fiber });
+  // 욕실2(사진 19): 변기 뚜껑을 가로질러 접어 올린 파란 수건(양옆으로 살짝 늘어짐)
+  { const x = 10.30, z = 3.0; mesh(BX(.42, .008, .14), blue, WX(x), .447, WZ(z), g, { cast: false }); for (const s of [-1, 1]) mesh(BX(.008, .07, .14), blue, WX(x + s * .21), .415, WZ(z), g, { cast: false }); }
+  // 욕실1: 북쪽 벽(욕조 옆 빈 벽) 걸이 수건 — 흰 수건(아래 회색 띠) + 앞에 남색 수건
+  { const t = new THREE.Group(); t.position.set(WX(1.35), 0, WZ(2.31)); g.add(t); const w = .44, y = 1.42;
+    const bar = mesh(CY(.009, .009, w + .06, 12), M.chrome, 0, y, .055, t); bar.rotation.z = Math.PI / 2;
+    for (const s of [-1, 1]) { mesh(CY(.018, .018, .012, 16), M.chrome, s * (w / 2 + .03), y, .006, t).rotation.x = Math.PI / 2; mesh(CY(.008, .008, .05, 10), M.chrome, s * (w / 2 + .03), y, .03, t).rotation.x = Math.PI / 2; }
+    const wt = std(0xffffff, 1, 0, { map: towelTex }); for (const [zz, k] of [[.042, 1], [.07, .96]]) { const tw = mesh(RB(w * .92, .58 * k, .014, .006, 2), wt, 0, y - .29 * k + .01, zz, t); tw.rotation.x = zz > .05 ? -.03 : .02; }
+    mesh(CY(.016, .016, w * .92, 14), std(0xf4f3ef, 1), 0, y + .004, .056, t).rotation.z = Math.PI / 2;
+    const nv = std(0x34507a, 1, 0, { map: fiber }); mesh(RB(w * .58, .3, .012, .005, 2), nv, 0, y - .17, .082, t).rotation.x = -.04; mesh(CY(.012, .012, w * .58, 12), nv, 0, y + .006, .062, t).rotation.z = Math.PI / 2; }
+  // 욕실1 세면대 상판(높이 .855) 양끝: 왼쪽 디스펜서 2, 오른쪽 작은 풀 화분
+  { const T = .855; for (const [x, c] of [[.99, 0xd9d2c4], [1.06, 0x8f8a83]]) { mesh(CY(.028, .03, .11, 20), std(c, .35, .05), WX(x), T + .055, WZ(4.93), g); mesh(CY(.011, .011, .025, 12), std(0x1d1d1f, .4), WX(x), T + .1225, WZ(4.93), g); mesh(BX(.011, .009, .04), std(0x1d1d1f, .4), WX(x), T + .137, WZ(4.93) - .015, g); }
+    mesh(CY(.04, .034, .06, 20), std(0xf3f1ec, .4), WX(1.64), T + .03, WZ(4.93), g);
+    for (let i = 0; i < 16; i++) { const a = rnd() * 6.28, h = .08 + rnd() * .04, l = mesh(BX(.005, h, .002), M.plant, WX(1.64) + Math.cos(a) * .015, T + .06 + h / 2, WZ(4.93) + Math.sin(a) * .015, g, { cast: false }); l.rotation.set(Math.sin(a) * .35, a, Math.cos(a) * .35); } }
+}
 // ── 실외기실 (사진): 비어 있는 공간 + 바닥 안내선(실외기·피난사다리 위치) ──
 { const S = 512, c = mkCanvas(S, S), x = c.getContext('2d'); x.clearRect(0, 0, S, S); x.strokeStyle = 'rgba(30,30,30,.85)'; x.lineWidth = 6; x.setLineDash([22, 14]);
   x.strokeRect(30, 40, 170, 430); x.strokeRect(250, 40, 230, 200); x.strokeRect(250, 280, 230, 200);
