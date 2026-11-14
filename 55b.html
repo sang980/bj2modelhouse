@@ -1969,9 +1969,13 @@ let b6door = null;
   for (let i = 0; i < 9; i++) pbox(5.8, 6.3, H - .032, H - .03, .76 + i * .055, .78 + i * .055, std(0x8a8c90, .5), f, { cast: false });
   pbox(6.2, 6.3, H - .034, H - .03, 1.2, 1.26, std(0x3a7bd5, .3, 0, { emissive: 0x3a7bd5, emissiveIntensity: .8 }), f, { cast: false }); }
 // 13 시스템에어컨: 거실·침실1 / 침실2+알파룸 통합형 / 침실2·알파룸 각각
-function acUnit(k, x, z, w, alongX) { const g = item(k, '시스템에어컨', false, ceilingGroup);
-  if (alongX) { mesh(BX(w, .035, .4), M.white, WX(x), H - .017, WZ(z), g, { cast: false }); mesh(BX(w - .12, .004, .07), std(0x202225, .6), WX(x), H - .036, WZ(z - .1), g, { cast: false }); }
-  else { mesh(BX(.4, .035, w), M.white, WX(x), H - .017, WZ(z), g, { cast: false }); mesh(BX(.07, .004, w - .12), std(0x202225, .6), WX(x - .1), H - .036, WZ(z), g, { cast: false }); } }
+function acUnit(k, x, z, w, alongX) { const g = item(k, '시스템에어컨', false, ceilingGroup), d = .45, panel = std(0xf6f6f4, .35), slat = std(0xd6d8da, .4), dark = std(0x26282c, .6);
+  const box = (a, b, y0, y1, c, e, m) => alongX ? pbox(x - a, x + a, y0, y1, z + c, z + e, m, g, { cast: false }) : pbox(x + c, x + e, y0, y1, z - a, z + a, m, g, { cast: false });
+  box(w / 2, w / 2, H - .035, H, -d / 2, d / 2, panel);
+  box(w / 2 - .06, w / 2 - .06, H - .038, H - .035, -d / 2 + .04, -d / 2 + .1, dark);                // 토출구
+  for (let i = 0; i < 9; i++) box(w / 2 - .1, w / 2 - .1, H - .039, H - .035, -d / 2 + .15 + i * .028, -d / 2 + .163 + i * .028, slat); // 흡입 루버
+  box(w / 2 - .08, w / 2 - .08, H - .037, H - .035, d / 2 - .06, d / 2 - .055, slat);
+}
 acUnit('ac-liv', 3.85, 8.2, 1.05, true); acUnit('ac-bed1', 7.4, 10.75, 1.05, true);
 acUnit('ac-merged', 2.4, 2.75, .9, false); acUnit('ac-bed2', 2.0, 1.4, .9, false); acUnit('ac-alpha', 2.0, 3.9, .9, false);
 // 16 기능성 룸카펫(침실1)
