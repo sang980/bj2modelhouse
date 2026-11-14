@@ -977,7 +977,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
 // ── 거실: 대형 석재 패널 TV 아트월(동쪽 벽) + 화이트 플로팅 콘솔(하부 간접등) + 우물천장 ──
 { const g = fixed, x = 5.61;
   const slab = std(0xffffff, .38, 0, { map: toTex(tileCanvas(1, 2, [214, 210, 202], '#c9c5bd', { j: 3, veins: 22, gap: 2 })) });
-  pbox(x - .03, x, 0, H, 7.5, 11.1, slab, g);
+  pbox(x - .03, x, 0, H, 8.14, 11.1, slab, g);   // 침실1 문(7.2~8.05) 문틀 뒤에서 시작
   pbox(x - .07, x - .03, .98, 1.72, 8.75, 10.3, M.tv, g, { cast: false });                      // 벽걸이 TV
   pbox(x - .42, x - .03, .2, .42, 8.2, 10.85, std(0xf2f1ee, .4), g); pbox(x - .4, x - .05, .18, .2, 8.25, 10.8, M.ledWarm, g, { cast: false });
   ledRect(x - .4, x - .05, 8.3, 10.75, .16, -1, 0xffd9a8, .4, 1.0);
