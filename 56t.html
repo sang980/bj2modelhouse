@@ -1994,13 +1994,15 @@ await yieldUI();
 { const g = item('b3isl', '아일랜드식탁');
   /* 냉장고장 앞면(x 5.86)에서 약 1m 띄워 냉장고 문을 열 수 있게, 세탁실 미닫이문(z 0.96~2.84)을 가리지 않게 거실 쪽으로 내림(z 3.0~3.6) — 길이 1.2m */
   /* 사용자 요청: 북쪽 면을 세탁실 입구 모서리(미닫이문 끝 z 2.84)에 딱 맞춤 → z 2.84~3.44 */
-  /* 동쪽 벽(x 8.35)에 붙임 · 주방 쪽(북면): B처럼 아래 전체 폭 서랍 1단 + 위는 전체 폭으로 움푹 판 오픈 칸(전기밥솥) */
-  const n0 = 7.22, n1 = 8.3, ny = .38, nb = 3.28;
-  pbox(7.17, 8.35, .1, ny, 2.86, 3.42, M.kdoor, g); /* 아래 서랍 1단(전체 폭) */
-  pbox(7.17, n0, ny, .86, 2.86, 3.42, M.kdoor, g); pbox(n1, 8.35, ny, .86, 2.86, 3.42, M.kdoor, g); pbox(n0, n1, ny, .86, nb, 3.42, M.kdoor, g); /* 오픈 칸 양옆·뒤 */
+  /* 동쪽 벽(x 8.35)에 붙임 · 주방 쪽(북면): 주방에서 볼 때 오른쪽(서쪽)은 밥솥 1개 오픈 칸 + 아래 서랍, 왼쪽(동쪽)은 여닫이 문 2짝 수납장 */
+  const n0 = 7.22, n1 = 7.62, ny = .38, nb = 3.28, inner = std(0xebe9e4, .6);
+  pbox(7.17, n1, .1, ny, 2.86, 3.42, M.kdoor, g); pbox(7.17, n0, ny, .86, 2.86, 3.42, M.kdoor, g); pbox(n0, n1, ny, .86, nb, 3.42, M.kdoor, g); /* 밥솥 칸: 아래 서랍 + 옆·뒤 */
+  pbox(n0 + .08, n1 - .08, ny - .055, ny - .043, 2.846, 2.86, M.metalDark, g); /* 서랍 손잡이 홈 */
+  pbox(n1, n1 + .02, .1, .86, 2.87, 3.42, M.kdoor, g); pbox(8.31, 8.35, .1, .86, 2.87, 3.42, M.kdoor, g); pbox(n1 + .02, 8.31, .1, .12, 2.87, 3.42, inner, g); pbox(n1 + .02, 8.31, .1, .86, 3.4, 3.42, inner, g); pbox(n1 + .02, 8.31, .48, .5, 2.88, 3.4, inner, g); /* 수납장 몸통·선반 */
+  { const a0 = n1 + .025, a1 = 8.305, lw = (a1 - a0 - .006) / 2;
+    for (const [hu, du] of [[a0, 1], [a1, -1]]) { const d = makeDoor({ parent: g, horiz: true, line: 2.86, t: .03, hu, du, side: -1, lw, lh: .74, lt: .02, mat: M.kdoor, from: a0, to: a1, name: '아일랜드 수납장 문', handle: false, startOpen: false }); d.pivot.position.y = .1; } }
   pbox(7.21, 8.31, 0, .1, 2.9, 3.38, M.black, g);
   pbox(7.15, 8.35, .86, .9, 2.84, 3.44, M.counter, g);
-  pbox((n0 + n1) / 2 - .12, (n0 + n1) / 2 + .12, ny - .055, ny - .043, 2.846, 2.86, M.metalDark, g); /* 서랍 손잡이 홈 */
   { const rc = new THREE.Group(); rc.position.set(WX((n0 + n1) / 2), ny, WZ((2.86 + nb) / 2)); rc.rotation.y = Math.PI; g.add(rc); const wm = std(0xf4f3ef, .25); /* 흰 전기밥솥(앞면이 주방 쪽) */
     mesh(CY(.1, .104, .012, 32), std(0x8d8f92, .5), 0, .006, 0, rc); mesh(CY(.108, .1, .15, 40), wm, 0, .087, 0, rc);
     const lid = mesh(new THREE.SphereGeometry(.106, 40, 10, 0, Math.PI * 2, 0, Math.PI / 2), wm, 0, .16, 0, rc); lid.scale.y = .42;
