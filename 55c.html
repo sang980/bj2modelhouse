@@ -2993,19 +2993,21 @@ await yieldUI();
 /* ───────── 천장 설비(VR): 화재감지기·스프링클러·욕실 환기구 ─────────
    방 가운데 둘레 후보 자리에서 위로 광선을 쏴, 조명·간접등이 아닌 넓은 천장 면일 때만 붙임(서로 35cm 이상 띄움) */
 { const rc = new THREE.Raycaster(), up = new THREE.Vector3(0, 1, 0), o3 = new THREE.Vector3(), used = [];
+  // 광선 검사 대상은 천장 높이(2m 이상)에 걸친 메시만 한 번 골라 둠(매번 전체를 훑지 않게 — 로딩 시간 절약)
+  const ceilT = [], _bb = new THREE.Box3(); for (const root of [ceilingGroup, structure, fixed]) root.traverse(o => { if (!o.isMesh) return; if (!o.geometry.boundingBox) o.geometry.computeBoundingBox(); _bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld); if (_bb.max.y > 2.0) ceilT.push(o); });
   const white = std(0xf6f6f3, .5), grey = std(0xd9d9d5, .6), chromeS = std(0xd5d7d9, .25, .9), led = new THREE.MeshStandardMaterial({ color: 0x400000, emissive: 0xff2a1a, emissiveIntensity: .6 }), slat = std(0xb9bab7, .6);
   const acBoxes = Object.keys(OG).filter(k => /^ac-/.test(k)).map(k => new THREE.Box3().setFromObject(OG[k])).filter(b => !b.isEmpty()); // 옵션 에어컨 자리(숨겨져 있어도) 피함
   const spot = (x, z) => { // 평평한 천장 면의 높이(없으면 null)
     if (used.some(([ux, uz]) => Math.hypot(ux - x, uz - z) < .35)) return null;
     if (acBoxes.some(b => WX(x) > b.min.x - .1 && WX(x) < b.max.x + .1 && WZ(z) > b.min.z - .1 && WZ(z) < b.max.z + .1)) return null;
     rc.set(o3.set(WX(x), 1.6, WZ(z)), up); rc.far = 1.2;
-    const h = rc.intersectObjects([ceilingGroup, structure, fixed], true).find(h => h.object.isMesh && visibleDeep(h.object) && !(h.object.material && h.object.material.transparent));
+    const h = rc.intersectObjects(ceilT, false).find(h => visibleDeep(h.object) && !(h.object.material && h.object.material.transparent));
     if (!h || h.point.y < 2.15) return null;
     const m = h.object.material, g = h.object.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
     if (g.boundingSphere.radius < .7 || (m.emissive && m.emissive.getHex() !== 0) || m.emissiveMap) return null;
     for (let p = h.object.parent; p; p = p.parent) if (p === fixed) return null; // 붙박이장 윗면 등은 제외
     const y0 = h.point.y; // 둘레 14cm도 같은 높이의 평평한 천장인지(조명 테두리 바로 옆에 붙지 않게)
-    for (const [dx, dz] of [[.14, 0], [-.14, 0], [0, .14], [0, -.14]]) { rc.set(o3.set(WX(x + dx), 1.6, WZ(z + dz)), up); const k = rc.intersectObjects([ceilingGroup, structure, fixed], true).find(h => h.object.isMesh && visibleDeep(h.object) && !(h.object.material && h.object.material.transparent));
+    for (const [dx, dz] of [[.14, 0], [-.14, 0], [0, .14], [0, -.14]]) { rc.set(o3.set(WX(x + dx), 1.6, WZ(z + dz)), up); const k = rc.intersectObjects(ceilT, false).find(h => visibleDeep(h.object) && !(h.object.material && h.object.material.transparent));
       if (!k || Math.abs(k.point.y - y0) > .002 || (k.object.material.emissive && k.object.material.emissive.getHex() !== 0)) return null; }
     return y0; };
   const place = (r, offs, fn) => { const cx = (r.x0 + r.x1) / 2, cz = (r.z0 + r.z1) / 2;
