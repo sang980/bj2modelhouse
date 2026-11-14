@@ -1994,9 +1994,17 @@ await yieldUI();
 { const g = item('b3isl', '아일랜드식탁');
   /* 냉장고장 앞면(x 5.86)에서 약 1m 띄워 냉장고 문을 열 수 있게, 세탁실 미닫이문(z 0.96~2.84)을 가리지 않게 거실 쪽으로 내림(z 3.0~3.6) — 길이 1.2m */
   /* 사용자 요청: 북쪽 면을 세탁실 입구 모서리(미닫이문 끝 z 2.84)에 딱 맞춤 → z 2.84~3.44 */
-  pbox(7.17, 8.35, .1, .86, 2.86, 3.42, M.kdoor, g); pbox(7.21, 8.31, 0, .1, 2.9, 3.38, M.black, g); /* 동쪽 벽(x 8.35)에 붙임 */
+  /* 동쪽 벽(x 8.35)에 붙임 · 주방 쪽(북면) 가운데 칸은 위를 움푹 판 오픈 칸(전기밥솥) + 아래 서랍 */
+  const n0 = 7.57, n1 = 7.93, ny = .38, nb = 3.28;
+  pbox(7.17, n0, .1, .86, 2.86, 3.42, M.kdoor, g); pbox(n1, 8.35, .1, .86, 2.86, 3.42, M.kdoor, g); pbox(n0, n1, .1, ny, 2.86, 3.42, M.kdoor, g); pbox(n0, n1, ny, .86, nb, 3.42, M.kdoor, g);
+  pbox(7.21, 8.31, 0, .1, 2.9, 3.38, M.black, g);
   pbox(7.15, 8.35, .86, .9, 2.84, 3.44, M.counter, g);
-  for (const x of [7.55, 7.95]) { pbox(x - .0015, x + .0015, .1, .86, 2.856, 2.86, seamMat, g); pbox(x - .0015, x + .0015, .1, .86, 3.42, 3.424, seamMat, g); }
+  pbox(n0 + .1, n1 - .1, ny - .055, ny - .043, 2.846, 2.86, M.metalDark, g); /* 서랍 손잡이 홈 */
+  { const rc = new THREE.Group(); rc.position.set(WX((n0 + n1) / 2), ny, WZ((2.86 + nb) / 2)); rc.rotation.y = Math.PI; g.add(rc); const wm = std(0xf4f3ef, .25); /* 흰 전기밥솥(앞면이 주방 쪽) */
+    mesh(CY(.1, .104, .012, 32), std(0x8d8f92, .5), 0, .006, 0, rc); mesh(CY(.108, .1, .15, 40), wm, 0, .087, 0, rc);
+    const lid = mesh(new THREE.SphereGeometry(.106, 40, 10, 0, Math.PI * 2, 0, Math.PI / 2), wm, 0, .16, 0, rc); lid.scale.y = .42;
+    mesh(RB(.09, .045, .012, .006, 2), std(0x2c2f33, .2, .1), 0, .1, .1, rc).rotation.x = -.18; mesh(BX(.05, .012, .02), std(0xc9cbcd, .4, .5), 0, .19, .07, rc); }
+  for (const x of [7.55, 7.95]) pbox(x - .0015, x + .0015, .1, .86, 3.42, 3.424, seamMat, g); /* 거실 쪽(남면) 문 이음선 */
   mesh(new THREE.LatheGeometry([[0, 0], [.08, 0], [.11, .06], [.11, .22], [.06, .3], [.05, .34], [0, .34]].map(([a, b]) => new THREE.Vector2(a, b)), 28), M.whiteGloss, WX(8.1), .9, WZ(3.14), g);
 }
 const diningB = diningLarge();
@@ -2060,19 +2068,23 @@ const b2art = new THREE.Group(); fixed.add(b2art);
 await yieldUI();
 // 알파룸: 블랙 타원 책상 + 의자
 // 56T(VR) 알파룸(아이방): 창 아래 원목 난간 침대(연두 이불) + 서쪽 벽 원목 책상·의자 + 북쪽 벽 동물 포스터 2 + 다트판
-const alphaDesk = piece('원목 책상', 3.22, 6.15, Math.PI / 2); { const t = alphaDesk, pine = std(0xe7cfa4, .55, 0, { map: M.oak.map });
+const alphaDesk = piece('원목 책상', 3.22, 6.15, Math.PI / 2); { const t = alphaDesk, pine = std(0xf6e6c8, .55, 0, { map: M.oak.map }); /* VR: 밝은 소나무 */
   mesh(BX(1.0, .03, .55), pine, 0, .72, 0, t); for (const [lx, lz] of [[-.47, -.24], [.47, -.24], [-.47, .24], [.47, .24]]) mesh(BX(.04, .71, .04), pine, lx, .355, lz, t);
   mesh(BX(.36, .4, .5), pine, .3, .48, 0, t); for (const y of [.36, .56]) mesh(BX(.34, .004, .005), std(0xc9ad7c, .6), .3, y, .253, t);
-  for (let i = 0; i < 4; i++) mesh(BX(.2, .02, .28), [std(0x4fa3d9, .6), std(0xe8c547, .6), std(0xe46d5a, .6), std(0x7cc35a, .6)][i], -.25 + i * .05, .75 + i * .02, -.05 + (i % 2) * .05, t).rotation.y = i * .2;
+  { const pageTex = k => toTex((() => { const c = mkCanvas(128, 96), x = c.getContext('2d'); x.fillStyle = '#fbf8ef'; x.fillRect(0, 0, 128, 96); const cl = k ? ['#7cc35a', '#4fa3d9', '#f2c94c', '#e46d5a'] : ['#e46d5a', '#7cc35a', '#f2c94c', '#9b6bd1']; /* VR: 펼친 그림책 */
+      x.fillStyle = cl[0]; x.fillRect(6, 58, 116, 32); x.fillStyle = cl[1]; x.beginPath(); x.arc(34, 38, 15, 0, 7); x.fill(); x.fillStyle = cl[2]; x.beginPath(); x.arc(96, 24, 11, 0, 7); x.fill(); x.fillStyle = cl[3]; x.fillRect(74, 44, 20, 24); x.fillStyle = '#3b3b3b'; for (let i = 0; i < 4; i++) x.fillRect(10, 8 + i * 5, 40, 2); x.fillStyle = 'rgba(0,0,0,.22)'; x.fillRect(63, 0, 2, 96); return c; })());
+    for (const [bx, bz, ry, k] of [[-.2, -.04, .25, 0], [.06, .1, -.3, 1]]) { const bk = new THREE.Group(); bk.position.set(bx, .736, bz); bk.rotation.y = ry; t.add(bk); mesh(BX(.34, .004, .24), std([0x2f6fb0, 0xd9584a][k], .6), 0, .002, 0, bk); for (const s of [-1, 1]) { const pg = mesh(BX(.165, .01, .225), std(0xffffff, .8, 0, { map: pageTex(k) }), s * .083, .009, 0, bk, { cast: false }); pg.rotation.z = -s * .05; } }
+    mesh(CY(.035, .03, .1, 18), std(0xf2f0ea, .4), -.42, .785, -.18, t); for (let i = 0; i < 6; i++) { const p = mesh(CY(.004, .004, .17, 6), std([0xe46d5a, 0x4fa3d9, 0xf2c94c, 0x7cc35a, 0x9b6bd1, 0xf28c38][i], .5), -.42 + Math.cos(i) * .015, .86, -.18 + Math.sin(i) * .015, t); p.rotation.set(Math.sin(i * 2) * .15, 0, Math.cos(i * 2) * .15); } } /* 색연필꽂이 */
   const ch = new THREE.Group(); ch.position.set(0, 0, .3); t.add(ch); mesh(RB(.36, .04, .36, .02), pine, 0, .42, 0, ch); mesh(RB(.36, .3, .03, .02), pine, 0, .62, .17, ch); for (const [lx, lz] of [[-.15, -.15], [.15, -.15], [-.15, .15], [.15, .15]]) mesh(BX(.03, .42, .03), pine, lx, .21, lz, ch); } // 의자는 책상 안쪽으로 밀어 넣음
 const kidBed = piece('원목 아이 침대', 4.0, 7.48, Math.PI / 2); // 창 쪽 벽 안쪽 면(z 8.04) 안에 들어오게
-{ const g = kidBed, pine = std(0xe7cfa4, .55, 0, { map: M.oak.map }), L = 2.0, W = 1.0;
-  mesh(BX(W + .08, .06, L + .08), pine, 0, .3, 0, g); mesh(RB(W, .18, L - .04, .04), M.linen, 0, .42, 0, g); mesh(RB(W + .04, .06, L * .6, .03), std(0x9ccc3a, .95), 0, .53, L * .15, g);
+{ const g = kidBed, pine = std(0xf6e6c8, .55, 0, { map: M.oak.map }), L = 2.0, W = 1.0; /* VR: 밝은 소나무 */
+  mesh(BX(W + .08, .06, L + .08), pine, 0, .3, 0, g); mesh(RB(W, .18, L - .04, .04), M.linen, 0, .42, 0, g); drapeCloth(g, { hx: W / 2, z0: -L * .22, z1: L / 2 - .03, top: .55, hang: .1, foot: .14, r: .05, th: .04, mat: std(0x9ccc3a, .95, 0, { map: M.throwBlue.map }), seed: 5 }); { const f = mesh(CY(.026, .026, W - .06, 18), std(0x9ccc3a, .95), 0, .535, -L * .22, g); f.rotation.z = Math.PI / 2; } /* VR: 연두 이불이 둥글게 흘러내림 */
   for (const s of [-1, 1]) { mesh(BX(.06, .75, .06), pine, s * (W / 2 + .03), .375, -L / 2 - .03, g); mesh(BX(.06, .6, .06), pine, s * (W / 2 + .03), .3, L / 2 + .03, g); }
   mesh(BX(W + .08, .05, .05), pine, 0, .72, -L / 2 - .03, g); mesh(BX(W + .08, .05, .05), pine, 0, .57, L / 2 + .03, g);
   for (let i = -3; i <= 3; i++) { mesh(BX(.03, .4, .03), pine, i * .15, .52, -L / 2 - .03, g); }
   mesh(BX(.05, .05, L * .7), pine, W / 2 + .03, .75, -L * .1, g); for (let i = 0; i < 7; i++) mesh(BX(.03, .32, .03), pine, W / 2 + .03, .58, -L * .43 + i * .2, g);
-  for (const px of [-.2, .2]) { const p = mesh(RB(.5, .14, .32, .06, 4), M.whiteGloss, px, .58, -L / 2 + .3, g); p.rotation.x = -.3; } }
+  for (const px of [-.22, .22]) { const p = mesh(pillowG(.48, .15, .34), std(0xf8f7f3, .95, 0, { map: M.linen.map }), px, .6, -L / 2 + .3, g); p.rotation.x = -.3; } /* 푹신한 흰 베개 2 + 연두 베개 */
+  { const p = mesh(pillowG(.42, .32, .14), std(0xa6d23f, .95), .26, .7, -L / 2 + .16, g); p.rotation.set(-.25, -.15, 0); } }
 const dartG = new THREE.Group(); fixed.add(dartG); // 다트판: 기본(분리)일 때만 — 1-1 통합·1-2 꺾음이면 뺌
 const alphaPosters = {};
 { const poster = (bg, draw) => toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = bg; x.fillRect(0, 0, 96, 128); draw(x); return c; })());
