@@ -2042,7 +2042,12 @@ const bed2 = bed(1.12, 7.45, Math.PI / 2, 1.1, 1.95, '싱글 침대');
 // 56T(VR) 침실2: 민트 이불·줄무늬 쿠션, 민트 점무늬 액자
 // 액자는 묶음(b2art)으로 — 1-2 꺾음 시공이면 문 쪽 벽이 알파룸 쪽으로 옮겨지므로 함께 옮기고, 1-1 통합이면 벽이 없어 숨김
 const b2art = new THREE.Group(); fixed.add(b2art);
-{ const aqua = std(0x9fd6d2, .95, 0, { map: M.throwBlue.map }); bed2.traverse(o => { if (o.isMesh && (o.material === M.throwBlue || o.material === M.linen && o.position.y > .5 && o.geometry.parameters && o.geometry.parameters.depth > .9)) o.material = aqua; });
+{ /* VR: 민트 누빔(마름모 바느질) 이불이 침대를 덮고, 따로 담요 없음 · 베개는 베이지 리넨 + 파랑/흰 줄무늬 + 작은 흰 쿠션 */
+  const quilt = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#a9dcd6'; x.fillRect(0, 0, 64, 64); x.strokeStyle = 'rgba(80,140,135,.45)'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(0, 32); x.lineTo(32, 0); x.lineTo(64, 32); x.lineTo(32, 64); x.closePath(); x.stroke(); x.fillStyle = 'rgba(255,255,255,.18)'; x.beginPath(); x.ellipse(32, 32, 14, 14, 0, 0, 7); x.fill(); return c; })(), { rep: [9, 12] });
+  const qm = std(0xffffff, .92, 0, { map: quilt, bumpMap: quilt, bumpScale: 2 }), rm = [], lyingPil = pillowG(.64, .19, .4);
+  bed2.traverse(o => { if (!o.isMesh) return; if (o.material === M.linen && (o.geometry.type === 'BufferGeometry' || o.geometry.type === 'CylinderGeometry')) o.material = qm; else if (o.material === M.throwBlue || o.geometry === lyingPil) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
+  const stripe = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#f6f7f6'; x.fillRect(0, 0, 64, 64); x.fillStyle = '#6fb3d6'; for (let i = 0; i < 4; i++) x.fillRect(0, i * 16 + 3, 64, 8); return c; })());
+  const L = 1.95; for (const [px, pz, ry, w, h, m, y] of [[-.22, .14, .07, .5, .42, std(0xd9cbb5, .95, 0, { map: M.linen.map }), .74], [.2, .2, -.1, .44, .34, std(0xffffff, .9, 0, { map: stripe }), .7], [-.02, .32, .05, .32, .22, std(0xf7f6f2, .95), .64]]) { const p = mesh(pillowG(w, h, .15), m, px, y, -L / 2 + pz, bed2); p.rotation.set(-.3, ry, 0); }
   const dots = toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = '#f4f4f2'; x.fillRect(0, 0, 96, 128); x.fillStyle = '#7fcfc6'; x.fillRect(14, 16, 68, 92); x.fillStyle = '#e8b04a'; for (let i = 0; i < 9; i++) for (let j = 0; j < 12; j++) if ((i + j) % 2) { x.beginPath(); x.arc(20 + i * 7, 22 + j * 7, 2, 0, 7); x.fill(); } return c; })());
   pbox(2.77, 2.8, 1.05, 1.75, 5.55, 6.1, std(0xdedcd7, .5), b2art); pbox(2.765, 2.77, 1.09, 1.71, 5.59, 6.06, std(0xffffff, .9, 0, { map: dots }), b2art, { cast: false }); }
 await yieldUI();
