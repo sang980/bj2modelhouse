@@ -1507,13 +1507,23 @@ function shellChair(parent, x, z, ry, mat, legMat = mat, th = .012) { const g = 
   for (const sx of [-1, 1]) for (const [z1, z2] of [[.13, .2], [-.13, -.2]]) rod([sx * .15, .45, z1], [sx * .2, 0, z2], .011);
   mesh(CY(.07, .07, .012, 20), legMat, 0, .445, 0, g);
   return g; }
-function toilet(x, z, rot) {
+/* 수건 재질(잔결 + 선택 무늬) — 같은 색·무늬는 공유 */
+const _twC = {};
+function towelMat(col, kind = '') { const key = col + kind; if (_twC[key]) return _twC[key];
+  const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, 64, 64);
+  if (kind === 'geo') { const cl = ['#2b2b2d', '#8d8f91', '#ecebe7', '#5d5f62']; for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { x.fillStyle = cl[(i * 3 + j * 5 + (i * j) % 3) % 4]; x.fillRect(i * 8, j * 8, 8, 8); } }
+  for (let i = 0; i < 420; i++) { x.fillStyle = `rgba(0,0,0,${.03 + rnd() * .07})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 2); }
+  return (_twC[key] = std(kind ? 0xffffff : col, 1, 0, { map: toTex(c, { rep: [2, 2] }) })); }
+function toilet(x, z, rot, towel = null) { /* VR: 비데처럼 뚜껑 닫힘 + 오른쪽 조작부, towel: 뚜껑 위에 가로로 걸친 수건 재질 */
   const g = piece('양변기', x, z, rot, { movable: false });
   mesh(new THREE.CylinderGeometry(.17, .13, .38, 32, 1, true), M.white, 0, .19, .05, g).scale.set(1, 1, 1.3); // 몸통(위가 뚫린 옆면)
   const bw = mesh(bowlLathe(.158, .19, .028), basinMat(), 0, .38, .05, g); bw.scale.set(1, 1, 1.28);       // 안이 파인 볼
   mesh(CY(.07, .07, .002, 24), std(0xd6e8ee, .04, 0, { transparent: true, opacity: .55 }), 0, .225, .07, g, { cast: false }).scale.set(1, 1, 1.25); // 고인 물
   const st = mesh(new THREE.TorusGeometry(.148, .022, 10, 44), M.white, 0, .398, .06, g); st.rotation.x = Math.PI / 2; st.scale.set(1, 1.27, .8); // 둥근 시트
-  const lid = mesh(CY(.182, .182, .018, 36), M.white, 0, .64, -.095, g); lid.scale.set(1, 1, 1.25); lid.rotation.x = Math.PI / 2 - .12; // 열어서 뒤로 세운 뚜껑
+  mesh(RB(.42, .07, .1, .03, 3), M.white, 0, .435, -.13, g); /* 비데 본체(뒤) */
+  { const lid = mesh(CY(.182, .182, .022, 40), M.white, 0, .425, .08, g); lid.scale.set(1, 1, 1.05); } /* 닫힌 뚜껑 */
+  mesh(RB(.035, .05, .2, .012, 2), M.white, .215, .43, .02, g); for (let i = 0; i < 4; i++) mesh(CY(.006, .006, .004, 10), i ? std(0x8a8f96, .4) : std(0x3b7bd9, .4), .215, .457, -.04 + i * .033, g, { cast: false }); /* 오른쪽 조작부 + 버튼 */
+  if (towel) drapeCloth(g, { hx: .17, z0: -.02, z1: .16, top: .442, hang: .14, r: .022, th: .008, mat: towel, nx: 30, nz: 14, wr: .004, seed: x * 3 + z }); /* 뚜껑 위 수건 */
   mesh(RB(.42, .36, .18, .03), M.white, 0, .6, -.2, g); mesh(CY(.022, .022, .008, 20), M.chrome, .1, .782, -.2, g); // 물탱크 + 버튼
   return g;
 }
@@ -1531,7 +1541,7 @@ const tub = piece('욕조', .49, 3.12, 0, { movable: false });
 hollowTub(tub, .76, .55, 1.6, .08, .4, 0, 0, 0, M.white, 0, null, 4.5, -1, .015, 4, .5); /* 욕조: 둥근 모서리 + 바닥에서 벽으로 완만하게 휘는 유선형 */ // 테두리 8cm + 안쪽 깊이 40cm(위가 막히지 않게)
 mesh(CY(.012, .012, .5), M.chrome, -.28, 1.3, -.6, tub);
 wallBoxes.push({ minX: WX(.11), maxX: WX(.87), minZ: WZ(2.31), maxZ: WZ(3.92) });
-toilet(.36, 4.55, Math.PI / 2);
+toilet(.36, 4.55, Math.PI / 2, towelMat(0x2f5fa8)); /* VR: 파란 수건 */
 vanity(1.32, 4.8, Math.PI);
 await phase('욕실과 발코니를 꾸미는 중', 66);
 // ── 욕실2 (사진): 안쪽 벽에 변기 + 벽걸이 세면기, 돌 선반 니치, 슬라이딩 거울장, 오른쪽 샤워 유리 ──
@@ -1576,7 +1586,7 @@ pbox(10.67, 10.69, 0, H, 2.58, 3.16, M.stoneTile, fixed); pbox(10.67, 10.69, 2.1
   hollowTub(g, .52, .15, .42, .05, .065, 0, .725, 0, M.whiteGloss, .08, null, 3, 0, 0, 1.7, 1); /* 볼 안쪽을 완만하게(수직 벽 모서리에 그림자가 고여 지저분해 보이지 않게) */ /* 움푹 파인 둥근 볼 + 배수구(함수 안) */
   mesh(RB(.3, .36, .2, .04), M.whiteGloss, 0, .54, -.1, g);
   mesh(CY(.016, .016, .17, 14), M.chrome, 0, .96, -.14, g); const sp = mesh(CY(.011, .011, .1, 12), M.chrome, 0, 1.035, -.1, g); sp.rotation.x = Math.PI / 2; }
-toilet(10.3, 2.92, 0);
+toilet(10.3, 2.92, 0, towelMat(0x4a73b5)); /* VR: 파란 수건 */
 pbox(9.5, 10.67, 1.25, 1.28, 2.58, 2.7, std(0xc9c6c0, .45, 0, { map: M.marbleW.map }), fixed);   // 돌 선반
 pbox(9.55, 10.62, 1.45, 2.1, 2.58, 2.72, std(0xdedcd7, .5), fixed);                               // 거울장 몸체
 pbox(9.56, 10.085, 1.46, 2.09, 2.72, 2.725, M.mirrorBath2, fixed, { cast: false }); pbox(10.095, 10.61, 1.46, 2.09, 2.725, 2.73, M.mirrorBath2, fixed, { cast: false });
@@ -1624,7 +1634,7 @@ ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
     for (let i = 0; i < 500; i++) { x.fillStyle = `rgba(0,0,0,${.02 + rnd() * .04})`; x.fillRect(rnd() * 64, rnd() * 128, 1, 2); } return c; })());
   const blue = std(0x5a7fb0, 1, 0, { map: fiber });
   // 욕실2(사진 19): 변기 뚜껑을 가로질러 접어 올린 파란 수건(양옆으로 살짝 늘어짐)
-  { const x = 10.30, z = 2.72; mesh(BX(.36, .03, .14), blue, WX(x - .02), .796, WZ(z), g, { cast: false }); mesh(BX(.36, .012, .13), std(0x7d9cc4, 1, 0, { map: fiber }), WX(x - .02), .817, WZ(z), g, { cast: false }); } // 물탱크 위 접은 파란 수건
+  /* 파란 수건은 변기 뚜껑 위로 옮김(toilet) */
   // 욕실1: 북쪽 벽(욕조 옆 빈 벽) 걸이 수건 — 흰 수건(아래 회색 띠) + 앞에 남색 수건
   { const t = new THREE.Group(); t.position.set(WX(1.35), 0, WZ(2.31)); g.add(t); const w = .44, y = 1.42;
     const bar = mesh(CY(.009, .009, w + .06, 12), M.chrome, 0, y, .055, t); bar.rotation.z = Math.PI / 2;

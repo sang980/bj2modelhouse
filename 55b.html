@@ -1304,13 +1304,23 @@ function shellChair(parent, x, z, ry, mat, legMat = mat, th = .012) { const g = 
   for (const sx of [-1, 1]) for (const [z1, z2] of [[.13, .2], [-.13, -.2]]) rod([sx * .15, .45, z1], [sx * .2, 0, z2], .011);
   mesh(CY(.07, .07, .012, 20), legMat, 0, .445, 0, g);
   return g; }
-function toilet(x, z, rot) {
+/* 수건 재질(잔결 + 선택 무늬) — 같은 색·무늬는 공유 */
+const _twC = {};
+function towelMat(col, kind = '') { const key = col + kind; if (_twC[key]) return _twC[key];
+  const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, 64, 64);
+  if (kind === 'geo') { const cl = ['#2b2b2d', '#8d8f91', '#ecebe7', '#5d5f62']; for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { x.fillStyle = cl[(i * 3 + j * 5 + (i * j) % 3) % 4]; x.fillRect(i * 8, j * 8, 8, 8); } }
+  for (let i = 0; i < 420; i++) { x.fillStyle = `rgba(0,0,0,${.03 + rnd() * .07})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 2); }
+  return (_twC[key] = std(kind ? 0xffffff : col, 1, 0, { map: toTex(c, { rep: [2, 2] }) })); }
+function toilet(x, z, rot, towel = null) { /* VR: 비데처럼 뚜껑 닫힘 + 오른쪽 조작부, towel: 뚜껑 위에 가로로 걸친 수건 재질 */
   const g = piece('양변기', x, z, rot, { movable: false });
   mesh(new THREE.CylinderGeometry(.17, .13, .38, 32, 1, true), M.white, 0, .19, .05, g).scale.set(1, 1, 1.3); // 몸통(위가 뚫린 옆면)
   const bw = mesh(bowlLathe(.158, .19, .028), basinMat(), 0, .38, .05, g); bw.scale.set(1, 1, 1.28);       // 안이 파인 볼
   mesh(CY(.07, .07, .002, 24), std(0xd6e8ee, .04, 0, { transparent: true, opacity: .55 }), 0, .225, .07, g, { cast: false }).scale.set(1, 1, 1.25); // 고인 물
   const st = mesh(new THREE.TorusGeometry(.148, .022, 10, 44), M.white, 0, .398, .06, g); st.rotation.x = Math.PI / 2; st.scale.set(1, 1.27, .8); // 둥근 시트
-  const lid = mesh(CY(.182, .182, .018, 36), M.white, 0, .64, -.095, g); lid.scale.set(1, 1, 1.25); lid.rotation.x = Math.PI / 2 - .12; // 열어서 뒤로 세운 뚜껑
+  mesh(RB(.42, .07, .1, .03, 3), M.white, 0, .435, -.13, g); /* 비데 본체(뒤) */
+  { const lid = mesh(CY(.182, .182, .022, 40), M.white, 0, .425, .08, g); lid.scale.set(1, 1, 1.05); } /* 닫힌 뚜껑 */
+  mesh(RB(.035, .05, .2, .012, 2), M.white, .215, .43, .02, g); for (let i = 0; i < 4; i++) mesh(CY(.006, .006, .004, 10), i ? std(0x8a8f96, .4) : std(0x3b7bd9, .4), .215, .457, -.04 + i * .033, g, { cast: false }); /* 오른쪽 조작부 + 버튼 */
+  if (towel) drapeCloth(g, { hx: .17, z0: -.02, z1: .16, top: .442, hang: .14, r: .022, th: .008, mat: towel, nx: 30, nz: 14, wr: .004, seed: x * 3 + z }); /* 뚜껑 위 수건 */
   mesh(RB(.42, .36, .18, .03), M.white, 0, .6, -.2, g); mesh(CY(.022, .022, .008, 20), M.chrome, .1, .782, -.2, g); // 물탱크 + 버튼
   return g;
 }
@@ -1447,7 +1457,7 @@ await phase('거실을 꾸미는 중', 56);
 await phase('욕실과 발코니를 꾸미는 중', 61);
 // ── 욕실1(공용): 북쪽 벽에 변기·반다리 세면기, 위에 거울장 + 돌 선반, 동쪽 벽 따라 욕조 ──
 { const g = fixed;
-  toilet(4.9, .45, 0); roundBasin(5.6, .36, 0); // VR: 욕실1은 둥근 반다리 세면기
+  toilet(4.9, .45, 0, towelMat(0, 'geo')); /* VR: 회색·검정 무늬 수건 */ roundBasin(5.6, .36, 0); // VR: 욕실1은 둥근 반다리 세면기
   pbox(4.58, 6.08, 1.22, 1.25, .11, .24, std(0xc9c6c0, .45, 0, { map: M.marbleW.map }), g);
   pbox(4.58, 6.08, 1.42, 2.08, .11, .25, std(0xdedcd7, .5), g); pbox(4.59, 5.325, 1.43, 2.07, .25, .255, M.mirrorBath1, g, { cast: false }); pbox(5.335, 6.07, 1.43, 2.07, .25, .255, M.mirrorBath1, g, { cast: false }); // VR: 변기~욕조 앞까지 긴 거울장
   const tub = piece('욕조', 6.48, .87, 0, { movable: false });
@@ -1469,7 +1479,7 @@ await phase('욕실과 발코니를 꾸미는 중', 61);
   const arm = mesh(CY(.01, .01, .28, 10), M.chrome, WX(6.6), 2.17, WZ(z0 + .16), g); arm.rotation.x = Math.PI / 2;
   mesh(RB(.2, .06, .07, .02), M.chrome, WX(6.6), 1.05, WZ(z0 + .05), g);
   // 세면기·변기(서쪽 벽) + 거울장 + 돌 선반
-  basin(5.96, 6.15, Math.PI / 2); toilet(6.04, 6.75, Math.PI / 2); // 서쪽 벽(x 5.74)에 등을 대게(수전·물탱크가 벽 쪽)
+  basin(5.96, 6.15, Math.PI / 2); toilet(6.04, 6.75, Math.PI / 2, towelMat(0x7d9a7a)); /* VR: 세이지 초록 수건 */ // 서쪽 벽(x 5.74)에 등을 대게(수전·물탱크가 벽 쪽)
   pbox(x0, x0 + .12, 1.25, 1.28, 5.85, 7.0, std(0xc9c6c0, .45, 0, { map: M.marbleW.map }), g);
   pbox(x0, x0 + .14, 1.45, 2.1, 5.9, 6.95, std(0xdedcd7, .5), g); pbox(x0 + .14, x0 + .145, 1.46, 2.09, 5.91, 6.42, M.mirrorBath2, g, { cast: false }); pbox(x0 + .14, x0 + .145, 1.46, 2.09, 6.43, 6.94, M.mirrorBath2, g, { cast: false });
   ceilingPanel(6.35, 6.85, 6.0, 6.5, .8, 2.2);
