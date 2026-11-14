@@ -2323,7 +2323,7 @@ function applyLighting() {
   if (typeof liteOn !== 'undefined' && liteOn) setLiteMaterials(true); // 저사양 재질에도 옵션·조명 변경 반영
 }
 // 모델하우스 견본주택 연출(사진 기준) 옵션 묶음
-const MODEL_PRESET = { '1': '1', '2': '2-2', '4': '4-3', '5': '5-2', '6': '6-1', '7': '7-1', '8': '8-1', '10': '10-1', '15': '15-3', '16': '16', '17': '17' };
+const MODEL_PRESET = { '1': '1' }; // 55C 사이버 모델하우스(VR): 현관장+복도팬트리만 설치, 나머지는 기본형(가스쿡탑·냉장고장+김치냉장고장·붙박이장/드레스룸 없음)
 // 55C 분양 자료 번호: 55A의 9번(파우더룸 화장대)이 없어 10번부터 하나씩 당겨짐
 const numC = c => String(c).replace(/^(\d+)/, n => +n >= 10 ? String(+n - 1) : n);
 function applyPreset() { for (const k in sel) sel[k] = null; Object.assign(sel, MODEL_PRESET); applyOptions(); }
