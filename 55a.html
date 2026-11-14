@@ -889,7 +889,7 @@ wall(0, 8.22, 12.32, 8.22, TE, [
 wall(0, 2.2, 0, 8.22, TE, []);
 wall(0, 2.2, 3.4, 2.2, TE, [
   { from: .4, to: 1.2, y0: 1.6, y1: 2.1, kind: 'window', out: -1 },
-  { from: 2.15, to: 3.15, y1: 2.1, kind: 'front' },
+  { from: 2.36, to: 3.32, y1: 2.1, kind: 'front' }, /* 평면도: 현관문은 기본 신발장 바로 옆, 창고 벽 쪽 */
 ]);
 wall(3.4, 0, 3.4, 2.2, TE, [{ from: 1.2, to: 1.95, y0: 1.0, y1: 1.6, kind: 'window' }]); // 발코니 작은 창
 // interior
@@ -1300,7 +1300,7 @@ ceilingPanel(3.65, 4.25, 6.3, 6.9, 1.0, 2.8);
 // 침실2 커튼
 curtain(.15, .65, 8.02); curtain(2.2, 2.7, 8.02);
 
-// 현관: 신발장은 평면도 방향대로 동쪽(현관장, 물품옵션 1)만 — 서쪽 벽은 욕실1 출입
+// 현관(평면도): 서쪽 욕실1 벽을 따라 기본 신발장(앞벽 ~ 중문 앞, 욕실1 문 전까지) + 동쪽은 현관창고(기본) 또는 현관장+복도팬트리(물품옵션 1)
 
 // bath1
 /* ───────── 움푹 파인 기구(욕조·세면기·싱크) 공통 도구 ─────────
@@ -2341,6 +2341,12 @@ function doorSeams(g, face, a0, a1, n, y0 = .1, y1 = 2.28) { // face: {axis:'x'|
   cab(g, 3.84, 3.96, 0, H, 2.66, 4.14, M.wall); // partition between 현관장 and pantry
   cab(g, 3.3, 3.46, 2.3, H, 2.66, 4.14, M.wall); // bulkhead above 현관장
 }
+/* 기본 신발장(평면도, 모든 선택에서 있음): 욕실1 벽(x 1.96)에 붙어 현관 쪽(동쪽)을 향함, 앞벽(z 2.31)부터 중문 레일 앞(z 3.42)까지 */
+{ const g = item('shoeBase', '기본 신발장');
+  cab(g, 1.99, 2.31, 0, .1, 2.31, 3.42, M.black);
+  shoeCabinet({ parent: g, axis: 'x', front: 2.33, back: 1.96, a0: 2.31, a1: 3.42, n: 2, name: '기본 신발장 문' });
+  cab(g, 2.326, 2.334, .095, .1, 2.31, 3.42, M.ledStrip, { cast: false }); /* 아래 간접등 줄 */
+  cab(g, 1.96, 2.35, 2.3, H, 2.31, 3.42, M.wall); } /* 위 천장까지 막음 */
 // 복도팬트리: 주방 쪽으로 확장된 공간(x 3.96–4.94), 도어는 복도(남쪽, z=4.2)를 향함
 const PAN = { x0: 3.96, x1: 4.94, z0: 2.66, z1: 4.2 };
 // 복도팬트리: 안으로 들어가는 워크인 공간 + 복도 쪽 양여닫이 문(클릭으로 열고 닫기)
@@ -3217,7 +3223,8 @@ await yieldUI(); // 스위치·콘센트 자리 찾기(광선 검사 수십 번)
   for (const { horiz, line, t, o } of frontSpots) {
     const mid = (o.from + o.to) / 2, inRoom = s => { const p = horiz ? [mid, line + s * .6] : [line + s * .6, mid]; return rooms.some(r => /현관/.test(r.n) && p[0] >= r.x0 && p[0] <= r.x1 && p[1] >= r.z0 && p[1] <= r.z1); };
     const s = inRoom(1) ? 1 : inRoom(-1) ? -1 : 0; if (!s) continue; const off = t / 2 + .25;
-    for (const u of [o.to + .13, o.from - .13]) { const [px, pz, dx, dz] = horiz ? [u, line + s * off, 0, -s] : [line + s * off, u, -s, 0]; if (PLATE.put(px, 1.2, pz, dx, dz, 'sw3')) break; }
+    let okSw = false; if (horiz) for (const [ux, dx] of [[o.to + .02 - .25, 1]]) if (PLATE.put(ux, 1.2, line + s * (t / 2 + .25), dx, 0, 'sw3')) okSw = true; /* 평면도: 현관문 바로 옆 옆벽면(창고 쪽)에 */
+    if (!okSw) for (const u of [o.to + .13, o.from - .13]) { const [px, pz, dx, dz] = horiz ? [u, line + s * off, 0, -s] : [line + s * off, u, -s, 0]; if (PLATE.put(px, 1.2, pz, dx, dz, 'sw3')) break; }
   }
   await yieldUI(); // 광선 검사를 몇 덩어리로 나눔(로딩 화면 멈춤 방지)
   // 가구 옆 콘센트(VR·사진처럼 눈에 보이는 자리): 침대 머리맡 양옆, 책상 한쪽, 소파 양끝 — 바닥 위 0.32m
