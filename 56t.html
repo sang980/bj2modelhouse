@@ -1599,11 +1599,13 @@ if (false) { const g = fixed, pot = std(0x55524e, .85), leaf = M.plant;
 await phase('가구를 들이는 중', 72);
 function sofa(x, z, rot) {
   const g = piece('소파', x, z, rot); // 사진: 낮고 각진 화이트 소파, 한쪽 팔걸이(북쪽), 창 쪽은 낮은 블록
-  mesh(RB(2.45, .36, .92, .04), M.boucle, 0, .18, 0, g);
-  mesh(RB(2.0, .3, .2, .05), M.boucle, -.2, .51, -.36, g);
-  mesh(RB(.24, .34, .92, .05), M.boucle, -1.1, .53, 0, g);
-  mesh(RB(.5, .1, .7, .04), M.boucle, .95, .41, .05, g);
-  const pil = (m, px, pz, rz, ry, s = .44) => { const p = mesh(RB(s, s, .13, .06, 4), m, px, .58, pz, g); p.rotation.set(-.2, ry, rz); };
+  mesh(RB(2.45, .28, .92, .05), M.boucle, 0, .14, 0, g); /* 받침 */
+  mesh(RB(1.98, .12, .14, .05), M.boucle, -.21, .34, -.39, g); /* 등받이 받침 */
+  for (const [sx, sw] of [[-.565, .83], [.275, .83]]) { mesh(pillowG(sw, .15, .74), M.boucle, sx, .35, .08, g); /* 푹신한 좌석 쿠션 */
+    const b = mesh(pillowG(sw - .02, .42, .2), M.boucle, sx, .6, -.35, g); b.rotation.x = -.13; } /* 기대는 등 쿠션 */
+  mesh(RB(.24, .42, .92, .09, 4), M.boucle, -1.1, .49, 0, g); /* 팔걸이 */
+  mesh(RB(.5, .12, .7, .05, 4), M.boucle, .95, .4, .05, g);
+  const pil = (m, px, pz, rz, ry, s = .44) => { const p = mesh(pillowG(s, s, .17), m, px, .62, pz, g); p.rotation.set(-.2, ry, rz); };
   pil(M.check, -.7, -.12, .06, .15, .46); pil(M.navy, -.88, -.18, -.04, .3, .4);
   return g;
 }
