@@ -2049,7 +2049,11 @@ coffeeTable(6.84, 6.65, 0);
 const diningS = diningSmall(), diningL = diningLarge();
 const dining = diningS; // (예전 코드 호환용)
 // 평면도 방향: 침대 헤드는 서쪽 벽, 붙박이장(옵션 10)은 동쪽 벽
-bed(9.96, 6.45, Math.PI / 2, 1.6, 2.1, '침대');
+{ const b = bed(9.96, 6.45, Math.PI / 2, 1.6, 2.1, '침대'); /* VR 55A: 선명한 로열 블루 러너 + 짙은 회색 헤링본 쿠션 */
+  const hc = mkCanvas(64, 64), x = hc.getContext('2d'); x.fillStyle = '#4b4d51'; x.fillRect(0, 0, 64, 64); x.lineWidth = 2;
+  for (let c = 0; c < 8; c++) for (let r = -1; r < 9; r++) { x.strokeStyle = (c + r) % 2 ? '#7d7f84' : '#36383c'; x.beginPath(); if (c % 2) { x.moveTo(c * 8, r * 8); x.lineTo(c * 8 + 8, r * 8 + 8); } else { x.moveTo(c * 8 + 8, r * 8); x.lineTo(c * 8, r * 8 + 8); } x.stroke(); }
+  const blue = std(0x2c5fb8, .95, 0, { map: M.throwBlue.map, bumpMap: M.throwBlue.bumpMap, bumpScale: .8 }), tw = std(0xffffff, .95, 0, { map: toTex(hc, { rep: [2, 2] }) });
+  b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = blue; else if (o.material === M.check) o.material = tw; }); }
 sideTable(9.14, 7.6, true);
 const sideTableN = sideTable(9.14, 5.3, false);
 const bed2 = bed(.72, 7.0, Math.PI, 1.1, 2.0, '싱글 침대'); // 사진: 화이트 플로팅 프레임 + 하부 간접등, 머리는 창 쪽
