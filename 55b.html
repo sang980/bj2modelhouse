@@ -1243,6 +1243,52 @@ function hollowTub(parent, w, h, l, wall, depth, x = 0, y = 0, z = 0, mat = M.wh
 }function bowlLathe(R, depth, rimW = .016) { const pts = [[0, -depth - .03], [R * .45, -depth - .025], [R * .78, -depth * .7], [R * .96, -depth * .25], [R, 0], [R, .012], [R - rimW, .012], [R - rimW - .008, 0], [R * .8, -depth * .35], [R * .5, -depth * .85], [0, -depth]];
   return new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 48); }
 let _basinMat = null; const basinMat = () => _basinMat || (_basinMat = std(0xfbfbfa, .12, 0, { side: THREE.DoubleSide }));
+/* ───────── 천·쿠션·셸 공통 ───────── */
+/* 격자 면 P((nx+1)*(ny+1) 점) → 두께 th 얇은 판(바깥 면 + 안쪽 면 + 테두리 띠), flip이면 앞면 방향을 뒤집음 */
+function thickSurf(P, nx, ny, th, flip = false) { const N = (nx + 1) * (ny + 1), pos = new Float32Array(N * 6), nor = new Float32Array(N * 6), uv = new Float32Array(N * 4), idx = [];
+  pos.set(P); const q = (a, b, c) => flip ? idx.push(a, c, b) : idx.push(a, b, c);
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const a = j * (nx + 1) + i, b = a + 1, c = a + nx + 1, d = c + 1; q(a, c, b); q(b, c, d); }
+  const tmp = new THREE.BufferGeometry(); tmp.setAttribute('position', new THREE.BufferAttribute(pos.slice(0, N * 3), 3)); tmp.setIndex(idx.slice()); tmp.computeVertexNormals(); const tn = tmp.attributes.normal.array; tmp.dispose();
+  for (let k = 0; k < N * 3; k++) { pos[N * 3 + k] = pos[k] - tn[k] * th; nor[k] = tn[k]; nor[N * 3 + k] = -tn[k]; }
+  for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) { const k = j * (nx + 1) + i; uv[k * 2] = uv[N * 2 + k * 2] = i / nx; uv[k * 2 + 1] = uv[N * 2 + k * 2 + 1] = j / ny; }
+  const n0 = idx.length; for (let t = 0; t < n0; t += 3) idx.push(idx[t] + N, idx[t + 2] + N, idx[t + 1] + N);
+  const A = new THREE.Vector3(), B = new THREE.Vector3(), C = new THREE.Vector3(), W = new THREE.Vector3(), pv = (k, o) => o.set(pos[k * 3], pos[k * 3 + 1], pos[k * 3 + 2]);
+  const strip = (u, v, w) => { pv(u, A); pv(v, B).sub(A); pv(u + N, C).sub(A); pv(w, W); W.subVectors(A, W); if (B.cross(C).dot(W) > 0) idx.push(u, v, u + N, v, v + N, u + N); else idx.push(u, u + N, v, v, u + N, v + N); };
+  for (let i = 0; i < nx; i++) { strip(i, i + 1, i + nx + 1); const u = ny * (nx + 1) + i; strip(u, u + 1, u - nx - 1); }
+  for (let j = 0; j < ny; j++) { const u = j * (nx + 1); strip(u, u + nx + 1, u + 1); strip(u + nx, u + 2 * nx + 1, u + nx - 1); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.setIndex(idx); return g; }
+/* 침구 천: 매트리스 위(로컬 x 폭, z 길이, y 위)를 덮고 양옆(hang)·발치 z1 쪽(foot)으로 둥글게 흘러내림 — 모서리는 살짝 퍼지고, 처진 부분엔 세로 주름 */
+function drapeCloth(parent, { hx, z0, z1, top, hang = .2, foot = 0, r = .05, th = .03, mat, nx = 40, nz = 44, wr = .006, seed = 1, floor = .02 }) {
+  const arc = Math.PI * r / 2, a0x = hx - r, Lz = z1 - z0, a0z = Lz - r, SX = a0x + arc + hang, SZ = foot ? a0z + arc + foot : Lz, P = new Float32Array((nx + 1) * (nz + 1) * 3), hl = Math.max(hang, foot);
+  for (let j = 0; j <= nz; j++) for (let i = 0; i <= nx; i++) { const k = (j * (nx + 1) + i) * 3, s = (i / nx * 2 - 1) * SX, t = j / nz * SZ, sx = s < 0 ? -1 : 1;
+    const ex = Math.max(0, Math.abs(s) - a0x), ez = foot ? Math.max(0, t - a0z) : 0, d = Math.hypot(ex, ez); let x = s, z = z0 + t, y = top;
+    if (d > 0) { /* 평평한 윗면 밖: 모서리 둥글림(반지름 r) 후 수직으로 처짐 — 옆·발치·모서리 모두 같은 거리 함수라 접힘 없음 */
+      const ux = ex / d, uz = ez / d, c = (z0 + t) * ux + s * uz, wv = wr * Math.max(0, d - arc) / hl * (1.6 + Math.sin(c * 17 + seed) + .5 * Math.sin(c * 29 + seed * 2.3)), h = (d <= arc ? r * Math.sin(d / r) : r) + wv;
+      if (ex > 0) x = sx * (a0x + h * ux); if (ez > 0) z = z0 + a0z + h * uz; y = top - (d <= arc ? r - r * Math.cos(d / r) : r + d - arc); }
+    P[k] = x; P[k + 2] = z; P[k + 1] = Math.max(floor, y + wr * .5 * Math.sin(x * 17 + seed) * Math.sin(z * 11 + seed * 1.7)); }
+  return mesh(thickSurf(P, nx, nz, th), mat, 0, 0, 0, parent); }
+/* 푹신한 베개·쿠션(w×h×d, 가장 얇은 축이 두께): 둥근 사각 윤곽 + 가운데 볼록, 가장자리로 얇아짐(같은 크기는 형상 공유) */
+const _pillowC = new Map();
+function pillowG(w, h, d) { const key = [w, h, d].join(); if (_pillowC.has(key)) return _pillowC.get(key);
+  const S = [w, h, d], ax = S.indexOf(Math.min(w, h, d)), [a1, a2] = [0, 1, 2].filter(i => i !== ax), g = new THREE.SphereGeometry(1, 40, 24);
+  if (ax === 0) g.rotateZ(Math.PI / 2); else if (ax === 2) g.rotateX(Math.PI / 2);
+  const p = g.attributes.position, uv = g.attributes.uv, v = [0, 0, 0], o = [0, 0, 0];
+  for (let i = 0; i < p.count; i++) { v[0] = p.getX(i); v[1] = p.getY(i); v[2] = p.getZ(i); const s = Math.hypot(v[a1], v[a2]), d1 = s > 1e-6 ? v[a1] / s : 0, d2 = s > 1e-6 ? v[a2] / s : 0, rr = Math.sqrt(s);
+    o[a1] = Math.sign(d1) * Math.pow(Math.abs(d1), .3) * rr * S[a1] / 2; o[a2] = Math.sign(d2) * Math.pow(Math.abs(d2), .3) * rr * S[a2] / 2; o[ax] = v[ax] * S[ax] / 2;
+    p.setXYZ(i, o[0], o[1], o[2]); uv.setXY(i, o[a1] / S[a1] + .5, o[a2] / S[a2] + .5); }
+  g.computeVertexNormals(); _pillowC.set(key, g); return g; }
+/* 몰딩 셸 의자: 한 장 곡면 시트(앞 둥근 턱 → 좌판 → 등받이, 옆이 오목) + 살짝 벌어진 가는 다리 4 — 로컬 앞 +z */
+function shellChair(parent, x, z, ry, mat, legMat = mat) { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; parent.add(g);
+  const C = new THREE.CatmullRomCurve3([[0, .425, .215], [0, .452, .19], [0, .462, .1], [0, .456, -.06], [0, .47, -.16], [0, .53, -.215], [0, .66, -.24], [0, .8, -.25], [0, .86, -.255]].map(([a, b, c]) => new THREE.Vector3(a, b, c)));
+  const nx = 20, ny = 40, P = new Float32Array((nx + 1) * (ny + 1) * 3), T = new THREE.Vector3();
+  for (let j = 0; j <= ny; j++) { const t = j / ny, p = C.getPointAt(t); C.getTangentAt(t, T); const ay = -T.z, az = T.y, cup = t < .45 ? .025 : .035;
+    const hw = (t < .5 ? .215 : .215 - (t - .5) * .07) * (t > .9 ? .4 + .6 * Math.sqrt(Math.max(0, 1 - ((t - .9) / .1) ** 2)) : 1);
+    for (let i = 0; i <= nx; i++) { const u = i / nx * 2 - 1, k = (j * (nx + 1) + i) * 3, off = cup * u * u; P[k] = u * hw; P[k + 1] = p.y + ay * off; P[k + 2] = p.z + az * off; } }
+  mesh(thickSurf(P, nx, ny, .012, true), mat, 0, 0, 0, g);
+  const Y = new THREE.Vector3(0, 1, 0), rod = (a, b, r) => { const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), L = A.distanceTo(B), m = mesh(CY(r, r * .8, L, 10), legMat, (A.x + B.x) / 2, (A.y + B.y) / 2, (A.z + B.z) / 2, g); m.quaternion.setFromUnitVectors(Y, A.sub(B).normalize()); return m; };
+  for (const sx of [-1, 1]) for (const [z1, z2] of [[.13, .2], [-.13, -.2]]) rod([sx * .15, .45, z1], [sx * .2, 0, z2], .011);
+  mesh(CY(.07, .07, .012, 20), legMat, 0, .445, 0, g);
+  return g; }
 function toilet(x, z, rot) {
   const g = piece('양변기', x, z, rot, { movable: false });
   mesh(new THREE.CylinderGeometry(.17, .13, .38, 32, 1, true), M.white, 0, .19, .05, g).scale.set(1, 1, 1.3); // 몸통(위가 뚫린 옆면)
@@ -1511,16 +1557,18 @@ await phase('침실을 꾸미는 중', 66);
   ledRectWall(2.36, 1.15, z0 + .2, 2.0, 2.0, 0, 1, 0xfff1dc, .5, 1.3);
 }
 // 침실2: VR의 브라운 로만셰이드(창 위쪽 절반) + 침대 쪽 초록 패브릭 ㄱ자 벽판(북쪽 벽 + 서쪽 벽 머리 쪽, 세로 채널)
-{ const sh = std(0xa88a6c, .9);
-  pbox(1.31, 1.36, 1.45, 2.05, 1.22, 2.53, sh, fixed, { cast: false });
-  for (let i = 0; i < 5; i++) pbox(1.36, 1.375, 1.5 + i * .11, 1.51 + i * .11, 1.22, 2.53, std(0x8f735a, .9), fixed, { cast: false });
+{ const pleat = toTex((() => { const c = mkCanvas(16, 32), x = c.getContext('2d'), gr = x.createLinearGradient(0, 0, 0, 32); gr.addColorStop(0, '#8a7058'); gr.addColorStop(.25, '#c7ab8e'); gr.addColorStop(.75, '#b39579'); gr.addColorStop(1, '#7d654f'); x.fillStyle = gr; x.fillRect(0, 0, 16, 32); return c; })(), { rep: [1, 34] }); /* VR: 촘촘한 허니콤(셀룰러) 블라인드 주름 */
+  const sh = std(0xffffff, .95, 0, { map: pleat });
+  pbox(1.31, 1.36, 1.47, 2.05, 1.22, 2.53, sh, fixed, { cast: false }); pbox(1.31, 1.375, 1.45, 1.47, 1.21, 2.54, std(0xd9cdbd, .6), fixed, { cast: false }); /* 아래 레일 */
   const gp = std(0x6f8a55, .95), gl = std(0x5c7647, .95);
-  pbox(1.31, 3.6, 0, 1.0, .11, .17, gp, fixed); pbox(1.31, 1.37, 0, 1.0, .17, 1.2, gp, fixed);
-  for (let x = 1.45; x < 3.6; x += .16) pbox(x - .004, x + .004, .05, 1.0, .17, .175, gl, fixed, { cast: false });
-  for (let z = .3; z < 1.2; z += .16) pbox(1.37, 1.375, .05, 1.0, z - .004, z + .004, gl, fixed, { cast: false });
+  pbox(1.31, 3.6, 0, 1.0, .11, .13, gl, fixed); pbox(1.31, 1.33, 0, 1.0, .13, 1.2, gl, fixed); /* 바탕판 */
+  { const nN = 14, cwN = (3.6 - 1.37) / nN, nW = 6, cwW = (1.2 - .18) / nW; /* 둥글게 부푼 세로 채널 쿠션 */
+    for (let i = 0; i < nN; i++) mesh(RB(cwN - .006, .97, .05, .02, 3), gp, WX(1.37 + cwN * (i + .5)), .5, WZ(.155), fixed);
+    for (let i = 0; i < nW; i++) mesh(RB(.05, .97, cwW - .006, .02, 3), gp, WX(1.355), .5, WZ(.18 + cwW * (i + .5)), fixed); }
   ledRectWall(2.4, 1.02, .2, 2.2, .1, 0, 1, 0xffd9a8, .2, .7);
   // 벽 선반(골드 받침) 2개 — 침대 위 북쪽 벽
-  for (const [x0, x1, y] of [[2.2, 2.9, 1.55], [2.9, 3.6, 1.85]]) { pbox(x0, x1, y, y + .025, .11, .3, std(0xf1eee6, .5), fixed); pbox(x0 + .05, x0 + .09, y - .12, y, .11, .26, std(0xc9a14a, .3, .6), fixed); pbox(x1 - .09, x1 - .05, y - .12, y, .11, .26, std(0xc9a14a, .3, .6), fixed); } }
+  { const ym = std(0xe2bb4c, .4, .15); for (const [x0, x1, y, dx] of [[2.2, 2.9, 1.55, 2.32], [2.9, 3.6, 1.85, 3.47]]) { /* VR: 노란 선반 + 벽에 붙은 노란 원판(해 모양) */
+    mesh(RB(x1 - x0, .025, .19, .008, 2), ym, WX((x0 + x1) / 2), y + .0125, WZ(.205), fixed); const d = mesh(CY(.11, .11, .012, 40), ym, WX(dx), y - .02, WZ(.117), fixed); d.rotation.x = Math.PI / 2; } } }
 // 알파룸(VR): 창 양옆 회색 암막 커튼(서쪽 벽, 천장까지) + 커튼박스, 남쪽 벽 타이포그래피 포스터
 { const grey = std(0x77746f, 1, 0, { map: M.curtainGrey.map }); grey.side = THREE.DoubleSide;
   for (const [z0, z1] of [[2.88, 3.28], [4.22, 4.62]]) { const w = z1 - z0, c = curtain(0, w, 0, 2.3, fixed, grey, 8, .05); c.rotation.y = Math.PI / 2; c.position.set(WX(1.38), c.position.y, WZ((z0 + z1) / 2)); }
@@ -1800,14 +1848,15 @@ function bed(x, z, rot, w = 1.6, l = 2.1, name = '침대', headTall = false) {
   } else
   mesh(RB(w + .06, .26, l, .02), M.oak, 0, .13, 0, g);
   mesh(RB(w, .24, l - .06, .06), M.linen, 0, .38, .02, g);
-  mesh(RB(w + .04, .06, l * .62, .03), M.linen, 0, .52, l * .17, g);
-  mesh(RB(w + .08, .05, .62, .025), M.throwBlue, 0, .56, l / 2 - .42, g);
+  drapeCloth(g, { hx: w / 2 + .02, z0: -l * .16, z1: l / 2 - .01, top: .54, hang: .2, foot: .18, r: .06, th: .04, mat: M.linen, seed: w * 7 }); /* 이불: 옆·발치로 둥글게 흘러내림 */
+  { const f = mesh(CY(.028, .028, w - .02, 20), M.linen, 0, .525, -l * .16, g); f.rotation.z = Math.PI / 2; } /* 접힌 이불 윗단 */
+  drapeCloth(g, { hx: w / 2 + .04, z0: l / 2 - .75, z1: l / 2 - .14, top: .56, hang: .25, r: .08, th: .008, mat: M.throwBlue, nz: 24, wr: .008, seed: w * 3 + 1 }); /* 발치 러너(담요) */
   if (headTall) mesh(RB(w + .06, .9, .06, .02), M.oak, 0, .45, -l / 2 - .02, g);
   const pw = w > 1.2 ? 2 : 1;
-  for (let i = 0; i < pw; i++) { const px = pw === 1 ? 0 : (i ? .38 : -.38); const p = mesh(RB(.62, .16, .38, .07, 4), M.linen, px, .58, -l / 2 + .3, g); p.rotation.x = -.35; p.position.y = .62; }
+  for (let i = 0; i < pw; i++) { const px = pw === 1 ? 0 : (i ? .38 : -.38); const p = mesh(pillowG(.64, .19, .4), M.linen, px, .58, -l / 2 + .3, g); p.rotation.x = -.35; p.position.y = .62; }
   if (w > 1.2) {
-    const p1 = mesh(RB(.5, .45, .14, .07, 4), M.charcoal, .18, .78, -l / 2 + .45, g); p1.rotation.set(-.35, -.1, 0);
-    const p2 = mesh(RB(.6, .26, .12, .06, 4), M.check, -.15, .7, -l / 2 + .55, g); p2.rotation.set(-.4, .08, 0);
+    const p1 = mesh(pillowG(.5, .46, .17), M.charcoal, .18, .78, -l / 2 + .45, g); p1.rotation.set(-.35, -.1, 0);
+    const p2 = mesh(pillowG(.6, .28, .15), M.check, -.15, .7, -l / 2 + .55, g); p2.rotation.set(-.4, .08, 0);
   }
   return g;
 }
@@ -1940,14 +1989,24 @@ await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
 // 침실2: 창(서쪽) 아래 싱글 침대, 북쪽 벽 책상
 const bed2 = bed(2.4, .72, Math.PI / 2, 1.1, 2.0, '싱글 침대'); // VR: 북쪽 벽을 따라, 머리는 창(서쪽) 쪽
 recolorBed(bed2, 0x6d8a3e, 0xf2f1ec, 0x7c9a4a); // VR: 침실2 올리브 초록 이불·쿠션
-const desk2 = desk(1.66, 1.88, Math.PI / 2); // VR: 창 아래 책상(의자는 동쪽)
-{ const wt = std(0xf6f5f2, .4), terr = std(0xb5643c, .7); desk2.traverse(o => { if (!o.isMesh) return; if (o.material === M.oak || o.material === M.black) o.material = wt; else if (o.material === M.fabricGrey) o.material = terr; }); } // VR: 흰 책상 + 테라코타 의자
+{ const fr = std(0xb27350, .55); bed2.traverse(o => { if (o.isMesh && o.material === M.whiteGloss) o.material = fr; }); } // VR: 테라코타 원목 침대 프레임
+// 책상(VR): 창 아래 벽에 붙은 흰 상판(남쪽 벽까지, 침대 쪽 바깥 모서리 크게 둥글림) + 침대 쪽 끝을 받치는 알약 모양 2단 서랍(흰 몸통·테라코타 앞판) + 테라코타 셸 의자
+const desk2 = piece('책상', 1.66, 1.88, Math.PI / 2);
+{ const wt = std(0xf6f5f2, .4), terr = std(0xb5643c, .6), xa = -.8, xb = .55, za = -.35, zb = .2, R = .22;
+  const s = new THREE.Shape(); s.moveTo(xa, za); s.lineTo(xb, za); s.lineTo(xb, zb - R); s.absarc(xb - R, zb - R, R, 0, Math.PI / 2, false); s.lineTo(xa, zb); s.lineTo(xa, za);
+  const tg = new THREE.ExtrudeGeometry(s, { depth: .03, bevelEnabled: true, bevelThickness: .005, bevelSize: .005, bevelSegments: 2, curveSegments: 24 }); tg.rotateX(Math.PI / 2); mesh(tg, wt, 0, .74, 0, desk2);
+  const pw = .36, ph = .2, pr = .1, pill = (w, h, r) => { const p = new THREE.Shape(); p.absarc(w / 2 - r, 0, r, -Math.PI / 2, Math.PI / 2, false); p.absarc(-w / 2 + r, 0, r, Math.PI / 2, Math.PI * 1.5, false); return p; };
+  const pg = new THREE.ExtrudeGeometry(pill(pw, ph, pr), { depth: .4, bevelEnabled: true, bevelThickness: .02, bevelSize: .015, bevelSegments: 4, curveSegments: 20 });
+  const fg = new THREE.ExtrudeGeometry(pill(pw - .02, ph - .03, pr - .015), { depth: .008, bevelEnabled: true, bevelThickness: .002, bevelSize: .002, bevelSegments: 1, curveSegments: 20 });
+  for (const y of [.115, .35]) { mesh(pg, wt, .33, y, -.3, desk2); mesh(fg, terr, .33, y, .118, desk2); }
+  mesh(RB(.08, .26, .08, .02), wt, .33, .595, -.08, desk2);
+  shellChair(desk2, -.12, .44, Math.PI + .12, terr); }
 // 침실2 소품(VR): 머리판 쪽 사과 무늬 베개 2개 + 판다·곰 인형, 책상 위 노란 책·그림 카드·작은 화분, 골드 선반 위 컵·책·꽃병·액자, 흰 구형 펜던트, 남쪽 벽 토끼 그림
 { const apple = toTex((() => { const c = mkCanvas(128, 112), x = c.getContext('2d'); x.fillStyle = '#f7f5ef'; x.fillRect(0, 0, 128, 112);
     for (let i = 0; i < 9; i++) { const ax = 16 + (i % 3) * 44 + (i / 3 | 0) % 2 * 10, ay = 18 + (i / 3 | 0) * 36; x.fillStyle = '#7da23f'; x.beginPath(); x.arc(ax - 4, ay, 8, 0, 7); x.arc(ax + 4, ay, 8, 0, 7); x.fill(); x.fillStyle = '#9cc25a'; x.beginPath(); x.arc(ax - 5, ay - 3, 3, 0, 7); x.fill();
       x.strokeStyle = '#5a4030'; x.lineWidth = 2; x.beginPath(); x.moveTo(ax, ay - 7); x.lineTo(ax + 2, ay - 13); x.stroke(); x.fillStyle = '#4f7d2e'; x.beginPath(); x.ellipse(ax + 6, ay - 12, 5, 2.5, -.5, 0, 7); x.fill(); }
     return c; })()), pil = std(0xffffff, .95, 0, { map: apple }), L = 2.0;
-  for (const [px, ry] of [[-.22, .06], [.22, -.08]]) { const p = mesh(RB(.44, .36, .11, .045, 4), pil, px, .7, -L / 2 + .14, bed2); p.rotation.set(-.28, ry, 0); }
+  for (const [px, ry] of [[-.22, .06], [.22, -.08]]) { const p = mesh(pillowG(.46, .38, .15), pil, px, .7, -L / 2 + .14, bed2); p.rotation.set(-.28, ry, 0); }
   const plush = (x, z, ry, body, dark, muzzle, panda) => { const t = new THREE.Group(); t.position.set(x, .5, z); t.rotation.y = ry; bed2.add(t);
     const sp = (r, m, px, py, pz, sx = 1, sy = 1, sz = 1) => { const s = mesh(new THREE.SphereGeometry(r, 18, 12), m, px, py, pz, t); s.scale.set(sx, sy, sz); return s; };
     sp(.075, body, 0, .075, 0, 1, 1.05, .9); sp(.064, body, 0, .19, .012);
@@ -1976,16 +2035,21 @@ const desk2 = desk(1.66, 1.88, Math.PI / 2); // VR: 창 아래 책상(의자는 
     const ph = mesh(BX(.08, .1, .002), std(0xffffff, .7, 0, { map: toTex((() => { const c = mkCanvas(32, 40), x = c.getContext('2d'); x.fillStyle = '#cfe0e8'; x.fillRect(0, 0, 32, 40); x.fillStyle = '#e9c98f'; x.beginPath(); x.arc(16, 22, 9, 0, 7); x.fill(); return c; })()) }), WX(3.38), y2 + .074, WZ(.168), g); ph.rotation.x = -.12; }
   // 흰 구형 펜던트(침대 머리 쪽 창 모서리)
   { const g = fixed; mesh(CY(.003, .003, H - 1.66, 6), M.black, WX(1.62), (H + 1.66) / 2, WZ(.48), g, { cast: false });
-    mesh(new THREE.SphereGeometry(.1, 28, 18), new THREE.MeshStandardMaterial({ color: 0xfaf6ee, roughness: .5, emissive: 0xffe4c0, emissiveIntensity: .55 }), WX(1.62), 1.56, WZ(.48), g, { cast: false }); }
+    mesh(new THREE.SphereGeometry(.1, 28, 18), new THREE.MeshStandardMaterial({ color: 0xfaf6ee, roughness: .5, emissive: 0xffe4c0, emissiveIntensity: .55 }), WX(1.62), 1.56, WZ(.48), g, { cast: false });
+    mesh(CY(.028, .05, .05, 24), std(0x3f5a3a, .5), WX(1.62), 1.665, WZ(.48), g, { cast: false }); mesh(CY(.045, .045, .018, 24), std(0xe2bb4c, .4, .15), WX(1.62), H - .009, WZ(.48), g, { cast: false }); } /* VR: 초록 갓 + 노란 천장 받침 */
   // 남쪽 벽(z 2.68, 북쪽을 향함) 토끼 그림 — 통합형(1-1)이면 벽이 없어지므로 따로 묶어 숨김
   { const g = item('b-rabbit', '토끼 그림', false);
-    const art = toTex((() => { const c = mkCanvas(256, 360), x = c.getContext('2d'); x.fillStyle = '#f6f1e7'; x.fillRect(0, 0, 256, 360);
-      x.fillStyle = '#cfa985'; x.beginPath(); x.ellipse(128, 285, 72, 80, 0, 0, 7); x.fill(); x.beginPath(); x.ellipse(128, 180, 50, 56, 0, 0, 7); x.fill();
-      for (const s of [-1, 1]) { x.save(); x.translate(128 + s * 24, 110); x.rotate(s * .12); x.beginPath(); x.ellipse(0, -48, 15, 58, 0, 0, 7); x.fill(); x.fillStyle = '#e8c3b0'; x.beginPath(); x.ellipse(0, -46, 7, 44, 0, 0, 7); x.fill(); x.fillStyle = '#cfa985'; x.restore(); }
-      x.strokeStyle = 'rgba(120,90,60,.35)'; x.lineWidth = 1; for (let i = 0; i < 220; i++) { const a = rnd() * 6.28, r = rnd(), cx = 128 + Math.cos(a) * r * 70, cy = 285 + Math.sin(a) * r * 76; x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + 2, cy + 6); x.stroke(); }
-      x.fillStyle = '#2a2420'; for (const s of [-1, 1]) { x.beginPath(); x.arc(128 + s * 20, 172, 5, 0, 7); x.fill(); }
-      x.fillStyle = '#d9928a'; x.beginPath(); x.arc(128, 194, 5, 0, 7); x.fill(); x.strokeStyle = '#4a3a30'; x.lineWidth = 1;
-      for (const s of [-1, 1]) for (let i = -1; i <= 1; i++) { x.beginPath(); x.moveTo(128 + s * 8, 198); x.lineTo(128 + s * 62, 192 + i * 9); x.stroke(); }
+    const art = toTex((() => { const c = mkCanvas(320, 460), x = c.getContext('2d'); x.fillStyle = '#f4f0ea'; x.fillRect(0, 0, 320, 460); /* VR: 흰 바탕에 서 있는 연갈색 토끼(긴 뾰족 귀·털결·수염) */
+      const b = new Path2D(); b.moveTo(72, 460); b.quadraticCurveTo(80, 360, 110, 300); b.quadraticCurveTo(126, 262, 126, 228); b.quadraticCurveTo(112, 196, 124, 160); b.quadraticCurveTo(132, 132, 150, 122);
+      b.quadraticCurveTo(122, 70, 128, 14); b.quadraticCurveTo(152, 52, 164, 116); b.quadraticCurveTo(170, 120, 176, 116); b.quadraticCurveTo(196, 50, 228, 12); b.quadraticCurveTo(222, 78, 192, 124);
+      b.quadraticCurveTo(212, 136, 216, 162); b.quadraticCurveTo(222, 200, 204, 228); b.quadraticCurveTo(206, 262, 232, 300); b.quadraticCurveTo(266, 360, 280, 460); b.closePath();
+      x.fillStyle = '#d8b898'; x.fill(b); x.save(); x.clip(b);
+      for (let i = 0; i < 900; i++) { const px = 90 + rnd() * 175, py = 10 + rnd() * 450, l = 5 + rnd() * 9, a = (px - 170) * .004 + (rnd() - .5) * .5; x.strokeStyle = rnd() < .55 ? 'rgba(160,118,78,.55)' : 'rgba(250,236,220,.6)'; x.lineWidth = .9 + rnd() * .6; x.beginPath(); x.moveTo(px, py); x.lineTo(px + Math.sin(a) * l, py + Math.cos(a) * l); x.stroke(); }
+      x.fillStyle = 'rgba(236,206,186,.8)'; for (const [ex, et, eb] of [[140, 30, 118], [208, 28, 120]]) { x.beginPath(); x.moveTo(ex, et + 12); x.quadraticCurveTo(ex + (ex < 170 ? 12 : -10), (et + eb) / 2, ex + (ex < 170 ? 14 : -12), eb); x.quadraticCurveTo(ex + (ex < 170 ? 2 : -2), (et + eb) / 2, ex, et + 12); x.fill(); }
+      x.restore();
+      x.fillStyle = '#2b2422'; for (const ex of [146, 194]) { x.beginPath(); x.ellipse(ex, 170, 6, 8, 0, 0, 7); x.fill(); x.fillStyle = '#fff'; x.beginPath(); x.arc(ex + 2, 167, 1.6, 0, 7); x.fill(); x.fillStyle = '#2b2422'; }
+      x.strokeStyle = '#4a3a33'; x.lineWidth = 1.4; x.beginPath(); x.moveTo(164, 196); x.lineTo(170, 202); x.lineTo(176, 196); x.moveTo(170, 202); x.lineTo(170, 210); x.stroke();
+      x.lineWidth = .8; x.strokeStyle = 'rgba(40,32,30,.85)'; for (const s of [-1, 1]) for (let i = 0; i < 4; i++) { x.beginPath(); x.moveTo(170 + s * 8, 203 + i * 2); x.quadraticCurveTo(170 + s * 45, 192 + i * 9, 170 + s * (78 + i * 4), 200 + i * 16); x.stroke(); }
       return c; })());
     pbox(2.08, 2.72, .98, 1.88, 2.65, 2.68, M.oak, g); pbox(2.11, 2.69, 1.01, 1.85, 2.646, 2.65, std(0xffffff, .9, 0, { map: art }), g, { cast: false }); }
 }
