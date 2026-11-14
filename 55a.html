@@ -2061,9 +2061,10 @@ const bed2 = bed(.72, 7.0, Math.PI, 1.1, 2.0, '싱글 침대'); // 사진: 화�
 { const grey = std(0x8d8f93, .98, 0, { map: M.throwBlue.map }), rm = [], pg = pillowG(.64, .19, .4); bed2.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = grey; if (o.geometry === pg) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
   const L = 2.0; for (const [px, ry, col] of [[-.24, .08, 0xe8c34a], [.2, -.06, 0xb9d3e6]]) { const p = mesh(pillowG(.46, .36, .15), std(col, .95), px, .7, -L / 2 + .14, bed2); p.rotation.set(-.28, ry, 0); }
   const a = new THREE.Group(); a.position.set(.04, .5, -L / 2 + .42); a.rotation.y = .25; bed2.add(a); const ws = std(0xf3f2ee, .8), visor = std(0x1d2430, .12, .3);
-  mesh(new THREE.CapsuleGeometry(.055, .07, 6, 14), ws, 0, .1, 0, a); mesh(new THREE.SphereGeometry(.066, 20, 14), ws, 0, .225, 0, a); const v = mesh(new THREE.SphereGeometry(.05, 18, 12), visor, 0, .228, .028, a); v.scale.set(1, .8, .7);
+  mesh(new THREE.CapsuleGeometry(.055, .07, 6, 14), ws, 0, .1, 0, a); mesh(new THREE.SphereGeometry(.066, 20, 14), ws, 0, .225, 0, a); const v = mesh(new THREE.SphereGeometry(.05, 18, 12), visor, 0, .228, .04, a); v.scale.set(1, .8, .8); mesh(BX(.045, .028, .012), std(0x2f5fb0, .6), 0, .135, .055, a); mesh(BX(.016, .016, .013), std(0xd84a3a, .6), -.012, .137, .056, a); /* 헬멧 바이저가 보이게 앞으로 + 가슴 패치 */
   for (const s of [-1, 1]) { const arm = mesh(new THREE.CapsuleGeometry(.022, .05, 4, 10), ws, s * .07, .12, .02, a); arm.rotation.z = s * .5; const leg = mesh(new THREE.CapsuleGeometry(.024, .05, 4, 10), ws, s * .03, .03, .05, a); leg.rotation.x = 1.3; }
-  mesh(RB(.08, .09, .04, .012), std(0xd9d9d6, .7), 0, .12, -.06, a); }
+  mesh(RB(.08, .09, .04, .012), std(0xd9d9d6, .7), 0, .12, -.06, a);
+  { const p = mesh(pillowG(.42, .38, .14), std(0xa3a5a8, .98, 0, { map: M.navy.map }), -.02, .76, -L / 2 + .08, bed2); p.rotation.set(-.2, .05, 0); } } /* VR: 뒤쪽 회색 니트 쿠션 */
 /* VR: 창 앞 흰 책상(양옆 판재 다리) + 노트북 · 노란 연필꽂이 · 파란 소품 · 그림 카드 · 탁상시계, 노란 셸 의자 */
 /* 알파룸(VR): 원형 테이블 의자 — 흰 부클레 둥근(배럴) 의자 2개가 테이블을 향함(테이블과 함께 움직임) */
 for (const [sx, sz] of [[-.5, .27], [.44, -.32]]) { const c = diningChair(alphaTable, sx, sz, Math.atan2(-sx, -sz)); c.traverse(o => { if (o.isMesh && o.material !== M.black) o.material = M.boucle; }); }
