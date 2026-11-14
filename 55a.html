@@ -824,7 +824,7 @@ function addOpening(horiz, line, t, o, parent = structure) {
       // 여닫이 문: 경첩(o.hinge 'a'|'b')을 축으로 회전, 열리는 쪽 o.side(+1/-1). 처음엔 열린 상태
       const hu = o.hinge === 'b' ? o.to - fw : o.from + fw;
       doorSpots.push({ horiz, line, t, o });
-      makeDoor({ parent: grp, horiz, line, t, hu, du: o.hinge === 'b' ? -1 : 1, side: o.side, lw, lh, lt, style: o.glass ? 'glass' : 'solid', from: o.from, to: o.to, name: o.name || '방문' });
+      makeDoor({ parent: grp, horiz, line, t, hu, du: o.hinge === 'b' ? -1 : 1, side: o.side, lw, lh, lt, style: o.glass ? 'glass' : 'solid', from: o.from, to: o.to, name: o.name || '방문', startOpen: !o.closed }); // o.closed: 처음엔 닫힌 문(창고·팬트리)
     }
   } else if (o.kind === 'window' || o.kind === 'slide' || o.kind === 'louver') {
     const ft = .07, inset = 0;
@@ -885,7 +885,7 @@ wall(2.36, 6.6, 2.36, 8.22, TI, [], 'sp-bent');
 wall(5.12, 5.1, 5.12, 8.22, TI, []);
 wall(3.4, 2.2, 3.4, 2.6, TI, []);
 // 현관창고 (물품옵션 1 선택 시 철거 → 현관장+복도팬트리)
-wall(3.4, 2.6, 3.4, 4.2, TI, [{ from: 3.3, to: 4.05, kind: 'door', hinge: 'b', side: 1 }], 'storage');
+wall(3.4, 2.6, 3.4, 4.2, TI, [{ from: 3.3, to: 4.05, kind: 'door', hinge: 'b', side: 1, name: '현관창고 문', closed: true }], 'storage'); // 창고 문은 처음엔 닫힘
 wall(4.5, 2.6, 4.5, 4.2, TI, [], 'storage');
 wall(3.4, 4.2, 4.5, 4.2, TI, [], 'storage');
 // 물품옵션 1: 팬트리가 주방 쪽으로 확장(동쪽 벽 x=5.0) · 팬트리 도어는 복도(남쪽) 방향
@@ -2140,7 +2140,7 @@ const PAN = { x0: 3.96, x1: 4.94, z0: 2.66, z1: 4.2 };
   const pd = og('o1doors');
   const half = (dx1 - dx0 - .024) / 2 - .003;
   for (const [hu, du] of [[dx0 + .013, 1], [dx1 - .013, -1]]) {
-    const d = makeDoor({ parent: pd, horiz: true, line: PAN.z1, t: .12, hu, du, side: 1, lw: half, lh: 2.27, lt: .03, mat: M.kdoor, from: dx0, to: dx1, name: '팬트리 문', handle: false });
+    const d = makeDoor({ parent: pd, horiz: true, line: PAN.z1, t: .12, hu, du, side: 1, lw: half, lh: 2.27, lt: .03, mat: M.kdoor, from: dx0, to: dx1, name: '팬트리 문', handle: false, startOpen: false }); // 팬트리 문은 처음엔 닫힘
     const e = mesh(BX(.009, 2.27, .032), M.black, half - .0045, 2.27 / 2 + .01, 0, d.pivot); e.userData.door = d; doorMeshes.push(e); // 가운데 검정 줄눈(문짝 끝면)
   }
 }
