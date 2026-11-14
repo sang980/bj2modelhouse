@@ -837,7 +837,7 @@ wall(5.67, 3.16, 7.0, 3.16, TI, [{ from: 5.78, to: 6.88, y1: 2.3, kind: 'open' }
   const half = (dx1 - dx0 - .024) / 2 - .003;
   for (const [hu, du] of [[dx0 + .013, 1], [dx1 - .013, -1]]) {
     const d = makeDoor({ parent: g, horiz: true, line: 3.16, t: .12, hu, du, side: 1, lw: half, lh: 2.27, lt: .03, mat: M.door, from: dx0, to: dx1, name: '현관창고 문', handle: false, startOpen: false });
-    const k = mesh(BX(.02, .3, .03), M.chrome, half - .06, 1.05, du * .03, d.pivot); k.userData.door = d; doorMeshes.push(k);                 // 현관 쪽 손잡이
+    const k = mesh(BX(.008, 2.27, .034), M.black, half - .004, 1.145, 0, d.pivot); k.userData.door = d; doorMeshes.push(k); // VR: 손잡이 없이 검은 줄눈
     for (const y of [.25, 1.1, 2.0]) mesh(BX(.035, .05, .012), M.chrome, .03, y, -du * .02, d.pivot);                                          // 안쪽 경첩(사진)
   }
 }
@@ -1082,12 +1082,12 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   pbox(x + .03, x + .034, 1.03, 1.97, 3.03, 3.92, std(0xffffff, .9, 0, { map: art }), g, { cast: false });
   ledRectWall(x + .05, 1.5, 3.475, .9, 1.0, 1, 0, 0xffe2bd, .3, .8);
 }
-// ── 현관: 신발장(남쪽, 문은 현관 쪽) — 블랙 테 전신거울 문 1짝 + 평판등 ──
+// ── 현관: 신발장(남쪽, 문은 현관 쪽) — 블랙 테 전신거울 문 3짝(VR) + 평판등 ──
 { const g = fixed, z = 4.69, a = 5.73, b = 6.84, w3 = (b - a) / 3;
   pbox(a, b, .1, 2.3, 4.3, z, M.kdoor, g); pbox(a + .02, b - .02, 0, .1, 4.34, z - .04, M.black, g);
   for (let i = 1; i < 3; i++) pbox(a + w3 * i - .0015, a + w3 * i + .0015, .1, 2.3, 4.297, 4.3, seamMat, g);
-  pbox(a + .03, a + w3 - .03, .2, 2.2, 4.294, 4.297, M.mirror, g, { cast: false });
-  for (const [x0, x1, y0, y1] of [[a + .02, a + w3 - .02, .19, .21], [a + .02, a + w3 - .02, 2.19, 2.21], [a + .02, a + .035, .19, 2.21], [a + w3 - .035, a + w3 - .02, .19, 2.21]]) pbox(x0, x1, y0, y1, 4.29, 4.296, M.black, g);
+  for (let i = 0; i < 3; i++) pbox(a + w3 * i + .015, a + w3 * (i + 1) - .015, .12, 2.28, 4.294, 4.297, M.mirror, g, { cast: false }); // VR: 3짝 모두 전신 거울
+  for (let i = 0; i <= 3; i++) pbox(a + w3 * i - .006, a + w3 * i + .006, .1, 2.3, 4.288, 4.294, M.black, g); pbox(a, b, 2.28, 2.3, 4.288, 4.294, M.black, g); pbox(a, b, .1, .12, 4.288, 4.294, M.black, g);
   ceilingPanel(6.05, 6.55, 3.5, 4.0, 1.0, 2.6);
 }
 // ── 욕실1(공용): 북쪽 벽에 변기·반다리 세면기, 위에 거울장 + 돌 선반, 동쪽 벽 따라 욕조 ──
