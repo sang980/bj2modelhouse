@@ -1783,13 +1783,20 @@ function kitchenProps(k) {
   const cream = std(0xefe6d3, .35), chrome = M.chrome, blk = std(0x151517, .4), felt = std(0x2b2c2f, .9);
   // 레트로 커피머신 (x 6.13)
   { const cx = 6.13, cz = .29;
-    at(RB(.22, .3, .25, .03), cream, cx, T + .15, cz);
-    at(RB(.23, .02, .26, .01), chrome, cx, T + .305, cz);
+    { const s = new THREE.Shape(); s.moveTo(-.12, 0); s.lineTo(.1, 0); s.quadraticCurveTo(.12, 0, .12, .03); s.lineTo(.12, .15); s.bezierCurveTo(.12, .245, .095, .29, .04, .29); s.lineTo(-.095, .29); s.quadraticCurveTo(-.12, .29, -.12, .265); s.closePath(); /* 옆모습: 앞이 둥글게 넘어가는 레트로 몸체 */
+      const bg = new THREE.ExtrudeGeometry(s, { depth: .2, bevelEnabled: true, bevelThickness: .012, bevelSize: .012, bevelSegments: 3, curveSegments: 18 }); bg.translate(0, 0, -.1); bg.rotateY(-Math.PI / 2); at(bg, std(0xefe6d3, .3), cx, T + .012, cz); }
+    at(RB(.2, .01, .16, .004, 2), chrome, cx, T + .308, cz - .025); /* 위 컵워머 판 + 크롬 레일 */
+    for (const [ux, uz, L, ax] of [[0, -.105, .2, 'x'], [0, .055, .2, 'x'], [-.1, -.025, .16, 'z'], [.1, -.025, .16, 'z']]) { const r = at(CY(.0035, .0035, L, 8), chrome, cx + ux, T + .345, cz + uz); if (ax === 'x') r.rotation.z = Math.PI / 2; else r.rotation.x = Math.PI / 2; }
+    for (const [ux, uz] of [[-.1, -.105], [.1, -.105], [-.1, .055], [.1, .055]]) at(CY(.003, .003, .04, 6), chrome, cx + ux, T + .325, cz + uz);
+    at(BX(.235, .012, .27), chrome, cx, T + .006, cz + .01); /* 바닥 크롬 띠 */
     for (const s of [-1, 1]) at(CY(.035, .035, .012, 20), blk, cx + s * .06, T + .325, cz - .02);  // 위에 올린 컵
     at(CY(.04, .045, .05, 24), chrome, cx, T + .2, cz + .14);                                       // 그룹헤드
     const pf = at(CY(.008, .008, .12, 10), blk, cx + .08, T + .18, cz + .18); pf.rotation.z = Math.PI / 2.4; // 포터필터 손잡이
     at(RB(.2, .015, .09, .005), chrome, cx, T + .01, cz + .17);                                      // 물받이
     at(CY(.03, .03, .012, 24), chrome, cx - .065, T + .25, cz + .128).rotation.x = Math.PI / 2;     // 압력계
+    at(CY(.024, .024, .004, 24), std(0xf7f5ef, .4), cx - .065, T + .25, cz + .135).rotation.x = Math.PI / 2; { const nd = at(BX(.002, .02, .002), blk, cx - .06, T + .253, cz + .138); nd.rotation.z = -.7; } /* 문자판 + 바늘 */
+    { const w = at(CY(.005, .005, .17, 8), chrome, cx + .135, T + .12, cz + .07); w.rotation.x = .25; at(CY(.016, .016, .02, 14), blk, cx + .13, T + .235, cz + .03).rotation.z = Math.PI / 2; } /* 오른쪽 스팀 노즐 + 손잡이 */
+    at(CY(.036, .03, .03, 20), chrome, cx, T + .162, cz + .14); /* 포터필터 바스켓 */
     at(CY(.014, .014, .02, 16), chrome, cx + .07, T + .25, cz + .13).rotation.x = Math.PI / 2;      // 다이얼
     at(CY(.032, .028, .07, 20), std(0xffffff, .2), cx, T + .05, cz + .17); }                        // 에스프레소 잔
   // 블랙 펠트 받침 + 전기주전자 (x 6.45)
