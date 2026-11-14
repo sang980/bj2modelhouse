@@ -928,11 +928,12 @@ wall(2.86, 6.4, 3.42, 6.4, TI, [], 'sp-bent');                          // 꺾�
 wall(3.42, 5.32, 3.42, 6.4, TI, [], 'sp-bent');                         // 문 쪽 구간: 알파룸 쪽으로 → 침실2 문 옆이 넓어짐
 wall(5.15, 5.32, 5.15, 8.15, TI, []);                                   // 알파룸 | 거실
 wall(3.52, 2.47, 3.52, 4.2, TI, [{ from: 2.76, to: 3.62, y1: 2.32, kind: 'open' }]);   // 현관창고: 키큰 평판 문(아래)
-// 현관창고 문(VR): 몰딩 없는 키큰 흰 평판 문(검은 줄눈), 현관 쪽으로 열림 · 기본 닫힘
-{ const g = structure, z0 = 2.76, z1 = 3.62, lw = z1 - z0 - .012;
-  const d = makeDoor({ parent: g, horiz: false, line: 3.52, t: .12, hu: z0 + .006, du: 1, side: -1, lw, lh: 2.3, lt: .03, mat: M.door, from: z0, to: z1, name: '현관창고 문', handle: false, startOpen: false });
-  // 깜빡임(z-fighting) 방지: 검은 줄눈이 문짝 끝면·벽 끝면과 정확히 같은 면에 겹치지 않게 1~2mm 앞으로 내밀고 높이는 문짝 안쪽으로
-  const e = mesh(BX(.01, 2.296, .034), M.black, lw - .003, 1.16, 0, d.pivot); e.userData.door = d; doorMeshes.push(e);
+/* 현관창고 문: 몰딩 없는 키큰 흰 양여닫이 2짝(손잡이 없음, 가운데 검은 줄눈), 현관 쪽으로 열림 · 기본 닫힘 */
+{ const g = structure, z0 = 2.76, z1 = 3.62, half = (z1 - z0 - .012) / 2 - .002;
+  for (const [hu, du] of [[z0 + .006, 1], [z1 - .006, -1]]) {
+    const d = makeDoor({ parent: g, horiz: false, line: 3.52, t: .12, hu, du, side: -1, lw: half, lh: 2.3, lt: .03, mat: M.door, from: z0, to: z1, name: '현관창고 문', handle: false, startOpen: false });
+    /* 깜빡임 방지: 검은 줄눈은 문짝 끝면보다 1~2mm 앞으로, 높이는 문짝 안쪽으로 */
+    const e = mesh(BX(.01, 2.296, .034), M.black, half - .003, 1.16, 0, d.pivot); e.userData.door = d; doorMeshes.push(e); }
   for (const [a, b] of [[z0 - .006, z0 + .002], [z1 - .002, z1 + .006]]) pbox(3.455, 3.585, 0, 2.322, a, b, M.black, g); }
 wall(3.52, 4.2, 4.45, 4.2, TI, []);
 wall(8.85, 4.36, 8.85, 8.15, TI, [{ from: 4.45, to: 5.35, kind: 'door', hinge: 'a', side: 1 }]); // 침실1 문
