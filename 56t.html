@@ -1507,6 +1507,7 @@ function diningWhiteT() {
   mesh(RB(W, .035, L, .008), top, 0, .74, 0, g);
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(BX(.05, .72, .05), wood, sx * (W / 2 - .07), .36, sz * (L / 2 - .08), g);
   for (const sz of [-.33, .33]) { diningChair(g, -(W / 2 + .12), sz, Math.PI / 2); diningChair(g, W / 2 + .12, sz, -Math.PI / 2); }
+  g.traverse(o => { if (o.isMesh && o.geometry.type === 'CylinderGeometry' && o.geometry.parameters.radiusTop < .015 && o.geometry.parameters.height > .4) o.material = wood; }); // VR: 의자 다리 원목
   for (const [px, pz] of [[-.2, -.33], [-.2, .33], [.2, -.33], [.2, .33]]) { mesh(BX(.28, .004, .36), std(0xdcd3c4, .9), px, .76, pz, g, { cast: false }); mesh(CY(.1, .09, .02, 30), M.whiteGloss, px, .772, pz, g, { cast: false }); }
   for (const [x, z, h] of [[-.05, -.05, .26], [.06, .03, .22]]) mesh(CY(.03, .035, h, 16), std(0x2b2f2a, .3), x, .76 + h / 2, z, g);
   g.userData.len = L; return g;
