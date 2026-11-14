@@ -1135,8 +1135,8 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
 // ── 욕실1(공용): 북쪽 벽 따라 욕조, 서쪽 벽에 반다리 세면기·변기 + 거울장·돌 선반 ──
 { const g = fixed;
   basin(.38, 4.0, Math.PI / 2); toilet(.45, 4.75, Math.PI / 2);
-  pbox(.11, .24, 1.22, 1.25, 3.6, 4.4, std(0xc9c6c0, .45, 0, { map: M.marbleW.map }), g);
-  pbox(.11, .25, 1.42, 2.08, 3.6, 4.4, std(0xdedcd7, .5), g); pbox(.25, .255, 1.43, 2.07, 3.61, 3.995, M.mirrorBath1, g, { cast: false }); pbox(.25, .255, 1.43, 2.07, 4.005, 4.39, M.mirrorBath1, g, { cast: false });
+  pbox(.11, .24, 1.22, 1.25, 3.7, 5.2, std(0xc9c6c0, .45, 0, { map: M.marbleW.map }), g); // VR: 긴 돌 선반
+  pbox(.11, .25, 1.42, 2.08, 3.7, 5.2, std(0xdedcd7, .5), g); pbox(.25, .255, 1.43, 2.07, 3.71, 4.445, M.mirrorBath1, g, { cast: false }); pbox(.25, .255, 1.43, 2.07, 4.455, 5.19, M.mirrorBath1, g, { cast: false }); // VR: 세면대·변기 위로 긴 거울장
   const tub = piece('욕조', .98, 3.3, Math.PI / 2, { movable: false });
   mesh(RB(.76, .55, 1.68, .03), M.white, 0, .275, 0, tub); mesh(RB(.6, .1, 1.52, .05), std(0xe7ecee, .1), 0, .5, 0, tub);
   mesh(CY(.012, .012, .7), M.chrome, .3, 1.35, -.62, tub); mesh(RB(.2, .05, .08, .02), M.chrome, .32, 1.0, -.62, tub);
@@ -1158,8 +1158,8 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   mesh(RB(.2, .06, .07, .02), M.chrome, WX(10.85), 1.05, WZ(z0 + .05), g);
   // 세면기·변기(동쪽 벽) + 거울장 + 돌 선반
   basin(11.55, 1.95, -Math.PI / 2); toilet(11.5, 2.58, -Math.PI / 2);
-  pbox(x1 - .12, x1, 1.25, 1.28, 1.6, 2.35, std(0xc9c6c0, .45, 0, { map: M.marbleW.map }), g);
-  pbox(x1 - .14, x1, 1.45, 2.1, 1.62, 2.3, std(0xdedcd7, .5), g); pbox(x1 - .145, x1 - .14, 1.46, 2.09, 1.63, 1.955, M.mirrorBath2, g, { cast: false }); pbox(x1 - .145, x1 - .14, 1.46, 2.09, 1.965, 2.29, M.mirrorBath2, g, { cast: false });
+  pbox(x1 - .12, x1, 1.25, 1.28, 1.6, 2.88, std(0xc9c6c0, .45, 0, { map: M.marbleW.map }), g); // VR: 긴 돌 선반
+  pbox(x1 - .14, x1, 1.45, 2.1, 1.62, 2.88, std(0xdedcd7, .5), g); pbox(x1 - .145, x1 - .14, 1.46, 2.09, 1.63, 2.245, M.mirrorBath2, g, { cast: false }); pbox(x1 - .145, x1 - .14, 1.46, 2.09, 2.255, 2.87, M.mirrorBath2, g, { cast: false }); // VR: 세면대·변기 위로 긴 거울장
   // 수건걸이(서쪽 벽)
   pbox(x0 + .015, x0 + .06, 1.17, 1.23, 1.75, 1.79, M.chrome, g); pbox(x0 + .015, x0 + .06, 1.17, 1.23, 2.03, 2.07, M.chrome, g);
   pbox(x0 + .06, x0 + .07, .75, 1.2, 1.77, 2.05, std(0xf4f4f2, .95), g); pbox(x0 + .07, x0 + .08, .85, 1.15, 1.82, 2.01, std(0x2e6b4a, .95), g);
