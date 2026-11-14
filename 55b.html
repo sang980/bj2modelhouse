@@ -607,6 +607,27 @@ Object.assign(M, {
   walnut: std(0xffffff, .55, 0, { map: toTex(woodCanvas([122, 88, 62], 4)) }),
   oak: std(0xffffff, .55, 0, { map: toTex(woodCanvas([196, 160, 118], 4)) }),
 });
+// 책: 텍스처 한 장(256×256)에 책등(왼쪽 1/4, 제목 세로 글자·위아래 띠) · 앞표지(가운데 1/2) · 종이 단면(오른쪽 1/4)을 그리고,
+//   상자 면마다 맞는 부분을 붙임 → 세운 책은 앞이 책등·옆이 표지·위가 종이, 눕힌 책은 위가 표지
+const BOOK = (() => {
+  const kinds = [['#efe9dc', '#b08d57', 'FORM'], ['#232325', '#d9c38c', 'ATLAS'], ['#d6cdbd', '#4a4036', 'NORDIC'], ['#34465a', '#e9e1d0', 'LIGHT'],
+    ['#8b8d87', '#f3f1ea', 'HOME'], ['#f4f2ed', '#2a2a2a', 'MONO'], ['#a85d3d', '#f2e6d2', 'PARIS'], ['#151515', '#f2f2f2', 'TOM FORD']];
+  const mats = kinds.map(([bg, ac, title], k) => { const c = mkCanvas(256, 256), x = c.getContext('2d');
+    x.fillStyle = bg; x.fillRect(0, 0, 192, 256);
+    x.fillStyle = ac; x.fillRect(0, 12, 64, 5); x.fillRect(0, 239, 64, 5); x.fillRect(26, 205, 12, 12);                 // 책등 띠·출판사 표시
+    x.save(); x.translate(32, 112); x.rotate(-Math.PI / 2); x.fillStyle = ac; x.font = `bold ${title.length > 6 ? 15 : 17}px serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(title, 0, 0); x.restore();
+    x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(62, 0, 3, 256);                                                          // 책등 접힘선
+    x.strokeStyle = ac; x.globalAlpha = .55; x.lineWidth = 2; x.strokeRect(78, 14, 100, 228); x.globalAlpha = 1;        // 표지 테두리
+    x.fillStyle = ac; x.font = `bold ${title.length > 6 ? 20 : 24}px serif`; x.textAlign = 'center'; x.fillText(title, 128, 108); x.fillRect(104, 122, 48, 2); x.font = '11px sans-serif'; x.fillText(['VOL. 1', 'EDITION', 'STUDIO', 'COLLECTED'][k % 4], 128, 142);
+    x.fillStyle = '#f2ece0'; x.fillRect(192, 0, 64, 256); x.fillStyle = 'rgba(120,100,80,.18)'; for (let y = 2; y < 256; y += 3) x.fillRect(192, y, 64, 1); // 종이 단면
+    return std(0xffffff, .72, 0, { map: toTex(c) }); });
+  const R = { s: [0, .25], c: [.25, .75], p: [.75, 1] };
+  const FACES = { z: 'ccppsp', x: 'spppcc', '-x': 'psppcc', lie: 'ppccsp' }; // 면 순서 +x −x +y −y +z −z (s 책등, c 표지, p 종이)
+  const geo = (w, h, d, mode = 'z') => { const g = new THREE.BoxGeometry(w, h, d), uv = g.attributes.uv, f = FACES[mode];
+    for (let i = 0; i < 6; i++) { const [a, b] = R[f[i]]; for (let k = 0; k < 4; k++) { const j = i * 4 + k; let u = uv.getX(j), v = uv.getY(j); if (mode === 'lie' && f[i] === 's') { const t = u; u = 1 - v; v = t; } /* 눕힌 책 책등: 글자 위쪽이 책 위를 향하게 */ uv.setXY(j, a + u * (b - a), v); } }
+    return g; };
+  return { mats, geo };
+})();
 await phase('마감재를 만드는 중', 21);
 Object.assign(M, {
   fabricGrey: std(0x9a9c9e, .95),
@@ -1337,7 +1358,7 @@ await phase('침실을 꾸미는 중', 66);
   for (const y of [.5, .92, 1.34, 1.76, 2.2]) for (let c = 0; c < 5; c++) { const a = x0 + (x1 - x0) * c / 5 + .03, b2 = x0 + (x1 - x0) * (c + 1) / 5 - .03, r = new THREE.Mesh(rod, M.ledWarm); r.scale.set(b2 - a, 1, 1); r.position.set(WX((a + b2) / 2), y - .012, WZ(z0 + .07)); g.add(r); }
   pbox(x0, x1, 0, .1, z0, z1, M.white, g);
   // 칸 채우기(VR): 아래→위 5단 × 왼→오 5칸. s 세운 책, k 눕힌 책 더미(+소품), b 검은 화병, w 흰 도자기, p 늘어지는 화분, o 나무 조형물, - 빈 칸
-  { const plan = ['sk-ws', 'ps-kb', 'b-sok', 'kwps-', '-sbkp'], tops = [.125, .545, .965, 1.385, 1.805], cw = (x1 - x0) / 5, zc = z0 + .15;
+  { const plan = ['sk-ss', 's-wsk', 'ks-sp', 'bsk-s', '-sos-'], tops = [.125, .545, .965, 1.385, 1.805], cw = (x1 - x0) / 5, zc = z0 + .15;
     const pal = [0xf1efe9, 0xd9d4ca, 0x2b2b2d, 0xbfb6a6, 0x8e9089, 0xe8e2d6, 0x4a4b4f], bm = pal.map(c => std(c, .75));
     const blackM = std(0x1d1d1f, .55), whiteM = std(0xf3f1ec, .35), woodM = std(0xb88a5a, .55), potM = std(0xe9e6df, .5), leafM = std(0x4f7a3a, .75);
     const cover = toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = '#151515'; x.fillRect(0, 0, 96, 128); x.fillStyle = '#f2f2f2'; x.font = 'bold 16px serif'; x.textAlign = 'center'; x.fillText('TOM', 48, 56); x.fillText('FORD', 48, 76); return c; })());
@@ -1345,13 +1366,13 @@ await phase('침실을 꾸미는 중', 66);
     let seed = 7; const r = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
     for (let row = 0; row < 5; row++) for (let col = 0; col < 5; col++) {
       const t = plan[row][col], y = tops[row] + .002, cx = x0 + (col + .5) * cw, X = v => WX(v), Z = v => WZ(v);
-      if (t === 's') { let bx = cx - cw / 2 + .05 + r() * .06; const n = 4 + (r() * 4 | 0); for (let i = 0; i < n; i++) { const w = .025 + r() * .02, h = .2 + r() * .1; mesh(BX(w, h, .17 + r() * .04), bm[(r() * bm.length) | 0], X(bx + w / 2), y + h / 2, Z(zc - .02), g); bx += w + .003; }
-        const lean = mesh(BX(.025, .22, .17), bm[(r() * bm.length) | 0], X(bx + .06), y + .105, Z(zc - .02), g); lean.rotation.z = -.28; }
-      else if (t === 'k') { let yy = y; const n = 2 + (r() * 3 | 0); for (let i = 0; i < n; i++) { const h = .025 + r() * .02, m = (row === 2 && i === n - 1) ? std(0xffffff, .6, 0, { map: cover }) : bm[(r() * bm.length) | 0]; const b = mesh(BX(.22 + r() * .06, h, .17 + r() * .05), m, X(cx + (r() - .5) * .03), yy + h / 2, Z(zc), g); b.rotation.y = (r() - .5) * .2; yy += h; }
-        if (r() < .7) mesh(lath([[0, 0], [.03, 0], [.04, .04], [.025, .09], [.012, .11], [0, .11]]), r() < .5 ? blackM : whiteM, X(cx + .03), yy, Z(zc), g); }
+      if (t === 's') { let bx = cx - cw / 2 + .05 + r() * .06; const n = 4 + (r() * 4 | 0); for (let i = 0; i < n; i++) { const w = .025 + r() * .02, h = .2 + r() * .1; mesh(BOOK.geo(w, h, .17 + r() * .04, 'z'), BOOK.mats[(r() * 7) | 0], X(bx + w / 2), y + h / 2, Z(zc - .02), g); bx += w + .003; }
+        const lean = mesh(BOOK.geo(.025, .22, .17, 'z'), BOOK.mats[(r() * 7) | 0], X(bx + .06), y + .105, Z(zc - .02), g); lean.rotation.z = -.28; }
+      else if (t === 'k') { let yy = y; const n = 2 + (r() * 3 | 0); for (let i = 0; i < n; i++) { const h = .025 + r() * .02, m = (row === 0 && i === n - 1) ? BOOK.mats[7] : BOOK.mats[(r() * 7) | 0]; const b = mesh(BOOK.geo(.22 + r() * .06, h, .17 + r() * .05, 'lie'), m, X(cx + (r() - .5) * .03), yy + h / 2, Z(zc), g); b.rotation.y = (r() - .5) * .2; yy += h; }
+        if (row === 1 && col === 4) mesh(lath([[0, 0], [.03, 0], [.04, .04], [.025, .09], [.012, .11], [0, .11]]), blackM, X(cx + .03), yy, Z(zc), g); } // 책 더미 위 작은 화병은 한 곳만
       else if (t === 'b' || t === 'w') { const m = t === 'b' ? blackM : whiteM;
         mesh(lath([[0, 0], [.05, 0], [.07, .06], [.065, .14], [.035, .21], [.03, .24], [0, .24]]), m, X(cx - .06), y, Z(zc), g);
-        mesh(lath([[0, 0], [.04, 0], [.05, .05], [.03, .11], [0, .11]]), t === 'b' ? whiteM : blackM, X(cx + .08), y, Z(zc + .02), g); }
+        if (t === 'w') { let sx = cx + .04; for (let i = 0; i < 3; i++) { const w = .03, h = .22 + i * .02; mesh(BOOK.geo(w, h, .18, 'z'), BOOK.mats[i + 1], X(sx + w / 2), y + h / 2, Z(zc - .02), g); sx += w + .004; } } } // 흰 화병 옆엔 책 몇 권(화병 짝 중복 없앰)
       else if (t === 'p') { mesh(CY(.06, .05, .1, 24), potM, X(cx), y + .05, Z(zc), g);
         for (let i = 0; i < 16; i++) { const a = r() * 6.28, d = .03 + r() * .05, drop = r() < .5 ? r() * .25 : 0, l = mesh(new THREE.SphereGeometry(.022, 10, 6), leafM, X(cx + Math.cos(a) * (d + drop * .3)), y + .12 - drop + r() * .05, Z(zc + Math.sin(a) * d + drop * .4), g, { cast: false }); l.scale.set(1, .35, .8); l.rotation.set(r(), r() * 6, r()); } }
       else if (t === 'o') { mesh(BX(.12, .025, .12), woodM, X(cx), y + .0125, Z(zc), g); const s = mesh(new THREE.TorusKnotGeometry(.05, .016, 64, 10), woodM, X(cx), y + .1, Z(zc), g); s.scale.set(1, 1.2, .6); }
@@ -1693,7 +1714,7 @@ function shelf(x, z, rot) {
   for (let i = 0; i < 5; i++) mesh(BX(1.2, .025, .32), M.white, 0, .02 + i * .45, 0, g);
   mesh(BX(.025, 1.85, .32), M.white, -.59, .92, 0, g); mesh(BX(.025, 1.85, .32), M.white, .59, .92, 0, g);
   mesh(BX(1.2, 1.85, .01), M.white, 0, .92, -.155, g);
-  for (let i = 0; i < 4; i++) { let bx = -.55; while (bx < .45) { const bw = .025 + rnd() * .03, bh = .22 + rnd() * .12; if (rnd() < .82) mesh(BX(bw, bh, .22), M.books[(rnd() * 5) | 0], bx + bw / 2, .035 + i * .45 + bh / 2, 0, g); bx += bw + .004; } }
+  for (let i = 0; i < 4; i++) { let bx = -.55; while (bx < .45) { const bw = .025 + rnd() * .03, bh = .22 + rnd() * .12; if (rnd() < .82) mesh(BOOK.geo(bw, bh, .22, 'z'), BOOK.mats[(rnd() * 8) | 0], bx + bw / 2, .035 + i * .45 + bh / 2, 0, g); bx += bw + .004; } }
   return g;
 }
 function dresser(x, z, rot) {
