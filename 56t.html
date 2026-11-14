@@ -1108,7 +1108,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   const i0 = X0 + b, i1 = X1 - b, j0 = Z0 + b, j1 = Z1 - b;
   for (const [x0, x1, z0, z1] of [[i0, i1, j0, j0 + .02], [i0, i1, j1 - .02, j1], [i0, i0 + .02, j0, j1], [i1 - .02, i1, j0, j1]]) pbox(x0, x1, H - t + .004, H - t + .014, z0, z1, M.coveLED, ceilingGroup, { cast: false });
   const cove = new THREE.RectAreaLight(0xffd8a6, 0, i1 - i0, j1 - j0); cove.position.set(WX((i0 + i1) / 2), H - t - .01, WZ((j0 + j1) / 2)); cove.lookAt(WX((i0 + i1) / 2), H + 1, WZ((j0 + j1) / 2)); scene.add(cove); window.__cove = cove;
-  ceilingPanel(6.5, 7.5, 5.8, 6.8, 1.0, 2.8);
+  ceilingPanel(6.55, 6.95, 5.9, 6.8, 1.0, 2.8); ceilingPanel(7.05, 7.45, 5.9, 6.8, 1.0, 2.8); // VR 옵션 그림: 가로로 긴 평판등 2개
   // 창 커튼(속커튼 + 회색 암막) + 커튼박스
   curtain(5.22, 5.75, 8.02, 2.27, fixed, M.sheer); curtain(8.2, 8.72, 8.02, 2.27, fixed, M.sheer);
   curtain(5.22, 5.6, 7.94, 2.27, fixed, M.curtainGrey, 9, .045); curtain(8.35, 8.72, 7.94, 2.27, fixed, M.curtainGrey, 9, .045);
@@ -2004,13 +2004,21 @@ let b6door = null;
 { const g = item('b10', '알파룸 특화형 붙박이장'); wardrobe(g, 2.92, 3.37, 5.38, 6.14, 'x+', 2); } // VR 옵션 그림: 알파룸 북서쪽 홈(꺾인 벽 앞면과 같은 면)
 // 11 다기능 욕실팬(공용욕실) / 기본 일반 배기팬
 { const b = item('b11base', '배기팬', false, ceilingGroup); pbox(1.3, 1.55, H - .012, H, 4.6, 4.85, M.white, b, { cast: false }); for (let i = 0; i < 4; i++) pbox(1.33, 1.52, H - .014, H - .012, 4.63 + i * .06, 4.65 + i * .06, std(0x9a9893, .6), b, { cast: false });
-  const f = item('b11', '다기능 욕실팬', false, ceilingGroup); pbox(1.0, 1.6, H - .03, H, 4.45, 5.05, M.white, f, { cast: false });
-  for (let i = 0; i < 9; i++) pbox(1.05, 1.55, H - .032, H - .03, 4.51 + i * .055, 4.53 + i * .055, std(0x8a8c90, .5), f, { cast: false });
-  pbox(1.45, 1.55, H - .034, H - .03, 4.95, 5.01, std(0x3a7bd5, .3, 0, { emissive: 0x3a7bd5, emissiveIntensity: .8 }), f, { cast: false }); }
-// 12 시스템에어컨: 거실·침실1 / 침실2+알파룸 통합형 / 침실2·알파룸 각각
-function acUnit(k, x, z, w, alongX) { const g = item(k, '시스템에어컨', false, ceilingGroup);
-  if (alongX) { mesh(BX(w, .035, .4), M.white, WX(x), H - .017, WZ(z), g, { cast: false }); mesh(BX(w - .12, .004, .07), std(0x202225, .6), WX(x), H - .036, WZ(z - .1), g, { cast: false }); }
-  else { mesh(BX(.4, .035, w), M.white, WX(x), H - .017, WZ(z), g, { cast: false }); mesh(BX(.07, .004, w - .12), std(0x202225, .6), WX(x - .1), H - .036, WZ(z), g, { cast: false }); } }
+  // 다기능 욕실팬(VR 옵션 그림): 흰 정사각 패널 + 세로 타원 LED 링 + 아래 둥근 흡입 그릴 + 온습도 표시
+  const f = item('b11', '다기능 욕실팬', false, ceilingGroup), cx = 1.3, cz = 4.75;
+  pbox(cx - .25, cx + .25, H - .028, H, cz - .25, cz + .25, std(0xf4f4f2, .35), f, { cast: false });
+  { const ring = new THREE.Mesh(new THREE.TorusGeometry(.1, .009, 8, 48), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.6 })); ring.rotation.x = Math.PI / 2; ring.scale.set(1, 1.6, 1); ring.position.set(WX(cx), H - .031, WZ(cz)); f.add(ring); }
+  mesh(CY(.045, .045, .006, 32), std(0x1d1f23, .5), WX(cx), H - .032, WZ(cz + .09), f, { cast: false });
+  for (let i = -2; i <= 2; i++) pbox(cx - .035, cx + .035, H - .036, H - .034, cz + .09 + i * .015 - .002, cz + .09 + i * .015 + .002, std(0x3b3e44, .5), f, { cast: false });
+  pbox(cx - .05, cx + .05, H - .033, H - .031, cz - .04, cz - .02, std(0x9fd1ff, .3, 0, { emissive: 0x9fd1ff, emissiveIntensity: .9 }), f, { cast: false }); }
+// 12 시스템에어컨(VR 옵션 그림): 1방향 카세트 — 흰 패널 + 앞쪽 토출구 띠 + 가로 흡입 루버
+function acUnit(k, x, z, w, alongX) { const g = item(k, '시스템에어컨', false, ceilingGroup), d = .45, panel = std(0xf6f6f4, .35), slat = std(0xd6d8da, .4), dark = std(0x26282c, .6);
+  const box = (a, b, y0, y1, c, e, m) => alongX ? pbox(x - a, x + a, y0, y1, z + c, z + e, m, g, { cast: false }) : pbox(x + c, x + e, y0, y1, z - a, z + a, m, g, { cast: false });
+  box(w / 2, w / 2, H - .035, H, -d / 2, d / 2, panel);
+  box(w / 2 - .06, w / 2 - .06, H - .038, H - .035, -d / 2 + .04, -d / 2 + .1, dark);                // 토출구
+  for (let i = 0; i < 9; i++) box(w / 2 - .1, w / 2 - .1, H - .039, H - .035, -d / 2 + .15 + i * .028, -d / 2 + .163 + i * .028, slat); // 흡입 루버
+  box(w / 2 - .08, w / 2 - .08, H - .037, H - .035, d / 2 - .06, d / 2 - .055, slat);
+}
 acUnit('ac-liv', 7.0, 7.45, 1.05, true); acUnit('ac-bed1', 10.4, 7.6, 1.05, true);
 acUnit('ac-merged', 2.6, 7.55, .9, true); acUnit('ac-bed2', 1.4, 7.6, .9, true); acUnit('ac-alpha', 4.0, 7.6, .9, true);
 // 15 기능성 룸카펫(침실1)
