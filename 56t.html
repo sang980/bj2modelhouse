@@ -617,7 +617,7 @@ const stoneCanvas = (() => { const c = marbleCanvas(), x = c.getContext('2d'); x
 const MAT_OPT = {
   mma: { map: null, color: 0xf3f2ee, roughness: .4 },
   stone: { map: toTex(stoneCanvas), color: 0xffffff, roughness: .18 },
-  tile: { map: toTex(tileCanvas(4, 8, [240, 239, 236], '#d0cec9', { j: 3, gap: 4 }), { rep: [1, 1] }), color: 0xffffff, roughness: .25 },
+  tile: { map: toTex(tileCanvas(2, 4, [200, 199, 196], '#acaba7', { j: 5, veins: 10, gap: 3 }), { rep: [1, 1] }), color: 0xffffff, roughness: .25 }, // 56T(VR): 회색 대형 타일
 };
 M.counter = std(MAT_OPT.mma.color, MAT_OPT.mma.roughness);
 M.splash = std(0xffffff, .25, 0, { map: MAT_OPT.tile.map });
