@@ -2022,7 +2022,7 @@ function acUnit(k, x, z, w, alongX) { const g = item(k, '시스템에어컨', fa
 acUnit('ac-liv', 7.0, 7.45, 1.05, true); acUnit('ac-bed1', 10.4, 7.6, 1.05, true);
 acUnit('ac-merged', 2.6, 7.55, .9, true); acUnit('ac-bed2', 1.4, 7.6, .9, true); acUnit('ac-alpha', 4.0, 7.6, .9, true);
 // 15 기능성 룸카펫(침실1)
-{ const g = item('b15', '룸카펫', false); pbox(8.97, 11.62, .002, .008, 4.43, 8.08, std(0xb9b3aa, .98, 0, { map: toTex(tileCanvas(8, 8, [190, 184, 175], '#b3ada4', { j: 6, gap: 1 })) }), g, { cast: false }); }
+{ const g = item('b15', '룸카펫', false); pbox(8.97, 11.62, .002, .008, 4.43, 8.08, std(0xffffff, .85, 0, { map: toTex(woodCanvas([214, 210, 202], 5), { rep: [2, 2] }) }), g, { cast: false }); } // VR 옵션 그림: 화이트워시 원목무늬 룸카펫
 
 const OPTS = [
   { id: 'S1', type: '공간옵션', name: '침실2/알파룸 선택형', base: '침실2/알파룸 분리', items: [['1-1', '침실2+알파룸 통합', '무상'], ['1-2', '침실2/알파룸 경량벽체 꺾음시공', '유상']], view: [2.4, 4.7, 2.7, 7.6, -.15] },
