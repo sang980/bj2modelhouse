@@ -1250,10 +1250,60 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   basin(5.96, 6.15, Math.PI / 2); toilet(6.04, 6.75, Math.PI / 2); // 서쪽 벽(x 5.74)에 등을 대게(수전·물탱크가 벽 쪽)
   pbox(x0, x0 + .12, 1.25, 1.28, 5.85, 7.0, std(0xc9c6c0, .45, 0, { map: M.marbleW.map }), g);
   pbox(x0, x0 + .14, 1.45, 2.1, 5.9, 6.95, std(0xdedcd7, .5), g); pbox(x0 + .14, x0 + .145, 1.46, 2.09, 5.91, 6.42, M.mirrorBath2, g, { cast: false }); pbox(x0 + .14, x0 + .145, 1.46, 2.09, 6.43, 6.94, M.mirrorBath2, g, { cast: false });
-  // 수건걸이(동쪽 벽, 샤워부스 옆)
-  pbox(x1 - .06, x1 - .015, 1.17, 1.23, 5.9, 5.94, M.chrome, g); pbox(x1 - .06, x1 - .015, 1.17, 1.23, 6.18, 6.22, M.chrome, g);
-  pbox(x1 - .07, x1 - .06, .75, 1.2, 5.92, 6.2, std(0xf4f4f2, .95), g); pbox(x1 - .08, x1 - .07, .85, 1.15, 5.97, 6.16, std(0x2e6b4a, .95), g);
   ceilingPanel(6.35, 6.85, 6.0, 6.5, .8, 2.2);
+}
+// ── 욕실 소품(VR) ──
+{ const g = fixed;
+  // 수건 무늬: 위는 흰 타월, 아래 30%는 회색 띠(이음선) + 잔결
+  const towelTex = toTex((() => { const c = mkCanvas(64, 128), x = c.getContext('2d'); x.fillStyle = '#f4f3ef'; x.fillRect(0, 0, 64, 128); x.fillStyle = '#a9aaa5'; x.fillRect(0, 88, 64, 40); x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(0, 87, 64, 1.5);
+    for (let i = 0; i < 500; i++) { x.fillStyle = `rgba(0,0,0,${.02 + rnd() * .04})`; x.fillRect(rnd() * 64, rnd() * 128, 1, 2); } return c; })());
+  const fiber = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, 64, 64); for (let i = 0; i < 420; i++) { x.fillStyle = `rgba(0,0,0,${.03 + rnd() * .07})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 2); } return c; })());
+  const terry = (c) => std(c, 1, 0, { map: fiber });
+  // (cx,cz): 벽 위 가운데, (nx,nz): 방 안쪽 방향, w: 걸이 폭, y: 막대 높이, accent: 앞에 겹쳐 건 색 수건
+  const hangTowels = (cx, cz, nx, nz, w, y, accent) => { const t = new THREE.Group(); t.position.set(WX(cx), 0, WZ(cz)); t.rotation.y = Math.atan2(nx, nz); g.add(t);
+    const bar = mesh(CY(.009, .009, w + .06, 12), M.chrome, 0, y, .055, t); bar.rotation.z = Math.PI / 2;
+    for (const s of [-1, 1]) { mesh(CY(.018, .018, .012, 16), M.chrome, s * (w / 2 + .03), y, .006, t).rotation.x = Math.PI / 2; mesh(CY(.008, .008, .05, 10), M.chrome, s * (w / 2 + .03), y, .03, t).rotation.x = Math.PI / 2; }
+    const wt = std(0xffffff, 1, 0, { map: towelTex }), L = .58;
+    for (const [z, k] of [[.042, 1], [.07, .96]]) { const tw = mesh(RB(w * .92, L * k, .014, .006, 2), wt, 0, y - L * k / 2 + .01, z, t); tw.rotation.x = z > .05 ? -.03 : .02; }
+    mesh(CY(.016, .016, w * .92, 14, 1, false), std(0xf4f3ef, 1), 0, y + .004, .056, t).rotation.z = Math.PI / 2; // 막대 위로 접힌 부분
+    if (accent) { const a = mesh(RB(w * .58, .3, .012, .005, 2), terry(accent), 0, y - .17, .082, t); a.rotation.x = -.04; mesh(CY(.012, .012, w * .58, 12), terry(accent), 0, y + .006, .062, t).rotation.z = Math.PI / 2; }
+    return t; };
+  // 매립형 휴지걸이(크롬 사각 + 안쪽 휴지)
+  const paperHolder = (cx, cz, nx, nz, y) => { const t = new THREE.Group(); t.position.set(WX(cx), 0, WZ(cz)); t.rotation.y = Math.atan2(nx, nz); g.add(t);
+    mesh(BX(.15, .16, .006), M.chrome, 0, y, .003, t); mesh(BX(.12, .1, .004), std(0x2a2b2d, .5), 0, y + .01, .0065, t); mesh(CY(.045, .045, .1, 20), std(0xf7f6f2, .95), 0, y + .005, -.01, t).rotation.z = Math.PI / 2;
+    mesh(BX(.12, .015, .02), M.chrome, 0, y - .055, .012, t); return t; };
+  // 펌프 디스펜서
+  // (위 거울장 밑면과 띄우려고 전체 높이 15cm 이내)
+  const dispenser = (x, y, z, col) => { mesh(CY(.03, .032, .11, 20), std(col, .35, .05), WX(x), y + .055, WZ(z), g); mesh(CY(.012, .012, .025, 12), std(0x1d1d1f, .4), WX(x), y + .1225, WZ(z), g); mesh(BX(.045, .009, .011), std(0x1d1d1f, .4), WX(x) + .016, y + .137, WZ(z), g); };
+  const amber = (x, y, z, h = .17) => { mesh(CY(.032, .032, h, 20), std(0x6e3f16, .22, .05, { transparent: true, opacity: .92 }), WX(x), y + h / 2, WZ(z), g); mesh(CY(.012, .012, .03, 12), std(0x151515, .4), WX(x), y + h + .015, WZ(z), g);
+    mesh(CY(.0325, .0325, h * .38, 20, 1, true), std(0xf1ead8, .8), WX(x), y + h * .48, WZ(z), g); }; // 둘러 붙인 크림색 라벨
+  const grassPot = (x, y, z) => { mesh(CY(.04, .034, .06, 20), std(0xf3f1ec, .4), WX(x), y + .03, WZ(z), g);
+    for (let i = 0; i < 16; i++) { const a = rnd() * 6.28, h = .07 + rnd() * .03, l = mesh(BX(.005, h, .002), M.plant, WX(x) + Math.cos(a) * .015, y + .06 + h / 2, WZ(z) + Math.sin(a) * .015, g, { cast: false }); l.rotation.set(Math.sin(a) * .35, a, Math.cos(a) * .35); } };
+  // 욕실1: 남쪽 벽(z 1.635, 문과 욕조 사이) 수건 — 흰+회색 띠 + 녹슨 주황(VR)
+  hangTowels(5.82, 1.635, 0, -1, .5, 1.42, 0xd06a3e);
+  paperHolder(4.575, .82, 1, 0, .72);                              // 변기 옆 서쪽 벽
+  dispenser(5.05, 1.25, .18, 0xc9b8a0); dispenser(5.14, 1.25, .18, 0x8f8a83); grassPot(4.78, 1.25, .18); // 돌 선반 위
+  // 욕조 서쪽 테두리(남쪽 끝) 위 유리병 + 주황 꽃·잎 가지
+  { const bx = 6.15, bz = 1.42, by = .552, glass = std(0xdfe9ec, .05, .1, { transparent: true, opacity: .35 });
+    const bottle = new THREE.LatheGeometry([[0, 0], [.035, 0], [.038, .01], [.038, .14], [.02, .18], [.013, .2], [.015, .21], [0, .21]].map(([a, b]) => new THREE.Vector2(a, b)), 24);
+    mesh(bottle, glass, WX(bx), by, WZ(bz), g, { cast: false }); mesh(CY(.034, .034, .07, 20), std(0xbfd4d8, .1, 0, { transparent: true, opacity: .35 }), WX(bx), by + .035, WZ(bz), g, { cast: false });
+    for (let i = 0; i < 5; i++) { const a = i * 1.3, st = mesh(CY(.0025, .0025, .34, 6), M.plant, WX(bx) + Math.cos(a) * .03, by + .34, WZ(bz) + Math.sin(a) * .03, g, { cast: false }); st.rotation.set(Math.sin(a) * .3, 0, Math.cos(a) * .3);
+      const tip = [WX(bx) + Math.cos(a) * .03 - Math.cos(a) * .3 * .17, by + .5, WZ(bz) + Math.sin(a) * .03 + Math.sin(a) * .3 * .17];
+      if (i < 2) { const f = mesh(new THREE.SphereGeometry(.028, 12, 10), std(0xd0582a, .85), tip[0], tip[1], tip[2], g, { cast: false }); f.scale.set(1, 1.3, 1); }
+      for (let k = 0; k < 4; k++) { const l = mesh(new THREE.SphereGeometry(.02, 8, 6), std(0x5f8a3a, .8), tip[0] + (rnd() - .5) * .06, tip[1] - .04 - k * .05, tip[2] + (rnd() - .5) * .06, g, { cast: false }); l.scale.set(.45, 1.2, .2); l.rotation.set(rnd(), rnd() * 6, rnd()); } } }
+  // 욕조 위 동쪽 벽 흰 샤워 선반 + 호박색 병 2
+  pbox(6.82, 6.925, 1.12, 1.14, .62, 1.0, M.whiteGloss, g); pbox(6.815, 6.825, 1.12, 1.17, .62, 1.0, M.whiteGloss, g);
+  amber(6.875, 1.14, .7); amber(6.875, 1.14, .79, .15);
+  // 욕실2: 기존 수건걸이 자리(동쪽 벽) — 흰+회색 띠 + 초록(VR)
+  hangTowels(7.525, 6.06, -1, 0, .26, 1.2, 0x2e6b4a);
+  paperHolder(6.33, 7.055, 0, -1, .72);                              // 변기 옆 남쪽 벽
+  dispenser(5.8, 1.28, 6.0, 0xc9b8a0); dispenser(5.8, 1.28, 6.08, 0x8f8a83); grassPot(5.8, 1.28, 6.85); // 돌 선반 위
+  // 샤워부스 안: 북쪽 벽 흰 선반 + 병, 모서리 키 큰 화분(VR)
+  pbox(6.22, 6.5, 1.1, 1.12, 4.825, 4.92, M.whiteGloss, g); amber(6.3, 1.12, 4.87); mesh(CY(.03, .03, .2, 20), std(0xf1efe9, .35), WX(6.4), 1.22, WZ(4.87), g);
+  { const px = 7.35, pz = 5.0, leafG = new THREE.SphereGeometry(.026, 10, 6), leafM = [std(0x5d7f4a, .75), std(0x6f8f55, .75), std(0x4f6e3e, .75)]; mesh(CY(.07, .06, .26, 24), std(0xe9e6df, .4), WX(px), .13, WZ(pz), g); // 잎이 촘촘한 가지(유칼립투스 느낌)
+    for (let i = 0; i < 7; i++) { const a = i / 7 * 6.28 + rnd() * .4, h = .55 + rnd() * .35, st = mesh(CY(.003, .003, h, 6), M.plant, WX(px) + Math.cos(a) * .05, .26 + h / 2, WZ(pz) + Math.sin(a) * .05, g, { cast: false }); st.rotation.set(Math.sin(a) * .22, 0, -Math.cos(a) * .22);
+      for (let k = 0; k < 12; k++) { const f = .25 + k / 12 * .75, lx = WX(px) + Math.cos(a) * (.05 + f * h * .22), ly = .26 + f * h, lz = WZ(pz) + Math.sin(a) * (.05 + f * h * .22);
+        for (const s of [-1, 1]) { const l = mesh(leafG, leafM[(k + i) % 3], lx + Math.cos(a + s * 1.57) * .022, ly - .01, lz + Math.sin(a + s * 1.57) * .022, g, { cast: false }); l.scale.set(.55, 1, .16); l.rotation.set(.9 * s, -(a + s * 1.57), 0); } } } }
 }
 // ── 다용도실(사진): 서쪽 벽 따라 세탁기·건조기 나란히(낮은 타일 단 위) + 안쪽 벽걸이 보일러(받침함 위) + 파이프 받침 선반 2단 ──
 { const g = fixed;
