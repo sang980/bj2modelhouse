@@ -283,7 +283,7 @@ const TEXS = LOWMEM ? 512 : 1024;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const TONE = new URLSearchParams(location.search).get('tone');
 renderer.toneMapping = (TONE === 'agx' && THREE.AgXToneMapping !== undefined) ? THREE.AgXToneMapping : THREE.ACESFilmicToneMapping;
-const BASE_EXPOSURE = Number(new URLSearchParams(location.search).get('exp')) || (renderer.toneMapping === THREE.ACESFilmicToneMapping ? .82 : 1.0);
+const BASE_EXPOSURE = Number(new URLSearchParams(location.search).get('exp')) || (renderer.toneMapping === THREE.ACESFilmicToneMapping ? .95 : 1.1); // 화질 향상: 견본주택 VR처럼 밝고 깨끗한 톤
 renderer.toneMappingExposure = BASE_EXPOSURE;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -2488,7 +2488,7 @@ function buildComposer() {
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
   composer.addPass(new ShaderPass({
-    uniforms: { tDiffuse: { value: null }, amount: { value: .55 } },
+    uniforms: { tDiffuse: { value: null }, amount: { value: .25 } },
     vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
     fragmentShader: 'uniform sampler2D tDiffuse;uniform float amount;varying vec2 vUv;' +
       'float h(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}' +
@@ -2533,7 +2533,7 @@ function applyTier(t) {
   state.quality = t === 0 ? 'high' : 'normal';
   const sm = t === 0 && !isTouch ? 4096 : 2048;
   if (sun.shadow.mapSize.x !== sm) { sun.shadow.mapSize.set(sm, sm); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } }
-  sun.shadow.radius = t === 0 ? 3 : 1;
+  sun.shadow.radius = t === 0 ? 4 : 2; // 화질 향상: 부드러운 그림자
   sun.castShadow = t < 2 && state.time !== 'eve';
   const area = t < 3; // 최저 단계: 면광원·점광원을 장면에서 빼서 픽셀당 조명 계산을 없앰
   for (const l of ledLights) l.light.visible = area;
@@ -2556,7 +2556,7 @@ function resize() {
   const w = innerWidth, h = innerHeight;
   // 휴대폰(GPU 있음)은 가벼운 셰이더라 픽셀 비용이 작음 → 최저 단계라도 해상도는 1배 유지. GPU 없는 PC만 절반 해상도
   const scale = tier === 3 && isTouch && !SOFTWARE_GL ? 1 : [1, 1, .75, .5][tier];
-  renderer.setPixelRatio(Math.min(devicePixelRatio, tier === 0 ? 1.75 : 1) * scale);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, tier === 0 ? 2 : (tier === 1 && !isTouch ? 1.25 : 1)) * scale); // 화질 향상: 고화질 2배·일반(PC) 1.25배
   renderer.setSize(w, h, false);
   composer.setPixelRatio(renderer.getPixelRatio());
   composer.setSize(w, h);
