@@ -140,6 +140,22 @@ body{margin:0;background:var(--stage);color:var(--ink);font-family:var(--body);o
 #optClose:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #opts.closed{display:none}
 .opts-closed #optToggle{display:block}
+/* 상단 메뉴 접기·홈 버튼, 미니맵 접기 */
+.brand{padding-right:80px}
+.head-tools{position:absolute;top:10px;right:10px;display:flex;gap:6px}
+.head-tools a,.head-tools button,#mapToggle{width:32px;height:32px;border:1px solid var(--line);border-radius:999px;background:var(--panel-solid);color:var(--ink);font:600 16px/1 var(--body);cursor:pointer;display:grid;place-items:center;padding:0;text-decoration:none}
+.head-tools a:hover,.head-tools button:hover,#mapToggle:hover{border-color:var(--accent);color:var(--accent)}
+.head-tools a:focus-visible,.head-tools button:focus-visible,#headToggle:focus-visible,#mapToggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.head-tools svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#head.closed{display:none}
+#headToggle{display:none;position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(14px);border-radius:12px;padding:9px 12px;font:600 13px var(--body);color:var(--ink);cursor:pointer;align-items:center;gap:6px}
+.head-closed #headToggle{display:flex}
+#headToggle svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.map-head{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.map-head b{font:600 12px var(--display);color:var(--muted);letter-spacing:.04em}
+#mapToggle{width:auto;height:auto;border-radius:10px;padding:5px 9px;font:600 12px var(--body);gap:4px;display:flex;align-items:center}
+#mapBox.collapsed{padding:6px}
+#mapBox.collapsed #mini,#mapBox.collapsed > span,#mapBox.collapsed .map-head b{display:none}
 @media (max-width:760px){
   #opts{display:none;top:calc(64px + env(safe-area-inset-top,0px));width:auto;left:max(16px,env(safe-area-inset-left,0px));max-height:calc(100% - 140px)}
   #opts.open{display:flex}
@@ -150,6 +166,9 @@ body{margin:0;background:var(--stage);color:var(--ink);font-family:var(--body);o
   .seg button{padding:6px 8px;font-size:12px}
   #mini{width:150px;height:103px}
   #mapBox span{display:none}
+  .brand{padding-right:66px}
+  .head-tools{top:8px;right:8px;gap:4px}
+  .head-tools a,.head-tools button{width:28px;height:28px;font-size:14px}
   #hint{display:none}
   #note{display:none}
   .tool{left:max(16px,env(safe-area-inset-left,0px));transform:none;bottom:calc(140px + env(safe-area-inset-bottom,0px));flex-wrap:wrap;max-width:calc(100vw - 32px)}
@@ -160,7 +179,9 @@ body{margin:0;background:var(--stage);color:var(--ink);font-family:var(--body);o
 <div id="stage">
   <canvas id="gl" tabindex="0" aria-label="56T 세대 3D 공간"></canvas>
 
+  <button id="headToggle" type="button" aria-expanded="true" aria-controls="head"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>메뉴</button>
   <div id="head" class="panel">
+    <div class="head-tools"><a id="homeBtn" href="./" aria-label="처음 화면(타입 선택)으로" title="처음 화면(타입 선택)으로"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg></a><button id="headClose" type="button" aria-label="메뉴 닫기" title="메뉴 닫기">✕</button></div>
     <div class="brand">
       <a class="typebadge" href="./" title="타입 선택으로">56T</a>
       <div><b>신혼희망타운 56T 테라스 타입</b><small>전용 56.94㎡ · 12,320 × 8,150mm + 테라스</small></div>
@@ -184,6 +205,7 @@ body{margin:0;background:var(--stage);color:var(--ink);font-family:var(--body);o
   </div>
 
   <div id="mapBox" class="panel">
+    <div class="map-head"><button id="mapToggle" type="button" aria-expanded="true" aria-controls="mini" title="미니맵 접기">미니맵 <i>▾</i></button></div>
     <canvas id="mini" width="496" height="340" aria-label="평면 미니맵, 방을 누르면 이동"></canvas>
     <span>방을 누르면 그 방으로 이동합니다</span>
   </div>
@@ -2021,6 +2043,13 @@ function setOptsOpen(o) {
 }
 optToggle.addEventListener('click', () => setOptsOpen(isNarrowUI() ? !optPanel.classList.contains('open') : optPanel.classList.contains('closed')));
 document.getElementById('optClose').addEventListener('click', () => setOptsOpen(false));
+// 상단 메뉴 접기/펴기 + 미니맵 접기/펴기
+{ const head = document.getElementById('head'), ht = document.getElementById('headToggle');
+  const setHead = o => { head.classList.toggle('closed', !o); document.body.classList.toggle('head-closed', !o); ht.setAttribute('aria-expanded', String(o)); };
+  document.getElementById('headClose').addEventListener('click', () => setHead(false));
+  ht.addEventListener('click', () => setHead(true));
+  const mb = document.getElementById('mapBox'), mt = document.getElementById('mapToggle');
+  mt.addEventListener('click', () => { const c = mb.classList.toggle('collapsed'); mt.setAttribute('aria-expanded', String(!c)); mt.querySelector('i').textContent = c ? '▴' : '▾'; mt.title = c ? '미니맵 펼치기' : '미니맵 접기'; }); }
 function setTimeMode(t) {
   state.time = t; setTime(t === 'eve'); applyLighting(); setMode(mode); queueBake();
   document.querySelectorAll('#timeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.time === t)));
