@@ -546,7 +546,7 @@ Object.assign(M, {
   check: std(0xffffff, .95, 0, { map: toTex(checkCanvas(), { rep: [2, 2] }) }),
   charcoal: std(0x3a3d42, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [3, 3] }) }),
   linen: std(0xf6f5f2, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 14), { rep: [4, 4] }) }),
-  throwBlue: std(0x4a6f9a, .98, 0, { map: toTex(noiseCanvas([255, 255, 255], 34), { rep: [5, 5] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 90), { srgb: false, rep: [5, 5] }), bumpScale: .8 }),
+  throwBlue: std(0x9b958c, .98, 0, { map: toTex(noiseCanvas([255, 255, 255], 34), { rep: [5, 5] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 90), { srgb: false, rep: [5, 5] }), bumpScale: .8 }),
   rug: std(0xb9b8b4, 1, 0, { map: toTex(noiseCanvas([255, 255, 255], 46), { rep: [8, 8] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 140), { srgb: false, rep: [8, 8] }), bumpScale: 2 }),
   walnut: std(0xffffff, .55, 0, { map: toTex(woodCanvas([122, 88, 62], 4)) }),
   oak: std(0xffffff, .55, 0, { map: toTex(woodCanvas([196, 160, 118], 4)) }),
@@ -938,7 +938,7 @@ await phase('주방을 꾸미는 중', 50);
 // 공통 재질
 M.woodPanel = std(0xffffff, .62, 0, { map: toTex(woodCanvas([214, 206, 194], 6)) });
 M.marbleW = std(0xffffff, .2, 0, { map: toTex(marbleCanvas()) });
-M.curtainGrey = new THREE.MeshStandardMaterial({ color: 0x9a968f, roughness: 1, side: THREE.DoubleSide, map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [6, 3] }) });
+M.curtainGrey = new THREE.MeshStandardMaterial({ color: 0xcdbda6, roughness: 1, side: THREE.DoubleSide, map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [6, 3] }) });
 M.ledWarm = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffd9a8, emissiveIntensity: 5 });
 M.panelLED = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xf4f7ff, emissiveIntensity: 3 });
 M.whiteGloss = std(0xf6f5f2, .3);
@@ -1109,17 +1109,17 @@ ceilingPanel(2.4, 2.9, 2.7, 3.2, .9, 2.6);
 await phase('침실을 꾸미는 중', 61);
 // ── 침실1: 루버 헤드보드 + LED, 침대 옆 블랙 펜던트, 평판등, 커튼 ──
 // 평면도 방향: 헤드보드는 서쪽 벽(x=8.88), 침실 문(북서쪽) 바로 남쪽부터
-pbox(8.88, 8.92, 0, 1.15, 5.2, 7.7, M.fluted, fixed).material = M.fluted;
-M.fluted.bumpMap.repeat.set(3, 1);
-pbox(8.88, 8.94, 1.15, 1.19, 5.2, 7.7, M.black, fixed);
-pbox(8.94, 8.95, 1.12, 1.15, 5.25, 7.65, M.ledStrip, fixed, { cast: false });
-pbox(8.88, 8.9, 1.19, H, 5.2, 7.7, std(0xffffff, .8, 0, { map: toTex(grooveCanvas('#e9e6e0', 3)) }), fixed);
-ledRectWall(8.97, 1.6, 6.45, 2.5, .8, 1, 0, 0xffdcb0, .5, 1.6);
-for (const z of [5.3, 7.6]) { const x = 9.17, y = 1.15;
-  mesh(CY(.003, .003, H - y - .2), M.black, WX(x), (H + y + .2) / 2, WZ(z), fixed, { cast: false });
-  mesh(CY(.035, .035, .2, 20), M.black, WX(x), y + .1, WZ(z), fixed);
-  mesh(CY(.03, .03, .004, 20), M.ledWarm, WX(x), y - .002, WZ(z), fixed, { cast: false });
-  ledRect(x - .05, x + .05, z - .05, z + .05, y - .01, -1, 0xffd9a8, .6, 1.4); }
+// 55C(VR): 침대 뒤 서쪽 벽 — 베이지 패브릭 사각 패널 2단(침대보다 넓게) + 위 원목 몰딩, 맞은편 동쪽 벽 흑백 사진 액자 3개
+{ const g = fixed, pan = std(0xb9a892, .95, 0, { map: M.boucle.map }), seam = std(0x9c8c77, .9), oakT = M.oak;
+  const z0 = 5.15, z1 = 7.75, n = 5, ys = [[.42, .9], [.9, 1.38]];
+  pbox(8.88, 8.95, .42, 1.38, z0, z1, pan, g);
+  for (let i = 1; i < n; i++) { const z = z0 + (z1 - z0) * i / n; pbox(8.95, 8.956, .42, 1.38, z - .004, z + .004, seam, g, { cast: false }); }
+  pbox(8.95, 8.956, .896, .904, z0, z1, seam, g, { cast: false });
+  pbox(8.88, 8.97, 1.38, 1.42, z0 - .02, z1 + .02, oakT, g);
+  const photo = k => toTex((() => { const c = mkCanvas(128, 128), x = c.getContext('2d'); x.fillStyle = '#e9e9e7'; x.fillRect(0, 0, 128, 128); x.fillStyle = '#1d1d1d';
+    x.fillRect(24, 30, 80, 66); x.fillStyle = '#9a9a98'; for (let i = 0; i < 6; i++) { x.beginPath(); x.arc(40 + ((i * 37 + k * 13) % 50), 50 + ((i * 23 + k * 7) % 36), 6 + (i % 3) * 3, 0, 7); x.fill(); } return c; })());
+  for (let i = 0; i < 3; i++) { const zc = 6.45 + (i - 1) * .58; pbox(12.17, 12.21, 1.2, 1.7, zc - .25, zc + .25, std(0xf5f5f3, .5), g); pbox(12.165, 12.17, 1.24, 1.66, zc - .21, zc + .21, std(0xffffff, .9, 0, { map: photo(i) }), g, { cast: false }); }
+}
 ceilingPanel(10.25, 10.85, 6.15, 6.75, 1.0, 2.8);
 curtainSet(9.3, 12.0, 9.75, 11.55);
 
