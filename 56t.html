@@ -1103,7 +1103,8 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
 }
 // ── 거실(VR): 연한 우드 세로 패널 TV벽(동쪽 벽 = 침실1 벽) + 민트빛 유리 서랍 흰 TV장 + 우물천장 ──
 { const g = fixed, x = 8.79;
-  const panel = std(0xffffff, .55, 0, { map: toTex(woodCanvas([218, 212, 202], 5)) });
+  const panel = std(0xffffff, .42, 0, { map: toTex(tileCanvas(1, 2, [228, 228, 224], '#d4d4d0', { j: 3, veins: 12, gap: 1 })) }); // VR: 연한 회색 석재 패널
+  pbox(x - .045, x - .03, 1.3, 1.5, 5.75, 5.97, std(0x15161a, .3), g); pbox(x - .047, x - .045, 1.33, 1.47, 5.78, 5.94, std(0x2a3240, .2, 0, { emissive: 0x1d2a3a, emissiveIntensity: .4 }), g, { cast: false }); // 월패드
   pbox(x - .03, x, 0, H, 5.45, 8.09, panel, g);                     // 침실1 문(4.45~5.35) 문틀 뒤에서 시작
   for (let z = 5.45 + .53; z < 8.05; z += .53) pbox(x - .034, x - .03, 0, H, z - .002, z + .002, std(0xbdb5a8, .7), g, { cast: false });
   pbox(x - .034, x - .03, 1.25 - .002, 1.25 + .002, 5.45, 8.09, std(0xbdb5a8, .7), g, { cast: false });
