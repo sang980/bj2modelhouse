@@ -1125,8 +1125,8 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   const cove = new THREE.RectAreaLight(0xffd8a6, 0, i1 - i0, j1 - j0); cove.position.set(WX((i0 + i1) / 2), H - t - .01, WZ((j0 + j1) / 2)); cove.lookAt(WX((i0 + i1) / 2), H + 1, WZ((j0 + j1) / 2)); scene.add(cove); window.__cove = cove;
   ceilingPanel(6.55, 6.95, 5.9, 6.8, 1.0, 2.8); ceilingPanel(7.05, 7.45, 5.9, 6.8, 1.0, 2.8); // VR 옵션 그림: 가로로 긴 평판등 2개
   // 창 커튼(속커튼 + 회색 암막) + 커튼박스
-  curtain(5.22, 5.75, 8.02, 2.27, fixed, M.sheer); curtain(8.2, 8.72, 8.02, 2.27, fixed, M.sheer);
-  curtain(5.22, 5.6, 7.94, 2.27, fixed, M.curtainGrey, 9, .045); curtain(8.35, 8.72, 7.94, 2.27, fixed, M.curtainGrey, 9, .045);
+  curtain(5.22, 6.2, 8.02, 2.27, fixed, M.sheer, 22); curtain(7.75, 8.72, 8.02, 2.27, fixed, M.sheer, 22); // VR: 넓은 흰 속커튼
+  curtain(5.22, 5.75, 7.94, 2.27, fixed, M.sheer, 14, .045); curtain(8.2, 8.72, 7.94, 2.27, fixed, M.sheer, 14, .045);
   pbox(5.2, 8.75, 2.3, H, 7.85, 8.09, M.ceil, fixed, { cast: false });
 }
 // ── 복도: 백라이트 액자(현관에서 들어오며 보이는 벽 — 침실2·알파룸 문 사이) ──
