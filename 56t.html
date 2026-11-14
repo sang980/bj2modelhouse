@@ -952,7 +952,8 @@ await phase('주방을 꾸미는 중', 50);
 // 공통 재질
 M.woodPanel = std(0xffffff, .62, 0, { map: toTex(woodCanvas([214, 206, 194], 6)) });
 M.marbleW = std(0xffffff, .2, 0, { map: toTex(marbleCanvas()) });
-M.curtainGrey = new THREE.MeshStandardMaterial({ color: 0x9a968f, roughness: 1, side: THREE.DoubleSide, map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [6, 3] }) });
+M.curtainGrey = new THREE.MeshStandardMaterial({ color: 0xe6e0d4, // 56T(VR): 밝은 미색 커튼
+  roughness: 1, side: THREE.DoubleSide, map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [6, 3] }) });
 M.ledWarm = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffd9a8, emissiveIntensity: 5 });
 M.panelLED = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xf4f7ff, emissiveIntensity: 3 });
 M.whiteGloss = std(0xf6f5f2, .3);
