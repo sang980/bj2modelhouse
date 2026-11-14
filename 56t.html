@@ -806,7 +806,7 @@ function makeDoor({ parent, horiz, line, t, hu, du, side, lw, lh, lt = .04, styl
   // 닫힘/열림 각도 (로컬 +x가 문짝 방향)
   const thetaC = horiz ? (du > 0 ? 0 : Math.PI) : -du * Math.PI / 2;
   const thetaO = horiz ? -side * Math.PI / 2 : (side > 0 ? 0 : Math.PI);
-  const d = { pivot, thetaC, thetaO, open: startOpen, cur: startOpen ? thetaO : thetaC, target: startOpen ? thetaO : thetaC, name,
+  const d = { pivot, thetaC, thetaO, lw, open: startOpen, cur: startOpen ? thetaO : thetaC, target: startOpen ? thetaO : thetaC, name,
     box: horiz ? { minX: WX(from), maxX: WX(to), minZ: WZ(line - t / 2), maxZ: WZ(line + t / 2) } : { minX: WX(line - t / 2), maxX: WX(line + t / 2), minZ: WZ(from), maxZ: WZ(to) } };
   pivot.rotation.y = d.cur;
   for (const m of leafParts) { m.userData.door = d; doorMeshes.push(m); }
@@ -814,7 +814,21 @@ function makeDoor({ parent, horiz, line, t, hu, du, side, lw, lh, lt = .04, styl
   return d;
 }
 function angDiff(a, b) { return Math.atan2(Math.sin(b - a), Math.cos(b - a)); }
-function toggleDoor(d) { d.open = !d.open; d.target = d.open ? d.thetaO : d.thetaC; }
+function toggleDoor(d) { if (!d.open && doorBlocked(d)) return; d.open = !d.open; d.target = d.open ? d.thetaO : d.thetaC; }
+/* 아일랜드 수납장 문: 문짝이 쓸고 지나갈 자리(사분원 바깥 사각형)에 보이는 가구(식탁·의자)가 있으면 열지 않음 — 0.5초 캐시 */
+const _dbv = new THREE.Vector3();
+function doorBlocked(d) {
+  if (d.name !== '아일랜드 수납장 문' || !d.lw) return false;
+  const now = performance.now(); if (d._bt && now - d._bt < 500) return d._bv;
+  const par = d.pivot.parent; par.updateWorldMatrix(true, false);
+  const a = [Math.cos(d.thetaC) * d.lw, -Math.sin(d.thetaC) * d.lw], b = [Math.cos(d.thetaO) * d.lw, -Math.sin(d.thetaO) * d.lw];
+  let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9;
+  for (const [lx, lz] of [[0, 0], a, b, [a[0] + b[0], a[1] + b[1]]]) { _dbv.set(d.pivot.position.x + lx * .9, .4, d.pivot.position.z + lz * .9).applyMatrix4(par.matrixWorld); x0 = Math.min(x0, _dbv.x); x1 = Math.max(x1, _dbv.x); z0 = Math.min(z0, _dbv.z); z1 = Math.max(z1, _dbv.z); }
+  let hit = false;
+  for (const g of movables) { if (!visibleDeep(g)) continue; let own = false; d.pivot.traverseAncestors(p => { if (p === g) own = true; }); if (own) continue;
+    visBox(g); if (tmpBox.min.y > .85 || tmpBox.max.y < .05) continue; if (tmpBox.max.x > x0 && tmpBox.min.x < x1 && tmpBox.max.z > z0 && tmpBox.min.z < z1) { hit = true; break; } }
+  d._bt = now; d._bv = hit; return hit;
+}
 let doorShadowTick = 0, doorWasMoving = false;
 function updateDoors(dt) {
   let moving = false;
@@ -2192,7 +2206,7 @@ function doorSets() { // 같은 개구부(box)를 공유하는 문짝끼리 묶�
   return [...m.values()];
 }
 let DOOR_SETS = null;
-function toggleSet(set) { if (set.isSwitch) { set.toggle(); return; } const open = !set.leaves.some(d => d.open); for (const d of set.leaves) { d.open = open; d.target = open ? d.thetaO : d.thetaC; } }
+function toggleSet(set) { if (set.isSwitch) { set.toggle(); return; } const open = !set.leaves.some(d => d.open); for (const d of set.leaves) { if (open && doorBlocked(d)) continue; d.open = open; d.target = open ? d.thetaO : d.thetaC; } } /* 의자에 막힌 수납장 문은 열지 않음 */
 const doorHintSvg = doorHint.querySelector('svg'), SVG_DOOR = doorHintSvg.innerHTML,
   SVG_BULB = '<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>';
 function updateDoorHint() {
@@ -2202,7 +2216,7 @@ function updateDoorHint() {
   if (mode !== 'doll') {
     camera.getWorldDirection(_cf);
     // 거리 + 바라보는 방향으로 점수 → 문과 스위치가 가까이 있어도 보고 있는 쪽을 고름
-    const cands = DOOR_SETS.filter(s => s.leaves.some(d => visibleDeep(d.pivot))).map(s => [s, 2.2]).concat(switches.map(s => [s, 1.8]));
+    const cands = DOOR_SETS.filter(s => s.leaves.some(d => visibleDeep(d.pivot)) && !s.leaves.every(d => !d.open && doorBlocked(d))).map(s => [s, 2.2]).concat(switches.map(s => [s, 1.8]));
     for (const [s, maxD] of cands) {
       const dx = s.cx - player.x, dz = s.cz - player.z, dist = Math.hypot(dx, dz);
       if (dist > maxD) continue;
