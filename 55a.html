@@ -1289,7 +1289,7 @@ const alphaTable = piece('원형 테이블', 3.75, 7.15, 0);
 { const t = alphaTable;
   mesh(CY(.38, .38, .025, 40), M.white, 0, .72, 0, t); mesh(CY(.03, .03, .7), M.chrome, 0, .36, 0, t);
   for (const a of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) { const f = mesh(BX(.3, .015, .03), M.chrome, Math.cos(a) * .15, .01, Math.sin(a) * .15, t); f.rotation.y = -a; }
-  for (const [sx, sz] of [[-.48, .25], [.42, -.3]]) { mesh(CY(.19, .19, .07, 28), std(0xd8d4cc, .95), sx, .46, sz, t); for (const a of [0, 2.1, 4.2]) mesh(CY(.012, .012, .43), M.white, sx + Math.cos(a) * .12, .21, sz + Math.sin(a) * .12, t); } }
+}
 // 사진(알파룸): 원형 테이블 위 펼친 노트북 — 은색 몸체·검은 자판·화면이 스툴 쪽을 향함(테이블과 함께 움직임)
 { const lp = new THREE.Group(); lp.position.set(.05, .735, -.04); lp.rotation.y = Math.atan2(-.48, .25); alphaTable.add(lp);
   const silver = std(0xbfc2c6, .32, .65);
@@ -1978,6 +1978,8 @@ const bed2 = bed(.72, 7.0, Math.PI, 1.1, 2.0, '싱글 침대'); // 사진: 화�
   for (const s of [-1, 1]) { const arm = mesh(new THREE.CapsuleGeometry(.022, .05, 4, 10), ws, s * .07, .12, .02, a); arm.rotation.z = s * .5; const leg = mesh(new THREE.CapsuleGeometry(.024, .05, 4, 10), ws, s * .03, .03, .05, a); leg.rotation.x = 1.3; }
   mesh(RB(.08, .09, .04, .012), std(0xd9d9d6, .7), 0, .12, -.06, a); }
 /* VR: 창 앞 흰 책상(양옆 판재 다리) + 노트북 · 노란 연필꽂이 · 파란 소품 · 그림 카드 · 탁상시계, 노란 셸 의자 */
+/* 알파룸(VR): 원형 테이블 의자 — 흰 부클레 둥근(배럴) 의자 2개가 테이블을 향함(테이블과 함께 움직임) */
+for (const [sx, sz] of [[-.5, .27], [.44, -.32]]) { const c = diningChair(alphaTable, sx, sz, Math.atan2(-sx, -sz)); c.traverse(o => { if (o.isMesh && o.material !== M.black) o.material = M.boucle; }); }
 const desk2 = piece('책상', 1.8, 7.78, Math.PI);
 { const d = desk2, wt = std(0xf6f5f2, .4), yel = std(0xe3b13a, .45), al = std(0xc9ccd0, .35, .6);
   mesh(RB(1.0, .03, .55, .008), wt, 0, .735, 0, d); for (const sx of [-1, 1]) mesh(BX(.025, .72, .5), wt, sx * .485, .36, 0, d); mesh(BX(.945, .22, .015), wt, 0, .61, -.24, d);
@@ -2640,6 +2642,14 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
   cab(g, 1.68, 1.76, .25, .37, z0, z0 + .012, wp); for (const y of [.285, .335]) mesh(CY(.012, .012, .004, 16), std(0xe6e6e3, .5), WX(1.72), y, WZ(z0 + .014), g, { cast: false }).rotation.x = Math.PI / 2; }
   // 침대 뒤 하늘색 벽판(서쪽 벽, 허리 높이)
   cab(item('b2unit', '침실2 하늘색 벽판', false), .11, .126, .1, .95, 5.9, 8.1, std(0xa9c0d2, .6)); // 충돌 없음(붙박이장 충돌 상자가 침대 쪽으로 늘어나지 않게)
+/* VR: 알파룸 서쪽 벽 큰 파란 추상화(흰 액자) — 통합형(1-1)이면 벽이 없어 숨김 */
+{ const g = item('a-alphaart', '파란 추상화', false);
+  const art = toTex((() => { const c = mkCanvas(256, 340), x = c.getContext('2d'); x.fillStyle = '#f3f2ee'; x.fillRect(0, 0, 256, 340);
+    x.fillStyle = 'rgba(150,150,155,.25)'; x.beginPath(); x.moveTo(70, 300); x.quadraticCurveTo(40, 190, 90, 120); x.lineTo(110, 130); x.quadraticCurveTo(70, 200, 100, 300); x.fill();
+    x.fillStyle = '#1f4fa8'; x.beginPath(); x.moveTo(150, 40); x.bezierCurveTo(205, 60, 190, 120, 160, 140); x.bezierCurveTo(200, 160, 175, 200, 140, 205); x.bezierCurveTo(175, 225, 160, 280, 110, 300); x.bezierCurveTo(85, 250, 120, 225, 100, 195); x.bezierCurveTo(70, 165, 120, 140, 105, 110); x.bezierCurveTo(95, 75, 120, 45, 150, 40); x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 1.2; for (let i = 0; i < 60; i++) { const yy = 50 + i * 4; x.beginPath(); x.moveTo(95 + rnd() * 20, yy); x.lineTo(150 + rnd() * 40, yy + 2); x.stroke(); }
+    return c; })());
+  pbox(2.82, 2.838, 1.0, 2.0, 5.75, 6.5, std(0xf4f3ef, .5), g, { cast: false }); pbox(2.837, 2.842, 1.03, 1.97, 5.78, 6.47, std(0xffffff, .85, 0, { map: art }), g, { cast: false }); }
 /* VR: 동쪽 벽 로켓 포스터(남색 바탕·별·흰 로켓) — 침실2 장(11)·통합형(1-1)이면 숨김 */
 { const g = item('a-rocket', '로켓 포스터', false);
   const art = toTex((() => { const c = mkCanvas(256, 360), x = c.getContext('2d'); x.fillStyle = '#1f2d55'; x.fillRect(0, 0, 256, 360);
@@ -2769,7 +2779,7 @@ function applyOptions() {
       } else { place(bed2, .72, 7.0, Math.PI); place(alphaTable, 3.75, 7.15, 0); place(alphaRug, 3.8, 7.2, 0); } // 견본: 침대 머리는 창 쪽, 창에 붙임
       // 책상: 기본은 동쪽 벽을 따라(의자가 서쪽), 침실2 장(11)이 동쪽 벽에 있거나 통합형(12)이면 창 앞
       place(desk2, 1.8, 7.78, Math.PI); } } /* VR: 책상은 창 앞(침대 옆) */ // 꺾음 시공이면 침실2 쪽으로 들어온 벽(면 x 2.30)에 붙임
-  show('b2unit', s['12'] !== '12'); show('a-rocket', s['11'] !== '11' && s.S1 !== '1-1');  // 침실2 장(동쪽 벽)이 있으면 책상을 서쪽으로
+  show('b2unit', s['12'] !== '12'); show('a-rocket', s['11'] !== '11' && s.S1 !== '1-1'); show('a-alphaart', s.S1 !== '1-1');  // 침실2 장(동쪽 벽)이 있으면 책상을 서쪽으로
   show('o13', s['13'] === '13');
   show('o14base', !s['14']); show('o14', s['14'] === '14');
   const ac = s['15'];
