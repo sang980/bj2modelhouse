@@ -1619,9 +1619,30 @@ ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
     mesh(CY(.016, .016, w * .92, 14), std(0xf4f3ef, 1), 0, y + .004, .056, t).rotation.z = Math.PI / 2;
     const nv = std(0x34507a, 1, 0, { map: fiber }); mesh(RB(w * .58, .3, .012, .005, 2), nv, 0, y - .17, .082, t).rotation.x = -.04; mesh(CY(.012, .012, w * .58, 12), nv, 0, y + .006, .062, t).rotation.z = Math.PI / 2; }
   // 욕실1 세면대 상판(높이 .855) 양끝: 왼쪽 디스펜서 2, 오른쪽 작은 풀 화분
-  { const T = .855; for (const [x, c] of [[.99, 0xd9d2c4], [1.06, 0x8f8a83]]) { mesh(CY(.028, .03, .11, 20), std(c, .35, .05), WX(x), T + .055, WZ(4.93), g); mesh(CY(.011, .011, .025, 12), std(0x1d1d1f, .4), WX(x), T + .1225, WZ(4.93), g); mesh(BX(.011, .009, .04), std(0x1d1d1f, .4), WX(x), T + .137, WZ(4.93) - .015, g); }
+  const pumpBottle = (x, y, z, col, h = .15, r = .03, ry = 0, glass = false, label = false) => { const b = new THREE.Group(); b.position.set(WX(x), y, WZ(z)); b.rotation.y = ry; g.add(b); /* 펌프병: 어깨 있는 병 + 칼라 + 펌프 머리 + 노즐 */
+    mesh(new THREE.LatheGeometry([[0, 0], [r * .9, 0], [r, .008], [r, h * .7], [r * .86, h * .79], [r * .42, h * .85], [r * .4, h * .9], [0, h * .9]].map(([a, c]) => new THREE.Vector2(a, c)), 28), glass ? std(col, .1, 0, { transparent: true, opacity: .88 }) : std(col, .35, .05), 0, 0, 0, b);
+    if (label) mesh(new THREE.CylinderGeometry(r + .0012, r + .0012, h * .34, 28, 1, true), std(0x1f1f20, .6), 0, h * .38, 0, b, { cast: false });
+    const k = std(0x1d1d1f, .4); mesh(CY(r * .46, r * .46, .012, 16), k, 0, h * .9 + .006, 0, b); mesh(CY(.005, .005, .028, 8), k, 0, h * .9 + .026, 0, b); mesh(RB(.02, .013, .016, .004, 1), k, 0, h * .9 + .045, 0, b); mesh(CY(.0035, .0035, .032, 8), k, 0, h * .9 + .045, .022, b, { cast: false }).rotation.x = Math.PI / 2; return b; };
+  { const T = .855; for (const [x, c] of [[.99, 0xd9d2c4], [1.06, 0x8f8a83]]) pumpBottle(x, T, 4.93, c, .14, .028, Math.PI); /* VR: 펌프 디스펜서 2 */
     mesh(CY(.04, .034, .06, 20), std(0xf3f1ec, .4), WX(1.64), T + .03, WZ(4.93), g);
     for (let i = 0; i < 16; i++) { const a = rnd() * 6.28, h = .08 + rnd() * .04, l = mesh(BX(.005, h, .002), M.plant, WX(1.64) + Math.cos(a) * .015, T + .06 + h / 2, WZ(4.93) + Math.sin(a) * .015, g, { cast: false }); l.rotation.set(Math.sin(a) * .35, a, Math.cos(a) * .35); } }
+  /* VR 욕실1: 세면대 위 접어 쌓은 줄무늬 흰 수건 2, 리드 디퓨저 */
+  { const T = .855, tw = std(0xffffff, 1, 0, { map: toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#f6f5f1'; x.fillRect(0, 0, 64, 64); x.fillStyle = '#2b2b2d'; x.fillRect(0, 10, 64, 3); x.fillRect(0, 51, 64, 3); for (let i = 0; i < 300; i++) { x.fillStyle = `rgba(0,0,0,${.02 + rnd() * .04})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 2); } return c; })()) });
+    for (let i = 0; i < 2; i++) { const t = mesh(RB(.24, .045, .17, .018, 3), tw, WX(1.6 + i * .008), T + .0235 + i * .045, WZ(4.71 - i * .012), g); t.rotation.y = Math.PI / 2 + .05 - i * .09; }
+    const dx = 1.16, dz = 4.97; mesh(new THREE.LatheGeometry([[0, 0], [.03, 0], [.034, .02], [.034, .06], [.015, .08], [.012, .09], [0, .09]].map(([a, b]) => new THREE.Vector2(a, b)), 24), std(0xd9c7a8, .08, 0, { transparent: true, opacity: .75 }), WX(dx), T, WZ(dz), g, { cast: false }); mesh(CY(.013, .013, .016, 14), M.black, WX(dx), T + .098, WZ(dz), g, { cast: false });
+    for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2, s = mesh(CY(.0018, .0018, .28, 5), std(0x2a2522, .7), WX(dx) + Math.cos(a) * .03, T + .23, WZ(dz) + Math.sin(a) * .03, g, { cast: false }); s.rotation.set(Math.sin(a) * .22, 0, -Math.cos(a) * .22); } }
+  /* 욕조 위 흰 벽선반 + 갈색 펌프병 2(검정 라벨) */
+  { pbox(.11, .24, 1.0, 1.02, 2.62, 3.02, std(0xf4f3f0, .35), g); pbox(.22, .24, 1.02, 1.035, 2.62, 3.02, std(0xf4f3f0, .35), g);
+    for (const z of [2.74, 2.86]) pumpBottle(.165, 1.02, z, 0x6b3a12, .17, .03, -Math.PI / 2, true, true); }
+  /* 회색 발매트 + 남색 슬리퍼(발 모양 바닥 + 앞쪽 아치 끈, 앞코가 세면대 쪽) */
+  { const fib = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#8b8d8f'; x.fillRect(0, 0, 64, 64); for (let i = 0; i < 700; i++) { const v = 110 + rnd() * 60 | 0; x.fillStyle = `rgb(${v},${v + 2},${v + 4})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 1); } return c; })(), { rep: [3, 2] });
+    mesh(RB(.62, .012, .42, .006, 2), std(0xffffff, 1, 0, { map: fib }), WX(1.3), .006, WZ(4.32), g, { cast: false });
+    const nav = std(0x1f2a44, .85, 0, { map: fiber, side: THREE.DoubleSide }), sole = std(0xe9e6df, .7);
+    const sh = new THREE.Shape(); sh.absellipse(0, .06, .05, .07, 0, Math.PI, false); sh.absellipse(0, -.05, .045, .08, Math.PI, Math.PI * 2, false);
+    const sg = new THREE.ExtrudeGeometry(sh, { depth: .014, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 16 }); sg.rotateX(Math.PI / 2);
+    const strap = new THREE.CylinderGeometry(.05, .05, .085, 18, 1, true, -Math.PI / 2, Math.PI); strap.rotateX(-Math.PI / 2); strap.scale(1, .62, 1);
+    for (const [sx, ry] of [[1.21, .06], [1.39, -.05]]) { const sp = new THREE.Group(); sp.position.set(WX(sx), .012, WZ(4.32)); sp.rotation.y = ry; g.add(sp);
+      mesh(sg, sole, 0, .018, 0, sp, { cast: false }); mesh(sg, nav, 0, .03, 0, sp); mesh(strap, nav, 0, .03, .05, sp); } }
 }
 // ── 실외기실 (사진): 비어 있는 공간 + 바닥 안내선(실외기·피난사다리 위치) ──
 { const S = 512, c = mkCanvas(S, S), x = c.getContext('2d'); x.clearRect(0, 0, S, S); x.strokeStyle = 'rgba(30,30,30,.85)'; x.lineWidth = 6; x.setLineDash([22, 14]);
