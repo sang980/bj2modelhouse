@@ -842,7 +842,12 @@ wall(2.86, 5.32, 2.86, 6.2, TI, [], 'sp-bent');                         // 1-2(V
 wall(2.86, 6.2, 3.31, 6.2, TI, [], 'sp-bent');
 wall(3.31, 6.2, 3.31, 8.15, TI, [], 'sp-bent');                         // 창 쪽 구간이 알파룸 쪽으로 → 침실2가 창 쪽에서 넓어짐
 wall(5.15, 5.32, 5.15, 8.15, TI, []);                                   // 알파룸 | 거실
-wall(3.52, 2.47, 3.52, 4.2, TI, [{ from: 2.78, to: 3.6, kind: 'door', hinge: 'a', side: -1, name: '현관창고 문', open: false }]);
+wall(3.52, 2.47, 3.52, 4.2, TI, [{ from: 2.76, to: 3.62, y1: 2.32, kind: 'open' }]);   // 현관창고: 키큰 평판 문(아래)
+// 현관창고 문(VR): 몰딩 없는 키큰 흰 평판 문(검은 줄눈), 현관 쪽으로 열림 · 기본 닫힘
+{ const g = structure, z0 = 2.76, z1 = 3.62, lw = z1 - z0 - .012;
+  const d = makeDoor({ parent: g, horiz: false, line: 3.52, t: .12, hu: z0 + .006, du: 1, side: -1, lw, lh: 2.3, lt: .03, mat: M.door, from: z0, to: z1, name: '현관창고 문', handle: false, startOpen: false });
+  const e = mesh(BX(.008, 2.3, .034), M.black, lw - .004, 1.16, 0, d.pivot); e.userData.door = d; doorMeshes.push(e);
+  pbox(3.46, 3.58, 2.32, H, z0, z1, M.wall, g); for (const z of [z0 - .006, z1]) pbox(3.455, 3.585, 0, 2.32, z, z + .006, M.black, g); }
 wall(3.52, 4.2, 4.45, 4.2, TI, []);
 wall(8.85, 4.36, 8.85, 8.15, TI, [{ from: 4.45, to: 5.35, kind: 'door', hinge: 'a', side: 1 }]); // 침실1 문
 wall(9.7, 4.36, 11.89, 4.36, TI, [{ from: 10.17, to: 10.97, y1: 2.1, kind: 'open' }]);          // 드레스룸 입구
