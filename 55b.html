@@ -1983,7 +1983,7 @@ await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
 { const s = sofa(2.6, 9.65, Math.PI / 2); s.scale.x = -1;
   // VR·사진: 쿠션 3개(짙은 갈색 · 적갈색 · 회색 체크) — 기본 쿠션은 숨김
   s.traverse(o => { if (o.isMesh && (o.material === M.check || o.material === M.navy)) o.visible = false; });
-  [[-.78, std(0x3a2a24, .95), .46], [-.4, std(0x8a3b2a, .95), .44], [-.02, std(0xffffff, .95, 0, { map: M.check.map }), .48]].forEach(([px, m, sz], i) => { const p = mesh(pillowG(sz, sz, .17), m, -px, .64, -.2 + i * .02, s); p.rotation.set(-.22, (i - 1) * .12, (i % 2 ? .06 : -.05)); }); }
+  [[-.78, std(0x3a2a24, .95), .46], [-.4, std(0x8a3b2a, .95), .44], [-.02, std(0xc6c4bf, .95, 0, { map: M.navy.map }), .48]] /* VR: 연회색 */.forEach(([px, m, sz], i) => { const p = mesh(pillowG(sz, sz, .17), m, -px, .64, -.2 + i * .02, s); p.rotation.set(-.22, (i - 1) * .12, (i % 2 ? .06 : -.05)); }); }
 rug(3.72, 9.65, 0);
 nestTables(3.75, 9.65); // 사진: 원형 2단 네스팅 테이블
 // 주방 아일랜드(옵션 3-1·3-3, 고정식): 분양 그림처럼 작은 사각 블록(서랍 3단, 싱크 쪽 북면) + 동쪽 면에 붙인 4인 식탁
@@ -2158,14 +2158,19 @@ await yieldUI();
   pbox(x, x + .01, 1.19, 1.91, 8.99, 10.31, M.ledWarm, g, { cast: false }); ledRectWall(x + .05, 1.55, 9.65, 1.4, .8, 1, 0, 0xffd9a8, .3, .9);
   for (const y of [1.45, 1.78]) { pbox(x, x + .2, y, y + .03, 8.05, 8.65, std(0x3a3b3e, .5), g); pbox(x + .02, x + .18, y - .004, y, 8.08, 8.62, M.ledWarm, g, { cast: false }); }
   pbox(x + .03, x + .17, 1.81, 2.0, 8.4, 8.55, std(0xf2efe8, .8), g); pbox(x + .03, x + .15, 1.48, 1.63, 8.3, 8.42, std(0x2a2b2d, .5), g);
+  { const px = 2.95, pz = 10.75, py = 1.72; /* VR: 창가 흰 원반 펜던트(검정 줄, 아래 빛) */
+    mesh(CY(.04, .04, .025), M.white, WX(px), H - .0125, WZ(pz), g, { cast: false }); mesh(CY(.003, .003, H - py - .07), M.black, WX(px), (H + py + .07) / 2, WZ(pz), g, { cast: false });
+    mesh(new THREE.LatheGeometry([[0, 0], [.19, 0], [.205, .012], [.18, .04], [.09, .07], [.02, .078], [0, .078]].map(([a, b]) => new THREE.Vector2(a, b)), 48), std(0xf6f5f2, .55), WX(px), py, WZ(pz), g);
+    mesh(CY(.17, .17, .003, 40), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff1d8, emissiveIntensity: 1.4 }), WX(px), py - .002, WZ(pz), g, { cast: false }); }
   ceilingPanel(3.0, 3.78, 9.0, 9.8, 1.0, 2.8); ceilingPanel(3.86, 4.64, 9.0, 9.8, 1.0, 2.8); pbox(2.95, 4.69, H - .045, H - .04, 8.95, 9.85, M.ledWarm, ceilingGroup, { cast: false });
 }
 function nestTables(x, z) { // 원형 2단 네스팅 테이블(베이지 우드 상판 + 원통 받침)
-  const g = piece('커피테이블', x, z, 0), wood = std(0xcdb48f, .5), base = std(0xb89d77, .55);
+  const g = piece('커피테이블', x, z, 0), wood = std(0xcbbdab, .45), base = std(0xb7a994, .5); /* VR: 그레이지 */
   mesh(CY(.42, .42, .035, 48), wood, -.15, .45, -.2, g); mesh(CY(.25, .28, .43, 40), base, -.15, .215, -.2, g);
   mesh(CY(.36, .36, .035, 48), wood, .3, .32, .35, g); mesh(CY(.22, .25, .3, 40), base, .3, .15, .35, g);
   tablePlant(g, -.2, .47, -.25);
-  mesh(BX(.22, .03, .28), std(0x2f3134, .5), .35, .35, .3, g).rotation.y = .3;
+  for (let i = 0; i < 2; i++) mesh(BX(.22 - i * .03, .028, .28 - i * .03), [std(0x2f3134, .5), std(0xe8e2d6, .7)][i], .35, .352 + i * .028, .3, g).rotation.y = .3 - i * .15; /* 책 2권 */
+  { const v = mesh(new THREE.SphereGeometry(.07, 28, 18), std(0x1b1b1d, .35), .05, .535, -.02, g); v.scale.set(1, .82, 1); mesh(CY(.018, .022, .02, 16), std(0x1b1b1d, .35), .05, .59, -.02, g); } /* VR: 검정 둥근 도자 오브제 */
   return g;
 }
 
