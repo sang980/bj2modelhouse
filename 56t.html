@@ -1216,8 +1216,8 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   pbox(8.97, 11.62, 2.3, H, 7.85, 8.09, M.ceil, fixed, { cast: false });
   ceilingPanel(10.1, 10.8, 6.2, 6.9, 1.0, 2.8);
 }
-// ── 테라스: 화분 + 야외 테이블·의자(남향 햇살) ──
-{ const g = fixed, pot = std(0x55524e, .85), leaf = M.plant;
+// ── 테라스: 분양 조감도처럼 비워 둠(화분·야외 테이블 없음) ──
+if (false) { const g = fixed, pot = std(0x55524e, .85), leaf = M.plant;
   for (const [x, z, s] of [[.6, 11.6, 1], [4.2, 11.7, .8], [8.3, 11.6, 1.1], [11.8, 11.6, .9]]) {
     mesh(CY(.22 * s, .17 * s, .45 * s, 20), pot, WX(x), .225 * s, WZ(z), g);
     for (let i = 0; i < 7; i++) { const b = mesh(new THREE.SphereGeometry(.16 * s, 10, 8), leaf, WX(x + Math.cos(i) * .12 * s), .55 * s + (i % 3) * .1 * s, WZ(z + Math.sin(i * 1.7) * .12 * s), g, { cast: true }); b.scale.y = 1.3; } }
