@@ -1508,7 +1508,9 @@ const diningT = diningWhiteT();
     pbox(8.33, 8.35, y - .17, y + .17, z - .17, z + .17, std(0xffffff, .5), fixed); pbox(8.325, 8.33, y - .14, y + .14, z - .14, z + .14, std(0xffffff, .9, 0, { map: t }), fixed, { cast: false }); } }
 diningB.position.set(WX(6.05), 0, WZ(3.1)); diningB.rotation.y = Math.PI; diningB.userData.home = { x: diningB.position.x, z: diningB.position.z, r: Math.PI };
 const diningPendB = new THREE.Group(); { const p = diningPendB; p.position.set(WX(7.0), 0, WZ(3.1)); fixed.add(p); // 식탁 펜던트
-  mesh(CY(.004, .004, .7, 6), M.black, 0, H - .35, 0, p, { cast: false }); mesh(CY(.32, .34, .04, 40), M.white, 0, 1.62, 0, p, { cast: false }); mesh(CY(.3, .3, .004, 40), M.ledWarm, 0, 1.598, 0, p, { cast: false }); }
+  // VR: 흰 돔(반구) 펜던트
+  mesh(CY(.004, .004, .62, 6), M.black, 0, H - .31, 0, p, { cast: false }); { const sh = mesh(new THREE.SphereGeometry(.24, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), std(0xf8f8f6, .35), 0, 1.6, 0, p, { cast: false }); sh.material.side = THREE.DoubleSide; }
+  mesh(CY(.05, .05, .06, 20), M.white, 0, 1.86, 0, p, { cast: false }); mesh(CY(.2, .2, .004, 32), M.ledWarm, 0, 1.6, 0, p, { cast: false }); }
 // 침실1: 머리는 서쪽 벽(헤드보드 벽판), 양옆 협탁
 bed(10.03, 6.6, Math.PI / 2, 1.6, 2.1, '침대');
 rug(10.35, 6.6, Math.PI / 2); // VR: 침대 아래 회색 털 러그
@@ -2091,8 +2093,8 @@ function applyOptions() {
   // 식탁: 아일랜드가 있으면 아일랜드 남쪽 면에 붙여 남쪽으로, 없으면 주방 가운데에 동서로
   { const L = diningB.userData.len || 1.95;
     diningB.visible = island; diningT.visible = !island; // 기본형(VR): 흰 상판 4인 식탁을 주방 가운데 남북 방향으로
-    diningT.position.set(WX(6.95), 0, WZ(3.15)); diningT.userData.home = { x: diningT.position.x, z: diningT.position.z, r: 0 };
-    if (!island) diningPendB.position.set(WX(6.95), 0, WZ(3.15));
+    diningT.position.set(WX(7.35), 0, WZ(3.15)); diningT.userData.home = { x: diningT.position.x, z: diningT.position.z, r: 0 };
+    if (!island) diningPendB.position.set(WX(7.35), 0, WZ(3.15));
     if (island) { diningB.position.set(WX(6.95), 0, WZ(2.8)); diningB.rotation.y = Math.PI / 2; diningPendB.position.set(WX(6.95), 0, WZ(2.8 + L / 2)); }
     else { diningB.position.set(WX(6.05), 0, WZ(3.1)); diningB.rotation.y = Math.PI; }
     diningB.userData.home = { x: diningB.position.x, z: diningB.position.z, r: diningB.rotation.y }; }
