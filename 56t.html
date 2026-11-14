@@ -1171,6 +1171,32 @@ const shelfMatB = std(0xe9e7e2, .5);
    holeSlab: 상판처럼 넓은 판을 가운데 구멍만 비우고 4조각으로(싱크가 들어갈 자리)
    rrShape: 둥근 모서리 사각형(가운데 위치 지정 가능), hollowTub: 둥근 사각 테두리 돌출 + 안쪽 바닥(욕조·사각 세면기)
    bowlLathe: 바깥면·테두리·안쪽면이 이어진 회전체 볼(둥근 세면기) */
+/* ───────── 조형물 공통(사진·VR) ───────── */
+// 검은 리본이 S자로 오르내리며 와인병 3개를 눕혀 품는 물결 와인랙(로컬: x 길이 방향, y 위, 병은 z 방향으로 누움)
+function waveWineRack(parent, x, y, z, ry = 0) { const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; parent.add(g);
+  const P = [[-.11, .006], [.02, .006], [.085, .03], [.092, .075], [.05, .098], [-.04, .1], [-.09, .125], [-.092, .17], [-.05, .192], [.04, .196], [.085, .222], [.088, .265], [.04, .288], [-.03, .29]].map(([a, b]) => new THREE.Vector3(a, b, 0));
+  const sh = new THREE.Shape(); sh.moveTo(-.003, -.045); sh.lineTo(.003, -.045); sh.lineTo(.003, .045); sh.lineTo(-.003, .045); sh.lineTo(-.003, -.045);
+  mesh(new THREE.ExtrudeGeometry(sh, { steps: 90, bevelEnabled: false, extrudePath: new THREE.CatmullRomCurve3(P) }), std(0x141416, .35, .3), 0, 0, 0, g);
+  for (const [bx, by] of [[.022, .049], [-.03, .148], [.024, .238]]) wineBottle(g, bx, by, 0);
+  return g; }
+function wineBottle(parent, x, y, z) { const geo = new THREE.LatheGeometry([[0, 0], [.034, 0], [.035, .19], [.03, .23], [.013, .26], [.013, .3], [0, .3]].map(([a, b]) => new THREE.Vector2(a, b)), 28);
+  const b = mesh(geo, std(0x1c2a22, .12, .25), x, y, z - .15, parent); b.rotation.x = Math.PI / 2; // 병목이 앞(+z)
+  const c = mesh(CY(.0145, .0145, .045, 16), std(0x5a1420, .4, .3), x, y, z + .13, parent); c.rotation.x = Math.PI / 2;
+  const l = mesh(CY(.0352, .0352, .07, 24, 1, true), std(0xefe6d2, .7), x, y, z - .05, parent); l.rotation.x = Math.PI / 2; }
+function wineGlass(parent, x, y, z) { const geo = new THREE.LatheGeometry([[0, 0], [.034, 0], [.035, .003], [.005, .008], [.004, .095], [.022, .105], [.038, .14], [.04, .175], [.036, .2], [.034, .2], [.036, .175], [.034, .14], [.02, .11], [0, .108]].map(([a, b]) => new THREE.Vector2(a, b)), 32);
+  mesh(geo, std(0xf2f6f7, .03, 0, { transparent: true, opacity: .32, side: THREE.DoubleSide, depthWrite: false }), x, y, z, parent, { cast: false }); }
+// 흰 가리비(연꽃) 모양 도자기 볼: 회전체의 반지름을 꽃잎 수만큼 물결지게
+function lotusBowl(parent, x, y, z, r = .12, petals = 11) { const geo = new THREE.LatheGeometry([[0, 0], [r * .35, 0], [r * .7, r * .18], [r, r * .55], [r * 1.02, r * .62], [r * .94, r * .6], [r * .65, r * .26], [0, r * .14]].map(([a, b]) => new THREE.Vector2(a, b)), 88);
+  const p = geo.attributes.position; for (let i = 0; i < p.count; i++) { const vx = p.getX(i), vz = p.getZ(i), rr = Math.hypot(vx, vz); if (rr < 1e-4) continue; const a = Math.atan2(vz, vx), k = 1 + .09 * Math.cos(a * petals) * Math.min(1, rr / r); p.setX(i, vx * k); p.setZ(i, vz * k); p.setY(i, p.getY(i) + .012 * Math.cos(a * petals) * (rr / r)); }
+  geo.computeVertexNormals(); return mesh(geo, std(0xf7f6f2, .3, 0, { side: THREE.DoubleSide }), x, y, z, parent); }
+// 비틀린 골 흰 도자기 화병(VR 55B): 골이 높이에 따라 돌아감
+function twistVase(parent, x, y, z, h, r, ribs = 9, twist = 1.4) { const geo = new THREE.LatheGeometry([[0, 0], [r * .8, 0], [r, h * .08], [r * 1.05, h * .45], [r * .95, h * .8], [r * .78, h], [r * .7, h], [r * .66, h * .95], [0, h * .9]].map(([a, b]) => new THREE.Vector2(a, b)), 72);
+  const p = geo.attributes.position; for (let i = 0; i < p.count; i++) { const vx = p.getX(i), vz = p.getZ(i), rr = Math.hypot(vx, vz); if (rr < 1e-4) continue; const a = Math.atan2(vz, vx), k = 1 + .075 * Math.cos(ribs * a + twist * Math.PI * 2 * p.getY(i) / h); p.setX(i, vx * k); p.setZ(i, vz * k); }
+  geo.computeVertexNormals(); return mesh(geo, std(0xf6f5f1, .4), x, y, z, parent); }
+// 구슬 덩굴(그린네클리스): 화병 입구에서 바깥으로 넘쳐 아래로 흘러내리는 구슬 줄기 여러 가닥
+function pearlStrings(parent, x, top, z, n = 6, len = .32, floorY = null) { const bead = new THREE.SphereGeometry(.0058, 8, 6), m = std(0x5d8a3e, .55);
+  for (let s = 0; s < n; s++) { const a = s / n * Math.PI * 2 + .3, out = .05 + (s % 2) * .015; let px = x, py = top + .01, pz = z;
+    for (let i = 0; i < 32; i++) { const t = i / 31, d = out + t * .05; px = x + Math.cos(a) * d; pz = z + Math.sin(a) * d; py = top + .02 - Math.pow(t, 1.6) * len; if (floorY != null && py < floorY + .008) py = floorY + .008; mesh(bead, m, px, py, pz, parent, { cast: false }); } } }
 function holeSlab(fn, x0, x1, y0, y1, z0, z1, hx0, hx1, hz0, hz1, mat) {
   fn(x0, hx0, y0, y1, z0, z1, mat); fn(hx1, x1, y0, y1, z0, z1, mat); fn(hx0, hx1, y0, y1, z0, hz0, mat); fn(hx0, hx1, y0, y1, hz1, z1, mat);
 }
