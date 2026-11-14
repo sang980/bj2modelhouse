@@ -767,7 +767,7 @@ function addOpening(horiz, line, t, o, parent = structure) {
 // exterior
 wall(1.2, 0, 7.0, 0, TE, []);
 wall(1.2, 0, 1.2, 4.49, TE, [
-  { from: .7, to: 2.1, y0: .9, y1: 2.0, kind: 'window', light: true },          // 침실2 창
+  { from: 1.25, to: 2.5, y0: .9, y1: 2.0, kind: 'window', light: true },         // 침실2 창(VR: 책상 위, 침대 머리 옆)
   { from: 3.2, to: 4.3, y0: .95, y1: 1.65, kind: 'window', light: true },       // 알파룸 작은 창
 ]);
 wall(0, 4.49, 1.2, 4.49, TE, []);
@@ -804,7 +804,7 @@ wall(5.67, 7.13, 7.6, 7.13, TI, []);                                            
 wall(7.6, 4.75, 7.6, 7.13, TI, [{ from: 6.25, to: 7.0, kind: 'door', hinge: 'b', side: 1 }]);  // 욕실2 ↔ 드레스룸
 wall(7.6, 7.13, 9.34, 7.13, TI, [{ from: 7.66, to: 8.45, y1: 2.1, kind: 'open' }]);           // 드레스룸 입구
 wall(5.67, 7.13, 5.67, 11.25, TI, [{ from: 7.2, to: 8.05, kind: 'door', hinge: 'a', side: 1 }]); // 침실1 문
-wall(0, 7.4, 2.0, 7.4, TI, [{ from: .95, to: 1.75, kind: 'door', hinge: 'b', side: 1, glass: true, name: '다용도실 문' }]);
+wall(0, 7.4, 2.0, 7.4, TI, [{ from: .95, to: 1.75, kind: 'door', hinge: 'b', side: 1, name: '다용도실 문' }]);
 wall(2.0, 7.4, 2.0, 11.25, TI, [{ from: 9.0, to: 9.8, kind: 'door', hinge: 'a', side: -1, glass: true, name: '다용도실 문' }]);
 wall(0, 9.95, 2.0, 9.95, TI, [{ from: .5, to: 1.25, kind: 'door', hinge: 'a', side: 1 }]);    // 실외기실
 pbox(6.84, 7.0, 0, H, 4.3, 4.69, M.wall, structure);                              // 신발장 옆 벽 채움
@@ -991,7 +991,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
     pbox(2.95, 3.3, 1.02, 1.16, 5.3, 5.6, std(0xd9d6cf, .4), k2); }                                                              // 토스터
   const fW = std(0xf1f0ec, .18, .05), fGap = std(0x9a9893, .7);
   kb(3.42, 4.28, 0, 1.85, 5.2, 5.78, std(0xe4e2dd, .5));
-  for (const [y0, y1] of [[1.0, 1.85], [.05, .98]]) for (const [x0, x1] of [[3.43, 3.84], [3.86, 4.27]]) kb(x0, x1, y0, y1, 5.78, 5.8, fW);
+  for (const [y0, y1] of [[1.0, 1.85], [.05, .98]]) for (const [x0, x1] of [[3.43, 3.84], [3.86, 4.27]]) kb(x0, x1, y0, y1, 5.78, 5.8, (y0 > .5 && x0 > 3.85) ? std(0x15171b, .08, .3) : fW); // VR: 오른쪽 위 문만 검은 유리
   kb(3.43, 4.27, .98, 1.0, 5.782, 5.786, fGap); kb(3.845, 3.855, .05, 1.85, 5.782, 5.786, fGap);
   kb(3.4, 4.3, 1.85, H, 5.16, 5.8); kb(4.3, 4.36, 0, H, 5.16, 5.8, std(0xf4f3ef, .62));
   wallBoxes.push({ minX: WX(.11), maxX: WX(.74), minZ: WZ(5.16), maxZ: WZ(7.34) }, { minX: WX(.74), maxX: WX(4.36), minZ: WZ(5.16), maxZ: WZ(5.8) });
@@ -1067,11 +1067,15 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   pbox(x1 - .07, x1 - .06, .75, 1.2, 5.92, 6.2, std(0xf4f4f2, .95), g); pbox(x1 - .08, x1 - .07, .85, 1.15, 5.97, 6.16, std(0x2e6b4a, .95), g);
   ceilingPanel(6.35, 6.85, 6.0, 6.5, .8, 2.2);
 }
-// ── 다용도실(세탁): 세탁기 + 건조기, 위 선반 ──
+// ── 다용도실(세탁): VR처럼 세탁기 위에 건조기를 올린 세탁 타워(서쪽 벽) + 옆 벽 선반 ──
 { const g = fixed;
-  for (const [z, c, nm] of [[8.25, 0xf4f4f2, '세탁기'], [8.95, 0xe6e1d9, '건조기']]) { const w = piece(nm, .46, z, Math.PI / 2, { movable: false });
-    mesh(RB(.66, .86, .7, .03), std(c, .35), 0, .51, 0, w); mesh(CY(.2, .2, .03, 32), std(0x2a2c30, .2), 0, .52, .36, w).rotation.x = Math.PI / 2; mesh(CY(.17, .17, .032, 32), std(0x4a4f57, .1, .3), 0, .52, .37, w).rotation.x = Math.PI / 2; }
-  pbox(.11, .5, 1.55, 1.57, 7.5, 9.85, shelfMatB, g); pbox(.11, .5, 1.9, 1.92, 7.5, 9.85, shelfMatB, g);
+  const w = piece('세탁기·건조기', .46, 8.35, Math.PI / 2, { movable: false });
+  for (const [y, c, dark] of [[.5, 0xf4f4f2, 0x2a2c30], [1.42, 0xeeeeec, 0x3a3d42]]) {
+    mesh(RB(.66, .86, .7, .03), std(c, .35), 0, y, 0, w);
+    mesh(CY(.2, .2, .03, 32), std(dark, .2), 0, y + .01, .36, w).rotation.x = Math.PI / 2; mesh(CY(.17, .17, .032, 32), std(0x4a4f57, .1, .3), 0, y + .01, .37, w).rotation.x = Math.PI / 2; }
+  mesh(BX(.5, .08, .02), std(0x26282c, .3), 0, 1.78, .36, w);                                 // 건조기 위 조작부
+  for (const y of [1.25, 1.6]) pbox(.11, .4, y, y + .022, 8.9, 9.85, shelfMatB, g);
+  pbox(.15, .35, 1.272, 1.45, 9.0, 9.3, std(0xf2f0eb, .6), g); pbox(.15, .35, 1.272, 1.4, 9.4, 9.7, std(0xd8cdb8, .9), g);
 }
 // ── 알파룸: 화이트 백라이트 책장(북쪽 벽, 칸마다 막대형 LED) ──
 { const g = item('b-book', '백라이트 책장');
@@ -1085,8 +1089,19 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   for (let i = 0; i < 10; i++) { const y = [.125, .545, .965, 1.385, 1.805][i % 5] + .003, x = x0 + .06 + (i * .41) % 1.6; pbox(x, x + .05 + (i % 2) * .04, y, y + .2 + (i % 3) * .04, z0 + .06, z0 + .26, M.books[i % 5], g); }
   ledRectWall(2.5, 1.1, z0 + .2, 1.7, 1.9, 0, 1, 0xfff1dc, .4, 1.1);
 }
-// 침실2·알파룸 창 블라인드
-for (const [z0, z1, y] of [[.65, 2.15, 1.55], [3.15, 4.35, 1.4]]) { for (let i = 0; i < 6; i++) pbox(1.31, 1.34, y + i * .045, y + .03 + i * .045, z0, z1, std(0xd7cfc4, .8), fixed, { cast: false }); }
+// 침실2: VR의 브라운 로만셰이드(창 위쪽 절반) + 침대 쪽 초록 패브릭 ㄱ자 벽판(북쪽 벽 + 서쪽 벽 머리 쪽, 세로 채널)
+{ const sh = std(0xa88a6c, .9);
+  pbox(1.31, 1.36, 1.45, 2.05, 1.22, 2.53, sh, fixed, { cast: false });
+  for (let i = 0; i < 5; i++) pbox(1.36, 1.375, 1.5 + i * .11, 1.51 + i * .11, 1.22, 2.53, std(0x8f735a, .9), fixed, { cast: false });
+  const gp = std(0x6f8a55, .95), gl = std(0x5c7647, .95);
+  pbox(1.31, 3.6, 0, 1.0, .11, .17, gp, fixed); pbox(1.31, 1.37, 0, 1.0, .17, 1.2, gp, fixed);
+  for (let x = 1.45; x < 3.6; x += .16) pbox(x - .004, x + .004, .05, 1.0, .17, .175, gl, fixed, { cast: false });
+  for (let z = .3; z < 1.2; z += .16) pbox(1.37, 1.375, .05, 1.0, z - .004, z + .004, gl, fixed, { cast: false });
+  ledRectWall(2.4, 1.02, .2, 2.2, .1, 0, 1, 0xffd9a8, .2, .7);
+  // 벽 선반(골드 받침) 2개 — 침대 위 북쪽 벽
+  for (const [x0, x1, y] of [[2.2, 2.9, 1.55], [2.9, 3.6, 1.85]]) { pbox(x0, x1, y, y + .025, .11, .3, std(0xf1eee6, .5), fixed); pbox(x0 + .05, x0 + .09, y - .12, y, .11, .26, std(0xc9a14a, .3, .6), fixed); pbox(x1 - .09, x1 - .05, y - .12, y, .11, .26, std(0xc9a14a, .3, .6), fixed); } }
+// 알파룸 창 블라인드
+for (const [z0, z1, y] of [[3.15, 4.35, 1.4]]) { for (let i = 0; i < 6; i++) pbox(1.31, 1.34, y + i * .045, y + .03 + i * .045, z0, z1, std(0xd7cfc4, .8), fixed, { cast: false }); }
 // ── 침실1: 패브릭 헤드보드 벽판 + 위 간접등, 창 커튼 ──
 { const g = fixed, x = 5.73;
   pbox(x, x + .06, .45, 1.25, 8.6, 10.6, std(0xe8e4dc, .95), g);
@@ -1354,8 +1369,8 @@ bed(6.81, 9.6, Math.PI / 2, 1.6, 2.1, '침대');
 sideTable(5.99, 8.42, true);
 sideTable(5.99, 10.78, false);
 // 침실2: 창(서쪽) 아래 싱글 침대, 북쪽 벽 책상
-const bed2 = bed(2.42, 1.95, Math.PI / 2, 1.1, 2.0, '싱글 침대');
-const desk2 = desk(2.6, .39, 0);
+const bed2 = bed(2.4, .72, Math.PI / 2, 1.1, 2.0, '싱글 침대'); // VR: 북쪽 벽을 따라, 머리는 창(서쪽) 쪽
+const desk2 = desk(1.66, 1.88, Math.PI / 2); // VR: 창 아래 책상(의자는 동쪽)
 // 알파룸: 블랙 타원 책상 + 의자
 const alphaDesk = piece('타원 책상', 2.75, 4.15, 0); { const t = alphaDesk;
   const top = mesh(CY(.5, .5, .035, 48), std(0x26272a, .35), 0, .74, 0, t); top.scale.set(1.3, 1, .75);
@@ -1781,7 +1796,8 @@ let b6door = null;
   d.apply(1); for (const m of parts) { m.userData.door = d; doorMeshes.push(m); } doors.push(d); b6door = d; }
 // 7 드레스룸 시스템선반: 동쪽 벽 시스템 행거(블랙 기둥·화이트 선반·옷) + 서랍장 + 낮은 선반, 바닥 캐리어
 { const g = item('b7', '드레스룸 시스템선반'); systemShelf(g, 8.72, 9.23, 4.86, 7.07, true, { chest: true, chestStart: true, low: true });
-  suitcase(item('b7', '캐리어', false), 8.0, 5.2, .2); }
+  { const g2 = item('b7', '드레스룸 시스템선반(북쪽)'); systemShelf(g2, 7.68, 8.7, 4.81, 5.3, false, {}); } // VR: ㄱ자 시스템선반
+  suitcase(item('b7', '캐리어', false), 8.1, 6.4, .2); }
 // 8-1 침실1 붙박이장(슬라이딩장): 동쪽 벽 전체 6짝
 { const g = item('b8-1', '침실1 붙박이장'); wardrobe(g, 8.69, 9.23, 7.19, 11.14, 'x-', 6); }
 // 8-2 슬라이딩장 + 화장대: 슬라이딩장 4짝(드레스룸 쪽) + 창 쪽 화장대 칸(벽 속 거울장·2단 서랍·스툴)
