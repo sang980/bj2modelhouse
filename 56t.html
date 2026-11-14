@@ -565,11 +565,11 @@ skyFloor.rotation.x = -Math.PI / 2; skyFloor.position.y = -46; scene.add(skyFloo
 await phase('마감재를 만드는 중', 14);
 const std = (c, r = .8, m = 0, extra = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m, ...extra });
 var OG = {}; // 옵션 그룹(앞쪽 고정 인테리어에서도 씀)
-const floorCanvas = {
-  natural: woodCanvas([220, 213, 202]), // 사진: 밝은 화이트그레이 마루
-  white: woodCanvas([222, 208, 186]),
-  tile: tileCanvas(2, 2, [214, 212, 207], '#c4c1bb', { j: 4, veins: 10 }),
-};
+// 큰 캔버스 무늬는 한 장씩 만들고 양보(느린 기기에서 로딩 화면이 멈추지 않게)
+const floorCanvas = {};
+floorCanvas.natural = woodCanvas([220, 213, 202]); await yieldUI(); // 사진: 밝은 화이트그레이 마루
+floorCanvas.white = woodCanvas([222, 208, 186]); await yieldUI();
+floorCanvas.tile = tileCanvas(2, 2, [214, 212, 207], '#c4c1bb', { j: 4, veins: 10 });
 const floorTex = {}, floorBump = {};
 for (const k in floorCanvas) { floorTex[k] = toTex(floorCanvas[k]); floorBump[k] = toTex(floorCanvas[k], { srgb: false }); }
 await phase('마감재를 만드는 중', 24);
@@ -578,10 +578,7 @@ const M = {
   ceil: std(0xf8f7f4, .95, 0, { shadowSide: THREE.DoubleSide }),
   floor: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: .42, map: floorTex.natural, bumpMap: floorBump.natural, bumpScale: .6, clearcoat: .3, clearcoatRoughness: .22 }),
   base: std(0xeceae5, .45),
-  bathFloor: std(0xffffff, .55, 0, { map: toTex(tileCanvas(4, 4, [168, 166, 162], '#8f8c87', { j: 8 })) }),
-  bathWall: std(0xffffff, .35, 0, { map: toTex(tileCanvas(2, 4, [236, 235, 232], '#cfcdc8', { j: 3, veins: 14 })) }),
-  stone: std(0xffffff, .5, 0, { map: toTex(tileCanvas(2, 2, [150, 148, 144], '#6f6c67', { j: 10, veins: 6 })) }),
-  balc: std(0xffffff, .7, 0, { map: toTex(tileCanvas(4, 4, [190, 186, 178], '#9e9a92', { j: 10 })) }),
+
   white: std(0xf3f2ef, .55),
   matte: std(0xf1efea, .85),
   black: std(0x1c1d20, .45),
@@ -590,6 +587,16 @@ const M = {
   glass: new THREE.MeshStandardMaterial({ color: 0xdfe9ee, roughness: .03, metalness: 0, transparent: true, opacity: .14, depthWrite: false, envMapIntensity: 1.6 }),
   smoke: new THREE.MeshStandardMaterial({ color: 0x2a3036, roughness: .04, metalness: .3, transparent: true, opacity: .62, envMapIntensity: 1.4 }),
 };
+await yieldUI(); // 타일 무늬 4장도 두 장씩 나눠 만듦
+Object.assign(M, {
+  bathFloor: std(0xffffff, .55, 0, { map: toTex(tileCanvas(4, 4, [168, 166, 162], '#8f8c87', { j: 8 })) }),
+  bathWall: std(0xffffff, .35, 0, { map: toTex(tileCanvas(2, 4, [236, 235, 232], '#cfcdc8', { j: 3, veins: 14 })) }),
+});
+await yieldUI();
+Object.assign(M, {
+  stone: std(0xffffff, .5, 0, { map: toTex(tileCanvas(2, 2, [150, 148, 144], '#6f6c67', { j: 10, veins: 6 })) }),
+  balc: std(0xffffff, .7, 0, { map: toTex(tileCanvas(4, 4, [190, 186, 178], '#9e9a92', { j: 10 })) }),
+});
 await phase('마감재를 만드는 중', 18);
 Object.assign(M, {
   boucle: std(0xf1eee7, 1, 0, { map: toTex(noiseCanvas([240, 237, 230], 26), { rep: [6, 6] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 120), { srgb: false, rep: [6, 6] }), bumpScale: 1.2 }),
@@ -599,6 +606,9 @@ Object.assign(M, {
   linen: std(0xf6f5f2, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 14), { rep: [4, 4] }) }),
   throwBlue: std(0xcfc3ad, .98, 0, { map: toTex(noiseCanvas([255, 255, 255], 34), { rep: [5, 5] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 90), { srgb: false, rep: [5, 5] }), bumpScale: .8 }),
   rug: std(0xb9b8b4, 1, 0, { map: toTex(noiseCanvas([255, 255, 255], 46), { rep: [8, 8] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 140), { srgb: false, rep: [8, 8] }), bumpScale: 2 }),
+});
+await yieldUI(); // 나무결 2장은 따로
+Object.assign(M, {
   walnut: std(0xffffff, .55, 0, { map: toTex(woodCanvas([122, 88, 62], 4)) }),
   oak: std(0xffffff, .55, 0, { map: toTex(woodCanvas([196, 160, 118], 4)) }),
 });
@@ -1224,6 +1234,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   wallBoxes.push({ minX: WX(5.86), maxX: WX(8.29), minZ: WZ(zb), maxZ: WZ(zf) }, { minX: WX(5.15), maxX: WX(xf + .04), minZ: WZ(zb), maxZ: WZ(4.14) });
   linearLight(6.2, 8.0, 1.9, 1, 2.6);
 }
+await phase('거실을 꾸미는 중', 56);
 // ── 거실(VR): 연한 우드 세로 패널 TV벽(동쪽 벽 = 침실1 벽) + 민트빛 유리 서랍 흰 TV장 + 우물천장 ──
 { const g = fixed, x = 8.79;
   const panel = std(0xffffff, .42, 0, { map: toTex(tileCanvas(1, 2, [228, 228, 224], '#d4d4d0', { j: 3, veins: 12, gap: 1 })) }); // VR: 연한 회색 석재 패널
@@ -1266,6 +1277,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   wallBoxes.push({ minX: WX(1.98), maxX: WX(x), minZ: WZ(a), maxZ: WZ(b) });
   ceilingPanel(2.65, 3.15, 3.0, 3.5, 1.0, 2.6);
 }
+await phase('욕실과 발코니를 꾸미는 중', 61);
 // ── 욕실1(공용): 북쪽 벽 따라 욕조, 서쪽 벽에 반다리 세면기·변기 + 거울장·돌 선반 ──
 { const g = fixed;
   roundBasin(.36, 4.0, Math.PI / 2); toilet(.45, 4.75, Math.PI / 2); // VR: 둥근 반다리 세면기
@@ -1305,6 +1317,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
     mesh(RB(.66, .86, .7, .03), std(c, .35), 0, .51, 0, w); mesh(CY(.2, .2, .03, 32), std(0x2a2c30, .2), 0, .52, .36, w).rotation.x = Math.PI / 2; mesh(CY(.17, .17, .032, 32), std(0x4a4f57, .1, .3), 0, .52, .37, w).rotation.x = Math.PI / 2; }
   pbox(8.45, 10.0, 1.55, 1.57, .91, 1.3, shelfMatB, g); pbox(8.45, 10.0, 1.9, 1.92, .91, 1.3, shelfMatB, g);
 }
+await phase('침실을 꾸미는 중', 66);
 // ── 알파룸: 화이트 백라이트 책장(북쪽 벽, 칸마다 막대형 LED) ──
 { const g = item('b-book', '백라이트 책장'); g.parent.visible = false; // 56T(VR) 알파룸에는 책장 없음(아이방)
   const x0 = 3.0, x1 = 4.2, z0 = 5.38, z1 = 5.7, wb = std(0xf4f3f0, .5);
@@ -1421,6 +1434,7 @@ function plantGeos() {
   _plantGeo = { leaves: mergeGeometries(leaves, false), stems: mergeGeometries(stems, false), pot };
   return _plantGeo;
 }
+await yieldUI();
 // 잎 텍스처(모든 화분 공통): 가운데 잎맥 + 옆 잎맥(밝게) + 가장자리 살짝 어둡게. 잎마다 색은 정점색으로 다르게 곱해짐
 const leafTex = toTex((() => { const c = mkCanvas(64, 128), x = c.getContext('2d');
   const gr = x.createLinearGradient(0, 128, 0, 0); gr.addColorStop(0, '#a9b496'); gr.addColorStop(1, '#c6cfb4'); x.fillStyle = gr; x.fillRect(0, 0, 64, 128);
@@ -1439,6 +1453,7 @@ function tablePlant(parent, x, y, z) {
   const lv = new THREE.Mesh(pg.leaves, plantLeafMat); lv.position.y = .1; lv.castShadow = true; lv.receiveShadow = true; g.add(lv);
   return g;
 }
+await yieldUI();
 // ── 거실 소품(VR) ──
 // 큰 잎 열대식물: 화병 가운데에서 솟은 줄기가 바깥으로 휘고, 끝에 넓은 타원 잎(가운데 접힘·끝 처짐·잎맥 텍스처)
 function tropicalPlantGeo(n, seed) {
@@ -1488,6 +1503,7 @@ function roundLeafPlant(parent, x, y, z) {
   g.add(new THREE.Mesh(mergeGeometries(stems, false), plantStemMat));
   return g;
 }
+await yieldUI();
 // 주방 상판 소품(사진): 레트로 커피머신, 전기주전자, 블랙 레일 도구, 끝쪽 블랙 보틀·양념병·은색 볼·화이트 볼 화분
 // 좌표는 주방 반전 전 기준(k 그룹 안에서 함께 반전됨). 상판 높이 .9
 function kitchenProps(k) {
@@ -1543,6 +1559,7 @@ function diningChair(parent, cx, cz, rot) {
   const b = mesh(RB(.42, .24, .03, .015), M.whiteGloss, 0, .76, -.215, c); b.rotation.x = -.12;
   return c;
 }
+await yieldUI();
 // 식탁 모델 2종 — 둘 다 로컬 원점이 '평평한 끝' 가운데, 식탁은 로컬 -x 방향으로 뻗음(벽에 붙이기 쉽게)
 // 작은 식탁(현관장+복도팬트리 선택 시): 반타원 0.96m, 의자 3
 function diningSmall() {
@@ -1639,6 +1656,7 @@ function dresser(x, z, rot) {
   return g;
 }
 
+await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
 // ═════ 56T 가구 배치 ═════
 // 거실: 소파는 서쪽 벽(알파룸 벽)에 붙이고 TV 아트월(동쪽)을 바라봄
 { const s = sofa(5.75, 6.75, Math.PI / 2); s.scale.x = -1;
@@ -1688,6 +1706,7 @@ coffeeOvalT(6.9, 6.85);
   const v2 = new THREE.Mesh(texturedVaseGeo(.5, .062), ceramic); v2.position.set(WX(cx - .02), top, WZ(5.93)); v2.castShadow = true; g.add(v2);
   const tp = tropicalPlantGeo(9, .7), pl = new THREE.Group(); pl.position.set(WX(cx - .04), top + .48, WZ(5.93)); pl.scale.x = .5; g.add(pl); // 벽 쪽(동쪽)으로는 잎을 절반만 — 벽을 뚫고 침실1에 보이지 않게
   const lv = new THREE.Mesh(tp.leaves, plantLeafMat); lv.castShadow = true; pl.add(lv); pl.add(new THREE.Mesh(tp.stems, plantStemMat)); }
+await yieldUI();
 // 주방 아일랜드(옵션 3-1·3-3, 고정식) — 상판과 나란히, 식탁은 아일랜드 남쪽에 붙임
 { const g = item('b3isl', '아일랜드식탁');
   pbox(6.27, 7.63, .1, .86, 2.22, 2.78, M.kdoor, g); pbox(6.31, 7.59, 0, .1, 2.26, 2.74, M.black, g);
@@ -1727,6 +1746,7 @@ const diningPendB = new THREE.Group(); { const p = diningPendB; p.position.set(W
   // VR: 흰 돔(반구) 펜던트
   mesh(CY(.004, .004, .62, 6), M.black, 0, H - .31, 0, p, { cast: false }); { const sh = mesh(new THREE.SphereGeometry(.24, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), std(0xf8f8f6, .35), 0, 1.6, 0, p, { cast: false }); sh.material.side = THREE.DoubleSide; }
   mesh(CY(.05, .05, .06, 20), M.white, 0, 1.86, 0, p, { cast: false }); mesh(CY(.2, .2, .004, 32), M.ledWarm, 0, 1.6, 0, p, { cast: false }); }
+await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
 // 침실1: 머리는 서쪽 벽(헤드보드 벽판), 양옆 협탁
 bed(10.03, 6.6, Math.PI / 2, 1.6, 2.1, '침대');
 rug(10.35, 6.6, Math.PI / 2); // VR: 침대 아래 회색 털 러그
@@ -1740,6 +1760,7 @@ const b2art = new THREE.Group(); fixed.add(b2art);
 { const aqua = std(0x9fd6d2, .95, 0, { map: M.throwBlue.map }); bed2.traverse(o => { if (o.isMesh && (o.material === M.throwBlue || o.material === M.linen && o.position.y > .5 && o.geometry.parameters && o.geometry.parameters.depth > .9)) o.material = aqua; });
   const dots = toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = '#f4f4f2'; x.fillRect(0, 0, 96, 128); x.fillStyle = '#7fcfc6'; x.fillRect(14, 16, 68, 92); x.fillStyle = '#e8b04a'; for (let i = 0; i < 9; i++) for (let j = 0; j < 12; j++) if ((i + j) % 2) { x.beginPath(); x.arc(20 + i * 7, 22 + j * 7, 2, 0, 7); x.fill(); } return c; })());
   pbox(2.77, 2.8, 1.05, 1.75, 5.55, 6.1, std(0xdedcd7, .5), b2art); pbox(2.765, 2.77, 1.09, 1.71, 5.59, 6.06, std(0xffffff, .9, 0, { map: dots }), b2art, { cast: false }); }
+await yieldUI();
 // 알파룸: 블랙 타원 책상 + 의자
 // 56T(VR) 알파룸(아이방): 창 아래 원목 난간 침대(연두 이불) + 서쪽 벽 원목 책상·의자 + 북쪽 벽 동물 포스터 2 + 다트판
 const alphaDesk = piece('원목 책상', 3.22, 6.15, Math.PI / 2); { const t = alphaDesk, pine = std(0xe7cfa4, .55, 0, { map: M.oak.map });
@@ -2831,6 +2852,7 @@ await yieldUI(); // 스위치·콘센트 자리 찾기(광선 검사 수십 번)
       if (PLATE.put(px, 1.2, pz, dx, dz, bath ? 'sw1' : 'sw2')) { if (room && /침실/.test(room.n) && !bath) PLATE.put(px, 1.45, pz, dx, dz, 'thermo'); break; } // 침실: 스위치 위 온도조절기
     }
   }
+  await yieldUI(); // 광선 검사를 몇 덩어리로 나눔(로딩 화면 멈춤 방지)
   // 가구 옆 콘센트(VR·사진처럼 눈에 보이는 자리): 침대 머리맡 양옆, 책상 한쪽, 소파 양끝 — 바닥 위 0.32m
   for (const g of movables) {
     const nm = (g.userData && g.userData.name) || '';
@@ -2838,6 +2860,7 @@ await yieldUI(); // 스위치·콘센트 자리 찾기(광선 검사 수십 번)
     else if (/책상/.test(nm)) PLATE.besideFurniture(g, [1]);
     else if (/소파/.test(nm)) PLATE.besideFurniture(g, [-1, 1]);
   }
+  await yieldUI();
   // 세면기 옆 방수 콘센트(1.0m, 타일 줄눈 피함): 한쪽에 벽이 없거나 거울장에 막히면 반대쪽
   { const basins = []; fixed.traverse(o => { if (o.isGroup && /^세면기$/.test((o.userData && o.userData.name) || '')) basins.push(o); });
     for (const g of basins) PLATE.besideFurniture(g, [1], 1, 'outw') || PLATE.besideFurniture(g, [-1], 1, 'outw'); }
