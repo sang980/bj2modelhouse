@@ -1826,12 +1826,16 @@ function kitchenPropsT() {
     for (const [x, h] of [[8.22, .17], [8.25, .15]]) { at(CY(.022, .026, h, 20), blk, x, T + h / 2, 1.08 + (x - 8.22) * 2); at(new THREE.SphereGeometry(.023, 16, 10), M.chrome, x, T + h + .01, 1.08 + (x - 8.22) * 2).scale.set(1, .6, 1); } }
 }
 kitchenPropsT();
-function diningChair(parent, cx, cz, rot) {
+let _tCush = null;
+function diningChair(parent, cx, cz, rot) { /* VR(56T): 밝은 원목 프레임 + 흰 쿠션 좌석 + 원목 기둥 사이 넓은 흰 등받이 쿠션 */
   const c = new THREE.Group(); c.position.set(cx, 0, cz); c.rotation.y = rot; parent.add(c);
-  mesh(RB(.42, .04, .42, .02), M.whiteGloss, 0, .46, 0, c);
-  for (const [lx, lz] of [[-.17, -.17], [.17, -.17], [-.17, .17], [.17, .17]]) mesh(CY(.013, .01, .45), M.whiteGloss, lx, .225, lz, c);
-  for (const lx of [-.17, .17]) { const p = mesh(CY(.012, .012, .42), M.whiteGloss, lx, .67, -.2, c); p.rotation.x = -.12; } // 등받이 지지대
-  const b = mesh(RB(.42, .24, .03, .015), M.whiteGloss, 0, .76, -.215, c); b.rotation.x = -.12;
+  const cu = _tCush || (_tCush = std(0xf6f5f1, .7)), w = M.oak;
+  for (const [lx, lz] of [[-.19, .18], [.19, .18]]) mesh(BX(.034, .44, .034), w, lx, .22, lz, c); /* 앞다리 */
+  for (const lx of [-.19, .19]) { const p = mesh(BX(.034, .88, .034), w, lx, .44, -.19, c); p.rotation.x = -.05; } /* 뒷다리 = 등받이 기둥 */
+  for (const lz of [-.19, .18]) mesh(BX(.38, .05, .025), w, 0, .42, lz, c); for (const lx of [-.19, .19]) mesh(BX(.025, .05, .37), w, lx, .42, 0, c); /* 좌석 틀 */
+  mesh(RB(.43, .07, .43, .025, 3), cu, 0, .47, .0, c); /* 좌석 쿠션 */
+  const b = mesh(RB(.36, .26, .045, .02, 3), cu, 0, .72, -.205, c); b.rotation.x = -.05; /* 넓은 등받이 쿠션 */
+  const t = mesh(BX(.4, .035, .03), w, 0, .87, -.215, c); t.rotation.x = -.05; /* 위 가로대 */
   return c;
 }
 await yieldUI();
@@ -1997,12 +2001,14 @@ function diningWhiteT() {
   mesh(RB(W, .035, L, .008), top, 0, .74, 0, g);
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(BX(.05, .72, .05), wood, sx * (W / 2 - .07), .36, sz * (L / 2 - .08), g);
   for (const sz of [-.33, .33]) { diningChair(g, -(W / 2 + .12), sz, Math.PI / 2); diningChair(g, W / 2 + .12, sz, -Math.PI / 2); }
-  g.traverse(o => { if (o.isMesh && o.geometry.type === 'CylinderGeometry' && o.geometry.parameters.radiusTop < .015 && o.geometry.parameters.height > .4) o.material = wood; }); // VR: 의자 다리 원목
+
   // VR: 자리마다 매트 + 흰 접시 + 주황 그릇 + 젓가락
   const bowlGeo = new THREE.LatheGeometry([[0, 0], [.03, 0], [.034, .004], [.058, .035], [.062, .05], [.058, .05], [.03, .012], [0, .012]].map(([a, b]) => new THREE.Vector2(a, b)), 32), orange = std(0xd9822f, .3), chop = std(0x2b2523, .5);
   for (const [px, pz] of [[-.2, -.33], [-.2, .33], [.2, -.33], [.2, .33]]) { mesh(BX(.28, .004, .36), std(0xdcd3c4, .9), px, .76, pz, g, { cast: false }); mesh(CY(.1, .09, .02, 30), M.whiteGloss, px, .772, pz, g, { cast: false });
     mesh(bowlGeo, orange, px, .782, pz, g); for (const dz of [-.008, .008]) { const c = mesh(CY(.0025, .0035, .22, 6), chop, px + Math.sign(px) * .13, .766, pz + dz, g, { cast: false }); c.rotation.x = Math.PI / 2; } }
-  for (const [x, z, h] of [[-.05, -.05, .26], [.06, .03, .22]]) mesh(CY(.03, .035, h, 16), std(0x2b2f2a, .3), x, .76 + h / 2, z, g);
+  { const bot = new THREE.LatheGeometry([[0, 0], [.036, 0], [.037, .2], [.03, .245], [.014, .275], [.014, .315], [0, .315]].map(([a, b]) => new THREE.Vector2(a, b)), 28), gm = std(0x1f2b22, .12, .25), foil = std(0x5a1420, .4, .3); /* VR: 와인병 2 + 와인잔 */
+    for (const [x, z] of [[-.04, -.06], [.05, .04]]) { mesh(bot, gm, x, .757, z, g); mesh(CY(.0155, .0155, .045, 16), foil, x, .757 + .3, z, g); mesh(CY(.0375, .0375, .075, 24, 1, true), std(0xefe6d2, .7), x, .757 + .1, z, g); }
+    for (const [x, z] of [[-.2, 0], [.2, -.08]]) wineGlass(g, x, .757, z); }
   g.userData.len = L; return g;
 }
 const diningT = diningWhiteT();
