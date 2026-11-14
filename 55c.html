@@ -2427,9 +2427,16 @@ const PAN = { x0: 3.96, x1: 4.94, z0: 2.66, z1: 4.2 };
 // 4 아일랜드식탁 (사진): 동쪽 벽에 붙은 페닌슐라, 남쪽(식탁 쪽)으로 도어, 식탁이 그 앞에 붙음
 function peninsula(k, name, x0, x1, z0, z1) {
   const g = item(k, name);
-  cab(g, x0, x1, .1, .86, z0, z1); cab(g, x0 + .04, x1, 0, .1, z0 + .04, z1 - .04, M.black);
+  /* 남쪽(식탁 쪽) 여닫이 문 n짝 — 클릭하면 열림, 속이 빈 수납장 + 선반 + 그릇 */
+  const inner = std(0xebe9e4, .6), n = Math.max(2, Math.round((x1 - x0) / .45)), zf = z1 - .03;
+  cab(g, x0, x1, .1, .86, z0, z0 + .02, inner); cab(g, x0, x0 + .02, .1, .86, z0, zf); cab(g, x1 - .02, x1, .1, .86, z0, zf);
+  cab(g, x0 + .02, x1 - .02, .1, .12, z0 + .02, zf, inner); cab(g, x0 + .02, x1 - .02, .47, .49, z0 + .02, zf, inner);
+  cab(g, x0 + .04, x1, 0, .1, z0 + .04, z1 - .04, M.black);
   cab(g, x0 - .03, x1, .86, .9, z0 - .03, z1 + .03, M.counter);
-  doorSeams(g, { axis: 'z', at: z1 }, x0, x1, Math.max(2, Math.round((x1 - x0) / .45)), .1, .85);
+  { const lw = (x1 - x0) / n - .006; for (let c = 0; c < n; c++) { const u0 = x0 + (x1 - x0) * c / n + .003, u1 = u0 + lw, left = c < n / 2;
+      const d = makeDoor({ parent: g, horiz: true, line: z1 - .012, t: .02, hu: left ? u0 : u1, du: left ? 1 : -1, side: 1, lw, lh: .74, lt: .02, mat: M.kdoor, from: u0, to: u1, name: '아일랜드 수납장 문', handle: false, startOpen: false }); d.pivot.position.y = .1; } }
+  { const wp = std(0xf7f6f2, .3), zc0 = (z0 + zf) / 2; for (let i = 0; i < 6; i++) mesh(CY(.11, .1, .012, 28), wp, WX(x0 + .3), .497 + i * .014, WZ(zc0), g, { cast: false });
+    mesh(RB(.24, .14, .26, .02, 2), std(0xe9e6df, .6), WX(x1 - .3), .19, WZ(zc0), g); for (let i = 0; i < 3; i++) mesh(CY(.07, .05, .06, 20), wp, WX(x1 - .3), .52 + i * .02, WZ(zc0), g, { cast: false }); }
   // 상판 위 소품(사진 17): 회갈색 타원 펠트 매트 위에 검은 물결 리본 와인랙(와인병 3 눕힘) · 흰 연꽃 모양 도자기 볼, 옆에 와인잔
   const top = .9, zc = (z0 + z1) / 2; mesh(CY(.26, .26, .004, 48), std(0x8a7f72, .95), WX(x0 + .5), top + .002, WZ(zc), g, { cast: false }).scale.set(1.25, 1, .75);
   waveWineRack(g, WX(x0 + .36), top + .004, WZ(zc), .2);

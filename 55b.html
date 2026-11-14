@@ -1936,10 +1936,15 @@ nestTables(3.75, 9.65); // 사진: 원형 2단 네스팅 테이블
   /* VR: 서쪽은 소파 벽 끝(x 1.94~2.06)에 묻히게 벽 두께 안까지, 주방에서 볼 때 오른쪽 아래(북서 — 세탁실 가는 쪽) 모서리만 조금 깎은 오각형(깎은 면은 비움) */
   /* 주방 쪽(북면): 맨 아래 서랍 1단만 두고 위 2단 자리는 움푹 판 오픈 칸 — 안에 흰 전기밥솥 */
   const xw = 1.94, ch = .12, ny = .38, nd = .42, nx0 = xw + ch + .05, nx1 = x1 - .05; /* 서쪽 끝(벽 속), 깎은 폭, 오픈 칸 바닥 높이·깊이·좌우 */
-  const pent = (i, c, notch = false) => { const P = [[xw + i, z0 + i + c], [xw + i + c, z0 + i], ...(notch ? [[nx0, z0 + i], [nx0, z0 + i + nd], [nx1, z0 + i + nd], [nx1, z0 + i]] : []), [x1 - i, z0 + i], [x1 - i, z1 - i], [xw + i, z1 - i]].map(([x, z]) => [WX(x), WZ(z)]);
+  const pent = (i, c, notch = false, zs = z1) => { const P = [[xw + i, z0 + i + c], [xw + i + c, z0 + i], ...(notch ? [[nx0, z0 + i], [nx0, z0 + i + nd], [nx1, z0 + i + nd], [nx1, z0 + i]] : []), [x1 - i, z0 + i], [x1 - i, zs - i], [xw + i, zs - i]].map(([x, z]) => [WX(x), WZ(z)]);
     const s = new THREE.Shape(); s.moveTo(...P[0]); for (const p of P.slice(1)) s.lineTo(...p); s.lineTo(...P[0]); return s; };
   const slab = (shape, y0, y1, m) => { const geo = new THREE.ExtrudeGeometry(shape, { depth: y1 - y0, bevelEnabled: false }); geo.rotateX(Math.PI / 2); return mesh(geo, m, 0, y1, 0, g); }; /* 셰이프 y → z, 돌출은 아래로 */
-  slab(pent(.02, ch - .006), .1, ny, M.kdoor); slab(pent(.02, ch - .006, true), ny, .86, M.kdoor); /* 몸체: 아래 서랍 1단은 꽉 찬 오각형, 위는 북면 오픈 칸 */
+  const zc = 7.44; slab(pent(.02, ch - .006, false, zc), .1, ny, M.kdoor); slab(pent(.02, ch - .006, true, zc), ny, .86, M.kdoor); /* 몸체: 아래 서랍 1단은 꽉 찬 오각형, 위는 북면 오픈 칸 — 남쪽(거실 쪽) 끝 0.46m는 문 달린 수납장 */
+  { const inner = std(0xebe9e4, .6), a0 = 2.06, a1 = x1 - .02, zf = z1 - .03; /* 거실 쪽 수납장: 서쪽은 소파 벽(x 2.06)까지, 여닫이 문 2짝(클릭하면 열림) + 선반 + 그릇 */
+    pbox(a0, a0 + .02, .1, .86, zc - .02, zf, M.kdoor, g); pbox(a1 - .02, a1, .1, .86, zc - .02, zf, M.kdoor, g); pbox(a0 + .02, a1 - .02, .1, .12, zc - .02, zf, inner, g); pbox(a0 + .02, a1 - .02, .47, .49, zc - .02, zf, inner, g);
+    const lw = (a1 - a0 - .012) / 2; for (const [hu, du] of [[a0 + .003, 1], [a1 - .003, -1]]) { const d = makeDoor({ parent: g, horiz: true, line: z1 - .012, t: .02, hu, du, side: 1, lw, lh: .74, lt: .02, mat: M.kdoor, from: a0, to: a1, name: '아일랜드 수납장 문', handle: false, startOpen: false }); d.pivot.position.y = .1; }
+    const wp = std(0xf7f6f2, .3), zz = (zc + zf) / 2; for (let i = 0; i < 6; i++) mesh(CY(.11, .1, .012, 28), wp, WX(2.27), .497 + i * .014, WZ(zz), g, { cast: false }); for (let i = 0; i < 3; i++) mesh(CY(.07, .05, .06, 20), wp, WX(2.55), .52 + i * .02, WZ(zz), g, { cast: false });
+    mesh(RB(.24, .14, .26, .02, 2), std(0xe9e6df, .6), WX(2.3), .19, WZ(zz), g); }
   slab(pent(.06, ch - .02), 0, .1, M.black); slab(pent(-.004, ch + .002), .86, .9, M.counter); /* 걸레받이·상판(살짝 내밈) */
   { const rc = new THREE.Group(); rc.position.set(WX((nx0 + nx1) / 2), ny, WZ(z0 + .02 + nd * .5)); rc.rotation.y = Math.PI; g.add(rc); const wm = std(0xf4f3ef, .25); /* 오픈 칸 속 흰 밥솥(앞면이 주방 쪽) */
     mesh(CY(.1, .104, .012, 32), std(0x8d8f92, .5), 0, .006, 0, rc); mesh(CY(.108, .1, .15, 40), wm, 0, .087, 0, rc);
@@ -1947,7 +1952,7 @@ nestTables(3.75, 9.65); // 사진: 원형 2단 네스팅 테이블
     mesh(RB(.09, .045, .012, .006, 2), std(0x2c2f33, .2, .1), 0, .1, .1, rc).rotation.x = -.18; mesh(BX(.05, .012, .02), std(0xc9cbcd, .4, .5), 0, .19, .07, rc); }
   { const fx0 = xw + ch + .03, fx1 = x1 - .02, fxc = (fx0 + fx1) / 2; /* 북면 곧은 부분(깎인 면 제외) */
     pbox(fxc - .12, fxc + .12, ny - .055, ny - .043, z0 + .006, z0 + .02, M.metalDark, g); } /* 서랍 손잡이 홈 */
-  for (const x of [xw + (x1 - xw) / 3, xw + (x1 - xw) * 2 / 3]) pbox(x - .0015, x + .0015, .1, .86, z1 - .02, z1 - .016, seamMat, g); /* 남면 도어 이음선 */
+
   // 상판 위(VR): 검은 불규칙 타원 매트 + 비틀린 골 흰 화병 2(큰 것에 구슬 덩굴이 흘러내림) + 뒤쪽 갈색 유약 주전자
   { const top = .9, cx = 2.42, cz = 7.55, blob = new THREE.Shape();
     for (let i = 0; i <= 48; i++) { const a = i / 48 * Math.PI * 2, r = 1 + .12 * Math.sin(a * 2 + .6) + .06 * Math.sin(a * 3 + 1.7), px = Math.cos(a) * .17 * r, py = Math.sin(a) * .23 * r; i ? blob.lineTo(px, py) : blob.moveTo(px, py); }
