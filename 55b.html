@@ -843,8 +843,18 @@ wall(5.67, 3.16, 7.0, 3.16, TI, [{ from: 5.78, to: 6.88, y1: 2.3, kind: 'open' }
 }
 wall(5.67, 4.75, 7.9, 4.75, TI, []);                                               // 욕실2 북쪽
 wall(5.67, 4.75, 5.67, 7.13, TI, []);                                              // 욕실2 서쪽(복도)
-wall(5.67, 7.13, 7.6, 7.13, TI, []);                                               // 욕실2 남쪽
-wall(7.6, 4.75, 7.6, 7.13, TI, [{ from: 6.25, to: 7.0, kind: 'door', hinge: 'b', side: 1 }]);  // 욕실2 ↔ 드레스룸
+wall(5.67, 7.13, 7.6, 7.13, TI, [{ from: 6.75, to: 7.5, y1: 2.12, kind: 'open' }]);  // 욕실2 남쪽: 침실1에서 들어가는 입구(VR·평면도)
+wall(7.6, 4.75, 7.6, 7.13, TI, []);                                                // 욕실2 | 드레스룸(막힌 벽)
+// 욕실2 문(VR): 침실1 쪽 벽면에 흰 슬라이딩 문(얇은 검은 테) — 드레스룸 유리 슬라이딩 문 옆, 열면 서쪽(벽 앞)으로
+{ const g = new THREE.Group(); structure.add(g); const ox0 = 6.75, ox1 = 7.5, zf = 7.205, top = 2.12, pw = ox1 - ox0 + .06, ph = top - .02;
+  pbox(5.95, 7.6, top, top + .05, 7.19, 7.24, std(0x1b1c1e, .4, .4), g);
+  const p = new THREE.Group(); g.add(p); const parts = [], add = m => { p.add(m); parts.push(m); return m; };
+  add(mesh(BX(pw, ph, .03), std(0xf3f2ee, .5), 0, ph / 2 + .01, 0));
+  for (const [w, h, x, y] of [[pw, .012, 0, .016], [pw, .012, 0, ph + .004], [.012, ph, -pw / 2 + .006, ph / 2 + .01], [.012, ph, pw / 2 - .006, ph / 2 + .01]]) add(mesh(BX(w, h, .034), M.black, x, y, 0));
+  add(mesh(BX(.02, .45, .02), M.black, pw / 2 - .07, 1.05, .025));
+  const xC = WX((ox0 + ox1) / 2), xO = WX(ox0 - pw / 2 + .04); p.position.set(xC, 0, WZ(zf));
+  const d = { pivot: g, thetaC: 0, thetaO: 1, open: false, cur: 0, target: 0, name: '욕실2 문', box: { minX: WX(ox0), maxX: WX(ox1), minZ: WZ(7.07), maxZ: WZ(7.19) }, apply: v => { p.position.x = xC + (xO - xC) * v; } };
+  d.apply(0); for (const m of parts) { m.userData.door = d; doorMeshes.push(m); } doors.push(d); }
 wall(7.6, 7.13, 9.34, 7.13, TI, [{ from: 7.66, to: 8.45, y1: 2.1, kind: 'open' }]);           // 드레스룸 입구
 wall(5.67, 7.13, 5.67, 11.25, TI, [{ from: 7.2, to: 8.05, kind: 'door', hinge: 'a', side: 1 }]); // 침실1 문
 wall(0, 7.4, 2.0, 7.4, TI, [{ from: .95, to: 1.75, kind: 'door', hinge: 'b', side: 1, name: '다용도실 문' }]);
@@ -1092,8 +1102,8 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
 }
 // ── 욕실2(침실1 전용, 드레스룸에서 출입): 유리 샤워부스(북쪽) · 반다리 세면기 · 변기, 석재 타일 ──
 { const g = fixed, x0 = 5.73, x1 = 7.54, z0 = 4.81, z1 = 7.07;
-  pbox(x0, x0 + .015, 0, H, z0, z1, M.stoneTile, g); pbox(x0, x1, 0, H, z0, z0 + .015, M.stoneTile, g); pbox(x0, x1, 0, H, z1 - .015, z1, M.stoneTile, g);
-  pbox(x1 - .015, x1, 0, H, z0, 6.25, M.stoneTile, g); pbox(x1 - .015, x1, 2.12, H, 6.25, z1, M.stoneTile, g);
+  pbox(x0, x0 + .015, 0, H, z0, z1, M.stoneTile, g); pbox(x0, x1, 0, H, z0, z0 + .015, M.stoneTile, g); pbox(x0, 6.75, 0, H, z1 - .015, z1, M.stoneTile, g); pbox(7.5, x1, 0, H, z1 - .015, z1, M.stoneTile, g); pbox(6.75, 7.5, 2.12, H, z1 - .015, z1, M.stoneTile, g);
+  pbox(x1 - .015, x1, 0, H, z0, z1, M.stoneTile, g); // 동쪽 벽(문 없음)
   // 샤워부스: 고정 유리 + 여닫이 유리문(z 5.75 선)
   const glassP = new THREE.MeshStandardMaterial({ color: 0xdfe9e8, roughness: .05, metalness: .1, transparent: true, opacity: .22, side: THREE.DoubleSide, depthWrite: false });
   const sb = piece('샤워부스 고정유리', 6.0, 5.75, 0, { movable: false }); mesh(BX(.54, 2.0, .01), glassP, 0, 1.02, 0, sb, { cast: false, recv: false }); mesh(BX(.015, 2.0, .02), M.chrome, -.27, 1.02, 0, sb);
