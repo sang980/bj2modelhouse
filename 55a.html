@@ -1323,11 +1323,12 @@ const alphaTable = piece('원형 테이블', 3.75, 7.15, 0);
   for (const a of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) { const f = mesh(BX(.3, .015, .03), M.chrome, Math.cos(a) * .15, .01, Math.sin(a) * .15, t); f.rotation.y = -a; }
 }
 // 사진(알파룸): 원형 테이블 위 펼친 노트북 — 은색 몸체·검은 자판·화면이 스툴 쪽을 향함(테이블과 함께 움직임)
-{ const lp = new THREE.Group(); lp.position.set(.05, .735, -.04); lp.rotation.y = Math.atan2(-.48, .25); alphaTable.add(lp);
-  const silver = std(0xbfc2c6, .32, .65);
+{ const lp = new THREE.Group(); lp.position.set(.05, .739, -.04); lp.rotation.y = Math.atan2(-.48, .25); alphaTable.add(lp); mesh(RB(.5, .004, .34, .002, 1), std(0x18191b, .7), 0, -.002, 0, lp, { cast: false }); /* VR: 검정 데스크 매트 */
+  const silver = std(0x1e1f22, .35, .3); /* VR: 검정 노트북 */
   mesh(RB(.32, .016, .22, .006, 2), silver, 0, .008, 0, lp); mesh(BX(.27, .002, .1), std(0x2a2c30, .6), 0, .0165, -.02, lp); mesh(BX(.09, .001, .06), std(0xa9acb0, .3, .5), 0, .0162, .07, lp);
   const sc = new THREE.Group(); sc.position.set(0, .016, -.108); sc.rotation.x = -.3; lp.add(sc);
   mesh(RB(.32, .21, .007, .005, 2), silver, 0, .105, -.0035, sc); mesh(BX(.3, .19, .001), new THREE.MeshStandardMaterial({ color: 0x10141a, roughness: .12, emissive: 0x24384f, emissiveIntensity: .35 }), 0, .107, .0005, sc); }
+for (let i = 0; i < 2; i++) { const b = mesh(BX(.2 - i * .02, .03, .26 - i * .02), [std(0xf2efe8, .7), std(0x26282c, .5)][i], -.2, .747 + i * .03, .16, alphaTable); b.rotation.y = .4 - i * .2; } /* 책 2권 */
 const alphaRug = piece('알파벳 러그', 3.8, 7.2, 0, { solid: false });
 { const r = alphaRug; mesh(CY(.85, .85, .01, 64), std(0xffffff, 1, 0, { map: toTex(rugAlphabet()) }), 0, .006, 0, r, { cast: false }); }
 { const g = fixed; const bz = 8.08; // 롤/우드 블라인드 (창 윗부분)
