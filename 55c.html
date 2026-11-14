@@ -1508,6 +1508,14 @@ function cookPot(g, x, z, y) { /* VR: 쿡탑 위 스테인리스 냄비(뚜껑·
   mesh(L([[0, 0], [.084, 0], [.092, .008], [.092, .1], [.096, .105], [.088, .105], [0, .105]]), st, 0, 0, 0, p);
   mesh(L([[0, .046], [.03, .044], [.07, .03], [.095, .006], [.095, 0], [0, 0]]), st, 0, .105, 0, p); mesh(CY(.012, .017, .022, 16), M.black, 0, .162, 0, p);
   for (const s of [-1, 1]) { const h = mesh(new THREE.TorusGeometry(.022, .005, 6, 14, Math.PI), M.black, s * .092, .085, 0, p); h.rotation.order = 'YXZ'; h.rotation.set(Math.PI / 2, s * Math.PI / 2, 0); } }
+/* 수납 선반 물건(평면 좌표): shoe 뚜껑 신발상자 · basket 라탄 바구니(손잡이 구멍) · blanket 접은 담요 3장 · fabric 뚜껑 패브릭 수납함(라벨) */
+function storeItem(g, kind, x, y, z, col = 0xe9e5dc, w = .24, d = .28) {
+  const at = (geo, m, yy) => mesh(geo, m, WX(x), yy, WZ(z), g);
+  if (kind === 'shoe') { const m = std(col, .6); at(RB(w, .1, d, .006, 1), m, y + .05); at(RB(w + .008, .03, d + .008, .006, 1), m, y + .087); }
+  if (kind === 'basket') { const m = weaveMat(col); at(RB(w, .16, d, .02, 2), m, y + .08); at(RB(w + .012, .016, d + .012, .008, 2), m, y + .155); for (const s of [-1, 1]) mesh(RB(.012, .03, .07, .01, 1), std(0x3a2a1a, .9), WX(x + s * (w / 2 + .001)), y + .125, WZ(z), g, { cast: false }); }
+  if (kind === 'blanket') [col, 0xd9d4ca, 0x8e9aa6].forEach((c, i) => { const b = at(RB(w, .05, d, .022, 3), std(c, .95, 0, { map: M.navy.map }), y + .025 + i * .05); b.rotation.y = (i - 1) * .04; });
+  if (kind === 'fabric') { const m = std(col, .9, 0, { map: M.navy.map }); at(RB(w, .18, d, .015, 2), m, y + .09); at(RB(w + .01, .025, d + .01, .01, 2), std(col, .85), y + .19); mesh(BX(.06, .035, .003), std(0xf4f1ea, .6), WX(x), y + .1, WZ(z + d / 2 + .002), g, { cast: false }); }
+}
 function toilet(x, z, rot, towel = null) { /* VR: 비데처럼 뚜껑 닫힘 + 오른쪽 조작부, towel: 뚜껑 위에 가로로 걸친 수건 재질 */
   const g = piece('양변기', x, z, rot, { movable: false });
   mesh(new THREE.CylinderGeometry(.17, .13, .38, 32, 1, true), M.white, 0, .19, .05, g).scale.set(1, 1, 1.3); // 몸통(위가 뚫린 옆면)
@@ -2568,13 +2576,11 @@ function pantryGoods(g, lv, y) {
   for (const x of [3.55, 4.0]) cab(g, x, x + .03, 0, 2.2, 2.66, 2.69, postMat);
   for (const y of [.35, .8, 1.25, 1.7, 2.1]) { cab(g, 4.08, 4.44, y, y + .02, 2.66, 3.25, shelfMat); cab(g, 3.5, 4.08, y, y + .02, 2.66, 3.0, shelfMat); }
   // 물품: 칸마다 서로 겹치지 않게 간격을 두고, 선반 윗면에서 살짝 띄워 z-fighting 방지
-  const goods = [0x8a7a66, 0xe2ddd3, 0x3d4a58, 0xb9a48c, 0x6f7f6a];
-  [.37, .82, 1.27, 1.72].forEach((y, lv) => {
-    let x = 3.57 + (lv % 2) * .05, k = lv;
-    while (x < 3.98) { const w = .14 + ((k * 37) % 9) / 100, d = .18 + ((k * 13) % 5) / 100; if (x + w > 4.04) break;
-      cab(g, x, x + w, y + .003, y + .003 + .15 + ((k * 29) % 11) / 100, 2.71, 2.71 + d, std(goods[k % goods.length], .8)); x += w + .035; k++; }
-    for (let j = 0; j < 2; j++) { const z0 = 2.73 + j * .25; cab(g, 4.12, 4.38, y + .003, y + .003 + .12 + ((lv + j) % 3) * .04, z0, z0 + .2, std(goods[(lv + j + 2) % goods.length], .8)); }
-  });
+  [ [['shoe', 3.64, 0xf2f0eb], ['shoe', 3.92, 0x2b2c2f], ['basket', 4.26, 0xc49a5c, 2.82], ['shoe', 4.26, 0xe6dfd2, 3.1]],
+    [['basket', 3.66, 0xb48a52], ['fabric', 3.93, 0xcfc6b6], ['blanket', 4.26, 0xe8e2d6, 2.9]],
+    [['blanket', 3.68, 0xb9c3cc], ['shoe', 3.94, 0xf2f0eb], ['basket', 4.26, 0xd0aa6a, 2.82], ['fabric', 4.26, 0x9aa3ab, 3.1]],
+    [['fabric', 3.66, 0xd8cfbf], ['fabric', 3.93, 0xbfb5a4], ['basket', 4.26, 0xc49a5c, 2.85]] ].forEach((row, lv) => { const y = [.37, .82, 1.27, 1.72][lv] + .003;
+    for (const [k, x, c, z = 2.83] of row) storeItem(g, k, x, y, z, c, k === 'blanket' ? .28 : .24, x > 4.1 ? .24 : .28); }); /* 물품: 신발상자·바구니·담요·수납함 */
   g.position.z = 2 * WZ(3.4); g.scale.z = -1; } /* 창고 문이 북쪽(신발장 맞은편)으로 옮겨져 선반은 문 반대편 남쪽 안쪽 코너로 대칭 */
 // 3 현관중문 (3연동 슬라이딩도어)
 { const r = item('o3', '현관중문 레일', false); cab(r, 1.96, 3.34, 2.06, 2.12, 3.44, 3.52, M.metalDark);
