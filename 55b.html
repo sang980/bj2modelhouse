@@ -1680,10 +1680,23 @@ recolorBed(bed1B, 0x6e7173, 0x1f5446, 0x23604f);
 function flutedPedestal(x, z, withLamp) { const g = piece('사이드 테이블', x, z, 0), w = std(0xf6f5f2, .45);
   const geo = new THREE.CylinderGeometry(.19, .21, .52, 48, 1); const p = geo.attributes.position; for (let i = 0; i < p.count; i++) { const a = Math.atan2(p.getZ(i), p.getX(i)), r = Math.hypot(p.getX(i), p.getZ(i)); if (r > .05) { const k = 1 + .045 * Math.cos(a * 16); p.setX(i, p.getX(i) * k); p.setZ(i, p.getZ(i) * k); } } geo.computeVertexNormals();
   mesh(geo, w, 0, .26, 0, g); mesh(CY(.22, .22, .03, 40), w, 0, .535, 0, g);
-  if (withLamp) { mesh(CY(.05, .06, .16, 20), std(0xd8d2c4, .6), .05, .63, 0, g); for (let i = 0; i < 6; i++) { const s = mesh(CY(.003, .003, .3), M.plant, .05 + (i - 3) * .01, .8, (i % 2) * .02, g, { cast: false }); s.rotation.z = (i - 3) * .12; } }
+  if (withLamp) { // VR: 흰 도자기 화병 + 흰 카라 4송이(노란 꽃술), 옆에 검은 유리 캔들
+    const vase = new THREE.LatheGeometry([[0, 0], [.045, 0], [.055, .04], [.05, .12], [.035, .17], [.03, .2], [0, .2]].map(([a, b]) => new THREE.Vector2(a, b)), 28);
+    mesh(vase, std(0xf2efe8, .35), .04, .55, -.02, g);
+    const callaG = new THREE.LatheGeometry([[0, 0], [.006, 0], [.012, .02], [.022, .05], [.032, .075], [.03, .085]].map(([a, b]) => new THREE.Vector2(a, b)), 16, 0, Math.PI * 1.6); // 한쪽이 트인 나팔 모양
+    const white = std(0xfbfaf6, .55); white.side = THREE.DoubleSide; const stemM = std(0x5f8a3c, .6), pist = std(0xe8c34a, .6);
+    for (let i = 0; i < 4; i++) { const a = i * 1.7 + .4, h = .3 + i * .045, tilt = .16 + (i % 2) * .1, dx = Math.sin(a) * tilt * h, dz = Math.cos(a) * tilt * h;
+      const st = mesh(CY(.004, .005, h, 8), stemM, .04 + dx / 2, .7 + h / 2, -.02 + dz / 2, g, { cast: false }); st.rotation.set(Math.cos(a) * tilt, 0, -Math.sin(a) * tilt);
+      const fl = mesh(callaG, white, .04 + dx, .7 + h - .01, -.02 + dz, g, { cast: false }); fl.rotation.set(Math.cos(a) * (tilt + .45), a, -Math.sin(a) * (tilt + .45));
+      mesh(CY(.003, .003, .045, 6), pist, .04 + dx * 1.05, .7 + h + .03, -.02 + dz * 1.05, g, { cast: false }); }
+    mesh(CY(.03, .03, .07, 20), std(0x2a2522, .15, .2, { transparent: true, opacity: .85 }), -.1, .585, .07, g); mesh(CY(.026, .026, .004, 20), std(0xf3efe6, .8), -.1, .6, .07, g); }
   return g; }
 flutedPedestal(5.99, 8.42, true);
 flutedPedestal(5.99, 10.78, false);
+// VR: 침대 왼쪽(창가) 모서리 플로어 스탠드 — 가는 검은 기둥 + 우윳빛 유리 구 조명
+{ const g = fixed, x = 5.88, z = 11.0; mesh(CY(.09, .1, .02, 28), M.black, WX(x), .01, WZ(z), g); mesh(CY(.008, .008, 1.3, 10), M.black, WX(x), .67, WZ(z), g);
+  mesh(CY(.02, .02, .04, 12), M.black, WX(x), 1.31, WZ(z), g);
+  mesh(new THREE.SphereGeometry(.075, 24, 16), new THREE.MeshStandardMaterial({ color: 0xfff6e8, roughness: .4, emissive: 0xffd9a0, emissiveIntensity: .8 }), WX(x), 1.39, WZ(z), g, { cast: false }); }
 // 침실2: 창(서쪽) 아래 싱글 침대, 북쪽 벽 책상
 const bed2 = bed(2.4, .72, Math.PI / 2, 1.1, 2.0, '싱글 침대'); // VR: 북쪽 벽을 따라, 머리는 창(서쪽) 쪽
 recolorBed(bed2, 0x6d8a3e, 0xf2f1ec, 0x7c9a4a); // VR: 침실2 올리브 초록 이불·쿠션
