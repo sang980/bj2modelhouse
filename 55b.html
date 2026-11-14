@@ -658,6 +658,7 @@ M.mirrorBath2 = roomMirror(5.73, 7.54, 4.81, 7.07, 6.7, 6.3);
 M.mirrorPowder = roomMirror(7.66, 9.23, 4.86, 7.07, 8.4, 6.0);
 M.mirrorBed1 = roomMirror(5.73, 9.23, 7.19, 11.14, 7.5, 9.2);
 M.mirrorBed2 = roomMirror(1.31, 4.44, .11, 2.68, 2.8, 1.4);
+M.mirrorEntry = roomMirror(4.56, 6.94, 3.22, 4.3, 6.3, 3.75); // 현관 신발장 거울문: 현관 안에서 찍은 반사(예전엔 거실 반사가 비쳤음)
 for (const m of [M.boucle, M.rug]) m.map.repeat.set(6, 6);
 // fabrics: physical sheen so cloth catches grazing light like real textiles
 for (const key of ['boucle', 'navy', 'check', 'charcoal', 'linen', 'throwBlue', 'rug', 'fabricGrey']) {
@@ -1222,7 +1223,7 @@ await phase('거실을 꾸미는 중', 56);
 { const g = fixed, z = 4.69, a = 5.73, b = 6.84, w3 = (b - a) / 3;
   pbox(a, b, .1, 2.3, 4.3, z, M.kdoor, g); pbox(a + .02, b - .02, 0, .1, 4.34, z - .04, M.black, g);
   for (let i = 1; i < 3; i++) pbox(a + w3 * i - .0015, a + w3 * i + .0015, .1, 2.3, 4.297, 4.3, seamMat, g);
-  for (let i = 0; i < 3; i++) pbox(a + w3 * i + .015, a + w3 * (i + 1) - .015, .12, 2.28, 4.294, 4.297, M.mirror, g, { cast: false }); // VR: 3짝 모두 전신 거울
+  for (let i = 0; i < 3; i++) pbox(a + w3 * i + .015, a + w3 * (i + 1) - .015, .12, 2.28, 4.294, 4.297, M.mirrorEntry, g, { cast: false }); // VR: 3짝 모두 전신 거울
   for (let i = 0; i <= 3; i++) pbox(a + w3 * i - .006, a + w3 * i + .006, .1, 2.3, 4.288, 4.294, M.black, g); pbox(a, b, 2.28, 2.3, 4.288, 4.294, M.black, g); pbox(a, b, .1, .12, 4.288, 4.294, M.black, g);
   ceilingPanel(6.05, 6.55, 3.5, 4.0, 1.0, 2.6);
 }
