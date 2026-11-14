@@ -1121,12 +1121,12 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   pbox(3.13, 4.02, 1.03, 1.97, z - .034, z - .03, std(0xffffff, .9, 0, { map: art }), g, { cast: false });
   ledRectWall(3.575, 1.5, z - .05, .9, 1.0, 0, -1, 0xffe2bd, .3, .8);
 }
-// ── 현관: 신발장(서쪽, 문은 현관 쪽) — 블랙 테 전신거울 문 1짝 + 평판등 ──
+// ── 현관(VR): 신발장(서쪽, 문은 현관 쪽) — 블랙 테 전신거울 문 3짝 + 평판등 ──
 { const g = fixed, x = 2.36, a = 2.6, b = 4.12, w3 = (b - a) / 3;
   pbox(1.98, x, .1, 2.3, a, b, M.kdoor, g); pbox(2.02, x - .04, 0, .1, a + .02, b - .02, M.black, g);
   for (let i = 1; i < 3; i++) pbox(x, x + .003, .1, 2.3, a + w3 * i - .0015, a + w3 * i + .0015, seamMat, g);
-  pbox(x + .003, x + .006, .2, 2.2, b - w3 + .03, b - .03, M.mirror, g, { cast: false });
-  for (const [z0, z1, y0, y1] of [[b - w3 + .02, b - .02, .19, .21], [b - w3 + .02, b - .02, 2.19, 2.21], [b - w3 + .02, b - w3 + .035, .19, 2.21], [b - .035, b - .02, .19, 2.21]]) pbox(x + .004, x + .01, y0, y1, z0, z1, M.black, g);
+  for (let i = 0; i < 3; i++) pbox(x + .003, x + .006, .12, 2.28, a + w3 * i + .015, a + w3 * (i + 1) - .015, M.mirror, g, { cast: false }); // VR: 3짝 모두 전신 거울
+  for (let i = 0; i <= 3; i++) pbox(x + .004, x + .01, .1, 2.3, a + w3 * i - .006, a + w3 * i + .006, M.black, g); pbox(x + .004, x + .01, 2.28, 2.3, a, b, M.black, g); pbox(x + .004, x + .01, .1, .12, a, b, M.black, g);
   wallBoxes.push({ minX: WX(1.98), maxX: WX(x), minZ: WZ(a), maxZ: WZ(b) });
   ceilingPanel(2.65, 3.15, 3.0, 3.5, 1.0, 2.6);
 }
