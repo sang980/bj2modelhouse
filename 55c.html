@@ -134,6 +134,12 @@ body{margin:0;background:var(--stage);color:var(--ink);font-family:var(--body);o
 #swWarn .sw-foot{margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 #swWarn #swCopied{color:#2f7a55;font-size:12px}
 #note{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));font-size:10.5px;color:rgba(31,42,51,.6);max-width:260px;line-height:1.4}
+.opts-head{position:relative;padding-right:38px}
+#optClose{position:absolute;top:-2px;right:-2px;width:32px;height:32px;border:1px solid var(--line);border-radius:999px;background:var(--panel-solid);color:var(--ink);font:600 16px/1 var(--body);cursor:pointer;display:grid;place-items:center;padding:0}
+#optClose:hover{border-color:var(--accent);color:var(--accent)}
+#optClose:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#opts.closed{display:none}
+.opts-closed #optToggle{display:block}
 @media (max-width:760px){
   #opts{display:none;top:calc(64px + env(safe-area-inset-top,0px));width:auto;left:max(16px,env(safe-area-inset-left,0px));max-height:calc(100% - 140px)}
   #opts.open{display:flex}
@@ -172,7 +178,7 @@ body{margin:0;background:var(--stage);color:var(--ink);font-family:var(--body);o
 
   <button id="optToggle" aria-expanded="false" aria-controls="opts">옵션</button>
   <div id="opts" class="panel" aria-label="옵션 선택">
-    <div class="opts-head"><h2>옵션 선택</h2><p>55C 공간옵션 · 물품옵션 (분양 자료 기준)</p></div>
+    <div class="opts-head"><h2>옵션 선택</h2><p>55C 공간옵션 · 물품옵션 (분양 자료 기준)</p><button id="optClose" type="button" aria-label="옵션 닫기" title="옵션 닫기">✕</button></div>
     <div id="optList"></div>
     <div id="optSum"></div>
   </div>
@@ -2338,7 +2344,15 @@ function goLook(o) {
   if (innerWidth <= 760) { optPanel.classList.remove('open'); optToggle.setAttribute('aria-expanded', 'false'); }
 }
 const optToggle = document.getElementById('optToggle'), optPanel = document.getElementById('opts');
-optToggle.addEventListener('click', () => { const o = optPanel.classList.toggle('open'); optToggle.setAttribute('aria-expanded', String(o)); });
+// 옵션 창 열기/닫기: 좁은 화면은 'open' 클래스, 넓은 화면은 'closed' 클래스로 — 닫으면 '옵션' 버튼으로 다시 열기
+const isNarrowUI = () => innerWidth <= 760;
+function setOptsOpen(o) {
+  if (isNarrowUI()) optPanel.classList.toggle('open', o);
+  else { optPanel.classList.toggle('closed', !o); document.body.classList.toggle('opts-closed', !o); }
+  optToggle.setAttribute('aria-expanded', String(o));
+}
+optToggle.addEventListener('click', () => setOptsOpen(isNarrowUI() ? !optPanel.classList.contains('open') : optPanel.classList.contains('closed')));
+document.getElementById('optClose').addEventListener('click', () => setOptsOpen(false));
 function setTimeMode(t) {
   state.time = t; setTime(t === 'eve'); applyLighting(); setMode(mode); queueBake();
   document.querySelectorAll('#timeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.time === t)));
