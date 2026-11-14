@@ -1965,9 +1965,13 @@ let b6door = null;
 { const g = item('b11', '알파룸 특화형 붙박이장'); wardrobe(g, 1.31, 3.39, 2.8, 3.3, 'z+', 4); }
 // 12 다기능 욕실팬(공용욕실) / 기본 일반 배기팬
 { const b = item('b12base', '배기팬', false, ceilingGroup); pbox(5.9, 6.15, H - .012, H, .9, 1.15, M.white, b, { cast: false }); for (let i = 0; i < 4; i++) pbox(5.93, 6.12, H - .014, H - .012, .93 + i * .06, .95 + i * .06, std(0x9a9893, .6), b, { cast: false });
-  const f = item('b12', '다기능 욕실팬', false, ceilingGroup); pbox(5.75, 6.35, H - .03, H, .7, 1.3, M.white, f, { cast: false });
-  for (let i = 0; i < 9; i++) pbox(5.8, 6.3, H - .032, H - .03, .76 + i * .055, .78 + i * .055, std(0x8a8c90, .5), f, { cast: false });
-  pbox(6.2, 6.3, H - .034, H - .03, 1.2, 1.26, std(0x3a7bd5, .3, 0, { emissive: 0x3a7bd5, emissiveIntensity: .8 }), f, { cast: false }); }
+  // 다기능 욕실팬(VR 옵션 그림): 흰 정사각 패널 + 세로 타원 LED 링 + 아래 둥근 흡입 그릴 + 온습도 표시
+  const f = item('b12', '다기능 욕실팬', false, ceilingGroup), cx = 6.05, cz = 1.0;
+  pbox(cx - .25, cx + .25, H - .028, H, cz - .25, cz + .25, std(0xf4f4f2, .35), f, { cast: false });
+  { const ring = new THREE.Mesh(new THREE.TorusGeometry(.1, .009, 8, 48), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.6 })); ring.rotation.x = Math.PI / 2; ring.scale.set(1, 1.6, 1); ring.position.set(WX(cx), H - .031, WZ(cz)); f.add(ring); }
+  mesh(CY(.045, .045, .006, 32), std(0x1d1f23, .5), WX(cx), H - .032, WZ(cz + .09), f, { cast: false });
+  for (let i = -2; i <= 2; i++) pbox(cx - .035, cx + .035, H - .036, H - .034, cz + .09 + i * .015 - .002, cz + .09 + i * .015 + .002, std(0x3b3e44, .5), f, { cast: false });
+  pbox(cx - .05, cx + .05, H - .033, H - .031, cz - .04, cz - .02, std(0x9fd1ff, .3, 0, { emissive: 0x9fd1ff, emissiveIntensity: .9 }), f, { cast: false }); }
 // 13 시스템에어컨: 거실·침실1 / 침실2+알파룸 통합형 / 침실2·알파룸 각각
 function acUnit(k, x, z, w, alongX) { const g = item(k, '시스템에어컨', false, ceilingGroup), d = .45, panel = std(0xf6f6f4, .35), slat = std(0xd6d8da, .4), dark = std(0x26282c, .6);
   const box = (a, b, y0, y1, c, e, m) => alongX ? pbox(x - a, x + a, y0, y1, z + c, z + e, m, g, { cast: false }) : pbox(x + c, x + e, y0, y1, z - a, z + a, m, g, { cast: false });
