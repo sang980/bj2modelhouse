@@ -1991,10 +1991,11 @@ await yieldUI();
 // 주방 아일랜드(옵션 3-1·3-3, 고정식) — 상판과 나란히, 식탁은 아일랜드 남쪽에 붙임
 { const g = item('b3isl', '아일랜드식탁');
   /* 냉장고장 앞면(x 5.86)에서 약 1m 띄워 냉장고 문을 열 수 있게, 세탁실 미닫이문(z 0.96~2.84)을 가리지 않게 거실 쪽으로 내림(z 3.0~3.6) — 길이 1.2m */
-  pbox(6.87, 8.03, .1, .86, 3.02, 3.58, M.kdoor, g); pbox(6.91, 7.99, 0, .1, 3.06, 3.54, M.black, g);
-  pbox(6.85, 8.05, .86, .9, 3.0, 3.6, M.counter, g);
-  for (const x of [7.25, 7.65]) { pbox(x - .0015, x + .0015, .1, .86, 3.016, 3.02, seamMat, g); pbox(x - .0015, x + .0015, .1, .86, 3.58, 3.584, seamMat, g); }
-  mesh(new THREE.LatheGeometry([[0, 0], [.08, 0], [.11, .06], [.11, .22], [.06, .3], [.05, .34], [0, .34]].map(([a, b]) => new THREE.Vector2(a, b)), 28), M.whiteGloss, WX(7.8), .9, WZ(3.3), g);
+  /* 사용자 요청: 북쪽 면을 세탁실 입구 모서리(미닫이문 끝 z 2.84)에 딱 맞춤 → z 2.84~3.44 */
+  pbox(6.87, 8.03, .1, .86, 2.86, 3.42, M.kdoor, g); pbox(6.91, 7.99, 0, .1, 2.9, 3.38, M.black, g);
+  pbox(6.85, 8.05, .86, .9, 2.84, 3.44, M.counter, g);
+  for (const x of [7.25, 7.65]) { pbox(x - .0015, x + .0015, .1, .86, 2.856, 2.86, seamMat, g); pbox(x - .0015, x + .0015, .1, .86, 3.42, 3.424, seamMat, g); }
+  mesh(new THREE.LatheGeometry([[0, 0], [.08, 0], [.11, .06], [.11, .22], [.06, .3], [.05, .34], [0, .34]].map(([a, b]) => new THREE.Vector2(a, b)), 28), M.whiteGloss, WX(7.8), .9, WZ(3.14), g);
 }
 const diningB = diningLarge();
 // 56T(VR): 흰 상판 + 원목 다리 4인 식탁(남북 방향) + 흰 의자, 식탁 옆 동쪽 벽 작은 액자 4개
@@ -2631,7 +2632,7 @@ function applyOptions() {
   // 식탁: 아일랜드가 있으면 아일랜드 남쪽 면에 붙여 남쪽으로, 없으면 주방 가운데에 동서로
   { const L = diningB.userData.len || 1.95;
     diningB.visible = false; diningT.visible = true; /* VR 흰 상판 4인 식탁(남북 방향) — 아일랜드가 있으면 아일랜드 남쪽 면에 붙임(냉장고 앞 공간 확보) */
-    const [tx, tz] = island ? [7.45, 4.3] : [7.35, 3.15];
+    const [tx, tz] = island ? [7.45, 4.14] : [7.35, 3.15];
     diningT.position.set(WX(tx), 0, WZ(tz)); diningT.userData.home = { x: diningT.position.x, z: diningT.position.z, r: 0 }; diningPendB.position.set(WX(tx), 0, WZ(tz));
     diningB.position.set(WX(6.05), 0, WZ(3.1)); diningB.rotation.y = Math.PI;
     diningB.userData.home = { x: diningB.position.x, z: diningB.position.z, r: diningB.rotation.y }; }
