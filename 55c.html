@@ -240,6 +240,16 @@ body{margin:0;background:var(--stage);color:var(--ink);font-family:var(--body);o
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
 </script>
+<!-- 2·3단계로 늦게 발견되는 모듈을 처음부터 함께 받아 둠(처음 방문 시 네트워크 대기 단축) -->
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/Pass.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/CopyShader.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/MaskPass.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/OutputShader.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/LuminosityHighPassShader.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/postprocessing/GTAOPass.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/GTAOShader.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/shaders/PoissonDenoiseShader.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/math/SimplexNoise.js">
 <script type="module">
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -267,7 +277,11 @@ const yieldUI = () => new Promise(r => {
   let done = false; const go = () => { if (!done) { done = true; setTimeout(r, 0); } };
   requestAnimationFrame(go); setTimeout(go, 60);
 });
-async function phase(msg, pct) { loadMsg.textContent = msg; if (loadBar) loadBar.style.transform = `scaleX(${Math.max(.02, pct / 100)})`; await yieldUI(); }
+// 진단용: 로딩 단계별 시각과 50ms 넘게 멈춘 작업(long task)을 기록 → __mhLoadLog()
+const LOADLOG = { phases: [], long: [] };
+try { new PerformanceObserver(l => { for (const e of l.getEntries()) LOADLOG.long.push([Math.round(e.startTime), Math.round(e.duration), loadMsg.textContent]); }).observe({ type: 'longtask', buffered: true }); } catch (e) {}
+window.__mhLoadLog = () => LOADLOG;
+async function phase(msg, pct) { LOADLOG.phases.push([Math.round(performance.now()), msg]); loadMsg.textContent = msg; if (loadBar) loadBar.style.transform = `scaleX(${Math.max(.02, pct / 100)})`; await yieldUI(); }
 try {
 await phase('화면을 준비하는 중', 3);
 
@@ -277,6 +291,8 @@ const isTouch = matchMedia('(pointer: coarse)').matches;
 // 렌더러를 만들기 전에 임시 컨텍스트로 GPU를 확인 → CPU(소프트웨어) 렌더링이면 MSAA 안티에일리어싱을 끄고 시작
 const PROBE_SW = (() => { try { const c = document.createElement('canvas'), gl = c.getContext('webgl2') || c.getContext('webgl'); if (!gl) return false; const e = gl.getExtension('WEBGL_debug_renderer_info'); const r = String(e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)); const lose = gl.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext(); return /swiftshader|basic render|llvmpipe|software|warp/i.test(r); } catch (e) { return false; } })();
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: !PROBE_SW, powerPreference: 'high-performance' });
+// 진단용(?cold): 셰이더 소스에 임의 주석을 붙여 브라우저 셰이더 캐시를 무효화 → 처음 방문한 기기처럼 측정
+if (new URLSearchParams(location.search).has('cold')) { const gl = renderer.getContext(), ss = gl.shaderSource.bind(gl), salt = Math.random(); gl.shaderSource = (s, src) => ss(s, src + '\n// ' + salt); }
 // 휴대폰·CPU 렌더링은 텍스처를 작게(1024→512) 만들어 생성·업로드 시간을 1/4로
 const LOWMEM = isTouch || PROBE_SW;
 const TEXS = LOWMEM ? 512 : 1024;
@@ -311,12 +327,15 @@ const Q_PARAM = { high: 0, normal: 1, low: 2, lowest: 3 }[new URLSearchParams(lo
 // '느린 기기' 기록은 그래픽 장치 이름과 함께 저장 → 같은 장치·같은 가속 상태일 때만 적용.
 // (그래픽 가속을 켜거나 GPU가 바뀌면 예전 기록은 무시되고 다시 고화질로 시작)
 // 소프트웨어 렌더링 때 생긴 기록이나 예전 형식('1') 기록은 지움.
-const SLOW_KEY = 'mh55a_slow_gpu';
-try { localStorage.removeItem('mh55a_slow'); } catch (e) {}
-const REMEMBERED_SLOW = (() => { try { const v = localStorage.getItem(SLOW_KEY); if (v && v !== GL_RENDERER) { localStorage.removeItem(SLOW_KEY); return false; } return !!v; } catch (e) { return false; } })();
-function rememberSlow() { if (SOFTWARE_GL) return; try { localStorage.setItem(SLOW_KEY, GL_RENDERER); } catch (e) {} }
+// 전 타입 공용 기록: {장치 이름, 시각} — 3일이 지나면 다시 고화질로 시도(예전 기록 'mh55a_slow_gpu'는 지움)
+// (예전엔 탭이 뒤에 있거나 첫 방문이라 느렸던 한 번의 기록 때문에 좋은 GPU도 계속 최저 화질로 시작했음)
+const SLOW_KEY = 'mhBT_slow_v2';
+try { localStorage.removeItem('mh55a_slow'); localStorage.removeItem('mh55a_slow_gpu'); } catch (e) {}
+const REMEMBERED_SLOW = (() => { try { const v = JSON.parse(localStorage.getItem(SLOW_KEY) || 'null'); if (!v) return false; if (v.g !== GL_RENDERER || Date.now() - v.t > 3 * 864e5) { localStorage.removeItem(SLOW_KEY); return false; } return true; } catch (e) { return false; } })();
+function rememberSlow() { if (SOFTWARE_GL) return; try { localStorage.setItem(SLOW_KEY, JSON.stringify({ g: GL_RENDERER, t: Date.now() })); } catch (e) {} }
 let tier = Q_PARAM ?? (SOFTWARE_GL || isTouch || REMEMBERED_SLOW ? 3 : 0);
 const BUILD_T0 = performance.now();
+let loadWasHidden = document.hidden; addEventListener('visibilitychange', () => { if (document.hidden && !window.__mhLoaded) loadWasHidden = true; }); // 로딩 중 탭이 뒤로 가면 시간 측정이 무의미
 const tierLocked = Q_PARAM !== undefined;
 // 그래픽 가속 꺼짐 안내: 웹페이지는 브라우저 설정을 직접 바꾸거나 chrome:// 주소를 열 수 없으므로,
 // 브라우저별 설정 주소를 복사해 주고 붙여넣기만 하면 그 설정이 바로 열리게 안내
@@ -920,6 +939,57 @@ for (const w of southWindows) {
   scene.add(rl); rectLights.push(rl);
 }
 const lampSpots = [[6.2, 6.6], [7.7, 6.6], [6.55, 2.5], [10.6, 6.1], [1.4, 6.7], [3.95, 6.7], [2.65, 3.4], [11.2, 2.0]];
+/* ───────── 조명 풀(로딩 시간 단축의 핵심) ─────────
+   집 전체 면광원·점광원을 모두 셰이더에 넣으면 재질마다 셰이더가 매우 커져
+   처음 방문(그래픽 드라이버 캐시 없음) 때 '셰이더 준비'가 수십 초 걸림.
+   → 실제 조명들은 위치·밝기 '데이터'로만 두고(카메라 레이어에서 빼서 렌더러가 세지 않음),
+     카메라 가까운 몇 개만 고정 개수의 '풀 조명'에 복사. 개수가 늘 같아서 움직여도 셰이더를 다시 만들지 않음.
+     조명이 바뀔 때는 0.2초 페이드. 방이 다르면 덜 중요하게(벽에 가려지므로). */
+const LP_R = 5, LP_P = 3;
+const rectPool = [], pointPool = [];
+for (let i = 0; i < LP_R; i++) { const l = new THREE.RectAreaLight(0xffffff, 0, 1, 1); scene.add(l); rectPool.push({ l, f: null, next: null, k: 0 }); }
+for (let i = 0; i < LP_P; i++) { const l = new THREE.PointLight(0xffffff, 0, 7, 2); scene.add(l); pointPool.push({ l, f: null, next: null, k: 0 }); }
+let fixR = [], fixP = [], lpLast = null, lpTimer = 0, lpForce = true, lpInstant = true;
+function collectFixtures() { // 모든 가구·옵션을 만든 뒤 한 번: 풀이 아닌 조명은 데이터로만
+  const pool = new Set([...rectPool, ...pointPool].map(s => s.l)); fixR = []; fixP = [];
+  scene.traverse(o => { if (pool.has(o)) return; if (o.isRectAreaLight) fixR.push(o); else if (o.isPointLight) fixP.push(o); });
+  for (const f of fixR.concat(fixP)) f.layers.set(31);
+  lpForce = lpInstant = true;
+}
+const _lpV = new THREE.Vector3(), _lpQ = new THREE.Quaternion(), _lpS = new THREE.Vector3();
+function lpRoom(x, z) { const px = x + OX, pz = z + OZ; for (let i = 0; i < rooms.length; i++) { const r = rooms[i]; if (px >= r.x0 && px <= r.x1 && pz >= r.z0 && pz <= r.z1) return i; } return -1; }
+function lpPick(pool, fixtures, pos, isRect) {
+  const camRoom = lpRoom(pos.x, pos.z), cand = [];
+  for (const f of fixtures) {
+    if (!(f.intensity > 0) || !visibleDeep(f)) continue;
+    f.getWorldPosition(_lpV);
+    let s = f.intensity * (isRect ? Math.min(4, f.width * f.height) + .15 : 1) / (1 + _lpV.distanceToSquared(pos));
+    if (lpRoom(_lpV.x, _lpV.z) !== camRoom) s *= .3;
+    if (pool.some(sl => sl.f === f)) s *= 1.4; // 지금 쓰는 조명은 조금 우대 → 경계에서 깜빡이지 않게
+    cand.push([s, f]);
+  }
+  cand.sort((a, b) => b[0] - a[0]);
+  const want = cand.slice(0, pool.length).map(c => c[1]);
+  const rest = want.filter(f => !pool.some(sl => sl.f === f));
+  for (const sl of pool) sl.next = want.includes(sl.f) ? sl.f : (rest.shift() || null);
+}
+function updateLightPool(dt, pos, instant) {
+  if (!fixR.length && !fixP.length) return;
+  if (instant || lpForce || !lpLast || lpLast.distanceToSquared(pos) > .04 || (lpTimer += dt) > .5) {
+    lpPick(rectPool, fixR, pos, true); lpPick(pointPool, fixP, pos, false);
+    (lpLast || (lpLast = new THREE.Vector3())).copy(pos); lpTimer = 0; lpForce = false;
+  }
+  const sp = instant ? 2 : dt * 5;
+  for (const pool of [rectPool, pointPool]) for (const sl of pool) {
+    if (sl.next !== sl.f) { sl.k = Math.max(0, sl.k - sp); if (sl.k === 0 || !sl.f) { sl.f = sl.next; sl.k = instant ? 1 : 0; } }
+    else if (sl.f) sl.k = Math.min(1, sl.k + sp);
+    const L = sl.l, f = sl.f;
+    if (!f) { L.intensity = 0; continue; }
+    f.updateWorldMatrix(true, false); f.matrixWorld.decompose(_lpV, _lpQ, _lpS);
+    L.position.copy(_lpV); L.quaternion.copy(_lpQ); L.color.copy(f.color); L.intensity = f.intensity * sl.k;
+    if (L.isRectAreaLight) { L.width = f.width * _lpS.x; L.height = f.height * _lpS.y; } else { L.distance = f.distance; L.decay = f.decay; }
+  }
+}
 const roomLights = lampSpots.map(([x, z]) => {
   const p = new THREE.PointLight(0xffdcb0, 0, 7, 2); p.position.set(WX(x), H - .25, WZ(z)); scene.add(p);
   const d = mesh(new THREE.CircleGeometry(.065, 24), M.downlight, WX(x), H - .003, WZ(z), ceilingGroup, { cast: false, recv: false }); d.rotation.x = Math.PI / 2;
@@ -2316,6 +2386,7 @@ function applyLighting() {
   M.ledStrip.emissiveIntensity = eve ? 5 : 3.5;
   M.ledWarm.emissiveIntensity = eve ? 6 : 4.5;
   M.panelLED.emissiveIntensity = eve ? 3.2 : 2.4;
+  lpForce = lpInstant = true; // 조명 밝기가 바뀜 → 풀 다시 배정
   renderer.shadowMap.needsUpdate = true;
   if (typeof liteOn !== 'undefined' && liteOn) setLiteMaterials(true); // 저사양 재질에도 옵션·조명 변경 반영
 }
@@ -2394,7 +2465,7 @@ function setTime(eve) {
   paintSky(eve); skyTex.needsUpdate = true;
   scene.background.set(eve ? 0x1b2236 : 0xcfdbe6);
   skyFloor.material.color.set(eve ? 0x161c1c : 0x8a9a7c);
-  sun.intensity = eve ? 0 : 3.4; sun.castShadow = !eve && tier < 2;
+  sun.intensity = eve ? 0 : 3.4; sun.castShadow = tier < 2; /* 저녁에도 그림자 설정은 그대로(빛만 0) — 바꾸면 모든 셰이더를 다시 만들어 멈춤 */
   hemi.intensity = (eve ? .06 : .32) * (tier >= 3 ? 2.6 : 1); // 최저 단계는 면광원을 끄는 대신 주변광을 올림
   if (window.__amb) window.__amb.intensity = tier >= 3 ? (eve ? 1.1 : 1.5) : 0;
   hemi.color.set(eve ? 0x6a72a0 : 0xe4edf6);
@@ -2426,6 +2497,7 @@ for (const p of mirrorProbes) p.mat.envMap = placeholderEnv;
 async function captureCube(pos) {
   if (cubeCam.coordinateSystem !== renderer.coordinateSystem) { cubeCam.coordinateSystem = renderer.coordinateSystem; cubeCam.updateCoordinateSystem(); }
   cubeCam.position.copy(pos); cubeCam.updateMatrixWorld(true);
+  updateLightPool(0, pos, true); lpForce = lpInstant = true; // 촬영 위치 기준으로 조명 풀 배정(끝나면 다음 프레임에 카메라 기준으로 즉시 복귀)
   const prev = renderer.getRenderTarget(), xr = renderer.xr.enabled; renderer.xr.enabled = false;
   for (let i = 0; i < 6; i++) {
     renderer.setRenderTarget(cubeRT, i); renderer.render(scene, cubeCam.children[i]);
@@ -2466,7 +2538,10 @@ async function bakeEnv() {
   }
   if (bakeAgain) { bakeAgain = false; queueBake(); }
 }
-function queueBake() { clearTimeout(bakeTimer); bakeTimer = setTimeout(bakeEnv, 60); }
+// 로딩이 끝나기 전에는 반사 굽기 예약을 무시(로딩 마지막에 한 번 직접 굽기).
+// 예전엔 옵션 적용 중 예약된 굽기가 '마감재 이미지' 단계 한가운데서 실행돼, 셰이더가 준비되기 전에 집 전체를 그리며 수 초~십수 초 멈췄음
+let bakeReady = false;
+function queueBake() { if (!bakeReady) return; clearTimeout(bakeTimer); bakeTimer = setTimeout(bakeEnv, 60); }
 setTime(false);
 
 /* ───────── post-processing ───────── */
@@ -2534,10 +2609,11 @@ function applyTier(t) {
   const sm = t === 0 && !isTouch ? 4096 : 2048;
   if (sun.shadow.mapSize.x !== sm) { sun.shadow.mapSize.set(sm, sm); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } }
   sun.shadow.radius = t === 0 ? 4 : 2; // 화질 향상: 부드러운 그림자
-  sun.castShadow = t < 2 && state.time !== 'eve';
+  sun.castShadow = t < 2; /* 시간대와 무관(셰이더 재생성 방지) */
   const area = t < 3; // 최저 단계: 면광원·점광원을 장면에서 빼서 픽셀당 조명 계산을 없앰
   for (const l of ledLights) l.light.visible = area;
   rectLights.forEach(r => { r.visible = area; }); roomLights.forEach(p => { p.visible = area; });
+  for (const sl of rectPool.concat(pointPool)) sl.l.visible = area; lpForce = lpInstant = true; // 셰이더에 들어가는 건 풀 조명뿐
   if (window.__cove) window.__cove.visible = area; if (window.__coveDown) window.__coveDown.visible = area;
   hemi.intensity = (state.time === 'eve' ? .06 : .32) * (t >= 3 ? 2.6 : 1);
   if (!window.__amb) { window.__amb = new THREE.AmbientLight(0xfff4e8, 0); scene.add(window.__amb); }
@@ -2660,6 +2736,7 @@ function step() {
   updateDoorHint();
   if (!manualFrame) requestAnimationFrame(step); // 다음 프레임 예약은 항상 먼저(아래에서 건너뛰어도 루프가 끊기지 않게)
   if (baking) return; // 반사 굽는 동안(수십 ms씩 나눠 진행)은 화면 갱신만 잠시 쉼 — 숨김 처리된 장면이 보이지 않게
+  updateLightPool(dt, camera.position, lpInstant); lpInstant = false; // 카메라 가까운 조명만 풀에
   if (state.quality === 'high' && composer) composer.render(dt); else renderer.render(scene, camera);
 }
 let manualFrame = false;
@@ -2691,7 +2768,8 @@ function mergeStatic(parent) {
   return [before, after];
 }
 await phase('가볍게 최적화하는 중', 86);
-const mergeStats = [structure, fixed, ceilingGroup, ...Object.values(tagGroups)].map(mergeStatic);
+collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
+const mergeStats = new URLSearchParams(location.search).has('nomerge') ? [] : [structure, fixed, ceilingGroup, ...Object.values(tagGroups)].map(mergeStatic); // 진단용 ?nomerge: 병합 안 함(겹침 검사용)
 console.info('[55C] merged static meshes', mergeStats.reduce((a, [b, c]) => [a[0] + b, a[1] + c], [0, 0]));
 // 그림자맵은 옵션·시간대·가구 이동 때만 다시 그림(베이크)
 renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;
@@ -2722,7 +2800,7 @@ function adaptQuality() {
 addEventListener('visibilitychange', () => { perf.last = 0; perf.acc = perf.n = 0; perf.samples.length = 0; perf.cooldown = 10; });
 await phase('조명을 계산하는 중', 88);
 // 안전장치: 여기까지(텍스처·벽·가구 만들기)가 오래 걸린 기기는 CPU·GPU가 약한 것 → 셰이더를 만들기 전에 가벼운 모드로 전환
-if (!tierLocked && tier < 3 && performance.now() - BUILD_T0 > 4000) { tier = 3; rememberSlow(); }
+if (!tierLocked && tier < 3 && !loadWasHidden && performance.now() - BUILD_T0 > 6000) { tier = 3; rememberSlow(); }
 applyQuality();
 // 텍스처도 첫 화면에서 한꺼번에 GPU로 올라가며 멈춤 → 몇 장씩 미리 올리고 양보
 {
@@ -2731,36 +2809,67 @@ applyQuality();
     if (!o.isMesh) return;
     for (const m of [o.material, o.userData.fullMat]) if (m) for (const k of ['map', 'bumpMap', 'emissiveMap', 'normalMap', 'roughnessMap']) if (m[k] && m[k].isTexture) texs.add(m[k]);
   });
-  let i = 0;
-  for (const t of texs) { try { renderer.initTexture(t); } catch (e) {} if (++i % 3 === 0) await phase('마감재 이미지를 올리는 중', 88 + Math.round(2 * i / texs.size)); }
+  // 8ms씩 올리고 양보(장 수 기준이 아니라 시간 기준 → 빠른 기기는 대기 없이 빨리, 느린 기기도 화면이 멈추지 않게)
+  let i = 0, t0 = performance.now();
+  for (const t of texs) { try { renderer.initTexture(t); } catch (e) {} i++; if (performance.now() - t0 > 8) { await phase('마감재 이미지를 올리는 중', 88 + Math.round(2 * i / texs.size)); t0 = performance.now(); } }
 }
-// 셰이더를 한 번에 컴파일하면 첫 화면에서 수 초 멈춤 → 물체 묶음별로 나눠 컴파일하고 사이사이 양보
-{
-  // 실제로 쓸 상태 그대로 컴파일: 반사맵(같은 종류의 빈 맵) 장착 + 화면용·반사 큐브(렌더타깃)용 두 가지 변형
-  if (tier < 3) scene.environment = placeholderEnv;
-  const parts = [...structure.children, ...fixed.children, ...furn.children, ...ceilingGroup.children, sky, skyFloor];
-  const BATCH = LOWMEM ? 2 : 4, passes = tier < 3 ? [null, cubeRT] : [null];
-  let done = 0; const total = parts.length * passes.length;
-  for (const rt of passes) for (let i = 0; i < parts.length; i += BATCH) {
-    for (const o of parts.slice(i, i + BATCH)) {
+// 셰이더 준비: '재질 + 형상 속성' 조합마다 한 번씩만(같은 셰이더는 자동 공유), 8ms 단위로 나눠 만들고
+// 그래픽 드라이버가 그 묶음을 다 만들 때까지 화면을 멈추지 않고 기다린 뒤 다음 묶음(KHR_parallel_shader_compile)
+const shaderJobs = (rts, withPost) => {
+  const units = [], seen = new Set();
+  scene.traverse(o => {
+    const m = o.material; if (!m) return;
+    const g = o.geometry, key = (Array.isArray(m) ? m.map(x => x.uuid).join('+') : m.uuid) + '|' + (g ? Object.keys(g.attributes).sort().join(',') + '|' + Object.keys(g.morphAttributes || {}).join(',') : '') + '|' + (o.isInstancedMesh ? 'I' + (o.instanceColor ? 'c' : '') : '') + (o.isSkinnedMesh ? 'S' : '') + (o.isPoints ? 'P' : o.isLine ? 'L' : o.isSprite ? 'Sp' : '');
+    if (seen.has(key)) return; seen.add(key); units.push({ o, vis: visibleDeep(o) });
+  });
+  units.sort((a, b) => b.vis - a.vis); // 지금 보이는 것 먼저, 옵션으로 숨긴 것은 뒤에
+  const jobs = [];
+  for (const rt of rts) for (const u of units) jobs.push({ o: u.o, rt });
+  if (withPost && typeof composer !== 'undefined' && composer) { // 후처리(AO·블룸·출력) 재질도 미리
+    const last = composer.passes[composer.passes.length - 1];
+    for (const p of composer.passes) for (const v of Object.values(p)) for (const m of (Array.isArray(v) ? v : [v])) if (m && m.isMaterial) jobs.push({ m, rt: p === last ? null : cubeRT });
+  }
+  return jobs;
+};
+const _fsq = new THREE.Mesh(new THREE.PlaneGeometry(2, 2)), _postScene = new THREE.Scene();
+const PARALLEL_SC = !!renderer.extensions.get('KHR_parallel_shader_compile');
+async function runShaderJobs(jobs, budget, onSlice) {
+  const props = renderer.properties;
+  let j = 0;
+  while (j < jobs.length) {
+    const t0 = performance.now(), progs = new Set();
+    while (j < jobs.length && performance.now() - t0 < budget) {
+      const job = jobs[j++];
       try {
-        if (renderer.compileAsync) { renderer.setRenderTarget(rt); const pr = renderer.compileAsync(o, camera, scene); renderer.setRenderTarget(null); await pr; }
-        else { renderer.setRenderTarget(rt); renderer.compile(o, camera, scene); renderer.setRenderTarget(null); }
-      } catch (e) { renderer.setRenderTarget(null); console.warn('compile', e); }
+        renderer.setRenderTarget(job.rt);
+        let target = job.o;
+        if (job.m) { _fsq.material = job.m; target = _fsq; }
+        else if (target.isMesh && target.children.length && !target.isInstancedMesh && !target.isSkinnedMesh) target = new THREE.Mesh(target.geometry, target.material); // 자식은 따로(중복 방지)
+        for (const m of renderer.compile(target, camera, job.m ? _postScene : scene)) { const pr = props.get(m).currentProgram; if (pr) progs.add(pr); }
+      } catch (e) { console.warn('compile', e); }
+      renderer.setRenderTarget(null);
     }
-    done += BATCH;
-    await phase('셰이더를 준비하는 중', 90 + Math.round(7 * Math.min(1, done / total)));
+    if (PARALLEL_SC) { const w0 = performance.now(); while ([...progs].some(p => !p.isReady()) && performance.now() - w0 < 10000) await new Promise(r => setTimeout(r, 4)); }
+    for (const p of progs) { try { p.getUniforms(); } catch (e) {} } // 링크 확인·유니폼 조회도 지금(첫 화면에서 멈추지 않게)
+    await onSlice(j, jobs.length);
   }
 }
+{
+  if (tier < 3) scene.environment = placeholderEnv;
+  // 고화질(후처리 사용)은 장면을 렌더타깃에 그리므로 '렌더타깃용' 셰이더만 지금 필요(반사 굽기와 같은 종류)
+  // → 화면 직접 출력용은 로딩 뒤 한가할 때 조금씩(화질 단계가 내려가도 멈추지 않게)
+  const rts = tier >= 3 ? [null] : tier === 0 ? [cubeRT] : [null, cubeRT];
+  await runShaderJobs(shaderJobs(rts, tier === 0), 8, (j, n) => phase('셰이더를 준비하는 중', 90 + Math.round(7 * j / n)));
+}
 await phase('반사를 계산하는 중', 97);
-await bakeEnv();
+bakeReady = true; await bakeEnv();
 await phase('거의 다 됐어요', 100);
 step();
 // debug hook: render frames even when the tab is in the background
 window.__mh = {
   frame: (n = 40) => { manualFrame = true; for (let i = 0; i < n; i++) step(); manualFrame = false; },
   shot: (n = 30) => { manualFrame = true; for (let i = 0; i < n; i++) step(); manualFrame = false; return canvas.toDataURL('image/jpeg', .85); },
-  player, keys, setMode, movables, sel, applyOptions, setTimeMode,
+  player, keys, setMode, movables, sel, applyOptions, setTimeMode, scene, renderer, camera,
   info: () => ({ ...renderer.info.render, merge: mergeStats }),
   // 진단용: GPU 작업이 끝날 때까지 기다린 실제 프레임 시간(ms)
   bench: (n = 20) => { const gl = renderer.getContext(), px = new Uint8Array(4); manualFrame = true; step(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); const t0 = performance.now(); for (let i = 0; i < n; i++) { step(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); } manualFrame = false; return (performance.now() - t0) / n; },
@@ -2777,6 +2886,8 @@ window.__mh = {
 };
 window.__mhLoaded = true;
 setTimeout(() => loader.classList.add('done'), 250);
+// 로딩 뒤 한가할 때: 화면 직접 출력용 셰이더도 3ms씩 조금씩 미리 → 화질이 '일반'으로 내려가도 그때 멈추지 않음
+if (tier === 0 && PARALLEL_SC) setTimeout(() => { runShaderJobs(shaderJobs([null], false), 3, () => new Promise(r => setTimeout(r, 40))).catch(() => {}); }, 3000);
 
 } catch (err) {
   console.error(err);
