@@ -1992,10 +1992,10 @@ await yieldUI();
 { const g = item('b3isl', '아일랜드식탁');
   /* 냉장고장 앞면(x 5.86)에서 약 1m 띄워 냉장고 문을 열 수 있게, 세탁실 미닫이문(z 0.96~2.84)을 가리지 않게 거실 쪽으로 내림(z 3.0~3.6) — 길이 1.2m */
   /* 사용자 요청: 북쪽 면을 세탁실 입구 모서리(미닫이문 끝 z 2.84)에 딱 맞춤 → z 2.84~3.44 */
-  pbox(6.87, 8.03, .1, .86, 2.86, 3.42, M.kdoor, g); pbox(6.91, 7.99, 0, .1, 2.9, 3.38, M.black, g);
-  pbox(6.85, 8.05, .86, .9, 2.84, 3.44, M.counter, g);
-  for (const x of [7.25, 7.65]) { pbox(x - .0015, x + .0015, .1, .86, 2.856, 2.86, seamMat, g); pbox(x - .0015, x + .0015, .1, .86, 3.42, 3.424, seamMat, g); }
-  mesh(new THREE.LatheGeometry([[0, 0], [.08, 0], [.11, .06], [.11, .22], [.06, .3], [.05, .34], [0, .34]].map(([a, b]) => new THREE.Vector2(a, b)), 28), M.whiteGloss, WX(7.8), .9, WZ(3.14), g);
+  pbox(7.17, 8.35, .1, .86, 2.86, 3.42, M.kdoor, g); pbox(7.21, 8.31, 0, .1, 2.9, 3.38, M.black, g); /* 동쪽 벽(x 8.35)에 붙임 */
+  pbox(7.15, 8.35, .86, .9, 2.84, 3.44, M.counter, g);
+  for (const x of [7.55, 7.95]) { pbox(x - .0015, x + .0015, .1, .86, 2.856, 2.86, seamMat, g); pbox(x - .0015, x + .0015, .1, .86, 3.42, 3.424, seamMat, g); }
+  mesh(new THREE.LatheGeometry([[0, 0], [.08, 0], [.11, .06], [.11, .22], [.06, .3], [.05, .34], [0, .34]].map(([a, b]) => new THREE.Vector2(a, b)), 28), M.whiteGloss, WX(8.1), .9, WZ(3.14), g);
 }
 const diningB = diningLarge();
 // 56T(VR): 흰 상판 + 원목 다리 4인 식탁(남북 방향) + 흰 의자, 식탁 옆 동쪽 벽 작은 액자 4개
@@ -2630,14 +2630,14 @@ function applyOptions() {
   tagGroup('sp-base').visible = !s.S1; tagGroup('sp-bent').visible = s.S1 === '1-2';
   show('b1', s['1'] === '1');
   show('b2', s['2'] === '2');
-  const island = s['3'] === '3-1' || s['3'] === '3-3', stone = s['3'] === '3-2' || s['3'] === '3-3';
+  const island = s['3'] === '3-1' || s['3'] === '3-2' || s['3'] === '3-3', stone = s['3'] === '3-2' || s['3'] === '3-3'; /* 사용자 요청: 56T는 3-2(엔지니어드스톤)도 아일랜드 함께 */
   show('b3isl', island);
   const cm = stone ? MAT_OPT.stone : MAT_OPT.mma; M.counter.map = cm.map; M.counter.color.set(cm.color); M.counter.roughness = cm.roughness; M.counter.needsUpdate = true;
   M.splash.map = stone ? MAT_OPT.stone.map : MAT_OPT.tile.map; M.splash.roughness = stone ? .18 : .25; M.splash.needsUpdate = true;
   // 식탁: 아일랜드가 있으면 아일랜드 남쪽 면에 붙여 남쪽으로, 없으면 주방 가운데에 동서로
   { const L = diningB.userData.len || 1.95;
     diningB.visible = false; diningT.visible = true; /* VR 흰 상판 4인 식탁(남북 방향) — 아일랜드가 있으면 아일랜드 남쪽 면에 붙임(냉장고 앞 공간 확보) */
-    const [tx, tz] = island ? [7.45, 4.14] : [7.35, 3.15];
+    const [tx, tz] = island ? [7.6, 4.14] : [7.35, 3.15]; /* 동쪽 의자 등받이가 벽(x 8.35)에 닿지 않는 만큼만 따라 옮김 */
     diningT.position.set(WX(tx), 0, WZ(tz)); diningT.userData.home = { x: diningT.position.x, z: diningT.position.z, r: 0 }; diningPendB.position.set(WX(tx), 0, WZ(tz));
     diningB.position.set(WX(6.05), 0, WZ(3.1)); diningB.rotation.y = Math.PI;
     diningB.userData.home = { x: diningB.position.x, z: diningB.position.z, r: diningB.rotation.y }; }
