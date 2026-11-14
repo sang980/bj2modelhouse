@@ -2034,7 +2034,15 @@ M.shagGrey = (() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fi
   for (let i = 0; i < 2400; i++) { const px = rnd() * 256, py = rnd() * 256, a = rnd() * 6.28, l = 5 + rnd() * 10, v = 120 + rnd() * 105 | 0; x.strokeStyle = `rgb(${v},${v},${Math.max(0, v - 3)})`; x.lineWidth = 1.4 + rnd() * 1.8; x.beginPath(); x.moveTo(px, py); x.quadraticCurveTo(px + Math.cos(a + 1) * l * .6, py + Math.sin(a + 1) * l * .6, px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke(); }
   return std(0xffffff, 1, 0, { map: toTex(c, { rep: [3, 4] }), bumpMap: toTex(c, { srgb: false, rep: [3, 4] }), bumpScale: 5 }); })();
 { const lr = rug(6.79, 6.6, 0); lr.traverse(o => { if (o.isMesh) { o.material = M.shagGrey; o.scale.y = 1.7; } }); }
-coffeeTable(6.84, 6.65, 0);
+{ const g = piece('커피테이블', 6.84, 6.65, 0), wt = std(0xf6f5f2, .35); /* VR 55C: 흰 사각 테이블 2개 엇갈려 겹침 + 흰 3구 화병(노란 속·칼라 잎) + 흑백 잡지 */
+  mesh(RB(.74, .3, .74, .02, 3), wt, .06, .15, .08, g).rotation.y = -.12;
+  const up = new THREE.Group(); up.position.set(-.1, 0, -.12); up.rotation.y = .2; g.add(up); mesh(RB(.62, .05, .62, .015, 3), wt, 0, .325, 0, up); /* 위 판: 아래 상자 위에 엇갈려 얹음 */
+  const cer = std(0xf8f7f3, .2), yel = std(0xe8c21e, .5);
+  for (const [dx, dz, h] of [[-.05, -.02, .15], [0, .03, .19], [.05, -.01, .12]]) { mesh(new THREE.CylinderGeometry(.034, .036, h, 24, 1, true), cer, dx, .35 + h / 2, dz, up); mesh(CY(.03, .03, .004, 20), yel, dx, .35 + h - .01, dz, up, { cast: false }); mesh(CY(.036, .036, .006, 24), cer, dx, .353, dz, up); }
+  for (let i = 0; i < 6; i++) { const L = .2 + (i % 3) * .06, lg = new THREE.ConeGeometry(.022, L, 6); lg.translate(0, L / 2, 0); lg.scale(1, 1, .25); const a = i * 1.1, l = mesh(lg, std(0xa8c83a, .6), Math.cos(a) * .02, .49, .01 + Math.sin(a) * .02, up, { cast: false }); l.rotation.order = 'YXZ'; l.rotation.set(.35 + (i % 2) * .2, a, 0); }
+  const page = s => toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = '#f7f6f2'; x.fillRect(0, 0, 96, 128); x.fillStyle = s ? '#2a2b2e' : '#55575b';
+    if (s) { x.fillRect(8, 10, 80, 60); x.fillStyle = '#c9cacc'; x.fillRect(16, 18, 26, 44); x.fillStyle = '#2a2b2e'; for (let i = 0; i < 5; i++) x.fillRect(8, 80 + i * 8, 70, 3); } else { for (let i = 0; i < 12; i++) { x.beginPath(); x.arc(14 + (i % 4) * 22, 20 + Math.floor(i / 4) * 30, 7, 0, 7); x.fill(); } x.fillRect(8, 104, 80, 14); } return c; })());
+  const mg = new THREE.Group(); mg.position.set(.12, .354, .14); mg.rotation.y = -.5; up.add(mg); for (const [sx, s] of [[-1, 0], [1, 1]]) { const p = mesh(BX(.18, .004, .25), std(0xffffff, .85, 0, { map: page(s) }), sx * .09, .002, 0, mg, { cast: false }); p.rotation.z = -sx * .04; } }
 const diningS = diningSmall(), diningL = diningLarge();
 const dining = diningS; // (예전 코드 호환용)
 // 평면도 방향: 침대 헤드는 서쪽 벽, 붙박이장(옵션 10)은 동쪽 벽
