@@ -1066,8 +1066,9 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   kb(5.21, xf, .1, .86, zb, 1.45); kb(5.21, xf + .03, .86, .9, zb, 1.45, M.counter); kb(5.21, xf, 1.5, H, zb, 1.45);
   { const k0 = og('b5base'), k1 = og('b5-1'), k2 = og('b5-2'), inner = std(0xebe9e4, .5), a = 1.45, b = 2.55;
     // 기본: 스탠드형 김치냉장고(화이트 글라스, 위 1도어 + 아래 서랍 2) + 위 수납장
-    pbox(5.25, xf - .02, 0, 1.75, a + .06, b - .06, std(0xe4e2dd, .5), k0);
-    for (const [y0, y1] of [[1.08, 1.74], [.58, 1.06], [.04, .56]]) pbox(xf - .02, xf, y0, y1, a + .07, b - .07, std(0xf1f0ec, .18, .05), k0);
+    pbox(5.25, xf - .02, 0, 1.85, a + .06, b - .06, std(0x2a2b2d, .5), k0); // VR: 김치냉장고(위 흰 문 2짝 · 아래 베이지 서랍 2단)
+    for (const [z0, z1] of [[a + .07, (a + b) / 2 - .006], [(a + b) / 2 + .006, b - .07]]) pbox(xf - .02, xf, 1.0, 1.84, z0, z1, std(0xf3f2ee, .2, .05), k0);
+    for (const [y0, y1] of [[.52, .98], [.04, .5]]) pbox(xf - .02, xf, y0, y1, a + .07, b - .07, std(0xdfd3c2, .25, .05), k0);
     pbox(5.21, xf, 1.8, H, a, b, M.kdoor, k0); pbox(5.21, xf, 0, 1.8, a, a + .02, M.kdoor, k0); pbox(5.21, xf, 0, 1.8, b - .02, b, M.kdoor, k0);
     // 5-1: 바닥~천장 키큰장 2도어
     pbox(5.21, xf, 0, H, a, b, M.kdoor, k1); pbox(xf, xf + .003, .1, 2.28, (a + b) / 2 - .001, (a + b) / 2 + .001, seamMat, k1); pbox(xf, xf + .003, 1.0, 1.003, a, b, seamMat, k1);
@@ -1079,7 +1080,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   // 냉장고(화이트 글라스 4도어) + 위 브리지장
   const fW = std(0xf1f0ec, .18, .05), fGap = std(0x9a9893, .7), r0 = 2.57, r1 = 3.45;
   kb(5.25, xf - .02, 0, 1.85, r0, r1, std(0xe4e2dd, .5));
-  for (const [y0, y1] of [[1.0, 1.85], [.05, .98]]) for (const [z0, z1] of [[r0 + .01, (r0 + r1) / 2 - .01], [(r0 + r1) / 2 + .01, r1 - .01]]) kb(xf - .02, xf, y0, y1, z0, z1, fW);
+  for (const [y0, y1] of [[1.0, 1.85], [.05, .98]]) for (const [z0, z1] of [[r0 + .01, (r0 + r1) / 2 - .01], [(r0 + r1) / 2 + .01, r1 - .01]]) kb(xf - .02, xf, y0, y1, z0, z1, y0 > .5 ? fW : std(0xdfd3c2, .25, .05)); // VR: 위 흰색 · 아래 베이지
   kb(xf, xf + .003, .98, 1.0, r0 + .01, r1 - .01, fGap);
   kb(5.21, xf, 1.85, H, 2.55, r1);
   // 키큰 수납장(남쪽 끝) + 측판
