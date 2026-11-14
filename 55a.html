@@ -1049,9 +1049,21 @@ kInner(5.45, 8.46, .86, .9, .1, .74, M.counter);
 // 쿡탑 쪽 ㄱ자 다리: 분양 자료처럼 냉장고장 측판(z 2.12)까지 하부장·상판이 이어짐
 kInner(5.46, 6.06, .1, .86, .71, 2.12, M.kdoor); kInner(5.46, 6.02, 0, .1, .71, 2.12, M.black);
 kInner(5.45, 6.08, .86, .9, .71, 2.12, M.counter);
-kInner(6.75, 7.45, .86, .905, .2, .6, M.metalDark); // 싱크볼(창 가운데 아래)
-mesh(CY(.015, .015, .32), M.chrome, WX(7.1), 1.06, WZ(.2), k);
-const spout = mesh(CY(.012, .012, .2), M.chrome, WX(7.1), 1.22, WZ(.3), k); spout.rotation.x = Math.PI / 2;
+// 싱크볼(VR): 스테인리스 테두리 + 안쪽은 가장자리가 밝고 가운데가 어두운 볼(배수구) — 상판 위에 얇게 얹어 표현
+{ const ss = std(0xc3c6c9, .26, .85), bowl = std(0xffffff, .3, .8, { map: toTex((() => { const c = mkCanvas(128, 64), x = c.getContext('2d'); const gr = x.createRadialGradient(64, 32, 4, 64, 32, 70); gr.addColorStop(0, '#6d7277'); gr.addColorStop(.6, '#8d9296'); gr.addColorStop(1, '#b4b8bb'); x.fillStyle = gr; x.fillRect(0, 0, 128, 64); x.strokeStyle = 'rgba(255,255,255,.18)'; for (let i = 0; i < 40; i++) { x.beginPath(); x.moveTo(rnd() * 128, 0); x.lineTo(rnd() * 128, 64); x.stroke(); } x.fillStyle = '#3d4145'; x.beginPath(); x.arc(64, 32, 6, 0, 7); x.fill(); x.fillStyle = '#9ea2a6'; x.beginPath(); x.arc(64, 32, 4, 0, 7); x.fill(); return c; })()) });
+  kInner(6.75, 7.45, .9, .9025, .2, .6, ss); kInner(6.79, 7.41, .9025, .9035, .235, .565, bowl);
+  // 양쪽 철망 식기건조대(크롬 철사 바구니)
+  for (const [xa, xb] of [[6.81, 7.02], [7.18, 7.39]]) { const y0 = .905, y1 = .975;
+    for (let x = xa; x <= xb + 1e-6; x += (xb - xa) / 6) kInner(x - .002, x + .002, y0, y1, .25, .252, M.chrome);
+    for (let x = xa; x <= xb + 1e-6; x += (xb - xa) / 6) kInner(x - .002, x + .002, y0, y1, .548, .55, M.chrome);
+    for (const yy of [y0 + .005, y1 - .004]) { kInner(xa, xb, yy, yy + .004, .25, .254, M.chrome); kInner(xa, xb, yy, yy + .004, .546, .55, M.chrome); kInner(xa, xa + .004, yy, yy + .004, .25, .55, M.chrome); kInner(xb - .004, xb, yy, yy + .004, .25, .55, M.chrome); }
+    for (let z = .29; z < .54; z += .04) kInner(xa, xb, y0 + .002, y0 + .005, z, z + .003, M.chrome); }
+  // 아치형 풀다운 수전(크롬): 세운 기둥 + 위로 휘었다 싱크 쪽으로 내려오는 꼭지 + 옆 레버
+  mesh(CY(.022, .026, .03, 20), M.chrome, WX(7.1), .915, WZ(.17), k); mesh(CY(.014, .016, .3, 18), M.chrome, WX(7.1), 1.06, WZ(.17), k);
+  const arc = new THREE.QuadraticBezierCurve3(new THREE.Vector3(WX(7.1), 1.2, WZ(.17)), new THREE.Vector3(WX(7.1), 1.32, WZ(.24)), new THREE.Vector3(WX(7.1), 1.13, WZ(.36)));
+  const sp = new THREE.Mesh(new THREE.TubeGeometry(arc, 18, .012, 10, false), M.chrome); sp.castShadow = true; k.add(sp);
+  mesh(CY(.015, .013, .06, 16), M.chrome, WX(7.1), 1.1, WZ(.365), k);
+  const lever = mesh(BX(.012, .012, .08), M.chrome, WX(7.13), 1.0, WZ(.17), k); lever.rotation.x = -.5; }
 // 상부장 (창 위까지 이어짐) + 하부 LED
 kInner(5.47, 8.44, 1.5, 2.3, .11, .46, M.kdoor); kInner(5.46, 5.81, 1.5, 2.3, .46, 2.12, M.kdoor); kInner(5.46, 5.81, 2.3, H, .5, 2.12, M.white);
 kInner(5.47, 8.44, 1.48, 1.5, .12, .44, M.ledWarm);
