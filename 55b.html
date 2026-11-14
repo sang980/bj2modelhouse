@@ -2809,10 +2809,16 @@ const PLATE = (() => {
   const mats = {}, sizes = { sw1: [.075, .12], sw2: [.075, .12], sw3: [.075, .12], out2: [.075, .12], outw: [.075, .12], tv: [.14, .075], thermo: [.08, .12], pad: [.24, .17] };
   const mat = k => mats[k] || (mats[k] = k === 'pad' ? std(0xffffff, .12, .1, { map: toTex(draw(k, 192, 128)) }) : std(0xffffff, .38, 0, { map: toTex(draw(k, sizes[k][0] > sizes[k][1] ? 104 : 64, sizes[k][0] > sizes[k][1] ? 64 : 104)) }));
   const rc = new THREE.Raycaster(), tgt = [structure, fixed], o3 = new THREE.Vector3(), d3 = new THREE.Vector3();
+  // 광선 검사 가속: 메시마다 월드 경계 상자를 한 번만 계산해 두고, 광선 구간 상자와 겹치는 것만 검사(결과는 같음)
+  let wcache = null; const seg = new THREE.Box3(), e3 = new THREE.Vector3();
+  const addCache = m => { if (!m.geometry.boundingBox) m.geometry.computeBoundingBox(); wcache.push({ m, b: m.geometry.boundingBox.clone().applyMatrix4(m.matrixWorld) }); };
+  const cast = () => { if (!wcache) { wcache = []; for (const r of tgt) r.traverse(o => { if (o.isMesh) addCache(o); }); }
+    seg.makeEmpty().expandByPoint(rc.ray.origin).expandByPoint(rc.ray.at(rc.far, e3)).expandByScalar(.01);
+    const list = []; for (const e of wcache) if (e.b.intersectsBox(seg)) list.push(e.m); return rc.intersectObjects(list, false); };
   // (px,pz): 방 안쪽 평면 좌표, (dx,dz): 벽 쪽 방향, dist: 그 자리에서 벽면까지 예상 거리
   const put = (px, py, pz, dx, dz, kind, dist = .25, tol = .006) => {
     o3.set(WX(px), py, WZ(pz)); d3.set(dx, 0, dz).normalize(); rc.set(o3, d3); rc.far = dist + Math.max(.05, tol + .02);
-    const h = rc.intersectObjects(tgt, true).find(h => h.object.isMesh && visibleDeep(h.object) && !(h.object.material && h.object.material.transparent));
+    const h = cast().find(h => h.object.isMesh && visibleDeep(h.object) && !(h.object.material && h.object.material.transparent));
     // 큰 벽면이 예상 거리(±6mm)에 있을 때만 — 기존 판·가구·타일 위에 겹쳐 붙지 않게
     if (!h || !h.face || Math.abs(h.distance - dist) > tol) return null;
     if (!h.object.geometry.boundingSphere) h.object.geometry.computeBoundingSphere();
@@ -2821,6 +2827,7 @@ const PLATE = (() => {
     const [w, hh] = sizes[kind], dep = kind === 'pad' ? .014 : .007; const m = mesh(BX(w, hh, dep), mat(kind), 0, 0, 0, fixed, { cast: false });
     m.position.copy(h.point).addScaledVector(n, dep / 2 + .0005); m.lookAt(m.position.clone().add(n));
     for (let p = h.object.parent; p && p !== scene; p = p.parent) if ((p.name && tagGroups[p.name] === p) || (p.name && OG[p.name] === p)) { p.attach(m); break; } // 옵션 벽이면 함께 숨김
+    m.updateMatrixWorld(true); if (wcache) addCache(m); // 다음 판이 겹쳐 붙지 않게 검사 목록에 추가
     return m;
   };
   // 가구 뒤 벽을 찾아 가구 양옆(폭/2 + 15cm)에 콘센트 — 침대(머리 쪽)·책상·소파는 모두 로컬 -z가 벽 쪽
@@ -2829,13 +2836,13 @@ const PLATE = (() => {
     g.updateWorldMatrix(true, true); bb.setFromObject(g); bb.getCenter(c3);
     const ry = g.rotation.y; back.set(-Math.sin(ry), 0, -Math.cos(ry)); side.set(Math.cos(ry), 0, -Math.sin(ry));
     rc.set(o3.set(c3.x, y, c3.z), back); rc.far = 2.5;
-    const h = rc.intersectObjects(tgt, true).find(h => h.object.isMesh && visibleDeep(h.object) && !g.getObjectById(h.object.id) && !(h.object.material && h.object.material.transparent));
+    const h = cast().find(h => h.object.isMesh && visibleDeep(h.object) && !g.getObjectById(h.object.id) && !(h.object.material && h.object.material.transparent));
     if (!h) return 0;
     const half = (Math.abs(side.x) * (bb.max.x - bb.min.x) + Math.abs(side.z) * (bb.max.z - bb.min.z)) / 2; let n = 0;
     const hx = h.point.x - back.x * .25, hz = h.point.z - back.z * .25;
     for (const s of sides) { const wx = hx + side.x * s * (half + .15), wz = hz + side.z * s * (half + .15);
       rc.set(o3.set(hx, y, hz), d3.set(side.x * s, 0, side.z * s)); rc.far = half + .21;
-      if (rc.intersectObjects(tgt, true).some(i => i.object.isMesh && visibleDeep(i.object) && !g.getObjectById(i.object.id))) continue; // 옆으로 벽에 막힘
+      if (cast().some(i => i.object.isMesh && visibleDeep(i.object) && !g.getObjectById(i.object.id))) continue; // 옆으로 벽에 막힘
       if (outs.some(p => Math.hypot(p[0] - wx, p[1] - wz) < .45 && Math.abs(p[2] - y) < .3)) continue; // 이웃 가구 콘센트와 너무 가까우면 하나만
       const m = put(wx - WX(0), y, wz - WZ(0), back.x, back.z, kind, .25, .08); if (m) { n++; outs.push([wx, wz, y]); } }
     return n;
