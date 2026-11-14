@@ -1525,6 +1525,24 @@ function dresser(x, z, rot) {
 rug(6.79, 6.6, 0);
 coffeeTable(6.84, 6.65, 0);
 const diningS = diningSmall(), diningL = diningLarge();
+// 55C 사이버 모델하우스(VR): 원목 사각 식탁(남북 방향) + 흰 패브릭 의자 4 + 가운데 리넨 테이블 러너 · 접시 세팅
+function diningWoodC() {
+  const g = piece('식탁(원목)', 0, 0, 0), L = 1.6, W = .85, wood = M.oak;
+  mesh(RB(W, .04, L, .008), wood, 0, .74, 0, g);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(BX(.06, .72, .06), wood, sx * (W / 2 - .06), .36, sz * (L / 2 - .08), g);
+  for (const sx of [-1, 1]) mesh(BX(.04, .08, L - .2), wood, sx * (W / 2 - .06), .66, 0, g);
+  mesh(BX(.38, .004, L + .3), std(0xd9d2c6, .95), 0, .762, 0, g, { cast: false });                       // 테이블 러너(양끝 늘어짐)
+  for (const sz of [-1, 1]) mesh(BX(.38, .25, .004), std(0xd9d2c6, .95), 0, .64, sz * (L / 2 + .15), g, { cast: false });
+  const fab = std(0xf3f0ea, .95, 0, { map: M.boucle.map });
+  const chair = (cx, cz, rot) => { const c = new THREE.Group(); c.position.set(cx, 0, cz); c.rotation.y = rot; g.add(c);
+    mesh(RB(.46, .1, .46, .04), fab, 0, .46, 0, c); mesh(RB(.46, .48, .08, .04), fab, 0, .76, -.2, c);
+    for (const [lx, lz] of [[-.18, -.18], [.18, -.18], [-.18, .18], [.18, .18]]) mesh(BX(.035, .43, .035), wood, lx, .215, lz, c); };
+  for (const sz of [-.4, .4]) { chair(-(W / 2 + .2), sz, Math.PI / 2); chair(W / 2 + .2, sz, -Math.PI / 2); }
+  for (const [px, pz] of [[-.22, -.4], [-.22, .4], [.22, -.4], [.22, .4]]) { mesh(CY(.13, .13, .012, 30), std(0xc9a77a, .7), px, .768, pz, g, { cast: false }); mesh(CY(.1, .09, .02, 30), M.whiteGloss, px, .78, pz, g, { cast: false }); }
+  tablePlant(g, 0, .765, 0);
+  g.userData.len = L; return g;
+}
+const diningC = diningWoodC();
 const dining = diningS; // (예전 코드 호환용)
 // 평면도 방향: 침대 헤드는 서쪽 벽, 붙박이장(옵션 10)은 동쪽 벽
 bed(9.96, 6.45, Math.PI / 2, 1.6, 2.1, '침대');
@@ -2264,14 +2282,12 @@ function applyOptions() {
   // 식탁: 평평한 끝을 서쪽 벽(왼쪽 벽)에 붙이고 동쪽으로 뻗게(로컬 -x → 월드 +x, 회전 π)
   //  · 현관장+복도팬트리(1) 선택: 서쪽 벽 = 팬트리 벽(x 5.0) → 작은 식탁
   //  · 기본형: 서쪽 벽 = 현관창고 벽(x 4.5)으로 0.5m 여유 → 큰 식탁, 의자 6개(아일랜드와 겹치는 자리는 뺌)
-  { const pantry = s['1'] === '1', d = pantry ? diningS : diningL;
-    diningS.visible = pantry; diningL.visible = !pantry;
-    if (selected && (selected === diningS || selected === diningL) && !selected.visible) select(null);
-    // 북쪽 벽(z 2.66)·아일랜드(z ≤ 2.8)에 의자 등받이가 닿지 않도록 남쪽으로 당김
-    const wallFace = pantry ? 5.06 : 4.56, dz = pantry ? 3.7 : 3.78;
-    d.position.set(WX(wallFace), 0, WZ(dz)); d.rotation.y = Math.PI;
-    d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI };
-    diningPendant.position.set(WX(wallFace + d.userData.len / 2), 0, WZ(dz)); }
+  // 55C(VR): 원목 사각 식탁을 식당 가운데에 남북 방향으로(양옆 의자 2개씩) — 작은/큰 흰 식탁은 쓰지 않음
+  { diningS.visible = false; diningL.visible = false;
+    if (selected && (selected === diningS || selected === diningL)) select(null);
+    const cx = 6.75, cz = 3.85;
+    diningC.position.set(WX(cx), 0, WZ(cz)); diningC.rotation.y = 0; diningC.userData.home = { x: diningC.position.x, z: diningC.position.z, r: 0 };
+    diningPendant.position.set(WX(cx), 0, WZ(cz)); }
   show('o5base', !s['5']); show('o5-1', s['5'] === '5-1'); show('o5-2', s['5'] === '5-2');
   show('o6base', !s['6']); show('o6-1', s['6'] === '6-1'); show('o6-2', s['6'] === '6-2');
   show('o7-1', s['7'] === '7-1'); tagGroup('dress71').visible = s['7'] === '7-1';
