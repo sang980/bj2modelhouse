@@ -1253,8 +1253,11 @@ wallBoxes.push({ minX: WX(8.34), maxX: WX(8.82), minZ: WZ(5.35), maxZ: WZ(8.0) }
 // (TV장 왼쪽 끝 소품은 화분 함수 정의 뒤 'TV장 소품(VR)'에서 배치)
 // 소파 뒤 백라이트 아트(사진: 푸른 건물 그림, 테두리 간접광)
 // 소파 뒤 백라이트 아트는 서쪽 벽(x=5.18)
-pbox(5.185, 5.195, 1.08, 2.02, 5.6, 7.55, M.ledWarm, fixed, { cast: false });
-pbox(5.195, 5.23, 1.12, 1.98, 5.64, 7.51, std(0xffffff, .5, 0, { map: toTex(artCanvas2('living')) }), fixed);
+/* VR 55C: 밝은 원목 액자 + 흰 바탕 주황·금색 점 소용돌이 그림 */
+{ const c = mkCanvas(512, 288), x = c.getContext('2d'); x.fillStyle = '#f7f6f2'; x.fillRect(0, 0, 512, 288); const cl = ['#e3a046', '#d9822b', '#c9a25a', '#b5651d', '#e8c37a', '#9a6a3a'];
+  for (let i = 0; i < 1400; i++) { const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * 125, sw = a + r * .025, px = 300 + Math.cos(sw) * r * 1.5, py = 150 + Math.sin(sw) * r; if (px < 30 || px > 482 || py < 24 || py > 264) continue; if (Math.sin(r * .22) > .82) continue;
+    x.globalAlpha = .55 + rnd() * .45; x.fillStyle = cl[(i * 7) % cl.length]; x.beginPath(); x.arc(px, py, 1.6 + rnd() * 2.2, 0, 7); x.fill(); } x.globalAlpha = 1;
+  pbox(5.185, 5.215, 1.12, 1.98, 5.75, 7.4, std(0xd9c3a2, .55), fixed); pbox(5.215, 5.219, 1.15, 1.95, 5.78, 7.37, std(0xffffff, .8, 0, { map: toTex(c) }), fixed, { cast: false }); }
 ledRectWall(5.24, 1.55, 6.575, 2.0, 1.0, -1, 0, 0xffd9a8, 1.2, 2.4);
 // 창가 유리구 펜던트 3개
 { const p = new THREE.Group(); fixed.add(p);
