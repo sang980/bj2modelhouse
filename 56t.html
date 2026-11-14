@@ -1999,6 +1999,9 @@ await yieldUI();
   pbox(7.17, n1, .1, ny, 2.86, 3.42, M.kdoor, g); pbox(7.17, n0, ny, .86, 2.86, 3.42, M.kdoor, g); pbox(n0, n1, ny, .86, nb, 3.42, M.kdoor, g); /* 밥솥 칸: 아래 서랍 + 옆·뒤 */
   pbox(n0 + .08, n1 - .08, ny - .055, ny - .043, 2.846, 2.86, M.metalDark, g); /* 서랍 손잡이 홈 */
   pbox(n1, n1 + .02, .1, .86, 2.87, 3.42, M.kdoor, g); pbox(8.31, 8.35, .1, .86, 2.87, 3.42, M.kdoor, g); pbox(n1 + .02, 8.31, .1, .12, 2.87, 3.42, inner, g); pbox(n1 + .02, 8.31, .1, .86, 3.4, 3.42, inner, g); pbox(n1 + .02, 8.31, .48, .5, 2.88, 3.4, inner, g); /* 수납장 몸통·선반 */
+  { const wp = std(0xf7f6f2, .3); for (let i = 0; i < 6; i++) mesh(CY(.11, .1, .012, 28), wp, WX(7.84), .507 + i * .014, WZ(3.12), g, { cast: false }); /* 안: 접시 더미 · 볼 · 바구니 */
+    const bowl = new THREE.LatheGeometry([[0, 0], [.04, 0], [.07, .05], [.075, .065], [.07, .065], [.035, .008], [0, .008]].map(([a, b]) => new THREE.Vector2(a, b)), 24); for (let i = 0; i < 3; i++) mesh(bowl, wp, WX(8.12), .5 + i * .02, WZ(3.12), g, { cast: false });
+    mesh(RB(.24, .14, .26, .02, 2), rattanMat(), WX(7.86), .19, WZ(3.12), g); mesh(RB(.2, .18, .26, .01, 2), std(0xe9e6df, .6), WX(8.13), .21, WZ(3.12), g); }
   { const a0 = n1 + .025, a1 = 8.305, lw = (a1 - a0 - .006) / 2;
     for (const [hu, du] of [[a0, 1], [a1, -1]]) { const d = makeDoor({ parent: g, horiz: true, line: 2.86, t: .03, hu, du, side: -1, lw, lh: .74, lt: .02, mat: M.kdoor, from: a0, to: a1, name: '아일랜드 수납장 문', handle: false, startOpen: false }); d.pivot.position.y = .1; } }
   pbox(7.21, 8.31, 0, .1, 2.9, 3.38, M.black, g);
