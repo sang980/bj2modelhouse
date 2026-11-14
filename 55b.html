@@ -1137,10 +1137,19 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
 }
 // ── 거실: 대형 석재 패널 TV 아트월(동쪽 벽) + 화이트 플로팅 콘솔(하부 간접등) + 우물천장 ──
 { const g = fixed, x = 5.61;
-  const slab = std(0xffffff, .38, 0, { map: toTex(tileCanvas(1, 2, [214, 210, 202], '#c9c5bd', { j: 3, veins: 22, gap: 2 })) });
+  // VR: 연회색 대형 석재 타일(세로 0.6×1.2m, 곧은 줄눈) — 갈라진 무늬 없이 은은한 결만
+  const slab = std(0xffffff, .38, 0, { map: toTex(tileCanvas(1, 1, [218, 216, 211], '#d0cdc6', { j: 4, veins: 3, gap: 0 })) });
   pbox(x - .03, x, 0, H, 8.14, 11.1, slab, g);   // 침실1 문(7.2~8.05) 문틀 뒤에서 시작
-  pbox(x - .07, x - .03, .98, 1.72, 8.75, 10.3, M.tv, g, { cast: false });                      // 벽걸이 TV
+  { const seam = std(0xb9b5ad, .7); for (let z = 8.14 + .6; z < 11.08; z += .6) pbox(x - .034, x - .03, 0, H, z - .0015, z + .0015, seam, g, { cast: false }); pbox(x - .034, x - .03, 1.2 - .0015, 1.2 + .0015, 8.14, 11.1, seam, g, { cast: false }); }
+  pbox(x - .07, x - .034, .98, 1.72, 8.75, 10.3, M.tv, g, { cast: false });                      // 벽걸이 TV
+  // VR: TV 왼쪽 대형 월패드(검은 유리 화면 + 아래 파란 LED)
+  { const ui = toTex((() => { const c = mkCanvas(128, 64), x2 = c.getContext('2d'); x2.fillStyle = '#0d1016'; x2.fillRect(0, 0, 128, 64); x2.fillStyle = '#3a6fb0'; x2.fillRect(44, 10, 30, 16); x2.fillStyle = '#9fb3c8'; for (let i = 0; i < 6; i++) { x2.fillRect(10 + (i % 3) * 9, 12 + (i >> 1) * 0, 5, 5); x2.fillRect(100 + (i % 2) * 10, 10 + (i >> 1) * 12, 6, 6); } x2.fillStyle = '#5b4ea8'; x2.beginPath(); x2.arc(70, 44, 9, 0, 7); x2.fill(); x2.fillStyle = '#7d8a99'; for (let i = 0; i < 5; i++) x2.fillRect(14 + i * 9, 46, 5, 5); return c; })());
+    pbox(x - .046, x - .034, 1.36, 1.58, 8.24, 8.66, std(0x15161a, .15, .3), g); pbox(x - .047, x - .046, 1.375, 1.565, 8.255, 8.645, std(0xffffff, .2, 0, { map: ui, emissive: 0xffffff, emissiveMap: ui, emissiveIntensity: .35 }), g, { cast: false });
+    pbox(x - .042, x - .036, 1.352, 1.358, 8.28, 8.62, std(0x2f6fff, .4, 0, { emissive: 0x3b7bff, emissiveIntensity: 2.2 }), g, { cast: false }); }
+  // TV장: 얼룩무늬 돌 상판(VR) + 몸통, 아래 간접등
   pbox(x - .42, x - .03, .2, .42, 8.2, 10.85, std(0xf2f1ee, .4), g); pbox(x - .4, x - .05, .18, .2, 8.25, 10.8, M.ledWarm, g, { cast: false });
+  { const stoneTop = std(0xffffff, .32, 0, { map: toTex((() => { const c = mkCanvas(256, 256), x2 = c.getContext('2d'); x2.fillStyle = '#ddd8cf'; x2.fillRect(0, 0, 256, 256); for (let i = 0; i < 1600; i++) { const v = 120 + rnd() * 110 | 0; x2.fillStyle = `rgba(${v},${v - 6},${v - 14},${.25 + rnd() * .5})`; const r = .6 + rnd() * 1.8; x2.beginPath(); x2.arc(rnd() * 256, rnd() * 256, r, 0, 7); x2.fill(); } return c; })(), { rep: [1, 3] }) });
+    pbox(x - .432, x - .03, .42, .452, 8.19, 10.86, stoneTop, g); }
   ledRect(x - .4, x - .05, 8.3, 10.75, .16, -1, 0xffd9a8, .4, 1.0);
   wallBoxes.push({ minX: WX(x - .42), maxX: WX(x), minZ: WZ(8.2), maxZ: WZ(10.85) });
   // 우물천장(테두리 내림) + 숨은 간접등
@@ -1353,6 +1362,39 @@ function tablePlant(parent, x, y, z) {
   const lv = new THREE.Mesh(pg.leaves, plantLeafMat); lv.position.y = .1; lv.castShadow = true; lv.receiveShadow = true; g.add(lv);
   return g;
 }
+// 깃털 잎 식물(VR 55B TV장): 가는 줄기가 위로 솟았다가 바깥으로 휘어 늘어지고, 양옆으로 작은 잎이 촘촘히(고사리·야자 잎처럼)
+function fernPlant(parent, x, y, z, s = 1) {
+  const g = new THREE.Group(); g.position.set(x, y, z); g.scale.setScalar(s); parent.add(g);
+  const pos = [], col = [], stems = [], c = new THREE.Color(), v = new THREE.Vector3(), t = new THREE.Vector3(), side = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+  for (let f = 0; f < 12; f++) {
+    const yaw = f * 2.39996 + rnd() * .3, reach = .2 + rnd() * .16, rise = .22 + rnd() * .2, dx = Math.sin(yaw), dz = Math.cos(yaw);
+    const curve = new THREE.CubicBezierCurve3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(dx * .03, rise * .85, dz * .03), new THREE.Vector3(dx * reach * .7, rise * 1.08, dz * reach * .7), new THREE.Vector3(dx * reach, rise * .55, dz * reach));
+    const tg = new THREE.TubeGeometry(curve, 12, .0022, 4, false); tg.deleteAttribute('uv'); stems.push(tg);
+    c.setHSL(.28 + rnd() * .04, .48 + rnd() * .15, .27 + rnd() * .08);
+    const N = 22;
+    for (let i = 4; i < N; i++) {
+      const u = i / N; curve.getPoint(u, v); curve.getTangent(u, t);
+      side.crossVectors(t, up); if (side.lengthSq() < 1e-4) side.set(1, 0, 0); side.normalize();
+      const L = .05 * Math.sin(Math.PI * Math.min(1, u * 1.1)) + .008, W = .0055;
+      for (const sd of [-1, 1]) {
+        const tip = v.clone().addScaledVector(side, sd * L).addScaledVector(t, L * .45); tip.y -= L * .3; // 잎 끝은 바깥·조금 아래로
+        const b1 = v.clone().addScaledVector(t, -W), b2 = v.clone().addScaledVector(t, W);
+        pos.push(b1.x, b1.y, b1.z, b2.x, b2.y, b2.z, tip.x, tip.y, tip.z);
+        col.push(c.r * .8, c.g * .8, c.b * .8, c.r * .8, c.g * .8, c.b * .8, c.r * 1.2, c.g * 1.2, c.b * 1.2);
+      }
+    }
+  }
+  const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); lg.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); lg.computeVertexNormals();
+  const lv = new THREE.Mesh(lg, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .55, side: THREE.DoubleSide })); lv.castShadow = true; g.add(lv);
+  g.add(new THREE.Mesh(mergeGeometries(stems, false), plantStemMat));
+  return g;
+}
+// TV장 창가 쪽 끝 소품(VR): 흰 도자기 화병 + 깃털 잎 식물, 작은 흰 뚜껑 항아리
+{ const g = fixed, x = 5.61, top = .452, ceramic = std(0xf1efea, .32);
+  const vase = new THREE.LatheGeometry([[0, 0], [.07, 0], [.1, .06], [.112, .14], [.095, .235], [.055, .3], [.044, .318], [.05, .33], [.043, .33]].map(([a, b]) => new THREE.Vector2(a, b)), 40);
+  mesh(vase, ceramic, WX(x - .22), top, WZ(10.62), g); fernPlant(g, WX(x - .22), top + .32, WZ(10.62));
+  const jar = new THREE.LatheGeometry([[0, 0], [.055, 0], [.08, .045], [.085, .075], [.07, .11], [.035, .124], [.02, .13], [.02, .145], [0, .148]].map(([a, b]) => new THREE.Vector2(a, b)), 36);
+  mesh(jar, ceramic, WX(x - .2), top, WZ(10.36), g); }
 // 주방 상판 소품(사진): 레트로 커피머신, 전기주전자, 블랙 레일 도구, 끝쪽 블랙 보틀·양념병·은색 볼·화이트 볼 화분
 // 좌표는 주방 반전 전 기준(k 그룹 안에서 함께 반전됨). 상판 높이 .9
 function kitchenProps(k) {
