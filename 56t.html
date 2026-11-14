@@ -1036,6 +1036,13 @@ function toilet(x, z, rot) {
   mesh(RB(.42, .36, .18, .03), M.white, 0, .6, -.2, g);
   return g;
 }
+function roundBasin(x, z, rot) { // 둥근 벽걸이 세면기 + 반다리(VR 욕실1)
+  const g = piece('세면기', x, z, rot, { movable: false });
+  const bowl = mesh(new THREE.SphereGeometry(.27, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), M.whiteGloss, 0, .86, .02, g); bowl.rotation.x = Math.PI; bowl.scale.set(1, .5, .85);
+  mesh(CY(.27, .27, .03, 40), M.whiteGloss, 0, .86, .02, g).scale.set(1, 1, .85); mesh(CY(.21, .21, .006, 40), std(0xe9eeef, .1), 0, .875, .04, g).scale.set(1, 1, .8);
+  mesh(RB(.24, .34, .16, .06), M.whiteGloss, 0, .58, -.1, g);
+  mesh(CY(.016, .016, .17, 14), M.chrome, 0, .96, -.15, g); const sp = mesh(CY(.011, .011, .12, 12), M.chrome, 0, 1.035, -.1, g); sp.rotation.x = Math.PI / 2;
+  return g; }
 function basin(x, z, rot) { // 반다리형 세면기(사진)
   const g = piece('세면기', x, z, rot, { movable: false });
   mesh(RB(.52, .15, .42, .05), M.whiteGloss, 0, .8, 0, g); mesh(RB(.42, .02, .3, .03), std(0xe9eeef, .1), 0, .87, .02, g);
@@ -1150,7 +1157,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
 }
 // ── 욕실1(공용): 북쪽 벽 따라 욕조, 서쪽 벽에 반다리 세면기·변기 + 거울장·돌 선반 ──
 { const g = fixed;
-  basin(.38, 4.0, Math.PI / 2); toilet(.45, 4.75, Math.PI / 2);
+  roundBasin(.36, 4.0, Math.PI / 2); toilet(.45, 4.75, Math.PI / 2); // VR: 둥근 반다리 세면기
   pbox(.11, .24, 1.22, 1.25, 3.7, 5.2, std(0xc9c6c0, .45, 0, { map: M.marbleW.map }), g); // VR: 긴 돌 선반
   pbox(.11, .25, 1.42, 2.08, 3.7, 5.2, std(0xdedcd7, .5), g); pbox(.25, .255, 1.43, 2.07, 3.71, 4.445, M.mirrorBath1, g, { cast: false }); pbox(.25, .255, 1.43, 2.07, 4.455, 5.19, M.mirrorBath1, g, { cast: false }); // VR: 세면대·변기 위로 긴 거울장
   const tub = piece('욕조', .98, 3.3, Math.PI / 2, { movable: false });
