@@ -2839,7 +2839,9 @@ const PLATE = (() => {
     if (h.object.geometry.boundingSphere.radius < .3) return null;
     const n = h.face.normal.clone().transformDirection(h.object.matrixWorld); if (Math.abs(n.y) > .3 || n.dot(d3) > -.7) return null; // 정면으로 마주 보는 세로 벽면만
     const [w, hh] = sizes[kind], dep = kind === 'pad' ? .014 : .007; const m = mesh(BX(w, hh, dep), mat(kind), 0, 0, 0, fixed, { cast: false });
-    m.position.copy(h.point).addScaledVector(n, dep / 2 + .0005); m.lookAt(m.position.clone().add(n)); return m;
+    m.position.copy(h.point).addScaledVector(n, dep / 2 + .0005); m.lookAt(m.position.clone().add(n));
+    for (let p = h.object.parent; p && p !== scene; p = p.parent) if ((p.name && tagGroups[p.name] === p) || (p.name && OG[p.name] === p)) { p.attach(m); break; } // 옵션 벽이면 함께 숨김
+    return m;
   };
   // 가구 뒤 벽을 찾아 가구 양옆(폭/2 + 15cm)에 콘센트 — 침대(머리 쪽)·책상·소파는 모두 로컬 -z가 벽 쪽
   const bb = new THREE.Box3(), back = new THREE.Vector3(), side = new THREE.Vector3(), c3 = new THREE.Vector3(), outs = [];
