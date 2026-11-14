@@ -616,7 +616,7 @@ const stoneCanvas = (() => { const c = marbleCanvas(), x = c.getContext('2d'); x
 const MAT_OPT = {
   mma: { map: null, color: 0xf3f2ee, roughness: .4 },
   stone: { map: toTex(stoneCanvas), color: 0xffffff, roughness: .18 },
-  tile: { map: toTex(tileCanvas(4, 8, [240, 239, 236], '#d0cec9', { j: 3, gap: 4 }), { rep: [1, 1] }), color: 0xffffff, roughness: .25 },
+  tile: { map: toTex(tileCanvas(2, 4, [196, 196, 193], '#a8a8a4', { j: 5, veins: 10, gap: 3 }), { rep: [1, 1] }), color: 0xffffff, roughness: .25 }, // 55C(VR): 회색 대형 타일
 };
 M.counter = std(MAT_OPT.mma.color, MAT_OPT.mma.roughness);
 M.splash = std(0xffffff, .25, 0, { map: MAT_OPT.tile.map });
@@ -1037,7 +1037,7 @@ kInner(5.46, 6.08, 2.15, H, 2.12, 3.97, M.kdoor);         // 상부 브리지장
 { const fx = 6.06; // 냉장고: 화이트 글라스 4도어 — 앞면 x=fx
   const fWhite = std(0xf1f0ec, .18, .05), fGap = std(0x9a9893, .7);
   kInner(5.5, fx - .02, 0, 1.85, 2.82, 3.9, std(0xe4e2dd, .5));
-  for (const [y0, y1] of [[1.0, 1.85], [.05, .98]]) for (const [z0, z1] of [[2.83, 3.35], [3.37, 3.89]]) kInner(fx - .02, fx, y0, y1, z0, z1, fWhite);
+  for (const [y0, y1] of [[1.0, 1.85], [.05, .98]]) for (const [z0, z1] of [[2.83, 3.35], [3.37, 3.89]]) kInner(fx - .02, fx, y0, y1, z0, z1, y0 > .5 ? fWhite : std(0xdfd2bf, .3, .05)); // 55C(VR): 위 흰색 · 아래 베이지
   kInner(fx - .022, fx - .018, .98, 1.0, 2.83, 3.89, fGap); kInner(fx - .022, fx - .018, .05, 1.85, 3.35, 3.37, fGap);
 }
 // 문 이음선(손잡이 없는 평판 도어 사이의 가는 그림자 줄)
