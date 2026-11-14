@@ -508,6 +508,11 @@ const skyTex = toTex(skyCanvas);
 skyTex.wrapT = THREE.ClampToEdgeWrapping;
 const sky = new THREE.Mesh(new THREE.CylinderGeometry(70, 70, 90, 64, 1, true), new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, toneMapped: false, fog: false }));
 sky.position.y = -1; scene.add(sky);
+// 56T: 테라스에서 위를 올려다볼 때 원통 하늘의 뚫린 윗면이 보이지 않게 하늘색 뚜껑
+const skyCap = new THREE.Mesh(new THREE.SphereGeometry(69.8, 48, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false, fog: false, side: THREE.BackSide })); skyCap.scale.y = .45; skyCap.position.y = 30; scene.add(skyCap);
+function paintSkyCap(eve) { const p = skyCap.geometry.attributes.position, n = p.count, col = new Float32Array(n * 3), lo = (() => { const d = skyCanvas.getContext('2d').getImageData(0, Math.floor(skyCanvas.height * (44 - 30) / 90), skyCanvas.width, 2).data; let r = 0, g = 0, b = 0, k = 0; for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; k++; } return new THREE.Color().setRGB(r / k / 255, g / k / 255, b / k / 255, THREE.SRGBColorSpace); })(), hi = new THREE.Color(eve ? 0x141b33 : 0x7fa8d2), c = new THREE.Color();
+  for (let i = 0; i < n; i++) { const t = Math.pow(p.getY(i) / 69.8, .7); c.copy(lo).lerp(hi, t); col.set([c.r, c.g, c.b], i * 3); } skyCap.geometry.setAttribute('color', new THREE.BufferAttribute(col, 3)); }
+paintSkyCap(false);
 const skyFloor = new THREE.Mesh(new THREE.CircleGeometry(70, 48), new THREE.MeshBasicMaterial({ color: 0x8a9a7c, toneMapped: false }));
 skyFloor.rotation.x = -Math.PI / 2; skyFloor.position.y = -46; scene.add(skyFloor);
 
@@ -2189,7 +2194,7 @@ function setTimeMode(t) {
 document.querySelectorAll('#timeSeg button').forEach(b => b.addEventListener('click', () => setTimeMode(b.dataset.time)));
 
 function setTime(eve) {
-  paintSky(eve); skyTex.needsUpdate = true;
+  paintSky(eve); skyTex.needsUpdate = true; paintSkyCap(eve);
   scene.background.set(eve ? 0x1b2236 : 0xcfdbe6);
   skyFloor.material.color.set(eve ? 0x161c1c : 0x8a9a7c);
   sun.intensity = eve ? 0 : 3.4; sun.castShadow = !eve && tier < 2;
