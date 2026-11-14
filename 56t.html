@@ -1146,7 +1146,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
     ring(hl, pts[0][0], pts[0][1], .1, std(0xc8402a, .3)); ring(hl, pts[1][0], pts[1][1], .08, ringM); ring(hl, pts[2][0], pts[2][1], .07, ringM);
     pbox(cx0, cx1, .9, .906, cz0, cz1, M.tv, ind);
     for (const [x, z, r] of pts) ring(ind, x, z, r, ringM);
-    const ss = std(0xc8cacc, .3, .85); kb(cx0 - .05, cx1 + .05, 1.36, 1.5, zb, zb + .29, ss); kb(cx0 - .05, cx1 + .05, 1.4, 1.5, zb + .29, zb + .53, ss); kb(cx0 - .05, cx1 + .05, 1.4, 1.5, zb + .53, zb + .56, std(0x111214, .12, .3)); }
+    const ss = std(0xc8cacc, .3, .85); kb(cx0 - .05, cx1 + .05, 1.36, 1.498, zb, zb + .29, ss); kb(cx0 - .05, cx1 + .05, 1.4, 1.498, zb + .29, zb + .53, ss); kb(cx0 - .05, cx1 + .05, 1.4, 1.498, zb + .53, zb + .56, std(0x111214, .12, .3)); } // 후드 윗면은 타일 윗면(1.5)보다 2mm 아래
   // 상부장(창 오른쪽) + 하부 간접등
   kb(5.86, 8.29, 1.5, 2.3, zb, zb + .35); kb(5.86, 8.29, 2.3, H, zb, zb + .39, M.white); // VR: 상부장이 창 위까지 벽 전체
   for (let x = 5.86 + .405; x < 8.25; x += .405) kb(x - .0015, x + .0015, 1.52, 2.28, zb + .35, zb + .354, seamMat); // 상부장 문 이음선(6짝)
@@ -1155,7 +1155,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   kb(5.86, 8.29, .9, 1.5, zb, zb + .015, M.splash); // VR: 상판 위 벽 전체 회색 타일
   // 냉장고장 열(서쪽 벽, 앞면 x 5.86): 북쪽 끝 상판 연결부 → 옵션 5 칸 → 냉장고 → 키큰 수납장
   const xf = 5.86;
-  kb(5.21, xf, .1, .86, zb, 1.45); kb(5.21, xf + .03, .86, .9, zb, 1.45, M.counter); kb(5.21, xf, 1.5, H, zb, 1.45);
+  kb(5.21, xf, .1, .86, zb, 1.45); kb(5.21, xf, .86, .9, zb, 1.45, M.counter); /* 본 상판(x 5.86~)과 겹치지 않게 */ kb(5.21, xf, 1.5, H, zb, 1.45);
   { const k0 = og('b5base'), k1 = og('b5-1'), k2 = og('b5-2'), inner = std(0xebe9e4, .5), a = 1.45, b = 2.55;
     // 기본: 스탠드형 김치냉장고(화이트 글라스, 위 1도어 + 아래 서랍 2) + 위 수납장
     pbox(5.25, xf - .02, 0, 1.85, a + .06, b - .06, std(0x2a2b2d, .5), k0); // VR: 김치냉장고(위 흰 문 2짝 · 아래 베이지 서랍 2단)
@@ -1166,7 +1166,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
     // 5-1: 바닥~천장 키큰장 2도어
     pbox(5.21, xf, 0, H, a, b, M.kdoor, k1); pbox(xf, xf + .003, .1, 2.28, (a + b) / 2 - .001, (a + b) / 2 + .001, seamMat, k1); pbox(xf, xf + .003, 1.0, 1.003, a, b, seamMat, k1);
     // 5-2: 가운데 오픈 칸(전자레인지·토스터)
-    pbox(5.21, xf, 0, 1.0, a, b, M.kdoor, k2); pbox(5.21, xf, 1.48, H, a, b, M.kdoor, k2); pbox(5.21, 5.25, 1.0, 1.48, a, b, inner, k2);
+    pbox(5.21, xf, 0, 1.0, a, b, M.kdoor, k2); pbox(5.21, xf, 1.48, H, a, b, M.kdoor, k2); pbox(5.21, 5.25, 1.0, 1.48, a + .02, b - .02, inner, k2); /* 뒤판은 옆판 사이에만(끝면 겹침 깜빡임 방지) */
     pbox(5.21, xf, 1.0, 1.48, a, a + .02, M.kdoor, k2); pbox(5.21, xf, 1.0, 1.48, b - .02, b, M.kdoor, k2); pbox(5.25, xf - .02, 1.0, 1.02, a + .02, b - .02, inner, k2);
     pbox(5.3, 5.67, 1.02, 1.3, a + .1, a + .58, std(0xf3f3f1, .35), k2); pbox(5.67, 5.675, 1.06, 1.26, a + .12, a + .4, std(0x2b2c2f, .2), k2);
     pbox(5.35, 5.65, 1.02, 1.16, a + .7, a + 1.0, std(0xd9d6cf, .4), k2); }
@@ -1607,15 +1607,11 @@ function dresser(x, z, rot) {
   [[-.5, std(0xe8d13a, .9)], [-.14, std(0xffffff, .9, 0, { map: leafTex })], [.22, std(0xf7f6f2, .9)], [.55, std(0xf0cf80, .9)], [.82, std(0xf7f6f2, .9)]].forEach(([px, m], i) => {
     const p = mesh(RB(.44, .42, .13, .06, 4), m, -px, .62, -.2 + (i % 2) * .03, s); p.rotation.set(-.22, (i - 2) * .05, (i % 2 ? .06 : -.05)); });
   // (작은 사이드 선반은 팔걸이 속에 묻혀 끝면이 팔걸이 옆면과 겹쳐 검은 줄이 깜빡였음 → 삭제)
-  // VR: 창 쪽 끝 낮은 받침 위 검은 테 흑백 사진 액자 + 받침 양끝 칸에 꽂힌 잡지(옆면에 잡지 등)
+  // VR: 창 쪽 끝 낮은 받침 위 검은 테 흑백 사진 액자(소파 끝면은 무늬 없이 흰색 그대로)
   const bw = toTex((() => { const c = mkCanvas(64, 48), x = c.getContext('2d'); const gr = x.createLinearGradient(0, 0, 0, 48); gr.addColorStop(0, '#d9d9d9'); gr.addColorStop(1, '#6d6d6d'); x.fillStyle = gr; x.fillRect(0, 0, 64, 48);
     x.fillStyle = '#2b2b2b'; x.fillRect(0, 34, 64, 14); x.beginPath(); x.ellipse(24, 22, 4, 4, 0, 0, 7); x.fill(); x.fillRect(20, 26, 8, 14); x.beginPath(); x.ellipse(40, 24, 3.5, 3.5, 0, 0, 7); x.fill(); x.fillRect(37, 27, 7, 12); return c; })());
   const pf = new THREE.Group(); pf.position.set(1.0, .46, -.17); pf.rotation.x = -.12; s.add(pf);
   mesh(BX(.21, .165, .014), std(0x1b1c1e, .4), 0, .0825, 0, pf); mesh(BX(.19, .145, .002), std(0xf6f5f2, .8), 0, .0825, .0075, pf, { cast: false }); mesh(BX(.15, .11, .002), std(0xffffff, .9, 0, { map: bw }), 0, .0825, .0085, pf, { cast: false });
-  const mags = toTex((() => { const c = mkCanvas(128, 64), x = c.getContext('2d'); x.fillStyle = '#1e1f22'; x.fillRect(0, 0, 128, 64); let u = 6;
-    for (const [w, col, ink] of [[9, '#f2f1ec', '#222'], [7, '#1b1b1d', '#eee'], [10, '#e9e6de', '#b33'], [6, '#c9c6bf', '#333'], [11, '#f4f3ef', '#111'], [8, '#2f3a4a', '#ddd'], [9, '#ece9e2', '#2a5'], [7, '#d8d4cb', '#222']]) { x.fillStyle = col; x.fillRect(u, 6, w, 54); x.fillStyle = ink; for (let k = 0; k < 4; k++) x.fillRect(u + w / 2 - 1, 12 + k * 10, 2, 6); u += w + 1; }
-    return c; })());
-  for (const sx of [1.2265, -1.2265]) mesh(BX(.002, .22, .56), std(0xffffff, .8, 0, { map: mags }), sx, .17, .05, s, { cast: false });
 }
 // VR: 거실 흰 샤기 러그(긴 털) — 짧은 털 결을 수천 개 그린 무늬 + 같은 무늬로 강한 요철, 두께 3cm
 M.shag = (() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = '#e6e5e1'; x.fillRect(0, 0, 256, 256); x.lineCap = 'round';
