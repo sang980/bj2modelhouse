@@ -2532,6 +2532,37 @@ const PAN = { x0: 3.96, x1: 4.94, z0: 2.66, z1: 4.2 };
     const e = mesh(BX(.009, 2.27, .032), M.black, half - .0045, 2.27 / 2 + .01, 0, d.pivot); e.userData.door = d; doorMeshes.push(e); // 가운데 검정 줄눈(문짝 끝면)
   }
 }
+/* VR 팬트리 물품 — 레벨(lv)마다 다른 실제 물건. 안쪽 선반(x 3.98–4.6, 앞 +z) · 옆 선반(x 4.6–4.94, 앞 -x), 지주(x 4.0/4.3/4.6, z 3.5/4.05) 피해서 */
+const _wvC = {};
+function weaveMat(col) { if (_wvC[col]) return _wvC[col]; const c = mkCanvas(64, 64), x = c.getContext('2d'), h = '#' + col.toString(16).padStart(6, '0'); x.fillStyle = h; x.fillRect(0, 0, 64, 64);
+  for (let r = 0; r < 16; r++) for (let k = 0; k < 16; k++) { x.fillStyle = (r + k) % 2 ? 'rgba(0,0,0,.1)' : 'rgba(255,255,255,.08)'; x.fillRect(k * 4, r * 4, 4, 3); } x.fillStyle = 'rgba(0,0,0,.16)'; for (let r = 0; r < 16; r++) x.fillRect(0, r * 4 + 3, 64, 1);
+  return (_wvC[col] = std(0xffffff, .85, 0, { map: toTex(c, { rep: [2, 1] }) })); }
+function pantryGoods(g, lv, y) {
+  const at = (geo, m, x, yy, z) => mesh(geo, m, WX(x), yy, WZ(z), g), white = std(0xf4f2ec, .95);
+  const basket = (x, z, w, h, d, col, liner, side = false) => { const m = weaveMat(col); at(RB(w, h, d, .02, 2), m, x, y + h / 2, z); at(RB(w + .012, .018, d + .012, .008, 2), m, x, y + h - .006, z);
+    if (liner) { at(RB(w - .02, .05, d - .02, .02, 2), white, x, y + h + .01, z); if (side) at(BX(.01, .07, d * .7), white, x - w / 2 - .007, y + h - .025, z); else at(BX(w * .7, .07, .01), white, x, y + h - .025, z + d / 2 + .007); } };
+  const lathe = (pts, m, x, yy, z, s = 1) => { const l = at(new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a * s, b * s)), 28), m, x, yy, z); return l; };
+  const bubble = [[0, 0], [.04, 0], [.05, .03], [.04, .06], [.032, .07], [.045, .1], [.035, .13], [.028, .14], [.038, .165], [.03, .19], [.02, .2], [.018, .21], [0, .21]];
+  if (lv === 0) { basket(4.15, 2.83, .24, .2, .26, 0xc49a5c, true); /* 옆: 짙은 나무상자 + 오일병 3 */
+    at(RB(.28, .1, .22, .01, 2), std(0x3a2c22, .6), 4.77, y + .05, 3.78); const gl = std(0x9a8a3a, .1, 0, { transparent: true, opacity: .75 });
+    for (const [dx, dz, h] of [[-.04, -.06, .24], [.03, 0, .21], [-.03, .06, .19]]) { lathe([[0, 0], [.028, 0], [.03, .01], [.03, h * .65], [.012, h * .85], [.011, h], [0, h]], gl, 4.77 + dx, y + .1, 3.78 + dz); at(CY(.011, .011, .02, 10), std(0xb08a5a, .8), 4.77 + dx, y + .1 + h + .01, 3.78 + dz); } }
+  if (lv === 1) { basket(4.15, 2.83, .24, .16, .25, 0xd8b884, true); basket(4.45, 2.83, .22, .12, .24, 0xb48a52, false); /* 옆: 크림 손잡이 케이스 */
+    const cm = std(0xeee6d8, .4); at(RB(.22, .18, .3, .05, 4), cm, 4.77, y + .09, 3.2); const hd = at(new THREE.TorusGeometry(.06, .011, 8, 20, Math.PI), cm, 4.77, y + .18, 3.2); hd.rotation.y = Math.PI / 2; }
+  if (lv === 2) { const p = tablePlant(g, WX(4.15), y, WZ(2.82)); p.scale.setScalar(.8); at(CY(.085, .075, .085, 24), weaveMat(0xb59a6e), 4.15, y + .042, 2.82); /* 황마 화분 커버 + 마늘 2 */
+    for (const dx of [.12, .17]) { const b = at(new THREE.SphereGeometry(.026, 14, 10), std(0xf1ece2, .7), 4.15 + dx, y + .022, 2.88); b.scale.set(1, .85, 1); at(new THREE.ConeGeometry(.008, .025, 8), std(0xe0d6c2, .7), 4.15 + dx, y + .055, 2.88); }
+    basket(4.77, 3.78, .26, .14, .28, 0xc49a5c, true, true); }
+  if (lv === 3) { const bw = std(0xf3f2ee, .6), br = std(0x6b4a2e, .55); /* 흰 보냉백 + 갈색 가죽 끈·패치 */
+    at(RB(.24, .16, .18, .035, 3), bw, 4.15, y + .08, 2.82); const st = at(new THREE.TorusGeometry(.07, .008, 6, 20, Math.PI), br, 4.15, y + .16, 2.82); at(BX(.06, .035, .004), br, 4.15, y + .1, 2.912); at(BX(.22, .004, .004), std(0xbfbfbc, .5), 4.15, y + .16, 2.82);
+    const wv = std(0xf6f5f1, .22); lathe(bubble, wv, 4.42, y, 2.8, 1); lathe(bubble, wv, 4.5, y, 2.88, .82); /* 흰 버블 화병 2 */
+    basket(4.77, 3.2, .26, .16, .26, 0xd0aa6a, true, true); }
+  if (lv === 4) { /* 늘어지는 아이비 화분(앞으로 흘러내림) */
+    at(CY(.06, .05, .1, 20), std(0xf2f0eb, .4), 4.17, y + .05, 2.8); const lg = new THREE.SphereGeometry(.018, 8, 6);
+    for (let v = 0; v < 6; v++) { const a = -1.2 + v * .5, len = .18 + (v % 3) * .08; for (let k = 0; k < 9; k++) { const t = k / 8, lx = 4.17 + Math.sin(a) * (.05 + t * .12), lz = 2.8 + Math.cos(a) * .04 + Math.min(t * 1.6, 1) * .23, ly = y + .1 + .02 - (t > .62 ? (t - .62) * len * 2.2 : 0);
+      const l = at(lg, M.plant, lx, ly, lz); l.scale.set(.9, .35, .7); l.rotation.set(rnd() * .8, rnd() * 6, rnd() * .8); } }
+    basket(4.45, 2.83, .22, .14, .24, 0xc49a5c, false); basket(4.77, 3.78, .26, .14, .28, 0xb48a52, true, true); }
+  if (lv === 5) { const ln = std(0xd9cfbf, .9, 0, { map: M.navy.map }), lid = std(0xcabfad, .9); /* 뚜껑 있는 패브릭 수납함 */
+    for (const [x, z] of [[4.15, 2.83], [4.45, 2.83], [4.77, 3.2], [4.77, 3.78]]) { at(RB(.24, .16, .24, .015, 2), ln, x, y + .08, z); at(RB(.25, .025, .25, .01, 2), lid, x, y + .17, z); } }
+}
 { const g = item('o1open', '팬트리 시스템선반'); // 사진: ㄱ자 선반(안쪽 벽 + 주방 쪽 벽), 곡선 코너, 검정 지주
   cab(g, PAN.x0, PAN.x1, 2.28, 2.3, PAN.z0, PAN.z1 - .06, shelfMat);
   const posts = std(0x1f2124, .4, .4);
@@ -2543,8 +2574,8 @@ const PAN = { x0: 3.96, x1: 4.94, z0: 2.66, z1: 4.2 };
     const c = mesh(new THREE.CylinderGeometry(.24, .24, .022, 24, 1, false, Math.PI * 1.5, Math.PI / 2), shelfMat, WX(4.6), y + .011, WZ(3.0), g); c.castShadow = true;
     // 물품(겹치지 않게)
     const top = y + .025;
-    if (lv % 2 === 0) { cab(g, 4.05, 4.32, top, top + .16, 2.7, 2.92, std(0xf2f1ee, .5)); cab(g, 4.66, 4.9, top, top + .14, 3.3, 3.55, std(0xf2f1ee, .5)); }
-    else { mesh(CY(.08, .07, .15, 18), std(0xd8cdb6, .9), WX(4.15), top + .075, WZ(2.82), g); cab(g, 4.66, 4.9, top, top + .18, 3.7, 3.98, std([0x6f665a, 0xe8e2d6, 0x2f2f2f][lv % 3], .7)); mesh(CY(.04, .04, .12, 14), M.whiteGloss, WX(4.42), top + .06, WZ(2.82), g); }
+    pantryGoods(g, lv, top); /* VR: 칸마다 실제 물건 */
+
   }); }
 // 2-1 현관창고 시스템선반 (기본형 창고 안쪽 코너, 동쪽 벽 기준)
 { const g = item('o2-1', '현관창고 시스템선반', false, tagGroup('storage'));
