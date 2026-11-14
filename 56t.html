@@ -1882,6 +1882,8 @@ function kitchenPropsT() {
   { const cx = 6.95, cz = .95; at(lathe([[0, 0], [.055, 0], [.06, .02], [.058, .16], [.062, .17], [0, .17]], 28), std(0xd9d2c4, .5), cx, T, cz);
     for (let i = 0; i < 3; i++) { const sp = at(CY(.006, .006, .3, 8), wood, cx + (i - 1) * .02, T + .25, cz + (i % 2) * .015); sp.rotation.set((i - 1) * .12, 0, (i - 1) * .15); at(new THREE.SphereGeometry(.028, 12, 8), wood, cx + (i - 1) * .045, T + .41, cz + (i % 2) * .015 + (i - 1) * .018).scale.set(.8, 1.3, .25); }
     for (const [x, w, h, a] of [[7.29, .24, .38, -.16], [7.35, .2, .3, -.1]]) { const b = at(RB(w, h, .02, .012, 2), wood, x, T + h / 2 * Math.cos(a) + .005, .86 - Math.sin(a) * h / 2); b.rotation.x = a; } }
+  /* ⑤ VR: 수저통과 도마 사이 유리 보관병 2(꿀·파스타, 나무 뚜껑) */
+  for (const [x, z, h, r, c] of [[7.08, 1.0, .14, .042, 0xd99a2b], [7.17, .94, .2, .038, 0xe8d6a8]]) { at(CY(r - .004, r - .004, h * .72, 24), std(c, .5), x, T + h * .36 + .004, z); at(lathe([[0, 0], [r, 0], [r, h], [0, h]], 28), glass, x, T, z); at(CY(r + .003, r + .003, .022, 24), wood, x, T + h + .011, z); }
   // ③ 쿡탑 앞쪽 왼쪽 화구 위 스테인리스 냄비 — 가스(그릴 위)·하이라이트/인덕션(상판 위) 높이가 달라 옵션 묶음마다 하나씩
   { const ss = std(0xd2d5d8, .22, .9);
     for (const [k, y] of [['b4base', .951], ['b4-1', .906], ['b4-2', .906]]) { const pg = og(k), x = 7.61, z = 1.19;
