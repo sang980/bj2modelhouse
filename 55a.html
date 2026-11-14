@@ -719,6 +719,7 @@ function makeDoor({ parent, horiz, line, t, hu, du, side, lw, lh, lt = .04, styl
 }
 function angDiff(a, b) { return Math.atan2(Math.sin(b - a), Math.cos(b - a)); }
 function toggleDoor(d) { d.open = !d.open; d.target = d.open ? d.thetaO : d.thetaC; }
+let doorShadowTick = 0, doorWasMoving = false;
 function updateDoors(dt) {
   let moving = false;
   for (const d of doors) {
@@ -726,7 +727,9 @@ function updateDoors(dt) {
     if (Math.abs(diff) < .002) continue;
     d.cur += diff * Math.min(1, dt * 7); if (d.apply) d.apply(d.cur); else d.pivot.rotation.y = d.cur; moving = true;
   }
-  if (moving) renderer.shadowMap.needsUpdate = true;
+  // 문이 움직이는 동안 매 프레임 그림자맵(최대 4096²)을 다시 그리면 느린 기기에서 버벅임 → 3프레임에 한 번 + 멈추는 순간 한 번
+  if (moving) { if (++doorShadowTick % 3 === 0) renderer.shadowMap.needsUpdate = true; doorWasMoving = true; }
+  else if (doorWasMoving) { doorWasMoving = false; renderer.shadowMap.needsUpdate = true; }
 }
 function doorClosedBoxes() { // 닫혀 있는(거의 닫힌) 문은 충돌 상자로 막음
   const out = [];
@@ -2436,7 +2439,8 @@ function setTime(eve) {
 let envBoost = 1.25;
 function setEnvIntensity() {
   for (const m of Object.values(M)) if (m && m.isMaterial && 'envMapIntensity' in m && m !== M.glass && m !== M.smoke) m.envMapIntensity = envBoost;
-  scene.traverse(o => { if (o.isMesh && o.material && o.material.isMeshStandardMaterial && !Object.values(M).includes(o.material)) o.material.envMapIntensity = envBoost; });
+  const mset = new Set(Object.values(M)); // (예전: 물체마다 재질 목록 전체를 훑어 수 ms~십수 ms) → 집합으로 바로 확인
+  scene.traverse(o => { if (o.isMesh && o.material && o.material.isMeshStandardMaterial && !mset.has(o.material)) o.material.envMapIntensity = envBoost; });
 }
 
 /* ───────── baked interior reflections / ambient (cube capture of the living room) ───────── */
@@ -2455,7 +2459,7 @@ async function captureCube(pos) {
   const prev = renderer.getRenderTarget(), xr = renderer.xr.enabled; renderer.xr.enabled = false;
   for (let i = 0; i < 6; i++) {
     renderer.setRenderTarget(cubeRT, i); renderer.render(scene, cubeCam.children[i]);
-    renderer.setRenderTarget(prev); await yieldUI();
+    renderer.setRenderTarget(prev); if (tier > 0 || i === 5) await yieldUI(); // 고화질(빠른 GPU)은 6면을 한 번에 → 화면이 멈춰 보이는 시간 1/6
   }
   renderer.xr.enabled = xr;
   return pmrem.fromCubemap(cubeRT.texture).texture;
