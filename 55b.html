@@ -2010,7 +2010,7 @@ const desk2 = piece('책상', 1.66, 1.88, Math.PI / 2);
     for (let i = 0; i < 9; i++) { const ax = 16 + (i % 3) * 44 + (i / 3 | 0) % 2 * 10, ay = 18 + (i / 3 | 0) * 36; x.fillStyle = '#7da23f'; x.beginPath(); x.arc(ax - 4, ay, 8, 0, 7); x.arc(ax + 4, ay, 8, 0, 7); x.fill(); x.fillStyle = '#9cc25a'; x.beginPath(); x.arc(ax - 5, ay - 3, 3, 0, 7); x.fill();
       x.strokeStyle = '#5a4030'; x.lineWidth = 2; x.beginPath(); x.moveTo(ax, ay - 7); x.lineTo(ax + 2, ay - 13); x.stroke(); x.fillStyle = '#4f7d2e'; x.beginPath(); x.ellipse(ax + 6, ay - 12, 5, 2.5, -.5, 0, 7); x.fill(); }
     return c; })()), pil = std(0xffffff, .95, 0, { map: apple }), L = 2.0;
-  for (const [px, ry] of [[-.22, .06], [.22, -.08]]) { const p = mesh(pillowG(.46, .38, .15), pil, px, .7, -L / 2 + .14, bed2); p.rotation.set(-.28, ry, 0); }
+  for (const [px, ry] of [[-.25, .03], [.25, -.03]]) { const p = mesh(pillowG(.44, .37, .15), pil, px, .7, -L / 2 + .14, bed2); p.rotation.set(-.28, ry, 0); } /* 두 베개가 서로 겹치지 않게 간격 */
   const plush = (x, z, ry, body, dark, muzzle, panda) => { const t = new THREE.Group(); t.position.set(x, .5, z); t.rotation.y = ry; bed2.add(t);
     const sp = (r, m, px, py, pz, sx = 1, sy = 1, sz = 1) => { const s = mesh(new THREE.SphereGeometry(r, 18, 12), m, px, py, pz, t); s.scale.set(sx, sy, sz); return s; };
     sp(.075, body, 0, .075, 0, 1, 1.05, .9); sp(.064, body, 0, .19, .012);
