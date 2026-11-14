@@ -1478,8 +1478,8 @@ for (const s of [-1, 1]) {
   arms.push(a);
 }
 avatar.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-// modelled at ~181cm (sole 0.015 → hair top 1.822); scale to 165cm
-const AVATAR_H = 1.65;
+// modelled at ~181cm (sole 0.015 → hair top 1.822); scale to 160cm (1인칭 눈높이 1.48m)
+const AVATAR_H = 1.60;
 avatar.scale.setScalar(AVATAR_H / (1.822 - .015));
 const EYE_H = AVATAR_H - .12;
 
