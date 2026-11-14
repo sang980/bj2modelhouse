@@ -1558,7 +1558,7 @@ toilet(10.3, 2.92, 0);
 pbox(9.5, 10.67, 1.25, 1.28, 2.58, 2.7, std(0xc9c6c0, .45, 0, { map: M.marbleW.map }), fixed);   // 돌 선반
 pbox(9.55, 10.62, 1.45, 2.1, 2.58, 2.72, std(0xdedcd7, .5), fixed);                               // 거울장 몸체
 pbox(9.56, 10.085, 1.46, 2.09, 2.72, 2.725, M.mirrorBath2, fixed, { cast: false }); pbox(10.095, 10.61, 1.46, 2.09, 2.725, 2.73, M.mirrorBath2, fixed, { cast: false });
-mesh(CY(.03, .03, .12, 16), std(0xe9dfcf, .4), WX(10.2), 1.34, WZ(2.64), fixed); mesh(CY(.012, .012, .04, 10), M.black, WX(10.2), 1.42, WZ(2.64), fixed);   // 디스펜서
+/* 디스펜서는 아래 욕실 소품 블록(pumpBottle) */
 mesh(CY(.03, .028, .09, 16), std(0xe9dfcf, .4), WX(10.3), 1.325, WZ(2.64), fixed);                                                                    // 컵
 // 동쪽 벽 휴지걸이(스테인리스 매립) + 남쪽 벽 수건걸이와 수건(흰·검정·파랑)
 pbox(10.655, 10.67, .6, .82, 2.82, 3.06, M.chrome, fixed); pbox(10.6, 10.655, .68, .74, 2.86, 3.02, std(0xf6f6f4, .9), fixed); pbox(10.655, 10.67, .84, .87, 2.86, 3.0, M.black, fixed);
@@ -1626,15 +1626,20 @@ ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
   /* 욕조 위 흰 벽선반 + 갈색 펌프병 2(검정 라벨) */
   { pbox(.11, .24, 1.0, 1.02, 2.62, 3.02, std(0xf4f3f0, .35), g); pbox(.22, .24, 1.02, 1.035, 2.62, 3.02, std(0xf4f3f0, .35), g);
     for (const z of [2.74, 2.86]) pumpBottle(.165, 1.02, z, 0x6b3a12, .17, .03, -Math.PI / 2, true, true); }
-  /* 회색 발매트 + 남색 슬리퍼(발 모양 바닥 + 앞쪽 아치 끈, 앞코가 세면대 쪽) */
+  let _slp = null; const slipperPair = (cx, cz, col, ry = 0, gap = .18) => { /* 슬리퍼 한 켤레: 발 모양 바닥(흰 밑창 + 천) + 앞쪽 아치 끈 */
+    if (!_slp) { const sh = new THREE.Shape(); sh.absellipse(0, .06, .05, .07, 0, Math.PI, false); sh.absellipse(0, -.05, .045, .08, Math.PI, Math.PI * 2, false);
+      const sg = new THREE.ExtrudeGeometry(sh, { depth: .014, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 16 }); sg.rotateX(Math.PI / 2);
+      const strap = new THREE.CylinderGeometry(.05, .05, .085, 18, 1, true, -Math.PI / 2, Math.PI); strap.rotateX(-Math.PI / 2); strap.scale(1, .62, 1); _slp = { sg, strap, sole: std(0xe9e6df, .7) }; }
+    const cm = std(col, .85, 0, { map: fiber, side: THREE.DoubleSide }), pr = new THREE.Group(); pr.position.set(WX(cx), .012, WZ(cz)); pr.rotation.y = ry; g.add(pr);
+    for (const [sx, r] of [[-gap / 2, .06], [gap / 2, -.05]]) { const sp = new THREE.Group(); sp.position.x = sx; sp.rotation.y = r; pr.add(sp); mesh(_slp.sg, _slp.sole, 0, .018, 0, sp, { cast: false }); mesh(_slp.sg, cm, 0, .03, 0, sp); mesh(_slp.strap, cm, 0, .03, .05, sp); } };
+  /* 회색 발매트 + 남색 슬리퍼(앞코가 세면대 쪽) */
   { const fib = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#8b8d8f'; x.fillRect(0, 0, 64, 64); for (let i = 0; i < 700; i++) { const v = 110 + rnd() * 60 | 0; x.fillStyle = `rgb(${v},${v + 2},${v + 4})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 1); } return c; })(), { rep: [3, 2] });
     mesh(RB(.62, .012, .42, .006, 2), std(0xffffff, 1, 0, { map: fib }), WX(1.3), .006, WZ(4.32), g, { cast: false });
-    const nav = std(0x1f2a44, .85, 0, { map: fiber, side: THREE.DoubleSide }), sole = std(0xe9e6df, .7);
-    const sh = new THREE.Shape(); sh.absellipse(0, .06, .05, .07, 0, Math.PI, false); sh.absellipse(0, -.05, .045, .08, Math.PI, Math.PI * 2, false);
-    const sg = new THREE.ExtrudeGeometry(sh, { depth: .014, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 16 }); sg.rotateX(Math.PI / 2);
-    const strap = new THREE.CylinderGeometry(.05, .05, .085, 18, 1, true, -Math.PI / 2, Math.PI); strap.rotateX(-Math.PI / 2); strap.scale(1, .62, 1);
-    for (const [sx, ry] of [[1.21, .06], [1.39, -.05]]) { const sp = new THREE.Group(); sp.position.set(WX(sx), .012, WZ(4.32)); sp.rotation.y = ry; g.add(sp);
-      mesh(sg, sole, 0, .018, 0, sp, { cast: false }); mesh(sg, nav, 0, .03, 0, sp); mesh(strap, nav, 0, .03, .05, sp); } }
+    slipperPair(1.3, 4.32, 0x1f2a44); }
+  /* VR 욕실2: 돌 선반 위 갈색 유리 펌프병, 세면기 앞 진회색 발매트 + 연하늘 슬리퍼(앞코가 세면기 쪽) */
+  pumpBottle(10.2, 1.28, 2.64, 0x5a3418, .13, .028, 0, true);
+  { const fib = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#56595c'; x.fillRect(0, 0, 64, 64); for (let i = 0; i < 700; i++) { const v = 70 + rnd() * 40 | 0; x.fillStyle = `rgb(${v},${v + 2},${v + 4})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 1); } return c; })(), { rep: [3, 2] });
+    mesh(RB(.46, .012, .36, .006, 2), std(0xffffff, 1, 0, { map: fib }), WX(9.85), .006, WZ(3.3), g, { cast: false }); slipperPair(9.85, 3.3, 0x9fb4c4, Math.PI, .16); }
 }
 // ── 실외기실 (사진): 비어 있는 공간 + 바닥 안내선(실외기·피난사다리 위치) ──
 { const S = 512, c = mkCanvas(S, S), x = c.getContext('2d'); x.clearRect(0, 0, S, S); x.strokeStyle = 'rgba(30,30,30,.85)'; x.lineWidth = 6; x.setLineDash([22, 14]);
