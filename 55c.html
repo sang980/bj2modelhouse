@@ -1506,6 +1506,11 @@ function towelMat(col, kind = '') { const key = col + kind; if (_twC[key]) retur
   if (kind === 'geo') { const cl = ['#2b2b2d', '#8d8f91', '#ecebe7', '#5d5f62']; for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { x.fillStyle = cl[(i * 3 + j * 5 + (i * j) % 3) % 4]; x.fillRect(i * 8, j * 8, 8, 8); } }
   for (let i = 0; i < 420; i++) { x.fillStyle = `rgba(0,0,0,${.03 + rnd() * .07})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 2); }
   return (_twC[key] = std(kind ? 0xffffff : col, 1, 0, { map: toTex(c, { rep: [2, 2] }) })); }
+function cookPot(g, x, z, y) { /* VR: 쿡탑 위 스테인리스 냄비(뚜껑·검정 꼭지·양옆 손잡이) */
+  const st = std(0xcfd2d4, .22, .9), L = pts => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 36), p = new THREE.Group(); p.position.set(WX(x), y, WZ(z)); g.add(p);
+  mesh(L([[0, 0], [.084, 0], [.092, .008], [.092, .1], [.096, .105], [.088, .105], [0, .105]]), st, 0, 0, 0, p);
+  mesh(L([[0, .046], [.03, .044], [.07, .03], [.095, .006], [.095, 0], [0, 0]]), st, 0, .105, 0, p); mesh(CY(.012, .017, .022, 16), M.black, 0, .162, 0, p);
+  for (const s of [-1, 1]) { const h = mesh(new THREE.TorusGeometry(.022, .005, 6, 14, Math.PI), M.black, s * .092, .085, 0, p); h.rotation.order = 'YXZ'; h.rotation.set(Math.PI / 2, s * Math.PI / 2, 0); } }
 function toilet(x, z, rot, towel = null) { /* VR: 비데처럼 뚜껑 닫힘 + 오른쪽 조작부, towel: 뚜껑 위에 가로로 걸친 수건 재질 */
   const g = piece('양변기', x, z, rot, { movable: false });
   mesh(new THREE.CylinderGeometry(.17, .13, .38, 32, 1, true), M.white, 0, .19, .05, g).scale.set(1, 1, 1.3); // 몸통(위가 뚫린 옆면)
@@ -2554,12 +2559,12 @@ peninsula('o4islandS', '아일랜드식탁(소형)', 6.3, 7.2, 1.65, 2.2);
 const COOK = { x0: 5.52, x1: 6.0, z0: 1.07, z1: 1.68, y: .9 }; // 폭 61cm, 다리 가운데
 const BURN = [[5.65, 1.22], [5.65, 1.53], [5.87, 1.375]];
 function burnerRing(g, x, z, r, mat) { const t = new THREE.Mesh(new THREE.TorusGeometry(r, .004, 6, 40), mat); t.rotation.x = Math.PI / 2; t.position.set(WX(x), COOK.y + .012, WZ(z)); g.add(t); }
-{ const g = item('o5base', '3구 가스쿡탑', false); cab(g, COOK.x0, COOK.x1, COOK.y, COOK.y + .008, COOK.z0, COOK.z1, std(0x2b2c2e, .35, .6));
+{ const g = item('o5base', '3구 가스쿡탑', false); cookPot(g, ...BURN[0], COOK.y + .042); cab(g, COOK.x0, COOK.x1, COOK.y, COOK.y + .008, COOK.z0, COOK.z1, std(0x2b2c2e, .35, .6));
   for (const [x, z] of BURN) { mesh(CY(.045, .05, .02, 20), M.black, WX(x), COOK.y + .018, WZ(z), g); for (const a of [0, Math.PI / 2]) { const b = cab(g, x - .08, x + .08, COOK.y + .03, COOK.y + .04, z - .006, z + .006, M.black); b.rotation.y = a; } } }
 const hotRing = new THREE.MeshStandardMaterial({ color: 0x4a1a14, emissive: 0x7a1d10, emissiveIntensity: .6, roughness: .5 });
 const indRing = std(0x8a8c90, .3);
-{ const g = item('o5-1', '하이라이트+인덕션', false); cab(g, COOK.x0, COOK.x1, COOK.y, COOK.y + .006, COOK.z0, COOK.z1, M.tv); burnerRing(g, ...BURN[0], .085, hotRing); burnerRing(g, ...BURN[1], .08, indRing); burnerRing(g, ...BURN[2], .07, indRing); }
-{ const g = item('o5-2', '인덕션 3구', false); cab(g, COOK.x0, COOK.x1, COOK.y, COOK.y + .006, COOK.z0, COOK.z1, M.tv); burnerRing(g, ...BURN[0], .085, indRing); burnerRing(g, ...BURN[1], .08, indRing); burnerRing(g, ...BURN[2], .07, indRing); }
+{ const g = item('o5-1', '하이라이트+인덕션', false); cookPot(g, ...BURN[0], COOK.y + .006); cab(g, COOK.x0, COOK.x1, COOK.y, COOK.y + .006, COOK.z0, COOK.z1, M.tv); burnerRing(g, ...BURN[0], .085, hotRing); burnerRing(g, ...BURN[1], .08, indRing); burnerRing(g, ...BURN[2], .07, indRing); }
+{ const g = item('o5-2', '인덕션 3구', false); cookPot(g, ...BURN[0], COOK.y + .006); cab(g, COOK.x0, COOK.x1, COOK.y, COOK.y + .006, COOK.z0, COOK.z1, M.tv); burnerRing(g, ...BURN[0], .085, indRing); burnerRing(g, ...BURN[1], .08, indRing); burnerRing(g, ...BURN[2], .07, indRing); }
 // 6 냉장고장 옆 유닛 — 서쪽 키큰장 (z 2.17–2.8, 앞면 x=6.06)
 { const g = item('o6base', '김치냉장고장', false); cab(g, 5.5, 6.06, 0, 1.85, 2.18, 2.79, M.appliance); cab(g, 5.46, 6.06, 1.85, 2.15, 2.17, 2.8); cab(g, 6.06, 6.08, .95, 1.6, 2.72, 2.75, M.chrome); for (const y of [.62, 1.24]) cab(g, 6.055, 6.062, y, y + .005, 2.19, 2.78, M.metalDark); }
 { const g = item('o6-1', '키큰장(수납중심형)', false); cab(g, 5.46, 6.06, 0, 2.15, 2.17, 2.8); cab(g, 6.058, 6.062, .1, 2.1, 2.4835, 2.4865, seamMat); cab(g, 6.058, 6.062, 1.05, 1.053, 2.18, 2.79, seamMat); }

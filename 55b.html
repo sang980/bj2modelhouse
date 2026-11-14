@@ -1311,6 +1311,11 @@ function towelMat(col, kind = '') { const key = col + kind; if (_twC[key]) retur
   if (kind === 'geo') { const cl = ['#2b2b2d', '#8d8f91', '#ecebe7', '#5d5f62']; for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { x.fillStyle = cl[(i * 3 + j * 5 + (i * j) % 3) % 4]; x.fillRect(i * 8, j * 8, 8, 8); } }
   for (let i = 0; i < 420; i++) { x.fillStyle = `rgba(0,0,0,${.03 + rnd() * .07})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 2); }
   return (_twC[key] = std(kind ? 0xffffff : col, 1, 0, { map: toTex(c, { rep: [2, 2] }) })); }
+function cookPot(g, x, z, y) { /* VR: 쿡탑 위 스테인리스 냄비(뚜껑·검정 꼭지·양옆 손잡이) */
+  const st = std(0xcfd2d4, .22, .9), L = pts => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 36), p = new THREE.Group(); p.position.set(WX(x), y, WZ(z)); g.add(p);
+  mesh(L([[0, 0], [.084, 0], [.092, .008], [.092, .1], [.096, .105], [.088, .105], [0, .105]]), st, 0, 0, 0, p);
+  mesh(L([[0, .046], [.03, .044], [.07, .03], [.095, .006], [.095, 0], [0, 0]]), st, 0, .105, 0, p); mesh(CY(.012, .017, .022, 16), M.black, 0, .162, 0, p);
+  for (const s of [-1, 1]) { const h = mesh(new THREE.TorusGeometry(.022, .005, 6, 14, Math.PI), M.black, s * .092, .085, 0, p); h.rotation.order = 'YXZ'; h.rotation.set(Math.PI / 2, s * Math.PI / 2, 0); } }
 function toilet(x, z, rot, towel = null) { /* VR: 비데처럼 뚜껑 닫힘 + 오른쪽 조작부, towel: 뚜껑 위에 가로로 걸친 수건 재질 */
   const g = piece('양변기', x, z, rot, { movable: false });
   mesh(new THREE.CylinderGeometry(.17, .13, .38, 32, 1, true), M.white, 0, .19, .05, g).scale.set(1, 1, 1.3); // 몸통(위가 뚫린 옆면)
