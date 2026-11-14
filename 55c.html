@@ -1421,7 +1421,7 @@ function bowlCavity(a, b, depth, n, v, tilt, pw = 6, pq = .25) { const R = 20, S
   for (let i = 0; i < R; i++) for (let j = 0; j < S; j++) { const p = i * S + j, q = i * S + (j + 1) % S, u = p + S, w = q + S; idx.push(p, u, q, q, u, w); }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
   g.userData.yAt = yAt; return g; }
-const _cavMats = {}; const cavMat = m => _cavMats[m.uuid] || (_cavMats[m.uuid] = std(m.color.getHex(), Math.max(.38, m.roughness), 0, { side: THREE.DoubleSide }));
+const _cavMats = {}; const cavMat = m => _cavMats[m.uuid] || (_cavMats[m.uuid] = std(m.color.getHex(), Math.max(.8, m.roughness), 0, { side: THREE.DoubleSide, envMapIntensity: .2, emissive: 0x262624 }));
 // (w 가로, h 높이, l 세로(z), wall 테두리 두께, depth 안쪽 깊이, back: 뒤쪽(−z) 수전 받침 폭, n: 구멍 모양(작을수록 둥긂), v·tilt: 배수구 위치·기울기)
 function hollowTub(parent, w, h, l, wall, depth, x = 0, y = 0, z = 0, mat = M.white, back = 0, _f, n = 6, v = 0, tilt = 0, pw = 6, pq = .25) {
   const bt = .01, outer = rrShape(w, l, Math.min(.05, w / 6)), ha = (w - 2 * wall) / 2, hb = (l - 2 * wall - back) / 2, hy = -back / 2; // 셰이프 y = −z → 구멍을 앞(+z)으로
@@ -1429,7 +1429,7 @@ function hollowTub(parent, w, h, l, wall, depth, x = 0, y = 0, z = 0, mat = M.wh
   const g = new THREE.ExtrudeGeometry(outer, { depth: h - 2 * bt, bevelEnabled: true, bevelThickness: bt, bevelSize: .003, bevelSegments: 2, curveSegments: 8 }); g.rotateX(-Math.PI / 2);
   mesh(g, mat, x, y + bt, z, parent);
   const cg = bowlCavity(ha - .005, hb - .005, depth, n, v, tilt, pw, pq), top = y + h - .002, cz = z + back / 2;
-  mesh(cg, cavMat(mat), x, top, cz, parent, { cast: false, recv: false }); /* 안쪽 바닥에 그림자가 고여 물처럼 보이지 않게 */
+  { const cv = mesh(cg, cavMat(mat), x, top, cz, parent, { cast: false, recv: false }); cv.userData.noAO = true; const lid = mesh(new THREE.PlaneGeometry(2 * ha, 2 * hb).rotateX(-Math.PI / 2), cavMat(mat), x, top + .001, cz, parent, { cast: false, recv: false }); lid.visible = false; lid.userData.aoOnly = true; } /* 안쪽에 그림자·AO가 고여 물처럼 보이지 않게 — AO 계산 때는 평평한 덮개로 */
   // 배수구: 가장 낮은 곳(v 위치)에 크롬 테 + 어두운 구멍
   const dz = (hb - .005) * v * .78, dy = top + cg.userData.yAt(Math.abs(v) * .78, dz) + .002;
   const ring = mesh(new THREE.TorusGeometry(.022, .004, 8, 24), M.chrome, x, dy + .002, cz + dz, parent, { cast: false }); ring.rotation.x = Math.PI / 2;
@@ -1437,7 +1437,7 @@ function hollowTub(parent, w, h, l, wall, depth, x = 0, y = 0, z = 0, mat = M.wh
   return { floorY: dy, cz: cz + dz };
 }function bowlLathe(R, depth, rimW = .016) { const pts = [[0, -depth - .03], [R * .45, -depth - .025], [R * .78, -depth * .7], [R * .96, -depth * .25], [R, 0], [R, .012], [R - rimW, .012], [R - rimW - .008, 0], [R * .8, -depth * .35], [R * .5, -depth * .85], [0, -depth]];
   return new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 48); }
-let _basinMat = null; const basinMat = () => _basinMat || (_basinMat = std(0xfbfbfa, .12, 0, { side: THREE.DoubleSide }));
+let _basinMat = null; const basinMat = () => _basinMat || (_basinMat = std(0xfbfbfa, .45, 0, { side: THREE.DoubleSide, envMapIntensity: .55 }));
 /* ───────── 천·쿠션·셸 공통 ───────── */
 /* 격자 면 P((nx+1)*(ny+1) 점) → 두께 th 얇은 판(바깥 면 + 안쪽 면 + 테두리 띠), flip이면 앞면 방향을 뒤집음 */
 function thickSurf(P, nx, ny, th, flip = false) { const N = (nx + 1) * (ny + 1), pos = Array.from(P), nor = [], uv = [], idx = [];
@@ -1500,7 +1500,7 @@ function vanity(x, z, rot, w = .8) {
   const g = piece('세면대', x, z, rot, { movable: false });
   mesh(RB(w, .45, .46, .02), M.walnut, 0, .58, 0, g);
   mesh(RB(w + .02, .05, .48, .01), M.white, 0, .83, 0, g);
-  { const b = mesh(bowlLathe(.17, .07, .012), basinMat(), 0, .953, .02, g); b.scale.set(1, 1, .8); mesh(CY(.016, .016, .003, 20), M.chrome, 0, .885, .02, g, { cast: false }); } // 상판 위 볼(안이 파임) + 배수구
+  { const b = mesh(bowlLathe(.17, .07, .012), basinMat(), 0, .953, .02, g); b.scale.set(1, 1, .8); b.receiveShadow = false; b.userData.noAO = true; { const l = mesh(new THREE.CircleGeometry(.17, 40).rotateX(-Math.PI / 2), basinMat(), 0, .965, .02, g); l.scale.set(1, 1, .8); l.visible = false; l.userData.aoOnly = true; } /* 안쪽에 그림자·AO가 고여 물처럼 보이지 않게 */ mesh(CY(.016, .016, .003, 20), M.chrome, 0, .885, .02, g, { cast: false }); } // 상판 위 볼(안이 파임) + 배수구
   mesh(CY(.012, .012, .2), M.chrome, 0, .95, -.17, g);
   mesh(BX(w - .05, .8, .02), M.mirrorBath1, 0, 1.45, -.22, g, { cast: false });
   mesh(BX(w - .05, .02, .03), M.ledStrip, 0, 1.03, -.21, g, { cast: false });
@@ -1552,7 +1552,7 @@ pbox(10.67, 10.69, 0, H, 2.58, 3.16, M.stoneTile, fixed); pbox(10.67, 10.69, 2.1
   wallBoxes.push({ minX: WX(8.58), maxX: WX(gx), minZ: WZ(2.58), maxZ: WZ(2.75) }); }
 // 북쪽 벽: 세면기(반다리형) · 변기 · 돌 선반 · 거울장 2짝
 { const g = piece('세면기', 9.85, 2.8, 0, { movable: false });
-  hollowTub(g, .52, .15, .42, .05, .11, 0, .725, 0, M.whiteGloss, .08, null, 4, 0, 0); /* 움푹 파인 둥근 볼 + 배수구(함수 안) */
+  hollowTub(g, .52, .15, .42, .05, .065, 0, .725, 0, M.whiteGloss, .08, null, 3, 0, 0, 1.7, 1); /* 볼 안쪽을 완만하게(수직 벽 모서리에 그림자가 고여 지저분해 보이지 않게) */ /* 움푹 파인 둥근 볼 + 배수구(함수 안) */
   mesh(RB(.3, .36, .2, .04), M.whiteGloss, 0, .54, -.1, g);
   mesh(CY(.016, .016, .17, 14), M.chrome, 0, .96, -.14, g); const sp = mesh(CY(.011, .011, .1, 12), M.chrome, 0, 1.035, -.1, g); sp.rotation.x = Math.PI / 2; }
 toilet(10.3, 2.92, 0);
@@ -2967,6 +2967,9 @@ function buildComposer() {
       gtao = new GTAOPass(scene, camera, 1, 1);
       gtao.updateGtaoMaterial({ radius: .45, distanceExponent: 1.5, thickness: 1, scale: 1.1, samples: 16, distanceFallOff: 1 });
       gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
+      { const vc = new Map(); /* AO 계산용 깊이·법선 그릴 때: 오목한 볼(noAO)은 빼고 그 위 평평한 덮개(aoOnly)를 씀 */
+        gtao.overrideVisibility = function () { vc.clear(); this.scene.traverse(o => { vc.set(o, o.visible); if (o.isPoints || o.isLine || o.userData.noAO) o.visible = false; else if (o.userData.aoOnly) o.visible = true; }); };
+        gtao.restoreVisibility = function () { this.scene.traverse(o => { if (vc.has(o)) o.visible = vc.get(o); }); vc.clear(); }; }
       gtao.blendIntensity = 1;
       composer.addPass(gtao);
     } catch (e) { console.warn(e); gtao = null; }
