@@ -1125,9 +1125,9 @@ function curtain(x0, x1, zLine, h = 2.28, parent = fixed, mat = M.sheer, folds =
   g.computeVertexNormals();
   return mesh(g, mat, WX((x0 + x1) / 2), h / 2 + .03, WZ(zLine), parent, { cast: mat !== M.sheer, recv: false });
 }
-function curtainSet(x0, x1, w0, w1) { // 창 양옆: 회색 암막 + 속커튼, 천장 커튼박스
+function curtainSet(x0, x1, w0, w1, dm = M.curtainGrey) { // 창 양옆: 회색 암막(dm) + 속커튼, 천장 커튼박스
   curtain(x0, w0 + .15, 8.0, 2.27, fixed, M.sheer); curtain(w1 - .15, x1, 8.0, 2.27, fixed, M.sheer);
-  curtain(x0, x0 + .42, 7.92, 2.27, fixed, M.curtainGrey, 9, .045); curtain(x1 - .42, x1, 7.92, 2.27, fixed, M.curtainGrey, 9, .045);
+  curtain(x0, x0 + .42, 7.92, 2.27, fixed, dm, 9, .045); curtain(x1 - .42, x1, 7.92, 2.27, fixed, dm, 9, .045);
   pbox(x0 - .02, x1 + .02, 2.3, H, 7.85, 8.11, M.ceil, fixed, { cast: false });
 }
 function artCanvas2(kind) {
@@ -1259,16 +1259,10 @@ wallBoxes.push({ minX: WX(8.34), maxX: WX(8.82), minZ: WZ(5.35), maxZ: WZ(8.0) }
     x.globalAlpha = .55 + rnd() * .45; x.fillStyle = cl[(i * 7) % cl.length]; x.beginPath(); x.arc(px, py, 1.6 + rnd() * 2.2, 0, 7); x.fill(); } x.globalAlpha = 1;
   pbox(5.185, 5.215, 1.12, 1.98, 5.75, 7.4, std(0xd9c3a2, .55), fixed); pbox(5.215, 5.219, 1.15, 1.95, 5.78, 7.37, std(0xffffff, .8, 0, { map: toTex(c) }), fixed, { cast: false }); }
 ledRectWall(5.24, 1.55, 6.575, 2.0, 1.0, -1, 0, 0xffd9a8, 1.2, 2.4);
-// 창가 유리구 펜던트 3개
-{ const p = new THREE.Group(); fixed.add(p);
-  for (const [x, z, y] of [[5.59, 7.62, 1.75], [5.46, 7.78, 1.42], [5.69, 7.85, 1.6]]) {
-    mesh(CY(.003, .003, H - y), M.black, WX(x), (H + y) / 2, WZ(z), p, { cast: false });
-    mesh(CY(.012, .012, .1), M.chrome, WX(x), y + .05, WZ(z), p, { cast: false });
-    mesh(new THREE.SphereGeometry(.07, 24, 16), M.globe, WX(x), y - .04, WZ(z), p, { cast: false });
-  } }
+/* VR 55C: 창가 펜던트 없음 */
 // 거실 평판등 2개(우물천장 중앙) + 커튼
 ceilingPanel(6.45, 6.93, 5.55, 6.55, 1.4, 3.4); ceilingPanel(6.99, 7.47, 5.55, 6.55, 1.4, 3.4);
-curtainSet(5.25, 8.7, 5.75, 8.2);
+curtainSet(5.25, 8.7, 5.75, 8.2, (() => { const m = M.curtainGrey.clone(); m.color.set(0xefe8dc); return m; })()); /* VR 55C: 거실은 크림색 커튼 */
 
 // ── 현관 끝 백라이트 액자 + 현관 평판등 ──
 pbox(3.0, 3.8, .98, 1.92, 5.03, 5.04, M.ledWarm, fixed, { cast: false });
