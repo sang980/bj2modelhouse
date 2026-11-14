@@ -1122,10 +1122,16 @@ function artCanvas2(kind) {
     const g = x.createLinearGradient(0, 0, W, Hh); g.addColorStop(0, '#1f2f63'); g.addColorStop(.5, '#3d63b8'); g.addColorStop(1, '#dfe7f4'); x.fillStyle = g; x.fillRect(0, 0, W, Hh);
     x.fillStyle = '#eef2f7'; x.beginPath(); x.moveTo(W * .55, 0); x.lineTo(W * .78, Hh * .55); x.lineTo(W * .62, Hh); x.lineTo(W * .42, Hh * .5); x.fill();
     for (let i = 0; i < 22; i++) { x.fillStyle = `rgba(30,45,90,${.25 + (i % 3) * .1})`; x.fillRect(W * .45 + i * 6, Hh * .2 + i * 4, 3, Hh * .5); }
-  } else { // 현관 끝 백라이트 액자 — 흑백 기하 패턴
-    x.fillStyle = '#f1f0ec'; x.fillRect(0, 0, W, Hh);
-    x.fillStyle = '#16171a';
-    for (let i = 0; i < 4; i++) { x.fillRect(i * W / 4 + 8, 8, W / 8 - 8, Hh - 16); x.beginPath(); x.arc(i * W / 4 + W / 8 + W / 16, Hh / 2, W / 16 - 6, 0, 7); x.fill(); }
+  } else { /* 현관 끝 백라이트 액자(VR): 남색 바탕 + 흰 곡선(캡슐) 형태 2x2 패널 — 세로 캔버스 따로 */
+    const c2 = mkCanvas(288, 344), y = c2.getContext('2d'), qw = 144, qh = 172;
+    const shapes = [[.18, -.25, .95, 1.3], [-.5, .2, .9, 1.05], [.22, .12, .8, 1.15], [-.35, -.4, .95, 1.0]];
+    for (let q = 0; q < 4; q++) { const ox = (q % 2) * qw, oy = (q >> 1) * qh; y.save(); y.beginPath(); y.rect(ox, oy, qw, qh); y.clip();
+      const bg = y.createLinearGradient(ox, oy, ox + qw, oy + qh); bg.addColorStop(0, '#173a85'); bg.addColorStop(1, '#2c55b0'); y.fillStyle = bg; y.fillRect(ox, oy, qw, qh);
+      const [sx, sy, sw, sh] = shapes[q], X0 = ox + sx * qw, Y0 = oy + sy * qh, W2 = sw * qw, H2 = sh * qh, r = W2 / 2;
+      const wg = y.createLinearGradient(X0, Y0, X0 + W2, Y0 + H2); wg.addColorStop(0, '#ffffff'); wg.addColorStop(.55, '#eef2f8'); wg.addColorStop(1, '#bcc6da'); y.fillStyle = wg;
+      y.beginPath(); y.moveTo(X0, Y0 + r); y.arc(X0 + r, Y0 + r, r, Math.PI, 0); y.lineTo(X0 + W2, Y0 + H2 - r); y.arc(X0 + r, Y0 + H2 - r, r, 0, Math.PI); y.closePath(); y.fill(); y.restore(); }
+    y.fillStyle = '#0a1532'; y.fillRect(142, 0, 4, 344); y.fillRect(0, 170, 288, 4);
+    return c2;
   }
   return c;
 }
@@ -2284,7 +2290,7 @@ function garment(parent, kind, color, x, y, z, rotY) {
   gr.add(new THREE.Mesh(gg.hb, hangerWood)); gr.add(new THREE.Mesh(gg.hook, hookMat));
   return gr;
 }
-/* ?쒕젅?ㅻ８ ?뚰뭹 怨듭슜: ?ㅽ겕 ?ㅼ뭅???ъ쭏쨌由щ낯 ?? ?쇳똿 媛二? 湲덉깋 泥댁씤 */
+/* 드레스룸 소품 공용: 실크 스카프 재질·리본 띠, 퀼팅 가죽, 금색 체인 */
 let _scarfM = null, _quiltM = null;
 function scarfMat() { if (_scarfM) return _scarfM; const c = mkCanvas(64, 256), x = c.getContext('2d'); x.fillStyle = '#f3f1ea'; x.fillRect(0, 0, 64, 256);
   for (let i = 0; i < 256; i += 24) { x.fillStyle = '#23468f'; x.beginPath(); x.ellipse(32, i + 9, 14, 7, .6, 0, 7); x.fill(); x.fillStyle = '#e7c24a'; x.beginPath(); x.arc(32, i + 9, 3.5, 0, 7); x.fill(); x.fillStyle = '#8a2432'; x.fillRect(16, i + 19, 32, 2); }
@@ -2332,19 +2338,19 @@ function systemShelf(g, x0, x1, z0, z1, alongZ, { chest = false, chestStart = fa
     const la = u0 + (hangEnd - u0) * .45, lb = Math.min(hangEnd - .05, la + .55);
     for (const y of [.18, .42]) { box(la, lb, y, y + .02, .04, dep - .05, white); box(la, lb, y - .01, y + .025, dep - .06, dep - .045, blk); }
     for (const u of [la, lb]) box(u - .012, u + .012, 0, .45, dep - .07, dep - .045, blk);
-    if (style === 'b') { const ry = alongZ ? (wallMin ? Math.PI / 2 : -Math.PI / 2) : 0; /* VR 55B: ??? ?좊컲 ??寃???좊Ъ?곸옄, ?꾨옒 ???섎궔?곸옄 */
+    if (style === 'b') { const ry = alongZ ? (wallMin ? Math.PI / 2 : -Math.PI / 2) : 0; /* VR 55B: 낮은 선반 위 검정 선물상자, 아래 흰 수납상자 */
       for (const [y, c, w, h, d, uu] of [[.445, 0x141414, .3, .09, .22, .3], [.205, 0xf2f1ee, .34, .15, .26, .27]]) { const [bx, , bz] = P(la + uu, 0, dep * .5), b = new THREE.Group(); b.position.set(bx, y, bz); b.rotation.y = ry + .08; g.add(b);
         mesh(BX(w, h - .02, d), std(c, .5), 0, (h - .02) / 2, 0, b); mesh(BX(w + .008, .028, d + .008), std(c, .45), 0, h - .014, 0, b); } }
-    else { const [bx, , bz] = P(la + .3, 0, dep * .5), ry = alongZ ? (wallMin ? Math.PI / 2 : -Math.PI / 2) : 0, gold = std(0xc9a64a, .25, .9); /* VR: 寃???쇳똿 泥댁씤諛?+ ?좊컲 ?앹뿉 ?섎윭?대━???ㅽ겕 ?ㅼ뭅??*/
+    else { const [bx, , bz] = P(la + .3, 0, dep * .5), ry = alongZ ? (wallMin ? Math.PI / 2 : -Math.PI / 2) : 0, gold = std(0xc9a64a, .25, .9); /* VR: 검정 퀼팅 체인백 + 선반 끝에 흘러내리는 실크 스카프 */
       const bag = new THREE.Group(); bag.position.set(bx, .44, bz); bag.rotation.y = ry + .22; g.add(bag);
       const qm = quiltMat();
-      mesh(RB(.22, .135, .065, .02, 3), qm, 0, .0675, 0, bag); mesh(RB(.224, .088, .012, .006, 2), qm, 0, .09, .031, bag); mesh(BX(.028, .018, .006), gold, 0, .052, .04, bag); /* 紐명뙋 + ????컻 + 湲덉깋 ?좉툑??*/
-      mesh(chainGeo([[-.1, .132, -.004], [-.125, .09, -.05], [-.09, .008, -.1], [.02, .008, -.125], [.11, .008, -.09], [.125, .08, -.045], [.1, .132, -.004]]), gold, 0, 0, 0, bag, { cast: false }); /* 湲덉깋 泥댁씤 ?? 媛諛??ㅻ줈 ?섏뼱???좊컲 ?꾩뿉 ?볦엫 */
+      mesh(RB(.22, .135, .065, .02, 3), qm, 0, .0675, 0, bag); mesh(RB(.224, .088, .012, .006, 2), qm, 0, .09, .031, bag); mesh(BX(.028, .018, .006), gold, 0, .052, .04, bag); /* 몸판 + 앞 덮개 + 금색 잠금쇠 */
+      mesh(chainGeo([[-.1, .132, -.004], [-.125, .09, -.05], [-.09, .008, -.1], [.02, .008, -.125], [.11, .008, -.09], [.125, .08, -.045], [.1, .132, -.004]]), gold, 0, 0, 0, bag, { cast: false }); /* 금색 체인 끈: 가방 뒤로 늘어져 선반 위에 놓임 */
       const sg = new THREE.Group(); sg.position.set(bx, .44, bz); sg.rotation.y = ry; g.add(sg); const fe = dep * .5 - .045;
       const sm = scarfMat(), ribbon = ribbonGeo;
       mesh(ribbon([[-.115, .125, .02], [-.15, .06, .07], [-.165, .014, fe - .07], [-.165, .012, fe - .015], [-.16, -.025, fe + .014], [-.152, -.12, fe + .02], [-.142, -.22, fe + .017]], .1, .7), sm, 0, 0, 0, sg, { cast: false });
       mesh(ribbon([[-.105, .12, .025], [-.09, .05, .09], [-.11, .016, fe - .05], [-.118, .008, fe - .005], [-.122, -.04, fe + .018], [-.126, -.13, fe + .022]], .085, -.9), sm, 0, 0, 0, sg, { cast: false });
-      const kn = mesh(new THREE.SphereGeometry(.024, 14, 10), sm, -.112, .128, .02, sg, { cast: false }); kn.scale.set(1.3, .8, 1); } /* 留ㅻ벊 */
+      const kn = mesh(new THREE.SphereGeometry(.024, 14, 10), sm, -.112, .128, .02, sg, { cast: false }); kn.scale.set(1.3, .8, 1); } /* 매듭 */
   }
   // 3단 서랍장 + 그 위 선반, 위에 모자·작은 병
   if (chest) {
@@ -2353,7 +2359,7 @@ function systemShelf(g, x0, x1, z0, z1, alongZ, { chest = false, chestStart = fa
     for (const y of [.24, .46]) box(ca + .005, cb - .005, y - .003, y + .003, cd, cd + .002, std(0xbdbab4, .6));
     for (const y of [.13, .35, .57]) box(ca + .18, cb - .18, y, y + .012, cd, cd + .01, std(0xd6d3cd, .4));
     box(ca, cb, 1.2, 1.22, .02, dep - .02, white); box(ca, cb, 1.19, 1.225, dep - .03, dep - .015, blk);
-    if (style === 'b') { const [hx, , hz] = P((ca + cb) / 2, 0, cd * .5), ry = alongZ ? (wallMin ? Math.PI / 2 : -Math.PI / 2) : 0, gold = std(0xc9a64a, .25, .9); /* VR 55B: ?쒕엻????媛덉깋 蹂댁꽍??+ ?μ닔蹂? ???좊컲 寃???먰삎 ?쇳똿諛?寃??諛쏆묠) + ?≪옄 + ?묒? 蹂?*/
+    if (style === 'b') { const [hx, , hz] = P((ca + cb) / 2, 0, cd * .5), ry = alongZ ? (wallMin ? Math.PI / 2 : -Math.PI / 2) : 0, gold = std(0xc9a64a, .25, .9); /* VR 55B: 서랍장 위 갈색 보석함 + 향수병, 위 선반 검정 원형 퀼팅백(검정 받침) + 액자 + 작은 병 */
       const t1 = new THREE.Group(); t1.position.set(hx, .68, hz); t1.rotation.y = ry; g.add(t1);
       mesh(RB(.2, .075, .13, .008, 2), std(0x3a2a20, .4), -.04, .0375, 0, t1); mesh(BX(.203, .004, .133), std(0x22180f, .5), -.04, .056, 0, t1, { cast: false });
       { const o = mesh(new THREE.TorusGeometry(.022, .007, 8, 18), gold, -.07, .081, .01, t1, { cast: false }); o.rotation.x = Math.PI / 2; for (let i = 0; i < 5; i++) mesh(new THREE.SphereGeometry(.007, 8, 6), std(0xf3efe6, .25), -.03 + i * .012, .08, -.02 + Math.sin(i) * .01, t1, { cast: false }); }
@@ -2365,14 +2371,14 @@ function systemShelf(g, x0, x1, z0, z1, alongZ, { chest = false, chestStart = fa
       { const f = new THREE.Group(); f.position.set(.09, .012, -.11); f.rotation.set(-.12, -.3, 0); t2.add(f); mesh(BX(.13, .17, .012), M.black, 0, .085, 0, f);
         mesh(BX(.1, .14, .002), std(0xffffff, .8, 0, { map: toTex((() => { const c = mkCanvas(64, 96), x = c.getContext('2d'); x.fillStyle = '#e9c43a'; x.fillRect(0, 0, 64, 96); x.fillStyle = '#2f7a4a'; x.beginPath(); x.ellipse(32, 62, 22, 14, .3, 0, 7); x.fill(); x.fillStyle = '#f4f0e4'; x.fillRect(10, 12, 20, 24); return c; })()) }), 0, .085, .007, f, { cast: false }); }
       mesh(CY(.016, .018, .05, 16), std(0xf0ede6, .25), -.12, .037, .04, t2, { cast: false }); mesh(CY(.008, .008, .02, 10), M.black, -.12, .072, .04, t2, { cast: false }); }
-    else { const [hx, , hz] = P((ca + cb) / 2, 0, cd * .5), tr = new THREE.Group(); tr.position.set(hx, .68, hz); tr.rotation.y = alongZ ? (wallMin ? Math.PI / 2 : -Math.PI / 2) : 0; g.add(tr); /* VR: ?쒕엻?????κ렐 ?몃젅??+ ?μ닔蹂?+ ??罹〓え??*/
+    else { const [hx, , hz] = P((ca + cb) / 2, 0, cd * .5), tr = new THREE.Group(); tr.position.set(hx, .68, hz); tr.rotation.y = alongZ ? (wallMin ? Math.PI / 2 : -Math.PI / 2) : 0; g.add(tr); /* VR: 서랍장 위 둥근 트레이 + 향수병 + 흰 캡모자 */
       mesh(new THREE.LatheGeometry([[0, 0], [.15, 0], [.156, .02], [.146, .02], [.14, .006], [0, .006]].map(([a, b]) => new THREE.Vector2(a, b)), 40), std(0x2e2522, .45), 0, 0, 0, tr);
       const glass = std(0x8a5524, .08, 0, { transparent: true, opacity: .8 }), gold = std(0xc9a64a, .25, .9);
       for (const [px, pz, h, sq] of [[-.085, -.035, .075, 1], [-.035, -.07, .058, 0], [-.075, .045, .048, 0]]) { mesh(sq ? RB(.042, h, .03, .006, 2) : CY(.019, .021, h, 18), glass, px, .006 + h / 2, pz, tr, { cast: false }); mesh(CY(.01, .01, .022, 12), gold, px, .006 + h + .011, pz, tr, { cast: false }); }
       const cap = new THREE.Group(); cap.position.set(.055, .006, .015); cap.rotation.y = -.7; tr.add(cap); const cw = std(0xf3f1eb, .85, 0, { map: fabricTex });
       { const cr = mesh(new THREE.SphereGeometry(.082, 28, 12, 0, Math.PI * 2, 0, Math.PI / 2), cw, 0, 0, 0, cap); cr.scale.set(1, .82, 1.1); cr.material.side = THREE.DoubleSide; }
       { const s = new THREE.Shape(); s.moveTo(-.08, 0); s.absellipse(0, 0, .08, .17, Math.PI, Math.PI * 2, false); s.absarc(0, 0, .08, 0, Math.PI, true); const bg = new THREE.ExtrudeGeometry(s, { depth: .005, bevelEnabled: false, curveSegments: 20 }); bg.rotateX(Math.PI / 2); const br = mesh(bg, cw, 0, .008, 0, cap); br.rotation.x = .12; }
-      mesh(new THREE.SphereGeometry(.008, 10, 6), cw, 0, .068, 0, cap, { cast: false }); } /* 紐⑥옄 瑗?? ?⑥텛 */
+      mesh(new THREE.SphereGeometry(.008, 10, 6), cw, 0, .068, 0, cap, { cast: false }); } /* 모자 꼭지 단추 */
   }
 }
 // 바퀴 달린 흰색 하드 캐리어(드레스룸 바닥)
