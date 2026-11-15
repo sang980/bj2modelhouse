@@ -3331,7 +3331,7 @@ const PLATE = (() => {
     const [w, hh] = sizes[kind], dep = kind === 'pad' ? .014 : .007; const m = mesh(BX(w, hh, dep), mat(kind), 0, 0, 0, fixed, { cast: false });
     m.position.copy(h.point).addScaledVector(n, dep / 2 + .0005); m.lookAt(m.position.clone().add(n));
     for (let p = h.object.parent; p && p !== scene; p = p.parent) if ((p.name && tagGroups[p.name] === p) || (p.name && OG[p.name] === p)) { p.attach(m); break; } // 옵션 벽이면 함께 숨김
-    m.updateMatrixWorld(true); if (wcache) addCache(m); // 다음 판이 겹쳐 붙지 않게 검사 목록에 추가
+    m.updateMatrixWorld(true); if (wcache) addCache(m); (window.__plates || (window.__plates = [])).push({ kind, p: m.position.clone(), n: n.clone(), w, h: hh }); // 다음 판이 겹쳐 붙지 않게 검사 목록에 추가(+점검용 기록)
     return m;
   };
   // 가구 뒤 벽을 찾아 가구 양옆(폭/2 + 15cm)에 콘센트 — 침대(머리 쪽)·책상·소파는 모두 로컬 -z가 벽 쪽
