@@ -2252,10 +2252,10 @@ function laptopHQ(parent, { x = 0, y = 0, z = 0, ry = 0, body = 0xc9ccd0, metal 
   const mats = []; let zz = -.081;
   for (const [h, ws] of rows) { const tot = ws.reduce((a, b) => a + b, 0) + (ws.length - 1) * .0035; let xx = -tot / 2; for (const w of ws) { mats.push([xx + w / 2, zz + h / 2, w, h]); xx += w + .0035; } zz += h + .0035; }
   const im = new THREE.InstancedMesh(C.keyGeo, km, mats.length), m4 = new THREE.Matrix4(), q0 = new THREE.Quaternion(), sv = new THREE.Vector3(), pv = new THREE.Vector3();
-  mats.forEach(([kx, kz, w, h], i) => { m4.compose(pv.set(kx, T - .0002, kz), q0, sv.set(w, .0013, h)); im.setMatrixAt(i, m4); }); im.instanceMatrix.needsUpdate = true; lp.add(im);
-  mesh(BX(.274, .0004, zz + .081 + .002), C['kw' + keyCol] || (C['kw' + keyCol] = std(new THREE.Color(keyCol).lerp(new THREE.Color(body), .45).getHex(), .6, .2)), 0, T - .0001, (zz - .081) / 2 - .0005, lp, { cast: false }); /* 키 사이 바닥(살짝 어둡게) */
-  for (const sx of [-1, 1]) mesh(BX(.011, .0004, .1), C.grillM || (C.grillM = std(0xffffff, .5, .4, { map: C.grill })), sx * .1445, T - .0001, -.033, lp, { cast: false }); /* 스피커 그릴 */
-  mesh(RB(.118, .0006, .072, .005, 2), C['p' + body] || (C['p' + body] = std(pad ?? new THREE.Color(body).multiplyScalar(.92).getHex(), .16, metal * .8)), 0, T - .0001, .066, lp, { cast: false }); /* 유리 트랙패드 */
+  mats.forEach(([kx, kz, w, h], i) => { m4.compose(pv.set(kx, T + .0002, kz), q0, sv.set(w, .0013, h)); im.setMatrixAt(i, m4); }); im.instanceMatrix.needsUpdate = true; lp.add(im);
+  mesh(BX(.274, .0004, zz + .081 + .002), C['kw' + keyCol] || (C['kw' + keyCol] = std(new THREE.Color(keyCol).lerp(new THREE.Color(body), .45).getHex(), .6, .2)), 0, T + .0004, (zz - .081) / 2 - .0005, lp, { cast: false }); /* 키 사이 바닥(살짝 어둡게) */
+  for (const sx of [-1, 1]) mesh(BX(.011, .0004, .1), C.grillM || (C.grillM = std(0xffffff, .5, .4, { map: C.grill })), sx * .1445, T + .0007, -.033, lp, { cast: false }); /* 스피커 그릴 */
+  mesh(RB(.118, .0006, .072, .005, 2), C['p' + body] || (C['p' + body] = std(pad ?? new THREE.Color(body).multiplyScalar(.92).getHex(), .16, metal * .8)), 0, T + .0004, .066, lp, { cast: false }); /* 유리 트랙패드 */
   { const h = mesh(CY(.0045, .0045, .26, 14), C.hinge || (C.hinge = std(0x2a2b2e, .4, .5)), 0, T * .55, -D / 2 + .006, lp, { cast: false }); h.rotation.z = Math.PI / 2; }
   const sc = new THREE.Group(); sc.position.set(0, T - .001, -D / 2 + .007); sc.rotation.x = open; lp.add(sc);
   mesh(C.lid, bm, 0, 0, 0, sc);
@@ -2272,7 +2272,7 @@ const alphaDesk = piece('D자 책상', 2.55, 4.0, 0); { const t = alphaDesk, gm 
   mesh(tg, gm, 0, .77, 0, t);
   mesh(BX(.09, .7, .5), gm, -.42, .35, 0, t);                                   // 창 쪽 판재 다리
   for (const s of [-1, 1]) mesh(CY(.045, .045, .7, 20), gm, .28, .35, s * .17, t);   // 둥근 쪽 원기둥 다리
-  laptopHQ(t, { y: .782, z: -.05 }); /* 노트북 퀄리티업: 공용 고품질 노트북 */
+  laptopHQ(t, { y: .7955, z: -.05 }); /* 노트북 퀄리티업: 공용 고품질 노트북 — 상판(위 .795)에 묻히지 않게 */
   diningChair(t, .02, .58, Math.PI);
   // VR: 책상 곧은 쪽 끝에 흰 도자기 곡선 조형물 + 고사리 화분
   { const sc = mesh(new THREE.TorusGeometry(.07, .028, 16, 40, Math.PI * 1.5), std(0xf3f1ec, .3), -.34, .9, .12, t); sc.rotation.set(.3, .6, .2); sc.scale.set(1, 1.15, .8);
