@@ -648,7 +648,7 @@ function paintEnv(g, env, P, px) {
   const LAND = { residential: 'rgba(170,166,158,.45)', commercial: 'rgba(160,158,154,.55)', retail: 'rgba(160,158,154,.55)', industrial: 'rgba(150,152,150,.6)', construction: 'rgba(166,148,120,.75)',
     school: '#c9b99b', education: '#c9b99b', university: '#cbbfa6', college: '#cbbfa6', parking: '#8c8e91', pitch: '#86a066', military: 'rgba(130,150,110,.5)', railway: 'rgba(150,146,138,.6)' };
   for (const l of env.land || []) if (LAND[l.k] && !(l.k === 'construction' && /성남복정2/.test(l.n || ''))) fill(l.p, l.k === 'residential' && l.n && /아파트|단지|포레스티아|자이|푸르지오|위브|힐스테이트|센트리빌|아이파크|주공|타운/.test(l.n) ? 'rgba(112,142,96,.85)' : l.k === 'school' || l.k === 'education' ? '#b9b2a2' : LAND[l.k]); /* 아파트 단지 안은 조경 녹지 */
-  for (const l of env.land || []) if (l.k === 'pitch') fill(l.p, /여자중|초등/.test(l.n || '') ? '#bba98c' : '#86a066'); /* 학교 운동장은 흙 */
+  for (const l of env.land || []) if (l.k === 'pitch') fill(l.p, /여자중|초등/.test(l.n || '') || l.p.some(p => Math.hypot(p[0] - 30, p[1] - 170) < 120) ? '#bba98c' : '#86a066'); /* 학교 운동장은 흙 */
   for (const gr of env.green || []) if (gr.k === 'park') fill(gr.p, 'rgba(118,150,90,.85)');
   for (const w of env.water || []) if (!w.line) fill(w.p, '#5b7c88');
   for (const w of env.water || []) if (w.line) { line(w.p, w.w + 14, 'rgba(120,150,96,.8)'); line(w.p, w.w, '#5b7c88'); }
@@ -919,6 +919,15 @@ function buildAmenities(MAT) {
 /* ---------- 신흥초·성남여중(카카오 스카이뷰·로드뷰 2026.08 + 도면 GL) ----------
    신흥초: 부지 GL 106.3, 북쪽 ㄷ자 4층 교사(연노랑+주황·흰 띠, 초록 지붕), 동쪽 체육관(파란 지붕 + 태양광), 흙 운동장, 무지개색 담장
    성남여중: 부지 GL 100.6, 붉은 벽돌 4층 본관(공원로변), 파란 지붕 체육관(새 건물), 줄무늬 지붕 부속동, 흙 운동장 */
+/* 지형을 따라 덮는 다각형 바닥(삼각형을 3m 이하로 잘게 나눠 높이를 따라감) */
+function drapePoly(P, mat, lift, maxE = 3) { const out = [], uv = [];
+  const H = (x, z) => heightAt(x, z) + lift, push = (a, b, c) => { const cr = (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]); const T = cr >= 0 ? [a, b, c] : [a, c, b]; for (const v of T) { out.push(v[0], H(v[0], v[2]), v[2]); uv.push(v[0] / 8, -v[2] / 8); } };
+  const split = (a, b, c, d) => { const e = [[a, b], [b, c], [c, a]].map(([p, q]) => Math.hypot(p[0] - q[0], p[2] - q[2])), m = Math.max(...e); if (m <= maxE || d > 9) { push(a, b, c); return; }
+    const k = e.indexOf(m), [p, q, r] = k === 0 ? [a, b, c] : k === 1 ? [b, c, a] : [c, a, b], mid = [(p[0] + q[0]) / 2, 0, (p[2] + q[2]) / 2]; split(p, mid, r, d + 1); split(mid, q, r, d + 1); };
+  for (const [i0, i1, i2] of THREE.ShapeUtils.triangulateShape(P.map(p => new THREE.Vector2(p[0], p[1])), [])) split([P[i0][0], 0, P[i0][1]], [P[i1][0], 0, P[i1][1]], [P[i2][0], 0, P[i2][1]], 0);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(out, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.renderOrder = 3; scene.add(m); return m; }
+
 function buildSchools() {
   const mk = draw => { const c = cnv(512, 256), g = c.getContext('2d'); draw(g); const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughnessMap: roughFrom(t), roughness: 1, envMapIntensity: .6 }); };
   const M = {
@@ -955,6 +964,17 @@ function buildSchools() {
     box('gym', [111, 138], 28, 40, y - .6, y + 15.2, 'roofW'); obox(111, 138, ux, uz, 25, 37, y + 15.25, y + 15.3, { top: { gb: G.solar } }); /* 새나리관(체육관, 위성사진: 지붕 전체 태양광) — 높이 신흥초 교사와 비슷하게 */
     for (const [p0, p1] of [[[64, 166], [106, 158]], [[106, 158], [128, 156]]]) { const L = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), vx = (p1[0] - p0[0]) / L, vz = (p1[1] - p0[1]) / L;
       obox((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, vx, vz, L, .3, y - 1, y + 1.6, { front: { gb: G.wallR, uv: uvTile(6, 1.6) }, back: { gb: G.wallR, uv: uvTile(6, 1.6) }, top: { gb: G.roofW } }); } }
+  /* 성남여중 운동장(위성사진: 모래) + 골대, 학교 담장·운동장 둘레 큰 나무 줄 */
+  { const PIT = [[5.3, 146.5], [-39.3, 171.9], [-7.5, 227.9], [38.3, 200.4]], sc = cnv(256, 256), sg = sc.getContext('2d'); noiseFill(sg, 256, 256, '#d6c39c', .07, 4000); const st = new THREE.CanvasTexture(sc); st.wrapS = st.wrapT = THREE.RepeatWrapping; st.colorSpace = THREE.SRGBColorSpace;
+    drapePoly(PIT, new THREE.MeshLambertMaterial({ map: st, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }), .22);
+    const c = [PIT.reduce((s, p) => s + p[0], 0) / 4, PIT.reduce((s, p) => s + p[1], 0) / 4], ax = [(PIT[2][0] + PIT[3][0] - PIT[0][0] - PIT[1][0]) / 2, (PIT[2][1] + PIT[3][1] - PIT[0][1] - PIT[1][1]) / 2], al = Math.hypot(...ax), vx = ax[0] / al, vz = ax[1] / al;
+    for (const sgn of [-1, 1]) { const gx = c[0] + vx * sgn * (al / 2 - 4), gz = c[1] + vz * sgn * (al / 2 - 4), gy = heightAt(gx, gz) + .2; obox(gx, gz, -vz, vx, 7.3, .12, gy, gy + 2.44, { front: { gb: G.roofW }, back: { gb: G.roofW } }); obox(gx, gz, -vz, vx, 7.3, .12, gy + 2.32, gy + 2.44, { top: { gb: G.roofW } }); } /* 축구 골대 */
+    const SJ = [[11.2, 99.8], [72.6, 199.8], [-8.8, 250.6], [-77.5, 143.5]], SH = [[135.1, 160.3], [72.6, 199.8], [11.2, 99.8], [68.1, 75.4]];
+    const inB = (x, z) => SCHOOL_BLD.some(b => polyDist(b.P, x, z) < 3);
+    const ring = (P, inset, step, keepOff) => { for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length], L = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]);
+      for (let s2 = step / 2; s2 < L; s2 += step) { const t = s2 / L; let x = a2[0] + (b2[0] - a2[0]) * t, z = a2[1] + (b2[1] - a2[1]) * t; const cx2 = P.reduce((s, p) => s + p[0], 0) / P.length, cz2 = P.reduce((s, p) => s + p[1], 0) / P.length, dl = Math.hypot(cx2 - x, cz2 - z); x += (cx2 - x) / dl * inset; z += (cz2 - z) / dl * inset;
+        if (inB(x, z) || keepOff.some(Q => polyDist(Q, x, z) < 1.5) || polyDist(SITE, x, z) < 4) continue; extraTrees.push([x, heightAt(x, z) - .3, z, 2.3 + rand() * 1.3, 3]); } } };
+    ring(SJ, 3, 6.5, [PIT]); ring(SH, 3, 7, [[[56, 122], [96, 114], [104, 156], [64, 164]]]); ring(PIT, -3.2, 7, []); }
   /* (가상) 신흥초 증축 교사 — 교육시설용지, 부지 FH 102: 신흥초 교사와 같은 외관·4층, ㄱ자 + 작은 마당 */
   const TOPN = 106.3 + 15.2 - Y0; /* 요청: 증축 교사·공공청사 지붕 높이를 새나리관 지붕(해발 121.5m)과 똑같이 */
   { const y = 102 - Y0; pad(102, [[128, 120], [150, 110], [158, 138], [138, 148]]);
