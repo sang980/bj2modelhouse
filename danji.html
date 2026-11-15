@@ -623,7 +623,7 @@ async function build() {
   const G = {}; for (const k of ['podium', 'terr', 'tdeck', 'rail', 'front', 'frontDk', 'frontLt', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
   for (const D of DONG) buildDong(D, G, MAT);
   for (const k in G) { if (!G[k].i.length) continue; const m = new THREE.Mesh(G[k].build(), MAT[k]); m.castShadow = true; m.receiveShadow = true; scene.add(m); }
-  buildAmenities(MAT);
+  buildAmenities(MAT); buildYard();
   prog(62); await tick();
 
   /* ===== 주변 건물: 실제 데이터(OSM 윤곽·층수)가 있으면 그것으로, 없으면 개략 생성 ===== */
@@ -799,6 +799,43 @@ function signMat(d) { if (SIGNS[d]) return SIGNS[d]; const c = cnv(256, 128), g 
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return SIGNS[d] = new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: .6, polygonOffset: true, polygonOffsetFactor: -2 }); }
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 
+/* ---------- 남쪽 마당(모형·배치도): 주민운동시설-3 테니스장, 청록 다목적 마당, 어린이놀이터-2(모래)+흰 퍼걸러 ---------- */
+const YA = -.231, YU = [Math.cos(YA), Math.sin(YA)]; /* 104·105동과 나란한 방향 */
+const YRECT = (cx, cz, L, D) => { const fx = -YU[1], fz = YU[0]; return [[cx - YU[0] * L / 2 - fx * D / 2, cz - YU[1] * L / 2 - fz * D / 2], [cx + YU[0] * L / 2 - fx * D / 2, cz + YU[1] * L / 2 - fz * D / 2], [cx + YU[0] * L / 2 + fx * D / 2, cz + YU[1] * L / 2 + fz * D / 2], [cx - YU[0] * L / 2 + fx * D / 2, cz - YU[1] * L / 2 + fz * D / 2]]; };
+const YARD = { court: YRECT(-7.1, 90.2, 14.5, 11.5), teal: YRECT(-29.5, 102, 19, 12), sand: [[27.8, 62.5], [56.5, 50.8], [65.6, 62.5], [38.2, 76.8]] };
+function buildYard() {
+  const flat = (P, mat, lift, uvFn) => { const sh = new THREE.Shape(P.map(p => new THREE.Vector2(p[0], -p[1]))), g = new THREE.ShapeGeometry(sh, 6).rotateX(-Math.PI / 2), pos = g.attributes.position;
+    let y = 0; for (const p of P) y += levelAt(p[0], p[1]); y /= P.length; for (let i = 0; i < pos.count; i++) pos.setY(i, y + lift);
+    if (uvFn) { const uv = g.attributes.uv; for (let i = 0; i < pos.count; i++) { const r = uvFn(pos.getX(i), pos.getZ(i)); uv.setXY(i, r[0], r[1]); } }
+    g.computeVertexNormals(); const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.renderOrder = 3; scene.add(m); return y; };
+  const off = { polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 };
+  /* 테니스장: 청록 + 흰 선 */
+  const ct = (() => { const c = cnv(512, 406), g = c.getContext('2d'); noiseFill(g, 512, 406, '#2f6b60', .03, 600); g.fillStyle = '#3f8576'; g.fillRect(60, 48, 392, 310); g.strokeStyle = '#f2f2ee'; g.lineWidth = 4;
+    g.strokeRect(60, 48, 392, 310); g.strokeRect(60, 84, 392, 238); g.beginPath(); g.moveTo(256, 48); g.lineTo(256, 358); g.moveTo(150, 84); g.lineTo(150, 322); g.moveTo(362, 84); g.lineTo(362, 322); g.moveTo(150, 203); g.lineTo(362, 203); g.stroke(); return tex(c); })();
+  const C0 = [-7.1, 90.2], Lc = 14.5, Dc = 11.5, cfx = -YU[1], cfz = YU[0];
+  const yc = flat(YARD.court, new THREE.MeshStandardMaterial({ map: ct, roughness: .85, ...off }), .12, (x, z) => { const dx = x - C0[0], dz = z - C0[1]; return [(dx * YU[0] + dz * YU[1]) / Lc + .5, (dx * cfx + dz * cfz) / Dc + .5]; });
+  /* 네트 + 기둥 */
+  const net = new GB(); obox(C0[0], C0[1], cfx, cfz, Dc * .86, .04, yc + .12, yc + 1.05, { front: { gb: net }, back: { gb: net } });
+  const post = new GB(); for (const sgn of [-1, 1]) obox(C0[0] + cfx * sgn * Dc * .44, C0[1] + cfz * sgn * Dc * .44, YU[0], YU[1], .1, .1, yc, yc + 1.1, { front: { gb: post }, back: { gb: post }, left: { gb: post }, right: { gb: post } });
+  const nm = new THREE.Mesh(net.build(), new THREE.MeshStandardMaterial({ color: '#1d2226', transparent: true, opacity: .55, side: THREE.DoubleSide })); scene.add(nm);
+  scene.add(new THREE.Mesh(post.build(), new THREE.MeshStandardMaterial({ color: '#e8e8e4' })));
+  /* 청록 다목적 마당(모형: 둥근 청록 바닥 + 가운데로 지나는 길) */
+  { const T = YARD.teal, cx = T.reduce((s, p) => s + p[0], 0) / 4, cz = T.reduce((s, p) => s + p[1], 0) / 4, P = [];
+    for (let k = 0; k < 40; k++) { const a = k / 40 * Math.PI * 2, r = 1 / Math.pow(Math.pow(Math.abs(Math.cos(a)), 4) + Math.pow(Math.abs(Math.sin(a)), 4), .25), lx = Math.cos(a) * r * 9.5, lz = Math.sin(a) * r * 6; P.push([cx + YU[0] * lx - YU[1] * lz, cz + YU[1] * lx + YU[0] * lz]); }
+    flat(P, new THREE.MeshStandardMaterial({ color: '#30665b', roughness: .85, ...off }), .1);
+    const Q = []; for (const [lx, lz] of [[-2, -6.5], [1.2, -6.5], [1.2, 6.5], [-2, 6.5]]) Q.push([cx + YU[0] * lx - YU[1] * lz, cz + YU[1] * lx + YU[0] * lz]); flat(Q, new THREE.MeshStandardMaterial({ color: '#d9d4c8', roughness: .9, polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -12 }), .14); }
+  /* 어린이놀이터-2: 모래색 바닥 + 놀이기구 + 흰 퍼걸러 */
+  const ys = flat(YARD.sand, new THREE.MeshStandardMaterial({ color: '#e2cf9c', roughness: 1, ...off }), .1);
+  const P = YARD.sand, sx = P.reduce((s, p) => s + p[0], 0) / 4, sz = P.reduce((s, p) => s + p[1], 0) / 4, pu = [P[1][0] - P[0][0], P[1][1] - P[0][1]], pl = Math.hypot(...pu), ux = pu[0] / pl, uz = pu[1] / pl, fx = -uz, fz = ux;
+  const PL = { r: new GB(), y: new GB(), b: new GB(), w: new GB() }, all = gb => ({ front: { gb }, back: { gb }, left: { gb }, right: { gb }, top: { gb } }), at = (a, b) => [sx + ux * a + fx * b, sz + uz * a + fz * b];
+  { const [x, z] = at(-6, 1); obox(x, z, ux, uz, 2.4, 2.4, ys + 1.4, ys + 1.6, all(PL.w)); for (const [a, b] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const [px, pz] = at(-6 + a * 1.1, 1 + b * 1.1); obox(px, pz, ux, uz, .14, .14, ys, ys + 2.9, all(PL.r)); }
+    obox(x, z, ux, uz, 2.6, 2.6, ys + 2.9, ys + 3.3, all(PL.b)); const [qx, qz] = at(-6, 3.6); obox(qx, qz, fx, fz, 3.2, .8, ys + .3, ys + .5, all(PL.y)); } /* 미끄럼틀 탑 */
+  { const [x, z] = at(3, -1); for (const s of [-1.6, 1.6]) { const [px, pz] = at(3 + s, -1); obox(px, pz, ux, uz, .12, 1.6, ys, ys + 2.3, all(PL.b)); } obox(x, z, ux, uz, 3.4, .14, ys + 2.3, ys + 2.42, all(PL.b)); for (const s of [-.7, .7]) { const [px, pz] = at(3 + s, -1); obox(px, pz, ux, uz, .5, .25, ys + .5, ys + .58, all(PL.y)); } } /* 그네 */
+  { for (const [a, b] of [[8.5, -1.2], [8.5, 1.2], [12.5, -1.2], [12.5, 1.2]]) { const [px, pz] = at(a, b); obox(px, pz, ux, uz, .22, .22, ys, ys + 2.8, all(PL.w)); }
+    for (let k = 0; k < 7; k++) { const [px, pz] = at(8.2 + k * .7, 0); obox(px, pz, ux, uz, .14, 3.2, ys + 2.8, ys + 2.98, all(PL.w)); } const [rx, rz] = at(10.5, 0); obox(rx, rz, ux, uz, 4.6, .2, ys + 2.98, ys + 3.1, all(PL.w)); } /* 흰 퍼걸러(모형: 놀이터 동쪽 끝) */
+  for (const [k, c] of [['r', '#d9533b'], ['y', '#f0c33c'], ['b', '#3d7fc1'], ['w', '#f1f0ec']]) { const m = new THREE.Mesh(PL[k].build(), new THREE.MeshStandardMaterial({ color: c, roughness: .6 })); m.castShadow = true; scene.add(m); }
+}
+
 /* ---------- 부대시설(주민공동시설·근린생활시설·경비실) ---------- */
 const AMEN_POLYS = [[[-146.8, -1.5], [-116.5, -1], [-116.2, 32.3], [-124.1, 36.4]], [[-115.8, 53.7], [-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-124, 40.9]], [[-114.2, 52], [-98.1, 50.9], [-97.1, 59], [-113.3, 60.1]], [[-104.2, 71.6], [-96.2, 68], [-80.6, 96.5], [-88.7, 101.1]]]; /* 나무가 지붕을 뚫지 않게 */
 function buildAmenities(MAT) {
@@ -946,7 +983,7 @@ function buildTrees(planData, PW, PH, PK) {
     const px = Math.round((jx / S + OX) / PK), py = Math.round((jz / S + OY) / PK); if (px < 0 || py < 0 || px >= PW || py >= PH) continue;
     const k = (py * PW + px) * 4, r = planData[k], g = planData[k + 1], b = planData[k + 2];
     if (!(g > r + 14 && g > b + 6 && g < 150 && r < 120)) continue;
-    if (inBld(jx, jz) || AMEN_POLYS.some(P => polyDist(P, jx, jz) < 2)) continue;
+    if (inBld(jx, jz) || AMEN_POLYS.some(P => polyDist(P, jx, jz) < 2) || polyDist(YARD.court, jx, jz) < 2 || polyDist(YARD.teal, jx, jz) < 1 || polyDist(YARD.sand, jx, jz) < 1.5) continue; /* 마당 시설은 비워 둠 */
     pts.push([jx, levelAt(jx, jz), jz, 1.15 + rand() * 1.05, 0]); /* 모형: 작고 짙은 조경수 */
   }
   /* 숲: 단지 주변 1.2km */
