@@ -902,7 +902,7 @@ function buildYard() {
     g.computeVertexNormals(); const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.renderOrder = 3; scene.add(m); return y; };
   const off = { polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 };
   /* 테니스장: 청록 + 흰 선 */
-  const ct = (() => { const c = cnv(512, 406), g = c.getContext('2d'); noiseFill(g, 512, 406, '#2f6b60', .03, 600); g.fillStyle = '#3f8576'; g.fillRect(60, 48, 392, 310); g.strokeStyle = '#f2f2ee'; g.lineWidth = 4;
+  const ct = (() => { const c = cnv(512, 406), g = c.getContext('2d'); noiseFill(g, 512, 406, '#2b5244', .03, 600); g.fillStyle = '#356150'; g.fillRect(60, 48, 392, 310); g.strokeStyle = '#f2f2ee'; g.lineWidth = 4;
     g.strokeRect(60, 48, 392, 310); g.strokeRect(60, 84, 392, 238); g.beginPath(); g.moveTo(256, 48); g.lineTo(256, 358); g.moveTo(150, 84); g.lineTo(150, 322); g.moveTo(362, 84); g.lineTo(362, 322); g.moveTo(150, 203); g.lineTo(362, 203); g.stroke(); return tex(c); })();
   const C0 = [-7.1, 90.2], Lc = 14.5, Dc = 11.5, cfx = -YU[1], cfz = YU[0];
   const yc = flat(YARD.court, new THREE.MeshStandardMaterial({ map: ct, roughness: .85, ...off }), .12, (x, z) => { const dx = x - C0[0], dz = z - C0[1]; return [(dx * YU[0] + dz * YU[1]) / Lc + .5, (dx * cfx + dz * cfz) / Dc + .5]; });
@@ -914,7 +914,7 @@ function buildYard() {
   /* 연못(모형 VE04: 둥근 청록 수면 + 가운데를 건너는 다리) */
   { const T = YARD.teal, cx = T.reduce((s, p) => s + p[0], 0) / 4, cz = T.reduce((s, p) => s + p[1], 0) / 4, P = [];
     for (let k = 0; k < 40; k++) { const a = k / 40 * Math.PI * 2, r = 1 / Math.pow(Math.pow(Math.abs(Math.cos(a)), 4) + Math.pow(Math.abs(Math.sin(a)), 4), .25), lx = Math.cos(a) * r * 9.5, lz = Math.sin(a) * r * 6; P.push([cx + YU[0] * lx - YU[1] * lz, cz + YU[1] * lx + YU[0] * lz]); }
-    const yw = flat(P, new THREE.MeshStandardMaterial({ color: '#2f6a63', roughness: .08, metalness: .25, envMapIntensity: 1.2, ...off }), .1); /* 물: 하늘이 비치게 */
+    const yw = flat(P, new THREE.MeshStandardMaterial({ color: '#2c5a52', roughness: .35, metalness: .1, envMapIntensity: .5, ...off }), .1); /* 물: 하늘이 비치게 */
     { const rim = new GB(); for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length], L = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]); obox((a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2, (b2[0] - a2[0]) / L, (b2[1] - a2[1]) / L, L + .1, .35, yw - .05, yw + .28, { front: { gb: rim }, back: { gb: rim }, top: { gb: rim } }); }
       scene.add(new THREE.Mesh(rim.build(), new THREE.MeshStandardMaterial({ color: '#cfccc4', roughness: .9 }))); } /* 연못 가장자리 돌 테두리 */
     const Q = []; for (const [lx, lz] of [[-2, -6.5], [1.2, -6.5], [1.2, 6.5], [-2, 6.5]]) Q.push([cx + YU[0] * lx - YU[1] * lz, cz + YU[1] * lx + YU[0] * lz]); flat(Q, new THREE.MeshStandardMaterial({ color: '#d9d4c8', roughness: .9, polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -12 }), .42);
