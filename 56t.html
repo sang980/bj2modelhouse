@@ -913,8 +913,8 @@ wall(10.1, .56, 10.1, .85, TE, []);
 wall(10.1, .56, 11.4, .56, TE, []);
 wall(12.32, 1.5, 12.32, 9.55, TE, []);
 wall(0, 8.15, 8.85, 8.15, TE, [
-  { from: .73, to: 2.22, y0: .45, y1: 2.2, kind: 'window', light: true },                          // 침실2 창(테라스)
-  { from: 3.5, to: 4.69, y0: .45, y1: 2.2, kind: 'window', light: true },                           // 알파룸 창(테라스)
+  { from: .73, to: 2.22, y0: 1.08, y1: 2.16, kind: 'window', light: true }, /* VR: 창턱 1.08m · 윗선 2.16m */                          // 침실2 창(테라스)
+  { from: 3.5, to: 4.69, y0: 1.09, y1: 2.15, kind: 'window', light: true }, /* VR: 창턱 1.09m · 윗선 2.15m */                           // 알파룸 창(테라스)
   { from: 5.61, to: 8.33, y1: 2.25, kind: 'open' },                                                // 거실 → 테라스 미닫이 문(아래 terraceSlide)
 ]);
 wall(8.85, 8.15, 12.32, 8.15, TI, [{ from: 9.68, to: 11.13, y1: 2.2, kind: 'open' }]); // 침실1 → 발코니 미닫이 문(아래 terraceSlide)
