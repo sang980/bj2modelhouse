@@ -541,7 +541,7 @@ async function build() {
   const pbr = map => new THREE.MeshStandardMaterial({ map, roughnessMap: roughFrom(map), roughness: 1, metalness: 0, envMapIntensity: .5 }); /* 유리에 하늘 반사 */
   /* 하늘을 환경맵으로: 유리창에 하늘이 비치게 */
   { const pm = new THREE.PMREMGenerator(renderer), es = new THREE.Scene(); es.add(new THREE.Mesh(sky.geometry, sky.material)); scene.environment = pm.fromScene(es, .02, 1, 30000).texture; pm.dispose(); }
-  const MAT = { grille: (() => { const c = cnv(256, 128), g = c.getContext('2d'); g.clearRect(0, 0, 256, 128); g.fillStyle = '#a9a69f'; for (let x = 0; x < 256; x += 16) g.fillRect(x, 0, 4, 128); g.fillRect(0, 0, 256, 10); g.fillRect(0, 118, 256, 10); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return new THREE.MeshStandardMaterial({ map: t, alphaTest: .4, transparent: false, side: THREE.DoubleSide, roughness: .7 }); })(), sideP: pbr(T.sideP), podium: pbr(T.podium), terr: pbr(T.terr), tdeck: new THREE.MeshStandardMaterial({ color: '#8d8780', roughness: .9 }), rail: new THREE.MeshStandardMaterial({ color: '#cfe0e8', roughness: .1, transparent: true, opacity: .4 }), front: pbr(T.front), frontDk: pbr(T.frontDk), frontLt: pbr(T.frontLt), back: pbr(T.back), side: pbr(T.side), bfront: pbr(T.bfront), bback: pbr(T.bback), bside: pbr(T.bside), core: pbr(T.core), roof: std(T.roof, .55),
+  const MAT = { path: (() => { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#9a9a96'; g.fillRect(0, 0, 256, 256); for (let y = 0; y < 256; y += 32) for (let x = (y / 32 & 1) * 16; x < 256; x += 32) { const v = 190 + (rand() - .5) * 24 | 0; g.fillStyle = `rgb(${v},${v},${v - 4})`; g.fillRect(x + 1, y + 1, 30, 30); } const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return new THREE.MeshStandardMaterial({ map: t, roughness: .95, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 }); })(), grille: (() => { const c = cnv(256, 128), g = c.getContext('2d'); g.clearRect(0, 0, 256, 128); g.fillStyle = '#a9a69f'; for (let x = 0; x < 256; x += 16) g.fillRect(x, 0, 4, 128); g.fillRect(0, 0, 256, 10); g.fillRect(0, 118, 256, 10); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return new THREE.MeshStandardMaterial({ map: t, alphaTest: .4, transparent: false, side: THREE.DoubleSide, roughness: .7 }); })(), sideP: pbr(T.sideP), podium: pbr(T.podium), terr: pbr(T.terr), tdeck: new THREE.MeshStandardMaterial({ color: '#8d8780', roughness: .9 }), rail: new THREE.MeshStandardMaterial({ color: '#cfe0e8', roughness: .1, transparent: true, opacity: .4 }), front: pbr(T.front), frontDk: pbr(T.frontDk), frontLt: pbr(T.frontLt), back: pbr(T.back), side: pbr(T.side), bfront: pbr(T.bfront), bback: pbr(T.bback), bside: pbr(T.bside), core: pbr(T.core), roof: std(T.roof, .55),
     white: new THREE.MeshStandardMaterial({ color: '#e2dfd9', roughness: .8 }), fin: new THREE.MeshStandardMaterial({ color: '#3d3733', roughness: .75 }), green: std(T.green, 1), concrete: std(T.concrete, .95),
     brick: new THREE.MeshStandardMaterial({ color: '#634033', roughness: .9 }), glassBox: new THREE.MeshStandardMaterial({ color: '#4c6378', roughness: .35 }) };
 
@@ -638,7 +638,14 @@ async function build() {
       const s = st / SUB, L = []; for (let q = 0; q <= SUB; q++) { L.push([]); for (let p = 0; p <= SUB; p++) L[q].push(levelAt(xa + p * s, za + q * s)); }
       for (let q = 0; q < SUB; q++) for (let p = 0; p < SUB; p++) quadT(xa + p * s, za + q * s, xa + (p + 1) * s, za + (q + 1) * s, L[q][p], L[q][p + 1], L[q + 1][p], L[q + 1][p + 1]); }
     const mk = (p, u, mat) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(u, 2)); g.computeVertexNormals(); const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.castShadow = mat === wallMat; scene.add(m); };
-    const deckMat = new THREE.MeshStandardMaterial({ map: planTex, roughness: .95 }); detailDeck(deckMat); mk(fp, fu, deckMat); mk(wp, wu, wallMat);
+    const deckMat = new THREE.MeshStandardMaterial({ map: planTex, roughness: .95 });
+    /* 보행로 마스크(모형처럼 또렷한 길): 배치도의 밝은 무채색 픽셀 → 흐림 → 문턱 → 살짝 흐림. 작은 얼룩은 사라지고 길만 남음 */
+    const pathMask = (() => { const id = pg.getImageData(0, 0, PW, PH).data, m1 = cnv(PW, PH), g1 = m1.getContext('2d'), out = g1.createImageData(PW, PH), o = out.data;
+      for (let i = 0, N2 = PW * PH; i < N2; i++) { const r = id[i * 4], g = id[i * 4 + 1], b = id[i * 4 + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), lum = .299 * r + .587 * g + .114 * b, p = id[i * 4 + 3] > 200 && lum > 184 && lum < 246 && mx - mn < 26 && g - Math.max(r, b) < 8 ? 255 : 0; o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = p; o[i * 4 + 3] = 255; }
+      g1.putImageData(out, 0, 0); const m2 = cnv(PW, PH), g2 = m2.getContext('2d'); g2.filter = 'blur(7px)'; g2.drawImage(m1, 0, 0);
+      const bd = g2.getImageData(0, 0, PW, PH), d = bd.data; for (let i = 0; i < d.length; i += 4) { const v = d[i] > 150 ? 255 : 0; d[i] = d[i + 1] = d[i + 2] = v; } g2.putImageData(bd, 0, 0);
+      const m3 = cnv(PW, PH), g3 = m3.getContext('2d'); g3.filter = 'blur(1.2px)'; g3.drawImage(m2, 0, 0); const t = new THREE.CanvasTexture(m3); t.colorSpace = THREE.NoColorSpace; t.anisotropy = ANISO; return t; })();
+    detailDeck(deckMat, pathMask); mk(fp, fu, deckMat); mk(wp, wu, wallMat);
     if (lp.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#c9cac7', .03, 600); g.fillStyle = 'rgba(0,0,0,.06)'; g.fillRect(0, 0, 256, 3); const t = tex(c); const lm = new THREE.MeshStandardMaterial({ map: t, roughness: .9, side: THREE.DoubleSide }); mk(lp, lu, lm); } }
   /* 단지 둘레 옹벽: 안쪽 단 높이 ↔ 바깥 실제 지면 높이 사이(바깥이 높으면 산을 막는 옹벽) */
   { const gb = new GB(), gp = new GB(), gt = new GB(), gpl = new GB(); let s = 0; /* gp: 모형 사진 — 학교 쪽(남쪽) 큰 옹벽은 무늬 없는 짙은 회색 · gt/gpl: 동쪽은 모형 VE32·VN20처럼 단(段)으로 나눈 밝은 회색 벽 + 화단 */
@@ -682,7 +689,7 @@ async function build() {
   prog(50); await tick();
 
   /* ===== 단지 동 ===== */
-  const G = {}; for (const k of ['grille', 'sideP', 'podium', 'terr', 'tdeck', 'rail', 'front', 'frontDk', 'frontLt', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
+  const G = {}; for (const k of ['path', 'grille', 'sideP', 'podium', 'terr', 'tdeck', 'rail', 'front', 'frontDk', 'frontLt', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
   for (const D of DONG) buildDong(D, G, MAT);
   for (const k in G) { if (!G[k].i.length) continue; const m = new THREE.Mesh(G[k].build(), MAT[k]); m.castShadow = true; m.receiveShadow = true; scene.add(m); }
   buildAmenities(MAT); buildYard(); T_GREEN_REF.t = T.green; buildEntrance(); if (GEO.ok) { buildNW(); buildCut(); }
@@ -850,6 +857,11 @@ function buildDong(D, G, MAT) {
     if (wi === 0 || D.w.length > 1) for (const e of (D.w.length > 1 ? (wi === 0 ? [-1] : [1]) : [-1, 1])) { const sx = cx + ux * e * (L / 2 + .06) + fx * DEP * .27, sz = cz + uz * e * (L / 2 + .06) + fz * DEP * .27, m = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8), signMat(D.d)); /* 측벽 가운데 짙은 띠를 피해 앞쪽 */
       const yS = yF1 + Math.min(base + 1.7, H - 3.2); m.position.set(sx, yS, sz); m.lookAt(sx + ux * e, yS, sz + uz * e); scene.add(m); } /* 모형: 동 번호는 갈색 저층부 바로 위 측벽 */
     YOFF = 0;
+    /* 동 뒤(공동현관 쪽) 보행로(모형 VE08: 동을 따라 곧게 뻗은 회색 보도블록 길) — 단 높이가 같은 구간만 */
+    { const off = DEP / 2 + CORE_D + 3.2, pcx = cx - fx * off, pcz = cz - fz * off, y0 = levelAt(pcx, pcz), hl = L / 2 + 4, w = 1.4, ns = Math.ceil(hl * 2 / 3);
+      if (polyDist(SITE, pcx, pcz) < -3) for (let k = 0; k < ns; k++) { const a = -hl + k * hl * 2 / ns, b = a + hl * 2 / ns, mx = pcx + ux * (a + b) / 2, mz = pcz + uz * (a + b) / 2;
+        if (Math.abs(levelAt(mx, mz) - y0) > .4 || polyDist(SITE, mx, mz) > -2) continue; const P = [pcx + ux * a, pcz + uz * a], Q = [pcx + ux * b, pcz + uz * b], y = y0 + .16;
+        G.path.quad([P[0] + fx * w, y, P[1] + fz * w], [Q[0] + fx * w, y, Q[1] + fz * w], [Q[0] - fx * w, y, Q[1] - fz * w], [P[0] - fx * w, y, P[1] - fz * w], [0, 1, 0], [(P[0]) / 4, -P[1] / 4, Q[0] / 4, -Q[1] / 4, (Q[0] - fx * 2 * w) / 4, -(Q[1] - fz * 2 * w) / 4, (P[0] - fx * 2 * w) / 4, -(P[1] - fz * 2 * w) / 4]); } }
     pieces.push({ cx, cz, ux, uz, L, H, f, ft, yF1, yb, t, n, ln: w.ln || Array.from({ length: n }, (_, k) => n - k) });
     topY = Math.max(topY, yF1 + H); cxs += cx * L; czs += cz * L; wsum += L;
   });
@@ -875,15 +887,15 @@ function signMat(d) { if (SIGNS[d]) return SIGNS[d]; const c = cnv(256, 128), g 
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 
 /* ---------- 데크 바닥 디테일: 배치도 색으로 길(밝은 회색)엔 보도블록 줄눈, 잔디(녹색)엔 잔디 결을 얹어 가까이서도 또렷하게(모형의 보도블록·잔디) ---------- */
-function detailDeck(mat) {
+function detailDeck(mat, maskTex) {
   const mk = draw => { const c = cnv(256, 256), g = c.getContext('2d'); draw(g); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; return t; };
   const pav = mk(g => { g.fillStyle = '#7a7a7a'; g.fillRect(0, 0, 256, 256); for (let r = 0; r < 8; r++) for (let k = -1; k < 5; k++) { const x = k * 64 + (r & 1) * 32, y = r * 32, v = 200 + (rand() - .5) * 46 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x + 2, y + 2, 60, 28); } }); /* 2m 칸에 50×25cm 보도블록 */
   const grs = mk(g => { g.fillStyle = '#9a9a9a'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 9000; i++) { const v = 90 + rand() * 140 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(rand() * 256, rand() * 256, 1.2, 2.5 + rand() * 3); } });
-  mat.onBeforeCompile = sh => { sh.uniforms.tPav = { value: pav }; sh.uniforms.tGrs = { value: grs };
+  mat.onBeforeCompile = sh => { sh.uniforms.tPav = { value: pav }; sh.uniforms.tGrs = { value: grs }; sh.uniforms.tMask = { value: maskTex };
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; uniform sampler2D tPav; uniform sampler2D tGrs;').replace('#include <map_fragment>', `#include <map_fragment>
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; uniform sampler2D tPav; uniform sampler2D tGrs; uniform sampler2D tMask;').replace('#include <map_fragment>', `#include <map_fragment>
       { vec3 c = diffuseColor.rgb; float gn = c.g - max(c.r, c.b), mx = max(c.r, max(c.g, c.b)), sat = mx - min(c.r, min(c.g, c.b)), lum = dot(c, vec3(.299, .587, .114));
-        float pv = smoothstep(.44, .5, lum) * (1. - smoothstep(.05, .1, sat)) * (1. - smoothstep(.015, .04, gn)); /* 밝은 무채색 = 보도블록 길 */
+        float pv = smoothstep(.3, .7, texture2D(tMask, vMapUv).r); /* 길 마스크 */
         float asph = (1. - smoothstep(.16, .26, lum)) * (1. - smoothstep(.06, .12, sat)); /* 어두운 무채색 = 차로 */
         float gr = (1. - pv) * (1. - asph); /* 나머지는 모형처럼 고른 잔디 */
         float P = texture2D(tPav, vWP.xz * .5).r, G = texture2D(tGrs, vWP.xz / 3.).r;
