@@ -432,11 +432,10 @@ function texBack(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (
   g.fillStyle = '#c3c6c8'; g.fillRect(250, 196, 120, 40); g.fillStyle = '#9ea4a9'; for (let y = 200; y < 234; y += 7) g.fillRect(254, y, 112, 3); /* 실외기 루버 */
   g.fillStyle = brick ? 'rgba(40,20,12,.35)' : 'rgba(0,0,0,.12)'; g.fillRect(0, 250, 1024, 6);
   return tex(c, true); }
-/* 측벽(모형): 밝은 회색 + 짙은 막대무늬(길이 제각각 세로 막대) + 작은 창 */
-function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, '#c6c2bb', .035, 1400);
+/* 측벽(모형 동영상 VE30·VN18): 밝은 회색 + 고른 가는 세로 홈 + 가운데 남색 유리 기둥 */
+function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, '#cfccc5', .03, 1400);
   g.fillStyle = brick ? '#6c3a2b' : '#d8d5cf'; g.fillRect(0, 0, 1024, 12);
-  if (!brick) { const rr = rng(77); g.fillStyle = '#3c3f44'; for (let x = 30; x < 330; x += 30) { if (rr() < .45) continue; const w = 9 + rr() * 9, h = 60 + rr() * 196; g.fillRect(x, rr() < .5 ? 0 : 256 - h, w, h); }
-    for (let x = 700; x < 1000; x += 30) { if (rr() < .45) continue; const w = 9 + rr() * 9, h = 60 + rr() * 196; g.fillRect(x, rr() < .5 ? 0 : 256 - h, w, h); } }
+  if (!brick) { g.fillStyle = 'rgba(40,40,40,.16)'; for (let x = 14; x < 1024; x += 22) if (x < 366 || x > 658) g.fillRect(x, 0, 2.5, 256); g.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 17; x < 1024; x += 22) if (x < 366 || x > 658) g.fillRect(x, 0, 1.5, 256); } /* 모형 동영상: 측벽은 밝은 회색 + 고른 가는 세로 홈 */
   /* 모형: 측벽 가운데 짙은 남색 유리 세로 띠(지붕까지) */
   g.fillStyle = brick ? '#5a2f24' : '#2a3442'; g.fillRect(372, 0, 280, 256); glass(g, 384, 6, 256, 244, 1); g.fillStyle = brick ? '#5a2f24' : '#2a3442'; g.fillRect(508, 0, 8, 256); g.fillRect(372, 120, 280, 6);
   return tex(c); }
