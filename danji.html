@@ -593,7 +593,7 @@ async function build() {
       const s = st / SUB, L = []; for (let q = 0; q <= SUB; q++) { L.push([]); for (let p = 0; p <= SUB; p++) L[q].push(levelAt(xa + p * s, za + q * s)); }
       for (let q = 0; q < SUB; q++) for (let p = 0; p < SUB; p++) quadT(xa + p * s, za + q * s, xa + (p + 1) * s, za + (q + 1) * s, L[q][p], L[q][p + 1], L[q + 1][p], L[q + 1][p + 1]); }
     const mk = (p, u, mat) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(u, 2)); g.computeVertexNormals(); const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.castShadow = mat === wallMat; scene.add(m); };
-    mk(fp, fu, new THREE.MeshStandardMaterial({ map: planTex, roughness: .95 })); mk(wp, wu, wallMat); }
+    const deckMat = new THREE.MeshStandardMaterial({ map: planTex, roughness: .95 }); detailDeck(deckMat); mk(fp, fu, deckMat); mk(wp, wu, wallMat); }
   /* 단지 둘레 옹벽: 안쪽 단 높이 ↔ 바깥 실제 지면 높이 사이(바깥이 높으면 산을 막는 옹벽) */
   { const gb = new GB(); let s = 0;
     for (let i = 0; i < SITE.length; i++) { const a = SITE[i], b = SITE[(i + 1) % SITE.length], ex = b[0] - a[0], ez = b[1] - a[1], L = Math.hypot(ex, ez), n = Math.max(1, Math.ceil(L / 4));
@@ -798,6 +798,22 @@ const SIGNS = {};
 function signMat(d) { if (SIGNS[d]) return SIGNS[d]; const c = cnv(256, 128), g = c.getContext('2d'); g.clearRect(0, 0, 256, 128); g.fillStyle = '#3d4a5a'; g.font = '800 92px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(d), 128, 70);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return SIGNS[d] = new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: .6, polygonOffset: true, polygonOffsetFactor: -2 }); }
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+/* ---------- 데크 바닥 디테일: 배치도 색으로 길(밝은 회색)엔 보도블록 줄눈, 잔디(녹색)엔 잔디 결을 얹어 가까이서도 또렷하게(모형의 보도블록·잔디) ---------- */
+function detailDeck(mat) {
+  const mk = draw => { const c = cnv(256, 256), g = c.getContext('2d'); draw(g); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; return t; };
+  const pav = mk(g => { g.fillStyle = '#7a7a7a'; g.fillRect(0, 0, 256, 256); for (let r = 0; r < 8; r++) for (let k = -1; k < 5; k++) { const x = k * 64 + (r & 1) * 32, y = r * 32, v = 200 + (rand() - .5) * 46 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x + 2, y + 2, 60, 28); } }); /* 2m 칸에 50×25cm 보도블록 */
+  const grs = mk(g => { g.fillStyle = '#9a9a9a'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 9000; i++) { const v = 90 + rand() * 140 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(rand() * 256, rand() * 256, 1.2, 2.5 + rand() * 3); } });
+  mat.onBeforeCompile = sh => { sh.uniforms.tPav = { value: pav }; sh.uniforms.tGrs = { value: grs };
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; uniform sampler2D tPav; uniform sampler2D tGrs;').replace('#include <map_fragment>', `#include <map_fragment>
+      { vec3 c = diffuseColor.rgb; float gn = c.g - max(c.r, c.b), mx = max(c.r, max(c.g, c.b)), sat = mx - min(c.r, min(c.g, c.b)), lum = dot(c, vec3(.299, .587, .114));
+        float gr = smoothstep(.03, .05, gn); /* 잔디: 경계를 또렷하게(텍스처 보간값에 문턱) */
+        float pv = (1. - gr) * smoothstep(.36, .46, lum) * (1. - smoothstep(.07, .13, sat)); /* 밝은 무채색 = 보도블록 길 */
+        float P = texture2D(tPav, vWP.xz * .5).r, G = texture2D(tGrs, vWP.xz / 3.).r;
+        vec3 pathC = vec3(.6, .6, .58) * (.84 + .22 * P), grassC = mix(c, vec3(.12, .24, .07), .45) * (.78 + .36 * G);
+        diffuseColor.rgb = mix(mix(c, grassC, gr), pathC, pv); }`); };
+}
 
 /* ---------- 남쪽 마당(모형·배치도): 주민운동시설-3 테니스장, 청록 다목적 마당, 어린이놀이터-2(모래)+흰 퍼걸러 ---------- */
 const YA = -.231, YU = [Math.cos(YA), Math.sin(YA)]; /* 104·105동과 나란한 방향 */
