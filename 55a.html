@@ -1926,7 +1926,12 @@ function kitchenProps(k) {
       if (t === 'spat') at(BX(.05, .07, .004), chrome, x, y - .29, z + .015);
       if (t === 'whisk') for (let i = 0; i < 6; i++) { const w = at(new THREE.TorusGeometry(.025, .0015, 4, 16), chrome, x, y - .29, z + .015); w.scale.set(1, 1.8, 1); w.rotation.y = i * Math.PI / 6; }
     }
-    at(BX(.09, .08, .07), blk, 5.99 - .07, y - .05, z + .04); }                                   // 걸이 컵꽂이
+    { const cx = 5.92, cy = y - .09, cz = z + .045, wb = .1, db = .08, hb = .08; /* VR: 검정 철망 걸이 바구니 + 흰 머그컵 2 */
+      at(BX(wb, .004, db), blk, cx, cy, cz); for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) at(BX(.004, hb, .004), blk, cx + dx * wb / 2, cy + hb / 2, cz + dz * db / 2);
+      for (const yy of [cy + hb * .55, cy + hb]) { for (const s of [-1, 1]) { at(BX(wb, .003, .003), blk, cx, yy, cz + s * db / 2); at(BX(.003, .003, db), blk, cx + s * wb / 2, yy, cz); } }
+      at(BX(.004, .03, .004), blk, cx - wb / 2 + .01, y, z + .012); at(BX(.004, .03, .004), blk, cx + wb / 2 - .01, y, z + .012);
+      const wm = std(0xf6f5f1, .3); for (const dx of [-.024, .024]) { at(CY(.02, .018, .06, 16), wm, cx + dx, cy + .033, cz); const h = at(new THREE.TorusGeometry(.013, .003, 6, 12), wm, cx + dx, cy + .035, cz + .022); h.rotation.y = Math.PI / 2; } }
+  }
   // 끝쪽(다용도실 문 옆): 블랙 원형 받침 위 블랙 보틀·양념병·은색 볼, 화이트 볼 화분
   { const cx = 8.22, cz = .38;
     at(CY(.17, .17, .004, 40), felt, cx, T + .002, cz);
