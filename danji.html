@@ -524,7 +524,7 @@ async function build() {
   { const pm = new THREE.PMREMGenerator(renderer), es = new THREE.Scene(); es.add(new THREE.Mesh(sky.geometry, sky.material)); scene.environment = pm.fromScene(es, .02, 1, 30000).texture; pm.dispose(); }
   const MAT = { podium: pbr(T.podium), terr: pbr(T.terr), tdeck: new THREE.MeshStandardMaterial({ color: '#bdb9b1', roughness: .9 }), rail: new THREE.MeshStandardMaterial({ color: '#cfe0e8', roughness: .1, transparent: true, opacity: .4 }), front: pbr(T.front), frontDk: pbr(T.frontDk), frontLt: pbr(T.frontLt), back: pbr(T.back), side: pbr(T.side), bfront: pbr(T.bfront), bback: pbr(T.bback), bside: pbr(T.bside), core: pbr(T.core), roof: std(T.roof, .55),
     white: new THREE.MeshStandardMaterial({ color: '#e2dfd9', roughness: .8 }), fin: new THREE.MeshStandardMaterial({ color: '#46505a', roughness: .7 }), green: std(T.green, 1), concrete: std(T.concrete, .95),
-    brick: new THREE.MeshStandardMaterial({ color: '#8b4c39', roughness: .9 }), glassBox: new THREE.MeshStandardMaterial({ color: '#4c6378', roughness: .35 }) };
+    brick: new THREE.MeshStandardMaterial({ color: '#7a4b3b', roughness: .9 }), glassBox: new THREE.MeshStandardMaterial({ color: '#4c6378', roughness: .35 }) };
 
   /* ===== 지형 ===== */
   prog(14); await tick();
@@ -771,9 +771,9 @@ function buildDong(D, G, MAT) {
       obox(cx + fx * (ox + .1), cz + fz * (ox + .1), ux, uz, L - .2, dep + .2, Math.min(yl - yF1, 0) - .4, .12, { front: F(G.podium, uvTile(20, 10)), left: F(G.podium, uvTile(20, 10)), right: F(G.podium, uvTile(20, 10)), top: { gb: G.tdeck } });
       /* 테라스 가장자리 유리 난간 */
       obox(cx + fx * (DEP / 2 + dep - .15), cz + fz * (DEP / 2 + dep - .15), ux, uz, L - .4, .06, .12, 1.25, { front: { gb: G.rail }, back: { gb: G.rail }, top: { gb: G.white } });
-      /* 세대 사이 도장 칸막이 + 테라스 위 처마(1층 바닥 슬래브) */
-      for (let k = 0; k <= n; k++) { const s = -L / 2 + tw * k, ex = Math.max(-L / 2 + .2, Math.min(L / 2 - .2, s)); obox(cx + ux * ex + fx * ox, cz + uz * ex + fz * ox, fx, fz, dep, .35, .12, 2.5, { front: F(G.tdeck), back: F(G.tdeck), left: F(G.tdeck), right: F(G.tdeck), top: F(G.tdeck) }); }
-      obox(cx + fx * (DEP / 2 + .9), cz + fz * (DEP / 2 + .9), ux, uz, L, 1.8, yT - .25, yT + .05, { front: { gb: G.white }, back: { gb: G.white }, top: { gb: G.white } }); }
+      /* 세대 사이 칸막이·테라스 위 처마: 모형처럼 갈색 도장 */
+      for (let k = 0; k <= n; k++) { const s = -L / 2 + tw * k, ex = Math.max(-L / 2 + .2, Math.min(L / 2 - .2, s)); obox(cx + ux * ex + fx * ox, cz + uz * ex + fz * ox, fx, fz, dep, .35, .12, 2.5, { front: F(G.brick), back: F(G.brick), left: F(G.brick), right: F(G.brick), top: F(G.brick) }); }
+      obox(cx + fx * (DEP / 2 + .9), cz + fz * (DEP / 2 + .9), ux, uz, L, 1.8, yT - .35, yT + .05, { front: { gb: G.brick }, back: { gb: G.brick }, top: { gb: G.brick } }); }
     /* 측벽 동 번호 사인(모형: 저층부 바로 위) */
     if (wi === 0 || D.w.length > 1) for (const e of (D.w.length > 1 ? (wi === 0 ? [-1] : [1]) : [-1, 1])) { const sx = cx + ux * e * (L / 2 + .06) + fx * DEP * .27, sz = cz + uz * e * (L / 2 + .06) + fz * DEP * .27, m = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8), signMat(D.d)); /* 측벽 가운데 짙은 띠를 피해 앞쪽 */
       const yS = yF1 + Math.min(base + 1.7, H - 3.2); m.position.set(sx, yS, sz); m.lookAt(sx + ux * e, yS, sz + uz * e); scene.add(m); } /* 모형: 동 번호는 갈색 저층부 바로 위 측벽 */
