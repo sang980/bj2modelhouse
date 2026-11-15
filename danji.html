@@ -651,9 +651,9 @@ async function build() {
     const deckMat = new THREE.MeshStandardMaterial({ map: planTex, roughness: .95 });
     /* 보행로 마스크(모형처럼 또렷한 길): 배치도의 밝은 무채색 픽셀 → 흐림 → 문턱 → 살짝 흐림. 작은 얼룩은 사라지고 길만 남음 */
     const pathMask = (() => { const id = pg.getImageData(0, 0, PW, PH).data, m1 = cnv(PW, PH), g1 = m1.getContext('2d'), out = g1.createImageData(PW, PH), o = out.data;
-      for (let i = 0, N2 = PW * PH; i < N2; i++) { const r = id[i * 4], g = id[i * 4 + 1], b = id[i * 4 + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), lum = .299 * r + .587 * g + .114 * b, p = id[i * 4 + 3] > 200 && lum > 184 && lum < 246 && mx - mn < 26 && g - Math.max(r, b) < 8 ? 255 : 0; o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = p; o[i * 4 + 3] = 255; }
-      g1.putImageData(out, 0, 0); const m2 = cnv(PW, PH), g2 = m2.getContext('2d'); g2.filter = 'blur(9px)'; g2.drawImage(m1, 0, 0);
-      const bd = g2.getImageData(0, 0, PW, PH), d = bd.data; for (let i = 0; i < d.length; i += 4) { const v = d[i] > 185 ? 255 : 0; d[i] = d[i + 1] = d[i + 2] = v; } g2.putImageData(bd, 0, 0);
+      for (let i = 0, N2 = PW * PH; i < N2; i++) { const r = id[i * 4], g = id[i * 4 + 1], b = id[i * 4 + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), lum = .299 * r + .587 * g + .114 * b, p = id[i * 4 + 3] > 200 && lum > 150 && lum < 250 && mx - mn < 34 && g - Math.max(r, b) < 6 ? 255 : 0; /* 배치도 포장은 밝은 베이지 + 짙은 점무늬: 점까지 포장으로 잡아야 광장이 잔디로 안 바뀜 */ o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = p; o[i * 4 + 3] = 255; }
+      g1.putImageData(out, 0, 0); const m2 = cnv(PW, PH), g2 = m2.getContext('2d'); g2.filter = 'blur(5px)'; g2.drawImage(m1, 0, 0);
+      const bd = g2.getImageData(0, 0, PW, PH), d = bd.data; for (let i = 0; i < d.length; i += 4) { const v = d[i] > 150 ? 255 : 0; d[i] = d[i + 1] = d[i + 2] = v; } g2.putImageData(bd, 0, 0);
       const m3 = cnv(PW, PH), g3 = m3.getContext('2d'); g3.filter = 'blur(1.2px)'; g3.drawImage(m2, 0, 0); const t = new THREE.CanvasTexture(m3); t.colorSpace = THREE.NoColorSpace; t.anisotropy = ANISO; return t; })();
     detailDeck(deckMat, pathMask); mk(fp, fu, deckMat); mk(wp, wu, wallMat);
     if (lp.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#c9cac7', .03, 600); g.fillStyle = 'rgba(0,0,0,.06)'; g.fillRect(0, 0, 256, 3); const t = tex(c); const lm = new THREE.MeshStandardMaterial({ map: t, roughness: .9, side: THREE.DoubleSide }); mk(lp, lu, lm); } }
