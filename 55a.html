@@ -2773,8 +2773,16 @@ function pantryGoods(g, lv, y) {
 // 3 현관중문 (3연동 슬라이딩도어)
 { const r = item('o3', '현관중문 레일', false); cab(r, 1.77, 3.335, 2.06, 2.12, 3.62, 3.7, M.metalDark); cab(r, 1.77, 3.335, 2.12, H, 3.6, 3.72, M.white); /* 레일 위~천장까지 흰 벽(천장이 뜨지 않게, 55B·56T와 같은 방식) */ /* 끝면이 현관장 문 앞면과 같은 평면이 되지 않게 5mm 짧게 */
   const g = item('o3', '현관중문');
-  const panel = (x0, z) => { cab(g, x0, x0 + .47, .02, 2.06, z - .006, z + .006, M.glass, { cast: false }); for (const [a, b, c, d] of [[x0, x0 + .03, .02, 2.06], [x0 + .44, x0 + .47, .02, 2.06], [x0, x0 + .47, .02, .07], [x0, x0 + .47, 2.0, 2.06]]) cab(g, a, b, c, d, z - .015, z + .015, M.rail); };
-  panel(1.79, 3.635); panel(2.235, 3.66); panel(2.27, 3.685); } /* 문틀 옆면이 같은 평면에 겹치지 않게 5mm씩 어긋나게 */
+  /* 3연동 슬라이딩: 56T·55B처럼 클릭(E)하면 세 짝이 함께 미끄러져 열리고 닫힘 — 열면 서쪽(신발장 쪽)에 겹쳐짐, 레일 줄마다 2.5cm씩 어긋남 */
+  const x0 = 1.78, x1 = 3.33, n = 3, pw = (x1 - x0) / n + .03, ph = 2.04, zs = [3.635, 3.66, 3.685], panels = [], parts = [];
+  for (let i = 0; i < n; i++) { const p = new THREE.Group(); g.add(p); panels.push(p); const add = m => { p.add(m); parts.push(m); return m; };
+    add(mesh(BX(pw - .05, ph - .07, .012), M.glass, 0, .02 + ph / 2, 0, null, { cast: false, recv: false }));
+    for (const [w, h, xx, y] of [[pw, .05, 0, .045], [pw, .06, 0, .02 + ph - .03], [.03, ph, -pw / 2 + .015, .02 + ph / 2], [.03, ph, pw / 2 - .015, .02 + ph / 2]]) add(mesh(BX(w, h, .03), M.rail, xx, y, 0));
+    p.position.z = WZ(zs[i]); }
+  const xc = i => WX(x0 + pw / 2 - .015 + i * (pw - .03)), xo = i => WX(x0 + pw / 2 + i * .035);
+  const d = { pivot: g, thetaC: 0, thetaO: 1, open: true, cur: 1, target: 1, name: '현관중문', box: { minX: WX(x0), maxX: WX(x1), minZ: WZ(3.6), maxZ: WZ(3.72) }, apply: v => panels.forEach((p, i) => { p.position.x = xc(i) + (xo(i) - xc(i)) * v; }) };
+  d.apply(1); for (const m of parts) { m.userData.door = d; doorMeshes.push(m); } doors.push(d);
+  } /* 문틀 옆면이 같은 평면에 겹치지 않게 5mm씩 어긋나게 */
 // 4 아일랜드식탁 (사진): 동쪽 벽에 붙은 페닌슐라, 남쪽(식탁 쪽)으로 도어, 식탁이 그 앞에 붙음
 /* 전기밥솥(요청·VR): 아일랜드 주방 쪽 오픈 칸 속 둥근 흰 밥솥 1대 */
 function riceCooker(g, cx, y, cz) {
@@ -2857,21 +2865,21 @@ wall(10.75, 2.5, 12.32, 2.5, TI, [{ from: 10.95, to: 11.75, y1: 2.15, kind: 'ope
   makeDoor({ parent: g, horiz: true, line: 2.5, t: TI, hu: 11.735, du: -1, side: -1, lw: .385, lh: 2.12, lt: .03, style: 'tint', from: 10.95, to: 11.75, name: '드레스룸 문' }); }
 // 7-2 대형 드레스룸 슬라이딩도어
 // 분양 자료 7-2: 한 짝 슬라이딩 도어 — 블랙 프레임 + 검은빛 반투명 유리, 가로 띠 2줄(3칸)
-// 침실 쪽 벽면(z≈5.0)에 상부 레일을 달고, 열면 오른쪽(동쪽) 벽 앞 — 붙박이장과 벽 사이 틈 — 으로 미끄러짐
+/* 기존 드레스룸 앞벽(침실 쪽 면 z 4.06)에 상부 레일을 달고, 열면 왼쪽(서쪽) 빈 벽 앞으로 미끄러짐 — 입구를 다 비우고 화장대·붙박이장과 겹치지 않게 */
 { const g = item('o7-2', '드레스룸 슬라이딩도어', false);
-  const ox0 = 10.84, ox1 = 11.52, zf = 4.995, top = 2.12, pw = ox1 - ox0 + .06, ph = top - .02;
-  cab(g, 10.8, 12.21, top, top + .05, 4.965, 5.02, std(0x1b1c1e, .4, .4));           // 상부 레일
+  const ox0 = 10.9, ox1 = 11.65, zf = 4.08, top = 2.12, pw = ox1 - ox0 + .06, ph = top - .02; /* 7-2도 벽은 그대로 — 기존 드레스룸 앞벽(z 4.0, 침실 쪽 면 4.06) 입구에 슬라이딩 도어만 설치(예전엔 드레스룸을 침실 쪽으로 0.9m 넓히는 벽이 튀어나왔음) */
+  cab(g, 10.08, 11.69, top, top + .05, 4.06, 4.115, std(0x1b1c1e, .4, .4));           // 상부 레일
   const smoke = new THREE.MeshStandardMaterial({ color: 0x24272b, roughness: .18, metalness: .1, transparent: true, opacity: .58, side: THREE.DoubleSide, depthWrite: false });
   const blk = std(0x151618, .35, .3), p = new THREE.Group(); g.add(p); const parts = [];
   const add = m => { p.add(m); parts.push(m); return m; };
   add(mesh(BX(pw - .06, ph - .06, .008), smoke, 0, ph / 2 + .01, 0, null, { cast: false, recv: false }));
   for (const [w, h, x, y] of [[pw, .035, 0, .0275], [pw, .035, 0, ph - .0075], [.035, ph, -pw / 2 + .0175, ph / 2 + .01], [.035, ph, pw / 2 - .0175, ph / 2 + .01], [pw, .025, 0, ph * .36], [pw, .025, 0, ph * .68]])
     add(mesh(BX(w, h, .032), blk, x, y, 0));
-  for (const s of [-1, 1]) add(mesh(BX(.022, .5, .02), blk, -pw / 2 + .07, 1.05, s * .03));    // 세로 손잡이(왼쪽 끝 — 오른쪽으로 밀어 엶)
-  const xClosed = WX((ox0 + ox1) / 2), xOpen = WX(12.21 - pw / 2);
+  for (const s of [-1, 1]) add(mesh(BX(.022, .5, .02), blk, pw / 2 - .07, 1.05, s * .03)); /* 세로 손잡이(오른쪽 끝 — 왼쪽으로 밀어 엶) */
+  const xClosed = WX((ox0 + ox1) / 2), xOpen = WX(ox0 - pw / 2 + .02);
   p.position.set(xClosed, 0, WZ(zf));
   const d = { pivot: g, thetaC: 0, thetaO: 1, open: true, cur: 1, target: 1, name: '드레스룸 슬라이딩 문',
-    box: { minX: WX(ox0), maxX: WX(ox1), minZ: WZ(4.84), maxZ: WZ(4.96) },
+    box: { minX: WX(ox0), maxX: WX(ox1), minZ: WZ(3.94), maxZ: WZ(4.06) },
     apply: v => { p.position.x = xClosed + (xOpen - xClosed) * v; } };
   d.apply(1);
   for (const m of parts) { m.userData.door = d; doorMeshes.push(m); }
@@ -2881,7 +2889,7 @@ wall(10.75, 2.5, 12.32, 2.5, TI, [{ from: 10.95, to: 11.75, y1: 2.15, kind: 'ope
   suitcase(item('o8-1', '캐리어', false), 11.985, 2.25, .12); /* 낮은 2단 선반(z ~2.06)을 뚫지 않게 선반 끝과 벽 사이에 세로로 */
   // (사진: 작은 창에는 블라인드 없음)
 }
-{ const g = item('o8-2', '대형 드레스룸 시스템선반'); systemShelf(g, 11.7, 12.21, .2, 4.82, true, { chest: true, chestStart: true, low: true }); }
+{ const g = item('o8-2', '대형 드레스룸 시스템선반'); systemShelf(g, 11.7, 12.21, .2, 3.92, true, { chest: true, chestStart: true, low: true }); }
 { const g = item('o8-2', '대형 드레스룸 시스템선반(서쪽)'); systemShelf(g, 10.81, 11.3, 1.35, 2.45, true, { wallMin: true }); } // 따로 둬야 충돌 상자가 통로를 덮지 않음, 입구 앞은 비워 둠
 // 9 파우더룸 화장대 (사진): 동쪽 벽, 상판+서랍, 3도어 거울장, 상부 매입등
 { const g = item('o9', '파우더룸 화장대');
@@ -2925,14 +2933,14 @@ wall(10.75, 2.5, 12.32, 2.5, TI, [{ from: 10.95, to: 11.75, y1: 2.15, kind: 'ope
     mesh(CY(.014, .014, .02, 14), std(0xd9b36a, .25, .9), WX(dx), T + .14, WZ(dz), g);
     for (let i = 0; i < 6; i++) { const s = mesh(CY(.0018, .0018, .26, 5), std(0x3b2c22, .9), WX(dx), T + .25, WZ(dz), g, { cast: false }); s.rotation.set(Math.cos(i * 1.1) * .22, 0, Math.sin(i * 1.1) * .22); } } }
 // 10 침실1 붙박이장
-// 북쪽 끝은 드레스룸 벽까지 꽉 채움: 기본/7-1 → 벽 z 4.06, 7-2(드레스룸 확장) → 벽 z 4.96
+/* 북쪽 끝은 드레스룸 벽(z 4.06)까지 꽉 채움 — 7-2 슬라이딩 문은 반대쪽(서쪽)으로 열려 겹치지 않음 */
 const wrLong = [], wrShort = [];
-const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4.06, nLong], [wrShort, 5.06, nShort]]) { const sg = new THREE.Group(); g.add(sg); wardrobe(sg, 11.65, 12.21, z0, z1, 'x-', n); arr.push(sg); } };
+const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4.06, nLong], [wrShort, 4.06, nShort]]) { const sg = new THREE.Group(); g.add(sg); wardrobe(sg, 11.65, 12.21, z0, z1, 'x-', n); arr.push(sg); } };
 { const g = item('o10-1', '침실1 붙박이장'); wrVar(g, 7.9, 6, 6); }
 // 10-2(분양 자료): 붙박이장 4칸 중 왼쪽(드레스룸 쪽, 북쪽) 1칸이 화장대 — 나머지 3칸은 붙박이장 문
 //   화장대 칸: 위는 거울(움푹 들어간 공간 뒤판), 가운데 테이블, 테이블 밑은 의자가 들어가는 빈 공간 + 한쪽에 서랍 2단
 { const g = item('o10-2', '침실1 붙박이장+화장대');
-  for (const [arr, z0] of [[wrLong, 4.06], [wrShort, 5.06]]) {
+  for (const [arr, z0] of [[wrLong, 4.06], [wrShort, 4.06]]) {
     const sg = new THREE.Group(); g.add(sg); arr.push(sg);
     const bay = (7.9 - z0) / 4, zv = z0 + bay, x0 = 11.65, x1 = 12.21, body = std(0xebe9e4, .5), inner = std(0xe2dfd9, .55);
     wardrobe(sg, x0, x1, zv, 7.9, 'x-', 3);
@@ -3151,7 +3159,7 @@ function applyOptions() {
   tagGroup('storage').visible = s['1'] !== '1'; tagGroup('o1wall').visible = s['1'] === '1';
   show('o1', s['1'] === '1'); show('o1closed', s['1'] === '1'); show('o1doors', s['1'] === '1'); show('o1open', s['1'] === '1' && s['2'] === '2-2');
   show('o2-1', s['2'] === '2-1');
-  show('o3', s['3'] === '3');
+  show('o3', s['3'] === '3'); { const d = doors.find(x => x.name === '현관중문'); if (d) d.disabled = s['3'] !== '3'; } /* 옵션을 끄면 E 키로도 안 열리게 */
   const island = ['4-1', '4-3', '4-4'].includes(s['4']), stone = ['4-2', '4-3', '4-4'].includes(s['4']);
   show('o4island', s['4'] === '4-1' || s['4'] === '4-3' || s['4'] === '4-4'); show('o4islandS', false); { const isl = ['4-1', '4-3', '4-4'].includes(s['4']); show('o4islandW', isl && s['1'] !== '1'); show('o4islandWP', isl && s['1'] === '1'); } /* 서쪽 벽까지 늘린 아일랜드 날개 */ /* 4-4(현관구조 1)도 4-1·4-3과 같은 원래 자리에 아일랜드 */
   const cm = stone ? MAT_OPT.stone : MAT_OPT.mma; M.counter.map = cm.map; M.counter.color.set(cm.color); M.counter.roughness = cm.roughness; M.counter.needsUpdate = true;
@@ -3177,8 +3185,8 @@ function applyOptions() {
   show('o5base', !s['5']); show('o5-1', s['5'] === '5-1'); show('o5-2', s['5'] === '5-2');
   show('o6base', !s['6']); show('o6-1', s['6'] === '6-1'); show('o6-2', s['6'] === '6-2');
   show('o7-1', s['7'] === '7-1'); tagGroup('dress71').visible = s['7'] === '7-1';
-  tagGroup('dress-front').visible = s['7'] !== '7-2'; tagGroup('dress-big').visible = s['7'] === '7-2'; show('o7-2', s['7'] === '7-2');
-  sideTableN.visible = s['7'] !== '7-2';
+  tagGroup('dress-front').visible = true; tagGroup('dress-big').visible = false; /* 7-2도 벽은 그대로(슬라이딩 도어만) */ show('o7-2', s['7'] === '7-2');
+  sideTableN.visible = true;
   show('o8-1', s['8'] === '8-1'); show('o8-2', s['8'] === '8-2');
   show('o9', s['9'] === '9');
   show('o10-1', s['10'] === '10-1'); show('o10-2', s['10'] === '10-2');
