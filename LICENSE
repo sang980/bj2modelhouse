@@ -1,0 +1,60 @@
+저작권 및 이용 제한 (All Rights Reserved)
+
+Copyright (c) 2026 sang980. All rights reserved.
+
+이 저장소와 웹페이지(https://sang980.github.io/bj2modelhouse/)에 포함된
+3D 웹 모델하우스, 단지 조감도, 소스코드, 3D 모델링, 텍스처·이미지·디자인 등
+모든 저작물(이하 "저작물")의 저작권은 저작권자(sang980)에게 있습니다.
+이 저작물은 오픈소스가 아니며, 아래 1항에서 허용한 것 외의 어떠한 권리도 부여하지 않습니다.
+
+1. 허용되는 이용
+   - 웹 브라우저로 웹페이지에 접속하여 개인적·비상업적 목적으로 열람하는 것
+   - 웹페이지 주소(링크)를 그대로 공유하는 것
+
+2. 금지되는 이용 (저작권자의 사전 서면 허락이 없는 경우)
+   - 저작물의 전부 또는 일부를 복제·다운로드·저장하여 다시 배포하는 행위
+   - 수정·변형·번역하거나 이를 바탕으로 2차적 저작물을 만드는 행위
+   - 다른 웹사이트·앱·서비스에 게시하거나 삽입(임베드·미러링·프레임)하는 행위
+   - 판매, 광고, 분양·중개 홍보, 유료 서비스 등 상업적 목적으로 이용하는 행위
+   - 소스코드를 분석·발췌하여 같거나 비슷한 서비스·제품을 만드는 행위
+   - 인공지능(AI) 학습 데이터로 수집하거나 이용하는 행위
+   - 저작권 표시를 지우거나 바꾸는 행위
+
+3. 이 저장소가 GitHub에 공개되어 있더라도 위 제한은 그대로 적용됩니다.
+   GitHub 이용약관에 따라 GitHub 안에서 보기·포크(fork) 기능을 쓸 수 있더라도,
+   이는 복제·배포·수정·상업적 이용을 허락한다는 뜻이 아닙니다.
+
+4. 평면도, 단지배치도 등 이 저작물이 참고한 원자료의 권리는 각 원권리자에게 있으며,
+   이 문서는 원자료에 대한 권리를 주장하거나 다른 사람에게 부여하지 않습니다.
+
+5. 위 조건을 위반하면 저작권법 등 관계 법령에 따라 민사·형사상 책임을 질 수 있습니다.
+
+이용 허락 문의: https://github.com/sang980
+
+------------------------------------------------------------------------
+
+Copyright (c) 2026 sang980. All rights reserved.
+
+This repository and the website at https://sang980.github.io/bj2modelhouse/,
+including the 3D web model house, the 3D site view, source code, 3D models,
+textures, images and designs (the "Work"), are the exclusive property of the
+copyright holder. The Work is NOT open source and no license is granted except
+as stated below.
+
+Permitted: viewing the website in a web browser for personal, non-commercial
+purposes, and sharing its link unchanged.
+
+Prohibited without prior written permission of the copyright holder:
+copying, downloading or redistributing any part of the Work; modifying it or
+creating derivative works; hosting, embedding, mirroring or framing it on any
+other site, app or service; any commercial use, including sales, advertising,
+real-estate promotion or paid services; using the source code to build the same
+or similar products; collecting or using the Work as training data for
+artificial intelligence; removing or altering this copyright notice.
+
+The fact that this repository is publicly visible on GitHub, and that GitHub's
+Terms of Service allow viewing and forking within GitHub, does not grant any
+right to copy, distribute, modify or commercially use the Work.
+
+Rights in third-party source materials (such as floor plans and site plans)
+remain with their respective owners.

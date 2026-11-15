@@ -1,8 +1,10 @@
 <!doctype html>
 <html lang="ko">
+<!-- (c) 2026 sang980. All rights reserved. 무단 복제·재배포·수정·상업적 이용·AI 학습 이용 금지. 열람만 허용 (LICENSE 참고) -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="copyright" content="(c) 2026 sang980. All rights reserved.">
 <title>웹 모델하우스 · 타입 선택</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,6 +32,14 @@ h1{font:600 clamp(26px,5vw,40px)/1.15 var(--display);margin:0 0 10px;letter-spac
 .card.soon .type{color:var(--muted)}
 .card.soon .tag{background:transparent;border:1px solid var(--line);color:var(--muted)}
 footer{margin-top:28px;font-size:12px;color:var(--muted);line-height:1.6}
+footer p{margin:0}
+.rights{margin-top:16px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.rights p{margin:0 0 6px}
+.rights .rights-head{font:600 12.5px var(--body);color:var(--ink)}
+.rights b{color:var(--ink);font-weight:600}
+.rights summary{cursor:pointer;color:var(--accent);font-weight:500;margin-top:2px}
+.rights ul{margin:8px 0 0;padding-left:18px}
+.rights li{margin:2px 0}
 #toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-size:14px;transition:opacity .2s ease,transform .2s ease;max-width:calc(100% - 32px);text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
@@ -45,7 +55,25 @@ footer{margin-top:28px;font-size:12px;color:var(--muted);line-height:1.6}
     <a class="card" href="55c.html"><span class="type">55C</span><span class="name">55C 타입</span><span class="tag">입장하기</span><span class="meta">전용 55.98㎡<br>측세대 · 드레스룸 창</span></a>
     <a class="card" href="56t.html"><span class="type">56T</span><span class="name">56T 테라스 타입</span><span class="tag">입장하기</span><span class="meta">전용 56.94㎡<br>테라스형 · 침실1 발코니</span></a>
   </section>
-  <footer>평면도 치수 기반의 데모입니다. 실제 시공과 다를 수 있습니다.</footer>
+  <footer>
+    <p class="fnote">평면도 치수 기반의 데모입니다. 실제 시공과 다를 수 있습니다.</p>
+    <section class="rights" aria-label="저작권 및 이용 제한">
+      <p class="rights-head">© 2026 sang980 · All rights reserved.</p>
+      <p>이 웹 모델하우스의 3D 모델·소스코드·이미지·디자인은 저작권법의 보호를 받는 저작물입니다. <b>웹페이지 열람과 링크 공유만 허용</b>되며, 저작권자의 서면 허락 없이 <b>복제·다운로드·재배포·수정·다른 사이트 게시·상업적 이용·AI 학습 이용을 금지</b>합니다.</p>
+      <details>
+        <summary>이용 조건 자세히 보기</summary>
+        <ul>
+          <li>허용: 웹 브라우저로 개인적·비상업적 목적으로 열람, 웹페이지 주소(링크) 공유</li>
+          <li>금지: 전부 또는 일부의 복제·저장·재배포, 수정·변형·2차적 저작물 작성</li>
+          <li>금지: 다른 웹사이트·앱·서비스에 게시하거나 삽입(임베드·미러링·프레임)</li>
+          <li>금지: 판매·광고·분양·중개 홍보·유료 서비스 등 상업적 이용</li>
+          <li>금지: 소스코드를 분석·발췌해 같거나 비슷한 서비스를 만드는 행위, AI 학습 데이터로 수집·이용</li>
+          <li>평면도·단지배치도 등 참고한 원자료의 권리는 각 원권리자에게 있습니다.</li>
+          <li>위반 시 관계 법령에 따라 민사·형사상 책임을 질 수 있습니다. 이용 허락 문의: GitHub sang980</li>
+        </ul>
+      </details>
+    </section>
+  </footer>
 </main>
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
