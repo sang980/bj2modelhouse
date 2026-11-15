@@ -2895,8 +2895,8 @@ const OPTS = [
   { id: '10', name: '붙박이장(침실1)', base: '미설치', items: [['10-1', '침실1 붙박이장(슬라이딩장)'], ['10-2', '침실1 붙박이장(슬라이딩장+화장대)']], view: [9.7, 6.9, 12.1, 6.6, -.05] },
   { id: '11', name: '붙박이장(침실2)', base: '미설치', items: [['11', '침실2 붙박이장']], view: [1.0, 7.7, 2.4, 6.5, -.05] },
   { id: '12', name: '붙박이장(통합형)', base: '미설치', items: [['12', '침실2+알파룸 통합형 붙박이장']], view: [3.3, 7.4, .4, 6.3, -.05] },
-  { id: '13', name: '붙박이장(특화형)', base: '미설치', items: [['13', '알파룸 특화형 붙박이장']], view: [4.4, 7.6, 3.7, 5.4, -.05] },
-  { id: '14', name: '욕실 다기능팬', base: '일반 배기팬', items: [['14', '다기능 욕실팬(공용욕실)']], view: [1.4, 4.4, .95, 3.9, .95] },
+  { id: '13', name: '붙박이장(특화형)', base: '미설치', items: [['13', '알파룸 특화형 붙박이장']], view: [4.6, 6.4, 2.82, 7.4, -.08] },
+  { id: '14', name: '욕실 다기능팬', base: '일반 배기팬', items: [['14', '다기능 욕실팬(공용욕실)']], view: [.9, 4.8, .95, 3.9, .75] },
   { id: '15', name: '시스템에어컨', base: '냉매배관만 제공(거실+침실1)', items: [['15-1', '거실, 침실1'], ['15-2', '거실, 침실1, 침실2+알파룸 통합형'], ['15-3', '전실(거실, 침실1, 침실2, 알파룸)']], view: [6.1, 7.7, 7.0, 4.9, .45] },
   { id: '16', name: '간접조명', base: '미설치', items: [['16', '우물천장 테두리 간접조명']], view: [6.1, 7.7, 7.0, 4.9, .45], night: true },
   { id: '17', name: '감성조명', base: '거실등(5단계 디밍)', items: [['17', '거실등+침실등(알파룸 포함) 디밍·색온도 제어']], view: [6.1, 7.7, 7.3, 5.0, .2], night: true },
@@ -3040,6 +3040,7 @@ function goLook(o) {
   // 현관구조 1 선택 시 팬트리는 복도 쪽에서 봐야 보임
   const [x, z, tx, tz, pitch] = (o.id === '2' && sel['1'] === '1') ? [4.4, 4.95, 4.4, 2.9, -.2] : o.view;
   player.x = WX(x); player.z = WZ(z); player.yaw = Math.atan2(-(tx - x), -(tz - z)); player.pitch = pitch;
+  { const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw); for (const d of doors) { if (d.open || !d.box) continue; const cx = (d.box.minX + d.box.maxX) / 2 - player.x, cz = (d.box.minZ + d.box.maxZ) / 2 - player.z, L = Math.hypot(cx, cz); if (L < 2.2 && (cx * fx + cz * fz) / (L || 1) > .8) toggleDoor(d); } } /* 보러 가기: 바로 앞의 닫힌 문(팬트리·창고·수납장)은 열어 안이 보이게 */
   if (mode !== 'first') setMode('first');
   if (innerWidth <= 760) { optPanel.classList.remove('open'); optToggle.setAttribute('aria-expanded', 'false'); }
 }
