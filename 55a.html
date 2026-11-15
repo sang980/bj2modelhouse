@@ -1269,11 +1269,11 @@ ledRectWall(5.24, 1.55, 6.575, 2.0, 1.0, -1, 0, 0xffd9a8, 1.2, 2.4);
 { const p = new THREE.Group(); fixed.add(p);
   const gl = new THREE.MeshStandardMaterial({ color: 0xf4f6f7, roughness: .04, metalness: .1, transparent: true, opacity: .28, depthWrite: false }), fil = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffd9a0, emissiveIntensity: 2.2 });
   for (const [x, z, y] of [[5.52, 7.68, 1.42], [5.7, 7.84, 1.62]]) {
-    mesh(CY(.045, .045, .03), M.black, WX(x), H - .015, WZ(z), p, { cast: false });
+    mesh(RB(.14, .03, .06, .01, 2), M.black, WX(x), H - .015, WZ(z), p, { cast: false }); /* VR: 검정 직사각 천장캡 */
     mesh(CY(.003, .003, H - y - .25), M.black, WX(x), (H + y + .25) / 2, WZ(z), p, { cast: false });
     mesh(CY(.026, .026, .06, 20), M.black, WX(x), y + .22, WZ(z), p, { cast: false });
-    mesh(CY(.032, .032, .2, 28, 1, true), gl, WX(x), y + .09, WZ(z), p, { cast: false, recv: false }); mesh(CY(.032, .032, .004, 28), gl, WX(x), y - .01, WZ(z), p, { cast: false, recv: false });
-    mesh(CY(.004, .004, .1, 8), fil, WX(x), y + .12, WZ(z), p, { cast: false }); mesh(new THREE.SphereGeometry(.012, 12, 8), fil, WX(x), y + .06, WZ(z), p, { cast: false });
+    { const pr = [[0, 0], [.022, .004], [.04, .025], [.046, .055], [.04, .085], [.024, .105], [.02, .115], [.028, .13], [.034, .15], [.03, .172], [.018, .188], [.014, .19]].map(([a, b]) => new THREE.Vector2(a, b));
+      mesh(new THREE.LatheGeometry(pr, 32), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .35, emissive: 0xfff4e2, emissiveIntensity: 1.1 }), WX(x), y, WZ(z), p, { cast: false }); } /* VR: 불 켜진 흰 젖빛 유리 — 아래 큰 구 + 위 작은 구 */
   } }
 // 거실 평판등 2개(우물천장 중앙) + 커튼
 ceilingPanel(6.45, 6.93, 5.55, 6.55, 1.4, 3.4); ceilingPanel(6.99, 7.47, 5.55, 6.55, 1.4, 3.4);
