@@ -2098,7 +2098,8 @@ function diningWhiteT(L = 1.4, per = 2) { /* per: 한쪽 의자 수(2 → 4인, 
     mesh(bowlGeo, orange, px, .782, pz, g); for (const dz of [-.008, .008]) { const c = mesh(CY(.0025, .0035, .22, 6), chop, px + Math.sign(px) * .13, .766, pz + dz, g, { cast: false }); c.rotation.x = Math.PI / 2; } }
   { const bot = new THREE.LatheGeometry([[0, 0], [.036, 0], [.037, .2], [.03, .245], [.014, .275], [.014, .315], [0, .315]].map(([a, b]) => new THREE.Vector2(a, b)), 28), gm = std(0x1f2b22, .12, .25), foil = std(0x5a1420, .4, .3); /* VR: 와인병 2 + 와인잔 */
     for (const [x, z] of [[-.04, -.06], [.05, .04]]) { mesh(bot, gm, x, .757, z, g); mesh(CY(.0155, .0155, .045, 16), foil, x, .757 + .3, z, g); mesh(CY(.0375, .0375, .075, 24, 1, true), std(0xefe6d2, .7), x, .757 + .1, z, g); }
-    for (const [x, z] of [[-.2, 0], [.2, -.08]]) wineGlass(g, x, .757, z); }
+    for (const [x, z] of [[-.2, 0], [.2, -.08]]) wineGlass(g, x, .757, z);
+    mesh(CY(.032, .027, .06, 18), std(0xf4f3ef, .4), .0, .787, .14, g); for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2, l = mesh(new THREE.SphereGeometry(.014, 8, 6), M.plant, Math.cos(a) * .014, .84 + (i % 3) * .012, .14 + Math.sin(a) * .014, g, { cast: false }); l.scale.set(.5, 1.2, .3); l.rotation.set(Math.sin(a) * .6, -a, Math.cos(a) * .6); } } /* VR: 와인병 사이 작은 흰 화분 새싹 */
   g.userData.len = L; return g;
 }
 const diningT = diningWhiteT(), diningT6 = diningWhiteT(1.95, 3); /* 기본형(아일랜드 없음)은 6인 긴 식탁 */
@@ -2116,7 +2117,7 @@ const diningT = diningWhiteT(), diningT6 = diningWhiteT(1.95, 3); /* 기본형(�
 diningB.position.set(WX(6.05), 0, WZ(3.1)); diningB.rotation.y = Math.PI; diningB.userData.home = { x: diningB.position.x, z: diningB.position.z, r: Math.PI };
 const diningPendB = new THREE.Group(); { const p = diningPendB; p.position.set(WX(7.0), 0, WZ(3.1)); fixed.add(p); // 식탁 펜던트
   // VR: 흰 돔(반구) 펜던트
-  mesh(CY(.004, .004, .62, 6), M.black, 0, H - .31, 0, p, { cast: false }); { const sh = mesh(new THREE.SphereGeometry(.24, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), std(0xf8f8f6, .35), 0, 1.6, 0, p, { cast: false }); sh.material.side = THREE.DoubleSide; }
+  mesh(CY(.004, .004, .62, 6), M.black, 0, H - .31, 0, p, { cast: false }); { const sh = mesh(new THREE.SphereGeometry(.24, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), std(0xf8f8f6, .35, 0, { emissive: 0xfff6ea, emissiveIntensity: .18 }), 0, 1.6, 0, p, { cast: false }); sh.material.side = THREE.DoubleSide; } /* VR: 흰 돔이 회색으로 죽지 않게 은은한 자체광 */
   mesh(CY(.05, .05, .06, 20), M.white, 0, 1.86, 0, p, { cast: false }); mesh(CY(.2, .2, .004, 32), M.ledWarm, 0, 1.6, 0, p, { cast: false }); }
 await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
 // 침실1: 머리는 서쪽 벽(헤드보드 벽판), 양옆 협탁
