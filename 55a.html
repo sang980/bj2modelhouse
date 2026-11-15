@@ -1720,11 +1720,14 @@ pbox(9.56, 10.085, 1.46, 2.09, 2.44, 2.445, M.mirrorBath2, fixed, { cast: false 
 mesh(CY(.03, .028, .09, 16), std(0xe9dfcf, .4), WX(10.3), 1.325, WZ(2.36), fixed);                                                                    // 컵
 // 동쪽 벽 휴지걸이(스테인리스 매립) + 남쪽 벽 수건걸이와 수건(흰·검정·파랑)
 pbox(10.655, 10.67, .6, .82, 2.54, 2.78, M.chrome, fixed); pbox(10.6, 10.655, .68, .74, 2.58, 2.74, std(0xf6f6f4, .9), fixed); pbox(10.655, 10.67, .84, .87, 2.58, 2.72, M.black, fixed);
-{ const tz = 3.92, tx0 = 9.65, tx1 = 10.2;
-  const bar = mesh(CY(.009, .009, tx1 - tx0, 12), M.chrome, WX((tx0 + tx1) / 2), 1.2, WZ(tz - .05), fixed); bar.rotation.z = Math.PI / 2;
-  for (const x of [tx0, tx1]) pbox(x - .02, x + .02, 1.17, 1.23, tz - .05, tz, M.chrome, fixed);
-  const tw = (c, x0, x1, y0, y1, dz) => pbox(x0, x1, y0, y1, tz - .055 - dz, tz - .045 - dz, std(c, .95), fixed);
-  tw(0x1c1c1e, 9.7, 10.15, .75, 1.2, .0); tw(0xf4f4f2, 9.72, 10.13, .95, 1.21, .012); tw(0x2f6fc0, 9.8, 10.05, .82, 1.13, .024); }
+{ /* 욕실2 남쪽 벽 수건걸이: 뒤 검정 긴 수건 + 흰 수건(둥글게 접어 건 윗단) + 앞 파랑 작은 수건 — 색은 그대로, 납작한 판 대신 결 있는 둥근 수건 */
+  const t = new THREE.Group(); t.position.set(WX(9.925), 0, WZ(3.92)); t.rotation.y = Math.PI; fixed.add(t); const w = .5, y = 1.2;
+  const bar = mesh(CY(.009, .009, w + .06, 12), M.chrome, 0, y, .055, t); bar.rotation.z = Math.PI / 2;
+  for (const s of [-1, 1]) { mesh(CY(.018, .018, .012, 16), M.chrome, s * (w / 2 + .03), y, .006, t).rotation.x = Math.PI / 2; mesh(CY(.008, .008, .05, 10), M.chrome, s * (w / 2 + .03), y, .03, t).rotation.x = Math.PI / 2; }
+  const bk = towelMat(0x1c1c1e), wh = towelMat(0xf4f4f2), bl = towelMat(0x2f6fc0);
+  mesh(RB(w * .9, .45, .014, .006, 2), bk, 0, y - .215, .042, t).rotation.x = .02; mesh(CY(.016, .016, w * .9, 14), bk, 0, y + .004, .056, t).rotation.z = Math.PI / 2;
+  mesh(RB(w * .82, .26, .013, .006, 2), wh, 0, y - .12, .07, t).rotation.x = -.03; mesh(CY(.014, .014, w * .82, 14), wh, 0, y + .012, .062, t).rotation.z = Math.PI / 2;
+  mesh(RB(w * .5, .3, .012, .005, 2), bl, 0, y - .19, .086, t).rotation.x = -.05; mesh(CY(.012, .012, w * .5, 12), bl, 0, y + .016, .068, t).rotation.z = Math.PI / 2; }
 // 바닥 매트(세면기 앞)
 mesh(BX(.5, .01, .34), std(0x6f7276, .95), WX(9.95), .012, WZ(3.02), fixed, { cast: false });
 ceilingPanel(9.75, 10.25, 3.0, 3.5, .8, 2.2);
