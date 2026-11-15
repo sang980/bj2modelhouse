@@ -1928,7 +1928,7 @@ function fernPlant(parent, x, y, z, s = 1) {
   for (let i = 0; i < pa.count; i++) { const t = pa.getY(i) / .34; pa.setX(i, pa.getX(i) + .05 * t * t); pa.setZ(i, pa.getZ(i) * (1 - .12 * Math.sin(t * Math.PI))); } // 위로 갈수록 한쪽으로 기울고 납작하게
   vg.computeVertexNormals();
   const vase = mesh(vg, std(0xf3f1ec, .3), WX(8.55), .42, WZ(5.6), fixed); vase.rotation.y = .6;
-  fernPlant(fixed, WX(8.55) + Math.cos(.6) * .05, .42 + .33, WZ(5.6) - Math.sin(.6) * .05, .95); }
+  fernPlant(fixed, WX(8.55) + Math.cos(.6) * .05, .42 + .33, WZ(5.6) - Math.sin(.6) * .05, .85); } /* 잎이 TV벽을 뚫고 침실1로 나오지 않게 .95→.85 */
 // 주방 상판 소품(사진): 레트로 커피머신, 전기주전자, 블랙 레일 도구, 끝쪽 블랙 보틀·양념병·은색 볼·화이트 볼 화분
 // 좌표는 주방 반전 전 기준(k 그룹 안에서 함께 반전됨). 상판 높이 .9
 function kitchenProps(k) {
