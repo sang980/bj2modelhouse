@@ -554,6 +554,18 @@ async function build() {
 
   /* ===== 배치도: 단지 데크 윗면 + 주변 띠(가장자리 부드럽게) ===== */
   const pc = cnv(PW, PH), pg = pc.getContext('2d'); pg.drawImage(planImg, 0, 0);
+  /* 배치도 보라색 범례 아이콘(모형엔 없음) 지우기: 보라 픽셀 덩어리마다 상자를 둘레 바닥색 평균으로 덮음 */
+  { const id = pg.getImageData(0, 0, PW, PH), d = id.data, N = PW * PH, mk = new Uint8Array(N);
+    for (let i = 0; i < N; i++) { const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2]; if (b > r + 25 && b > g + 50 && r > g + 15) mk[i] = 1; }
+    const seen = new Uint8Array(N), st = [];
+    for (let i0 = 0; i0 < N; i0++) { if (!mk[i0] || seen[i0]) continue; let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1, cnt = 0; st.push(i0); seen[i0] = 1;
+      while (st.length) { const i = st.pop(), x = i % PW, y = (i / PW) | 0; cnt++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= PW || yy >= PH) continue; const j = yy * PW + xx; if (mk[j] && !seen[j]) { seen[j] = 1; st.push(j); } } }
+      if (cnt < 6) continue; const e = 4; x0 = Math.max(1, x0 - e); y0 = Math.max(1, y0 - e); x1 = Math.min(PW - 2, x1 + e); y1 = Math.min(PH - 2, y1 + e);
+      let R = 0, G = 0, B = 0, n = 0; const add = j => { const r = d[j * 4], g = d[j * 4 + 1], b = d[j * 4 + 2]; if (mk[j] || (r > 235 && g > 235 && b > 235)) return; R += r; G += g; B += b; n++; };
+      for (let x = x0 - 1; x <= x1 + 1; x++) { add((y0 - 1) * PW + x); add((y1 + 1) * PW + x); } for (let y = y0; y <= y1; y++) { add(y * PW + x0 - 1); add(y * PW + x1 + 1); }
+      if (!n) continue; R /= n; G /= n; B /= n; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const j = (y * PW + x) * 4; d[j] = R; d[j + 1] = G; d[j + 2] = B; } }
+    pg.putImageData(id, 0, 0); }
   const planData = pg.getImageData(0, 0, PW, PH).data;
   const MS = 32, mc = cnv(Math.ceil(PW / MS), Math.ceil(PH / MS)), mg = mc.getContext('2d');
   const toM = p => [p[0] / PK / MS, p[1] / PK / MS];
