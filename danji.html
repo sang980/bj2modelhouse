@@ -45,6 +45,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 #card .ho input{flex:1;min-width:0;font:500 14px var(--body);padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink)}
 #card .ho input:focus{outline:2px solid var(--accent);outline-offset:0}
 #card .ho button{font:600 13px var(--body);padding:8px 12px;border:0;border-radius:10px;background:var(--on);color:var(--onink);cursor:pointer;white-space:nowrap}
+#card .hint{margin:0 0 6px;font-size:12px;line-height:1.5;color:var(--muted)}
+#card .hint b{color:var(--ink)}
 #card .err{margin:0 0 10px;font-size:12px;line-height:1.45;color:#c0392b;min-height:2px}
 #unitv{position:fixed;inset:0;pointer-events:none;display:none}
 body.unit #unitv{display:block}
@@ -100,6 +102,7 @@ body.unit #attr{display:none}
   <p class="sub" id="cd-s"></p>
   <dl id="cd-d"></dl>
   <form class="ho" id="cd-ho"><input id="cd-hoin" inputmode="numeric" autocomplete="off" placeholder="호수 입력 (예: 1003)" aria-label="호수"><button type="submit">거실 전망</button></form>
+  <p class="hint" id="cd-hint" hidden></p>
   <p class="err" id="cd-err"></p>
   <div class="links" id="cd-l"></div>
 </div>
@@ -402,31 +405,33 @@ function glass(g, x, y, w, h, dark = 0) { const gr = g.createLinearGradient(x, y
   g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); g.fillStyle = 'rgba(255,255,255,.10)'; g.beginPath(); g.moveTo(x + w * .55, y); g.lineTo(x + w * .8, y); g.lineTo(x + w * .35, y + h); g.lineTo(x + w * .1, y + h); g.fill(); g.restore(); }
 function win(g, x, y, w, h, panes, fw = 6, col = '#f2f3f3', dark = 0) { g.fillStyle = col; g.fillRect(x - fw, y - fw, w + fw * 2, h + fw * 2); glass(g, x, y, w, h, dark); g.fillStyle = col; for (let i = 1; i < panes; i++) g.fillRect(x + w * i / panes - fw / 2, y, fw, h); }
 function rail(g, x, y, w, h) { g.fillStyle = 'rgba(226,236,243,.34)'; g.fillRect(x, y, w, h); g.fillStyle = '#f4f5f5'; g.fillRect(x, y - 3, w, 5); }
+/* 아파트 저층 갈색 벽: 벽돌이 아닌 도장(페인트) 마감 */
+function paintBrown(g, w, h) { noiseFill(g, w, h, '#83513f', .028, 1500); for (let k = 0; k < 10; k++) { g.fillStyle = `rgba(${rand() < .5 ? '255,255,255' : '40,20,10'},${.015 + rand() * .02})`; g.fillRect(rand() * w, 0, 40 + rand() * 120, h); } }
 function wallBase(g, W2, H2, brick, col) { if (brick) brickFill(g, W2, H2); else noiseFill(g, W2, H2, col, .05, 2600); }
 
 /* 단지조감도처럼: 연회색 벽 + 촘촘한 흰 수직 기둥 + 층마다 흰 수평 띠 + 청회색 유리·유리 난간, 저층은 붉은 벽돌 기둥, 일부 세대는 차콜 패널 */
 /* 모형 사진 기준: 밝은 회색 벽 + 흰 창틀 창 5열(가운데 거실 2열은 난간) + 회색·짙은 회색 수직 띠, 저층은 갈색 벽돌, 일부 세대 저·중층은 차콜 */
 /* 모형 104동 남쪽 면 기준(한 세대 폭 × 한 층): 회갈색 바탕 + 짙은 차콜 세로 띠 2줄(작은 창) + 흰 창틀 거실 큰 창(흰 격자 난간) + 좁은 방 창 2개
-   variant: 0 회갈색, 1 밝은 회색 판(1호 라인), 2 차콜(저층 강조), brick 갈색 벽돌(저층) */
+   variant: 0 회갈색, 1 밝은 회색 판(1호 라인), 2 차콜(저층 강조), brick 갈색 도장(저층 3개 층) */
 function texFront(brick, dark, light) { const c = cnv(1024, 256), g = c.getContext('2d');
   const base = brick ? null : dark ? '#45474b' : light ? '#cfcfcb' : '#a79e95';
-  if (brick) brickFill(g, 1024, 256); else noiseFill(g, 1024, 256, base, .035, 1600);
+  if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, base, .035, 1600);
   const strip = brick ? '#5b3528' : dark ? '#2f3033' : light ? '#b5b5b1' : '#4d4d51', fr = dark ? '#d9d9d6' : '#f3f1ee';
   g.fillStyle = strip; g.fillRect(150, 0, 84, 256); g.fillRect(612, 0, 84, 256);
   win(g, 160, 70, 64, 92, 1, 6, fr, 1); win(g, 622, 70, 64, 92, 1, 6, fr, 1);              /* 띠 안 작은 창 */
   win(g, 272, 34, 300, 196, 3, 8, fr, 1); g.fillStyle = fr; g.fillRect(272, 150, 300, 6);    /* 거실 큰 창 */
   g.fillStyle = 'rgba(245,245,243,.92)'; for (let x = 276; x < 572; x += 14) g.fillRect(x, 156, 3, 72); g.fillRect(272, 156, 300, 4); g.fillRect(272, 224, 300, 4); /* 흰 격자 난간 */
   for (const x0 of [28, 740, 880]) { win(g, x0, 56, 104, 150, 2, 7, fr, 1); g.fillStyle = 'rgba(245,245,243,.92)'; for (let x = x0 + 3; x < x0 + 104; x += 12) g.fillRect(x, 160, 3, 46); g.fillRect(x0, 158, 104, 4); }
-  g.fillStyle = brick ? '#4e2c21' : 'rgba(0,0,0,.16)'; g.fillRect(0, 250, 1024, 6); g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(0, 244, 1024, 6); /* 층 줄눈 */
+  g.fillStyle = brick ? 'rgba(40,20,12,.35)' : 'rgba(0,0,0,.16)'; g.fillRect(0, 250, 1024, 6); g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(0, 244, 1024, 6); /* 층 줄눈 */
   return tex(c, true); }
-function texBack(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) brickFill(g, 1024, 256); else noiseFill(g, 1024, 256, '#b9b2a9', .04, 1500);
+function texBack(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, '#b9b2a9', .04, 1500);
   win(g, 90, 74, 200, 104, 2, 6, '#f1f1ee'); win(g, 440, 76, 70, 62, 1, 6, '#f1f1ee'); win(g, 650, 64, 250, 130, 2, 6, '#f1f1ee');
   g.fillStyle = '#c3c6c8'; g.fillRect(312, 118, 96, 94); g.fillStyle = '#9ea4a9'; for (let y = 122; y < 208; y += 7) g.fillRect(316, y, 88, 3);
   g.fillStyle = brick ? '#7f412f' : '#f2f2ef'; g.fillRect(0, 0, 26, 256); g.fillRect(998, 0, 26, 256); g.fillRect(560, 0, 22, 256);
   g.fillStyle = brick ? '#6f3829' : '#f5f5f2'; g.fillRect(0, 0, 1024, 18); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, 18, 1024, 4);
   return tex(c, true); }
 /* 측벽(모형): 밝은 회색 + 짙은 막대무늬(길이 제각각 세로 막대) + 작은 창 */
-function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) brickFill(g, 1024, 256); else noiseFill(g, 1024, 256, '#c6c2bb', .035, 1400);
+function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, '#c6c2bb', .035, 1400);
   g.fillStyle = brick ? '#6c3a2b' : '#d8d5cf'; g.fillRect(0, 0, 1024, 12);
   if (!brick) { const rr = rng(77); g.fillStyle = '#3c3f44'; for (let x = 30; x < 330; x += 30) { if (rr() < .45) continue; const w = 9 + rr() * 9, h = 60 + rr() * 196; g.fillRect(x, rr() < .5 ? 0 : 256 - h, w, h); }
     for (let x = 700; x < 1000; x += 30) { if (rr() < .45) continue; const w = 9 + rr() * 9, h = 60 + rr() * 196; g.fillRect(x, rr() < .5 ? 0 : 256 - h, w, h); } }
@@ -725,7 +730,7 @@ function buildDong(D, G, MAT) {
     const yb = (FLV[D.d] || 121) - Y0, t = D.t && (D.w.length === 1 || wi === 1) ? D.t : 0, yF1 = D.pit ? 130 - Y0 : yb - t * FH, ft = D.pit ? f : f + t, H = ft * FH + (D.pit ? yb - yF1 : 0); /* 필로티 동: FL 위로 f개 층 */
     let dW = 0, yl = yb; const tz0 = TZ.find(q => q.key === D.d + '_' + wi); if (tz0) { dW = tz0.dW; yl = tz0.yl; } else for (let d = DEP / 2 + .5; d < 32; d += .5) { const lv = levelAt(cx + fx * d, cz + fz * d); if (lv < yb - 1) { dW = d; yl = levelAt(cx + fx * (d + 2), cz + fz * (d + 2)); break; } }
     const yLowR = Math.min(0, (t ? yl : yb) - yF1) - .4, yBackR = yb - yF1, pitH = D.pit ? yb - yF1 : 0;
-    const base = pitH + (t + (f >= 9 ? 3 : 2)) * FH; /* 모형: 1층 바닥 위 3개 층(낮은 동 2개 층)까지 갈색 벽돌, 56T 층 포함 */
+    const base = pitH + (t + 3) * FH; /* 모든 동: 1~3층 갈색 도장(테라스 층은 따로) */
     YOFF = yF1;
     if (D.pit) obox(cx, cz, ux, uz, L - 1.6, DEP - 1.6, yLowR, pitH, { front: { gb: G.fin }, back: { gb: G.fin }, left: { gb: G.fin }, right: { gb: G.fin } }); /* 필로티(안쪽으로 들어간 어두운 1~2층) */
     /* 저층부 벽돌 + 상층부 */
@@ -829,7 +834,7 @@ function buildAmenities(MAT) {
   { const P = [[-104.2, 71.6], [-96.2, 68], [-80.6, 96.5], [-88.7, 101.1]]; prism(P, Y(105.4), Y(109.8), G.brick); prism(P, Y(109.8), Y(113.6), G.white, G.roofGd); } /* 근린생활시설(도로 GL≈106, 2층) */
   const m = (gb, mat) => { const x = new THREE.Mesh(gb.build(), mat); x.castShadow = x.receiveShadow = true; scene.add(x); };
   { const am = (draw) => { const c = cnv(512, 256), g = c.getContext('2d'); draw(g); const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughnessMap: roughFrom(t), roughness: 1, envMapIntensity: .7 }); };
-    const aB = am(g => { brickFill(g, 512, 256); for (let k = 0; k < 2; k++) win(g, 40 + k * 250, 60, 180, 140, 3, 8, '#e8e6e2', 1); g.fillStyle = '#5a2f24'; g.fillRect(0, 0, 512, 10); });
+    const aB = am(g => { paintBrown(g, 512, 256); for (let k = 0; k < 2; k++) win(g, 40 + k * 250, 60, 180, 140, 3, 8, '#e8e6e2', 1); g.fillStyle = '#5a2f24'; g.fillRect(0, 0, 512, 10); });
     const aG = am(g => { noiseFill(g, 512, 256, '#a7abad', .04, 900); g.fillStyle = '#8e9396'; for (let x = 0; x < 512; x += 128) g.fillRect(x, 0, 3, 256); g.fillRect(0, 0, 512, 12); for (let k = 0; k < 3; k++) win(g, 30 + k * 165, 70, 120, 110, 2, 6, '#d8dadb', 1); });
     const aGl = am(g => { g.fillStyle = '#8e9396'; g.fillRect(0, 0, 512, 256); glass(g, 10, 30, 492, 200, 0); g.fillStyle = '#c9ccce'; for (let x = 10; x < 512; x += 82) g.fillRect(x, 30, 6, 200); g.fillRect(10, 128, 492, 6); });
     m(G.brick, aB); m(G.white, aG); m(G.glass, aGl); m(G.roof, new THREE.MeshStandardMaterial({ color: '#9fa59a', roughness: .95 })); m(G.roofGd, MAT.green); }
@@ -1247,10 +1252,12 @@ function select(d, fly2) {
   const rows = [['층수', maxF === minF ? '지상 ' + maxF + '층' : '지상 ' + minF + '~' + maxF + '층'], ['라인', '1~' + lines + '호'], ['타입', D.ty.join(' · ')]];
   rows.push(['1층 바닥', '해발 ' + (FLV[d] || 121).toFixed(1) + 'm (공사계획평면도 FL)']);
   if (D.t) rows.push(['테라스', '56T ' + D.t + '개 층 (1층 바닥 아래, 낮은 단 쪽)']);
-  if (D.pit) rows.push(['비고', '1~3층 필로티']);
+  if (D.pit) rows.push(['비고', '1층 아래 필로티 (지면 해발 130m)']);
   $('#cd-d').innerHTML = rows.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('');
   $('#cd-l').innerHTML = D.ty.map(t => `<a href="${TYPE_PAGE[t]}">${t} 세대 둘러보기</a>`).join('');
   $('#card').hidden = false; $('#dong').value = String(d); $('#cd-err').textContent = ''; $('#cd-hoin').value = '';
+  { const hi = $('#cd-hint'), inp = $('#cd-hoin'); hi.hidden = !D.t; inp.setAttribute('inputmode', D.t ? 'text' : 'numeric'); inp.placeholder = D.t ? '호수 (예: 302, B101)' : '호수 입력 (예: 1003)';
+    if (D.t) hi.innerHTML = `테라스(56T) 세대는 호수 앞에 <b>B</b>를 붙여 입력하세요. 예: <b>B101</b>${D.t > 1 ? ', <b>B201</b>(테라스 지하 2층)' : ''}<br>1층은 테라스 세대 바로 위 층입니다.`; }
   if (fly2) { const p = b.pieces[0], fx = -p.uz, fz = p.ux, R = b.top * 1.4 + 70; setFly(false); goTo([b.cx + fx * R + p.ux * 25, b.top * .8 + 55, b.cz + fz * R + p.uz * 25], [b.cx, b.top * .45, b.cz]); }
 }
 $('#card .x').addEventListener('click', () => select(null));
