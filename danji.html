@@ -435,9 +435,9 @@ function texBack(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (
 /* 측벽(모형 동영상 VE30·VN18): 밝은 회색 + 고른 가는 세로 홈 + 가운데 남색 유리 기둥 */
 function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, '#cfccc5', .03, 1400);
   g.fillStyle = brick ? '#6c3a2b' : '#d8d5cf'; g.fillRect(0, 0, 1024, 12);
-  if (!brick) { g.fillStyle = 'rgba(40,40,40,.16)'; for (let x = 14; x < 1024; x += 22) if (x < 366 || x > 658) g.fillRect(x, 0, 2.5, 256); g.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 17; x < 1024; x += 22) if (x < 366 || x > 658) g.fillRect(x, 0, 1.5, 256); } /* 모형 동영상: 측벽은 밝은 회색 + 고른 가는 세로 홈 */
+  if (!brick) { g.fillStyle = 'rgba(40,40,40,.16)'; for (let x = 14; x < 1024; x += 22) if (x < 296 || x > 728) g.fillRect(x, 0, 2.5, 256); g.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 17; x < 1024; x += 22) if (x < 296 || x > 728) g.fillRect(x, 0, 1.5, 256); } /* 모형 동영상: 측벽은 밝은 회색 + 고른 가는 세로 홈 */
   /* 모형: 측벽 가운데 짙은 남색 유리 세로 띠(지붕까지) */
-  g.fillStyle = brick ? '#5a2f24' : '#2a3442'; g.fillRect(372, 0, 280, 256); glass(g, 384, 6, 256, 244, 1); g.fillStyle = brick ? '#5a2f24' : '#2a3442'; g.fillRect(508, 0, 8, 256); g.fillRect(372, 120, 280, 6);
+  g.fillStyle = brick ? '#5a2f24' : '#2a3442'; g.fillRect(302, 0, 420, 256); glass(g, 314, 6, 396, 244, 1); g.fillStyle = brick ? '#5a2f24' : '#2a3442'; g.fillRect(442, 0, 8, 256); g.fillRect(574, 0, 8, 256); g.fillRect(302, 120, 420, 6);
   return tex(c); }
 /* 유리는 매끈하게(하늘이 비침), 벽은 거칠게: 색 텍스처에서 거칠기 지도를 만듦 */
 function roughFrom(t) { const src = t.image, w = src.width, h = src.height, c = cnv(w, h), g = c.getContext('2d'); g.drawImage(src, 0, 0); const d = g.getImageData(0, 0, w, h), a = d.data;
