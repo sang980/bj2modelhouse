@@ -1092,11 +1092,15 @@ OSMTX.forestia = () => facadeTex(1024, 256, g => { noiseFill(g, 1024, 256, '#e4e
   g.fillStyle = '#d4d7d8'; g.fillRect(0, 226, 590, 30); g.fillRect(840, 226, 184, 30); g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(0, 222, 590, 4); g.fillRect(840, 222, 184, 4); });
 OSMTX.forestiaBase = () => facadeTex(512, 256, g => { g.fillStyle = '#cbc4b6'; g.fillRect(0, 0, 512, 256); for (let y = 0; y < 256; y += 64) for (let x = (y / 64 & 1) * 64; x < 512; x += 128) { const v = (rand() - .5) * 12; g.fillStyle = `rgb(${200 + v | 0},${193 + v | 0},${180 + v | 0})`; g.fillRect(x + 1, y + 1, 126, 62); }
   for (let k = 0; k < 3; k++) { glass(g, 20 + k * 166, 40, 140, 190, 0); g.fillStyle = '#6d7277'; g.fillRect(20 + k * 166 + 68, 40, 4, 190); } });
+/* 포레스티아 측벽(로드뷰 2026.08): 테라코타(주황빛 갈색) 판 + 세로 줄눈, 위쪽에 흰 HDC IPARK 로고 */
+OSMTX.forestiaSide = () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#a8603d', .035, 900); g.fillStyle = 'rgba(60,25,10,.22)'; for (let x = 0; x < 512; x += 128) g.fillRect(x, 0, 3, 256); g.fillRect(0, 252, 512, 4); });
+const foSignTex = () => { const c = cnv(256, 256), g = c.getContext('2d'); g.clearRect(0, 0, 256, 256); g.fillStyle = '#ffffff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '800 92px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText('HDC', 128, 78); g.font = '800 70px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText('IPARK', 128, 178);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
 /* 빌라 1층 필로티 주차장(어두운 개구부 + 기둥 + 주차된 차) */
 OSMTX.piloti = () => facadeTex(1024, 256, g => { g.fillStyle = '#2d2f32'; g.fillRect(0, 0, 1024, 256); const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(0,0,0,.5)'); gr.addColorStop(1, 'rgba(90,90,88,.4)'); g.fillStyle = gr; g.fillRect(0, 0, 1024, 256);
   const cc = ['#e8e8e6', '#2b2d30', '#9aa0a6', '#7a1f22', '#1f3550', '#c9c9c4']; for (let k = 0; k < 4; k++) { const x = 40 + k * 250 + rand() * 30; g.fillStyle = cc[(rand() * cc.length) | 0]; g.fillRect(x, 150, 170, 80); g.fillStyle = 'rgba(30,40,50,.75)'; g.fillRect(x + 30, 160, 110, 26); g.fillStyle = '#151515'; g.fillRect(x + 18, 222, 30, 14); g.fillRect(x + 122, 222, 30, 14); }
   g.fillStyle = '#cfcac0'; for (const x of [0, 340, 680, 1010]) g.fillRect(x, 0, 30, 256); g.fillStyle = '#bdb8ae'; g.fillRect(0, 0, 1024, 26); }, true);
-const OSM_TILE = { villa: 7, apt: 7, shop: 12, office: 7, pub: 8, ind: 8, villaBrick: 7, villaTile: 7, villaGray: 7, aptModern: 7, stone: 8, piloti: 12, aptK: 7, forestia: 13, forestiaBase: 8 };
+const OSM_TILE = { villa: 7, apt: 7, shop: 12, office: 7, pub: 8, ind: 8, villaBrick: 7, villaTile: 7, villaGray: 7, aptModern: 7, stone: 8, piloti: 12, aptK: 7, forestia: 13, forestiaBase: 8, forestiaSide: 6 };
 function buildOSM() {
   const B = GEO.bld, n = B.length, G = {}, M = {};
   for (const k in OSMTX) { G[k] = new GB(); M[k] = new THREE.MeshLambertMaterial({ map: OSMTX[k](), vertexColors: true }); }
@@ -1108,10 +1112,11 @@ function buildOSM() {
   ROOF.villaBrick = ROOF.villaTile = ROOF.villa; ROOF.aptModern = ROOF.apt; ROOF.stone = ROOF.office;
   /* 이 동네 주택 옥상: 초록·청록 방수 도장과 회색·파랑이 대부분(스카이뷰 참고) */
   ROOF.villa = ROOF.villaBrick = ROOF.villaTile = ROOF.villaGray = ['#4f8f74', '#5a9a7c', '#3f8069', '#6aa087', '#8e979c', '#a9aeb1', '#5f7f9f', '#4a6f96', '#b8b4aa', '#8c6f5f'].map(vc);
-  WALL.aptK = ['#ffffff', '#f7f2e8', '#eef1f3', '#f4ece0', '#ffffff'].map(vc); WALL.forestia = ['#ffffff', '#f3f4f4'].map(vc); WALL.forestiaBase = ['#ffffff'].map(vc);
+  WALL.aptK = ['#ffffff', '#f7f2e8', '#eef1f3', '#f4ece0', '#ffffff'].map(vc); WALL.forestia = ['#ffffff', '#f3f4f4'].map(vc); WALL.forestiaBase = ['#ffffff'].map(vc); WALL.forestiaSide = ['#ffffff'].map(vc); ROOF.forestiaSide = ['#9ba1a6'].map(vc);
   ROOF.aptK = ROOF.apt; ROOF.forestia = ['#9ba1a6', '#a7acaf'].map(vc); ROOF.forestiaBase = ROOF.forestia;
   WALL.villaGray = ['#ffffff', '#e9ebe6', '#dfe3e6', '#ece6dc'].map(vc);
-  for (const k of ['aptK', 'forestia', 'forestiaBase', 'villaGray']) if (!G[k]) { G[k] = new GB(); M[k] = new THREE.MeshLambertMaterial({ map: OSMTX[k](), vertexColors: true }); }
+  for (const k of ['aptK', 'forestia', 'forestiaBase', 'forestiaSide', 'villaGray']) if (!G[k]) { G[k] = new GB(); M[k] = new THREE.MeshLambertMaterial({ map: OSMTX[k](), vertexColors: true }); }
+  if (!G.foSign) { G.foSign = new GB(); M.foSign = new THREE.MeshLambertMaterial({ map: foSignTex(), transparent: true, alphaTest: .35, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }); }
   const FOREST_P = ((GEO.env && GEO.env.land) || []).filter(l => l.n && /포레스티아/.test(l.n)).map(l => l.p);
   const inForestia = (x, z) => FOREST_P.some(p => inPoly(p, x, z));
   /* 큰길(간선·보조간선) 가까운지: 60m 격자에 도로 선분 */
@@ -1140,6 +1145,7 @@ function buildOSM() {
     const wc = WALL[tk][(rand() * WALL[tk].length) | 0], rc = ROOF[tk][(rand() * ROOF[tk].length) | 0], tw = OSM_TILE[tk];
     let A = 0; for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np]; A += a[0] * b[1] - b[0] * a[1]; }
     const sg = A > 0 ? 1 : -1; let s = 0;
+    let fbl = 0, fux = 1, fuz = 0; const foSigns = []; if (tk === 'forestia') for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L > fbl) { fbl = L; fux = (b[0] - a[0]) / L; fuz = (b[1] - a[1]) / L; } }
     const yShop = gavg + Math.min(4.2, fh * 1.3), pil = !shopG && /^villa/.test(tk) && lv >= 4 && dist < 1500 && rand() < .55; /* 4층 이상 빌라 절반은 1층 필로티 */
     for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz); if (L < .05) continue;
       const nx = dz / L * sg, nz = -dx / L * sg, [p, q, sp, sq] = sg < 0 ? [a, b, s, s + L] : [b, a, s + L, s];
@@ -1148,9 +1154,13 @@ function buildOSM() {
       if (shopG || tk === 'shop') { const ys = tk === 'shop' ? top : yShop; quad(G.shop, base, Math.min(ys, top), sp / 12, sq / 12, (base - gavg) / 4.2, (Math.min(ys, top) - gavg) / 4.2, WALL.shop[0]);
         if (ys < top) quad(G[tk], ys, top, sp / tw, sq / tw, vb(ys), lv, wc); }
       else if (pil) { const yp = gavg + fh; quad(G.piloti, base, yp, sp / 12, sq / 12, (base - gavg) / fh, 1, WALL.shop[0]); quad(G[tk], yp, top, sp / tw, sq / tw, vb(yp), lv, wc); }
-      else if (tk === 'forestia') { const yb2 = gavg + 2 * fh; quad(G.forestiaBase, base, yb2, sp / 8, sq / 8, (base - gavg) / (2 * fh), 1, WALL.forestiaBase[0]); quad(G.forestia, yb2, top, sp / tw, sq / tw, vb(yb2), lv, wc); } /* 저층 2개 층 석재 */
+      else if (tk === 'forestia') { const yb2 = gavg + 2 * fh, gab = Math.abs(dx / L * fux + dz / L * fuz) < .4 && L > 7 && L < 22 && L < fbl * .6; /* 긴 축에 직각인 짧은 벽 = 측벽 */
+        quad(G.forestiaBase, base, yb2, sp / 8, sq / 8, (base - gavg) / (2 * fh), 1, WALL.forestiaBase[0]);
+        if (gab) { quad(G.forestiaSide, yb2, top, sp / 6, sq / 6, vb(yb2), lv, WALL.forestiaSide[0]); if (lv >= 15 && dist < 2000) foSigns.push([p, q, nx, nz, L]); } else quad(G.forestia, yb2, top, sp / tw, sq / tw, vb(yb2), lv, wc); } /* 저층 2개 층 석재, 측벽 테라코타 */
       else quad(G[tk], base, top, sp / tw, sq / tw, vb(base), lv, wc);
       s += L; }
+    for (const [p, q, nx, nz, L] of foSigns) { const w = Math.min(L * .62, 9), h = w * .9, cx2 = (p[0] + q[0]) / 2 + nx * .12, cz2 = (p[1] + q[1]) / 2 + nz * .12, rx = nz, rz = -nx, y1 = top - 1.2, y0 = y1 - h; /* HDC IPARK 로고 */
+      G.foSign.quad([cx2 - rx * w / 2, y0, cz2 - rz * w / 2], [cx2 + rx * w / 2, y0, cz2 + rz * w / 2], [cx2 + rx * w / 2, y1, cz2 + rz * w / 2], [cx2 - rx * w / 2, y1, cz2 - rz * w / 2], [nx, 0, nz], [0, 0, 1, 0, 1, 1, 0, 1]); }
     /* 고층 아파트 옥상 크라운(옥탑 띠): 외곽선을 따라 흰 띠(포레스티아는 짙은 회색 4m 크라운) */
     if ((isApt && lv >= 12 && dist < 2400) || (/^villa/.test(tk) && dist < 1100)) { const vil = /^villa/.test(tk), fo = tk === 'forestia', ph = vil ? .9 : fo ? 4.2 : 2.2, cc = vil ? wc.map(v => Math.min(1, v * 1.06)) : fo ? vc('#555b62') : vc(rand() < .5 ? '#f4f4f1' : '#dfe2e4'); /* 빌라 옥상 난간벽 */
       for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz); if (L < .05) continue;
