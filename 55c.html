@@ -1948,7 +1948,7 @@ function diningChair(parent, cx, cz, rot) { /* VR(55C): 크림색 가죽 파슨�
 await yieldUI();
 // 식탁 모델 2종 — 둘 다 로컬 원점이 '평평한 끝' 가운데, 식탁은 로컬 -x 방향으로 뻗음(벽에 붙이기 쉽게)
 function tableRunner(g, L, w, top = .755, wallEnd = false) { /* wallEnd: 평평한 끝(로컬 x=0)이 벽에 붙으면 그쪽은 늘어뜨리지 않음 */ /* 린넨 러너: 상판 길이만큼 + 양 끝은 모서리에서 접혀 0.15m 아래로 늘어짐(허공에 뻗지 않게) */
-  const m = std(0xd8ccb6, .95, 0, { map: M.navy.map }), t = .003, drop = .15;
+  const m = std(0xd8ccb6, .95, 0, { map: M.navy.map }), t = .003, drop = .28; /* VR: 식탁 끝에서 다리 중간쯤까지 길게 늘어짐 */
   mesh(BX(L, t, w), m, -L / 2, top + t / 2, 0, g, { cast: false });
   for (const x of wallEnd ? [-L - t / 2 - .0005] : [t / 2 + .0005, -L - t / 2 - .0005]) mesh(BX(t, drop, w), m, x, top + t - drop / 2, 0, g, { cast: false }); }
 // 작은 식탁(현관장+복도팬트리 선택 시): 반타원 0.96m, 의자 3
