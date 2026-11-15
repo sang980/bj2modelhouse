@@ -1185,11 +1185,11 @@ function buildOSM() {
   for (const r of (GEO.env && GEO.env.roads) || []) { if (r.t === 1 || /^(footway|path|steps|track)$/.test(r.k)) continue; og.lineWidth = (r.w + 2) / ORS; og.beginPath(); r.p.forEach((p, k) => { const X = (p[0] + OE) / ORS, Z = (p[1] + OE) / ORS; k ? og.lineTo(X, Z) : og.moveTo(X, Z); }); og.stroke(); }
   { const d = og.getImageData(0, 0, ON, ON).data, a = new Uint8Array(ON * ON); for (let k = 0; k < a.length; k++) a[k] = d[k * 4 + 3] > 60 ? 1 : 0; OCC = { E: OE, r: ORS, n: ON, a }; ocv.width = ocv.height = 1; }
   /* 아파트 단지·공원 조경수: 이름 있는 주거단지와 공원 안 빈 땅(건물·도로 자리는 뺌) */
-  if (GEO.env) { const polys = []; for (const l of GEO.env.land || []) if (l.k === 'residential' && l.n) polys.push([l.p, 95]); for (const gr of GEO.env.green || []) if (gr.k === 'park') polys.push([gr.p, 150]);
+  if (GEO.env) { const polys = []; for (const l of GEO.env.land || []) if (l.k === 'residential' && l.n) polys.push([l.p, /포레스티아/.test(l.n) ? 34 : 70]); /* 위성사진: 포레스티아는 동 사이가 나무로 빽빽 */ for (const gr of GEO.env.green || []) if (gr.k === 'park') polys.push([gr.p, 150]);
     for (const [p, per] of polys) { let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const q of p) { x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); z0 = Math.min(z0, q[1]); z1 = Math.max(z1, q[1]); }
       if (Math.hypot((x0 + x1) / 2, (z0 + z1) / 2 - 15) > 1600 || (x1 - x0) * (z1 - z0) > 1.5e6) continue;
       let A = 0; for (let k = 0; k < p.length; k++) { const a = p[k], b = p[(k + 1) % p.length]; A += a[0] * b[1] - b[0] * a[1]; }
-      const cntT = Math.min(1200, Math.abs(A) / 2 / per | 0);
+      const cntT = Math.min(2600, Math.abs(A) / 2 / per | 0);
       for (let k = 0; k < cntT * 2; k++) { const x = x0 + rand() * (x1 - x0), z = z0 + rand() * (z1 - z0); if (polyDist(p, x, z) > -1.5 || polyDist(SITE, x, z) < 5) continue;
         if (occAt(x, z) || occAt(x + 2, z) || occAt(x - 2, z) || occAt(x, z + 2) || occAt(x, z - 2)) continue; extraTrees.push([x, heightAt(x, z) - .3, z, 1.9 + rand() * 1.5, 3]); } }
     /* 단지 이름표(OSM 주거단지 이름) */
