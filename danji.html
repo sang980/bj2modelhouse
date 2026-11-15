@@ -540,7 +540,7 @@ async function build() {
   const pbr = map => new THREE.MeshStandardMaterial({ map, roughnessMap: roughFrom(map), roughness: 1, metalness: 0, envMapIntensity: .5 }); /* 유리에 하늘 반사 */
   /* 하늘을 환경맵으로: 유리창에 하늘이 비치게 */
   { const pm = new THREE.PMREMGenerator(renderer), es = new THREE.Scene(); es.add(new THREE.Mesh(sky.geometry, sky.material)); scene.environment = pm.fromScene(es, .02, 1, 30000).texture; pm.dispose(); }
-  const MAT = { sideP: pbr(T.sideP), podium: pbr(T.podium), terr: pbr(T.terr), tdeck: new THREE.MeshStandardMaterial({ color: '#8d8780', roughness: .9 }), rail: new THREE.MeshStandardMaterial({ color: '#cfe0e8', roughness: .1, transparent: true, opacity: .4 }), front: pbr(T.front), frontDk: pbr(T.frontDk), frontLt: pbr(T.frontLt), back: pbr(T.back), side: pbr(T.side), bfront: pbr(T.bfront), bback: pbr(T.bback), bside: pbr(T.bside), core: pbr(T.core), roof: std(T.roof, .55),
+  const MAT = { grille: (() => { const c = cnv(256, 128), g = c.getContext('2d'); g.clearRect(0, 0, 256, 128); g.fillStyle = '#c9c6c0'; for (let x = 0; x < 256; x += 16) g.fillRect(x, 0, 5, 128); g.fillRect(0, 0, 256, 10); g.fillRect(0, 118, 256, 10); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return new THREE.MeshStandardMaterial({ map: t, alphaTest: .4, transparent: false, side: THREE.DoubleSide, roughness: .7 }); })(), sideP: pbr(T.sideP), podium: pbr(T.podium), terr: pbr(T.terr), tdeck: new THREE.MeshStandardMaterial({ color: '#8d8780', roughness: .9 }), rail: new THREE.MeshStandardMaterial({ color: '#cfe0e8', roughness: .1, transparent: true, opacity: .4 }), front: pbr(T.front), frontDk: pbr(T.frontDk), frontLt: pbr(T.frontLt), back: pbr(T.back), side: pbr(T.side), bfront: pbr(T.bfront), bback: pbr(T.bback), bside: pbr(T.bside), core: pbr(T.core), roof: std(T.roof, .55),
     white: new THREE.MeshStandardMaterial({ color: '#e2dfd9', roughness: .8 }), fin: new THREE.MeshStandardMaterial({ color: '#3d3733', roughness: .75 }), green: std(T.green, 1), concrete: std(T.concrete, .95),
     brick: new THREE.MeshStandardMaterial({ color: '#634033', roughness: .9 }), glassBox: new THREE.MeshStandardMaterial({ color: '#4c6378', roughness: .35 }) };
 
@@ -681,7 +681,7 @@ async function build() {
   prog(50); await tick();
 
   /* ===== 단지 동 ===== */
-  const G = {}; for (const k of ['sideP', 'podium', 'terr', 'tdeck', 'rail', 'front', 'frontDk', 'frontLt', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
+  const G = {}; for (const k of ['grille', 'sideP', 'podium', 'terr', 'tdeck', 'rail', 'front', 'frontDk', 'frontLt', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
   for (const D of DONG) buildDong(D, G, MAT);
   for (const k in G) { if (!G[k].i.length) continue; const m = new THREE.Mesh(G[k].build(), MAT[k]); m.castShadow = true; m.receiveShadow = true; scene.add(m); }
   buildAmenities(MAT); buildYard(); T_GREEN_REF.t = T.green; buildEntrance(); if (GEO.ok) { buildNW(); buildCut(); }
@@ -803,14 +803,15 @@ function buildDong(D, G, MAT) {
     obox(cx, cz, ux, uz, L, DEP, D.pit ? pitH : (t ? yT : 0), base, { front: { gb: G.bfront, uv: uvTile(tw, FH) }, back: { gb: G.bback, uv: uvTile(tw, FH) }, left: { gb: G.bside, uv: uvTile(DEP, FH) }, right: { gb: G.bside, uv: uvTile(DEP, FH) } });
     obox(cx, cz, ux, uz, L, DEP, base, H, { front: { gb: G.front, uv: uvTile(tw, FH) }, back: { gb: G.back, uv: uvTile(tw, FH) }, left: { gb: SIDEP.has(D.d) ? G.sideP : G.side, uv: uvTile(DEP, FH) }, right: { gb: SIDEP.has(D.d) ? G.sideP : G.side, uv: uvTile(DEP, FH) }, top: { gb: G.roof, uv: true, uvTop: uvPlanar(8) } });
     /* 옥상 난간 */
-    const pr = (px2, pz2, l, d, uxx, uzz) => obox(px2, pz2, uxx, uzz, l, d, H, H + 1.1, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } });
+    const pr = (px2, pz2, l, d, uxx, uzz) => { obox(px2, pz2, uxx, uzz, l, d, H, H + .35, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } });
+      obox(px2, pz2, uxx, uzz, l, d * .4, H + .35, H + 1.7, { front: { gb: G.grille, uv: uvTile(3, 1.35) }, back: { gb: G.grille, uv: uvTile(3, 1.35) } }); obox(px2, pz2, uxx, uzz, l, d * .6, H + 1.7, H + 1.82, { top: { gb: G.white }, front: { gb: G.white }, back: { gb: G.white } }); }; /* 모형: 옥상 가장자리 밝은 회색 살대 난간 */
     pr(cx + fx * (DEP / 2 - .15), cz + fz * (DEP / 2 - .15), L, .3, ux, uz); pr(cx - fx * (DEP / 2 - .15), cz - fz * (DEP / 2 - .15), L, .3, ux, uz);
     pr(cx + ux * (L / 2 - .15), cz + uz * (L / 2 - .15), DEP - .6, .3, fx, fz); pr(cx - ux * (L / 2 - .15), cz - uz * (L / 2 - .15), DEP - .6, .3, fx, fz);
     /* 옥상 태양광(모형 사진): 뒤로 올라가는 경사 패널 판 + 흰 지지대 */
-    { const hl = (L - 3) / 2, d0 = (DEP - 3.2) / 2, y0 = H + .6 + YOFF, y1 = H + 2.0 + YOFF, dh = y1 - y0, nl = Math.hypot(dh, 2 * d0), n = [fx * dh / nl, 2 * d0 / nl, fz * dh / nl];
+    { const hl = (L - 1.2) / 2, d0 = (DEP - 2.4) / 2, y0 = H + 2.0 + YOFF, y1 = H + 3.0 + YOFF, /* 모형: 난간 위로 건물 길이 거의 전체를 덮는 태양광 캐노피 */ dh = y1 - y0, nl = Math.hypot(dh, 2 * d0), n = [fx * dh / nl, 2 * d0 / nl, fz * dh / nl];
       G.roof.quad([cx - ux * hl + fx * d0, y0, cz - uz * hl + fz * d0], [cx + ux * hl + fx * d0, y0, cz + uz * hl + fz * d0], [cx + ux * hl - fx * d0, y1, cz + uz * hl - fz * d0], [cx - ux * hl - fx * d0, y1, cz - uz * hl - fz * d0], n, [0, 0, 2 * hl / 8, 0, 2 * hl / 8, 2 * d0 / 8, 0, 2 * d0 / 8]);
-      for (let k = 0; k <= Math.max(2, Math.round(hl / 6)); k++) { const s2 = -hl + 2 * hl * k / Math.max(2, Math.round(hl / 6)); obox(cx + ux * s2 - fx * (d0 - .1), cz + uz * s2 - fz * (d0 - .1), ux, uz, .18, .18, H, H + 2.0, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white } }); }
-      obox(cx - fx * d0, cz - fz * d0, ux, uz, 2 * hl, .12, H + 1.85, H + 2.05, { front: { gb: G.white }, back: { gb: G.white }, top: { gb: G.white } }); }
+      for (let k = 0; k <= Math.max(2, Math.round(hl / 6)); k++) { const s2 = -hl + 2 * hl * k / Math.max(2, Math.round(hl / 6)); obox(cx + ux * s2 - fx * (d0 - .1), cz + uz * s2 - fz * (d0 - .1), ux, uz, .18, .18, H, H + 3.0, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white } }); }
+      obox(cx - fx * d0, cz - fz * d0, ux, uz, 2 * hl, .12, H + 2.85, H + 3.05, { front: { gb: G.white }, back: { gb: G.white }, top: { gb: G.white } }); }
     /* 세대 경계 수직 핀(앞면) + 층 띠 */
     for (let k = 0; k <= n; k++) { const s = k * tw - L / 2, ex = Math.max(-L / 2 + .25, Math.min(L / 2 - .25, s)); const px2 = cx + ux * ex + fx * (DEP / 2 + .14), pz2 = cz + uz * ex + fz * (DEP / 2 + .14);
       obox(px2, pz2, ux, uz, .42, .3, base, H + .5, { front: { gb: G.fin }, left: { gb: G.fin }, right: { gb: G.fin }, top: { gb: G.fin } }); }
@@ -829,9 +830,9 @@ function buildDong(D, G, MAT) {
       const sx = cx + ux * (L / 2 + .03), sz = cz + uz * (L / 2 + .03); obox(sx, sz, fx, fz, DEP, .02, yLowR, Math.min(f - 2, 6) * FH, { back: { gb: G.bside, uv: uvTile(DEP, FH) }, front: { gb: G.bside, uv: uvTile(DEP, FH) } }); } }
     /* 코어(계단·엘리베이터) — 뒤쪽, 옥상 기계실까지 */
     const cores = D.w.length > 1 ? (wi === 0 ? [.5] : []) : (n === 4 ? [.25, .75] : [.5]);
-    for (const t of cores) { const s = t * L - L / 2, ccx = cx + ux * s - fx * (DEP / 2 + CORE_D / 2 - .4), ccz = cz + uz * s - fz * (DEP / 2 + CORE_D / 2 - .4), ch = H + 3.9;
+    for (const t of cores) { const s = t * L - L / 2, ccx = cx + ux * s - fx * (DEP / 2 + CORE_D / 2 - .4), ccz = cz + uz * s - fz * (DEP / 2 + CORE_D / 2 - .4), ch = H + 2.2;
       obox(ccx, ccz, ux, uz, CORE_W, CORE_D, yLowR, ch, { front: { gb: G.core, uv: uvTile(CORE_W, FH) }, back: { gb: G.core, uv: uvTile(CORE_W, FH) }, left: { gb: G.core, uv: uvTile(CORE_D, FH) }, right: { gb: G.core, uv: uvTile(CORE_D, FH) }, top: { gb: G.white } });
-      obox(ccx + fx * 1.2, ccz + fz * 1.2, ux, uz, CORE_W - 2.4, 3, ch, ch + 1.6, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } });
+      /* (모형: 옥탑 기계실이 태양광 캐노피 뒤에 낮게 숨어 보이지 않음) */
       /* 공동현관: 코어 뒤쪽 캐노피 + 유리문 */
       const ex = ccx - fx * (CORE_D / 2 + 1.1), ez = ccz - fz * (CORE_D / 2 + 1.1);
       obox(ex, ez, ux, uz, 4.2, 2.2, yBackR + 3.0, yBackR + 3.25, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.fin } });
