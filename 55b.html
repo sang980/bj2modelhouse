@@ -1869,6 +1869,13 @@ function kitchenPropsB() {
     const tw = std(0xf3f1ec, .3); at(RB(.27, .17, .15, .035, 3), tw, .52, T + .085, 5.62).rotation.y = Math.PI / 2;
     for (const dz of [-.035, .035]) at(BX(.2, .004, .025), std(0x2a2b2d, .6), .52, T + .171, 5.62 + dz).rotation.y = Math.PI / 2;
     at(BX(.015, .03, .02), M.chrome, .52 + .076, T + .12, 5.62); at(CY(.012, .012, .015, 12), M.chrome, .52 + .077, T + .06, 5.67).rotation.z = Math.PI / 2; }
+  /* VR: 토스터 아래 둥근 라탄 매트 + 유리 물병 + 유리컵 2 + 컵에 꽂은 주황 실리콘 주걱 */
+  { const rc = mkCanvas(64, 64), rx = rc.getContext('2d'); rx.fillStyle = '#c8a46c'; rx.fillRect(0, 0, 64, 64); rx.strokeStyle = 'rgba(90,60,25,.35)'; rx.lineWidth = 1.5; for (let r = 4; r < 46; r += 4) { rx.beginPath(); rx.arc(32, 32, r, 0, 7); rx.stroke(); }
+    at(CY(.21, .21, .006, 40), std(0xffffff, .9, 0, { map: toTex(rc) }), .64, T + .003, 5.58);
+    const gl = new THREE.MeshStandardMaterial({ color: 0xe8f0f2, roughness: .05, metalness: .05, transparent: true, opacity: .32, side: THREE.DoubleSide, depthWrite: false });
+    at(new THREE.LatheGeometry([[0, 0], [.045, 0], [.05, .02], [.05, .14], [.035, .19], [.03, .22], [.034, .23]].map(([a, b]) => new THREE.Vector2(a, b)), 28), gl, .76, T + .006, 5.48);
+    for (const [x, z] of [[.78, 5.62], [.7, 5.7]]) at(new THREE.CylinderGeometry(.032, .028, .09, 24, 1, true), gl, x, T + .051, z);
+    { const s = new THREE.Group(); s.position.set(WX(.78), T + .02, WZ(5.62)); s.rotation.set(.25, 0, -.2); g.add(s); mesh(CY(.006, .006, .22, 8), std(0xf2efe8, .5), 0, .12, 0, s); mesh(RB(.05, .07, .008, .004, 1), std(0xe0782a, .6), 0, .26, 0, s); } }
   // ③ 쿡탑 줄 왼쪽: 나무 도마(손잡이 구멍) + 나무 주걱
   { const b = at(RB(.42, .02, .26, .012, 2), wood, .98, T + .01, 5.45); b.rotation.y = .22;
     const sp = at(BX(.3, .012, .03), wood, 1.0, T + .028, 5.47); sp.rotation.y = .5; at(new THREE.SphereGeometry(.035, 16, 8), wood, 1.13, T + .03, 5.4).scale.set(1.2, .25, .8); }
