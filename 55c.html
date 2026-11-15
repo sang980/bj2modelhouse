@@ -2587,9 +2587,14 @@ function pantryGoods(g, lv, y) {
     const wv = std(0xf6f5f1, .22); lathe(bubble, wv, 4.42, y, 2.8, 1); lathe(bubble, wv, 4.5, y, 2.88, .82); /* 흰 버블 화병 2 */
     basket(4.77, 3.2, .26, .16, .26, 0xd0aa6a, true, true); }
   if (lv === 4) { /* 늘어지는 아이비 화분(앞으로 흘러내림) */
-    at(CY(.06, .05, .1, 20), std(0xf2f0eb, .4), 4.17, y + .05, 2.8); const lg = new THREE.SphereGeometry(.018, 8, 6);
-    for (let v = 0; v < 6; v++) { const a = -1.2 + v * .5, len = .18 + (v % 3) * .08; for (let k = 0; k < 9; k++) { const t = k / 8, lx = 4.17 + Math.sin(a) * (.05 + t * .12), lz = 2.8 + Math.cos(a) * .04 + Math.min(t * 1.6, 1) * .23, ly = y + .1 + .02 - (t > .62 ? (t - .62) * len * 2.2 : 0);
-      const l = at(lg, M.plant, lx, ly, lz); l.scale.set(.9, .35, .7); l.rotation.set(rnd() * .8, rnd() * 6, rnd() * .8); } }
+    at(CY(.06, .05, .1, 20), std(0xf2f0eb, .4), 4.17, y + .05, 2.8); { const P = [], C = [], a = new THREE.Vector3(), tg = new THREE.Vector3(), sd = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), col = new THREE.Color(); /* 동글동글 구 잎 대신 가늘게 휘어 앞으로 늘어지는 풀잎(늘어지는 잎은 선반 앞 모서리 밖에서만 내려감) */
+      for (let i = 0; i < 32; i++) { const droop = rnd() < .55, yaw = (rnd() - .5) * (droop ? 1.0 : 3.2), dx = Math.sin(yaw), dz = Math.cos(yaw), hh = .06 + rnd() * .08, out = droop ? .24 + rnd() * .06 : .06 + rnd() * .1, dn = droop ? .06 + rnd() * .2 : -.02 - rnd() * .05;
+        const cv = new THREE.CubicBezierCurve3(new THREE.Vector3(dx * .01, 0, dz * .01), new THREE.Vector3(dx * .03, hh, dz * .03), new THREE.Vector3(dx * out * .8, hh * 1.1, dz * out * .8), new THREE.Vector3(dx * out, -dn, dz * out));
+        col.setHSL(.27 + rnd() * .05, .45 + rnd() * .2, .28 + rnd() * .12); let pL = null, pR = null;
+        for (let s = 0; s <= 10; s++) { const u = s / 10; cv.getPoint(u, a); cv.getTangent(u, tg); sd.crossVectors(tg, up); if (sd.lengthSq() < 1e-6) sd.set(1, 0, 0); sd.normalize(); const ww = .006 * (1 - u * .85), Lp = a.clone().addScaledVector(sd, ww), Rp = a.clone().addScaledVector(sd, -ww);
+          if (pL) { P.push(pL.x, pL.y, pL.z, pR.x, pR.y, pR.z, Lp.x, Lp.y, Lp.z, pR.x, pR.y, pR.z, Rp.x, Rp.y, Rp.z, Lp.x, Lp.y, Lp.z); const k1 = .75 + u * .35; for (let q = 0; q < 6; q++) C.push(col.r * k1, col.g * k1, col.b * k1); } pL = Lp; pR = Rp; } }
+      const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); gg.setAttribute('color', new THREE.Float32BufferAttribute(C, 3)); gg.computeVertexNormals();
+      at(gg, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .6, side: THREE.DoubleSide }), 4.17, y + .1, 2.8); }
     basket(4.45, 2.83, .22, .14, .24, 0xc49a5c, false); basket(4.77, 3.78, .26, .14, .28, 0xb48a52, true, true); }
   if (lv === 5) { const ln = std(0xd9cfbf, .9, 0, { map: M.navy.map }), lid = std(0xcabfad, .9); /* 뚜껑 있는 패브릭 수납함 */
     for (const [x, z] of [[4.15, 2.83], [4.45, 2.83], [4.77, 3.2], [4.77, 3.78]]) { at(RB(.24, .16, .24, .015, 2), ln, x, y + .08, z); at(RB(.25, .025, .25, .01, 2), lid, x, y + .17, z); } }
