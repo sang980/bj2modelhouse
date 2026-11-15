@@ -1585,7 +1585,7 @@ function towelMat(col, kind = '') { const key = col + kind; if (_twC[key]) retur
   for (let i = 0; i < 420; i++) { x.fillStyle = `rgba(0,0,0,${.03 + rnd() * .07})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 2); }
   return (_twC[key] = std(kind ? 0xffffff : col, 1, 0, { map: toTex(c, { rep: [2, 2] }) })); }
 function cookPot(g, x, z, y) { /* VR: 쿡탑 위 스테인리스 냄비(뚜껑·검정 꼭지·양옆 손잡이) */
-  const st = std(0xcfd2d4, .22, .9), L = pts => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 36), p = new THREE.Group(); p.position.set(WX(x), y, WZ(z)); g.add(p);
+  const st = std(0xcfd2d4, .22, .9), L = pts => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 36), p = new THREE.Group(); p.position.set(WX(x), y, WZ(z)); p.scale.setScalar(1.25); /* VR 55C: 지름 약 23cm 큰 냄비 */ g.add(p);
   mesh(L([[0, 0], [.084, 0], [.092, .008], [.092, .1], [.096, .105], [.088, .105], [0, .105]]), st, 0, 0, 0, p);
   mesh(L([[0, .046], [.03, .044], [.07, .03], [.095, .006], [.095, 0], [0, 0]]), st, 0, .105, 0, p); mesh(CY(.012, .017, .022, 16), M.black, 0, .162, 0, p);
   for (const s of [-1, 1]) { const h = mesh(new THREE.TorusGeometry(.022, .005, 6, 14, Math.PI), M.black, s * .092, .085, 0, p); h.rotation.order = 'YXZ'; h.rotation.set(Math.PI / 2, s * Math.PI / 2, 0); } }
@@ -2027,7 +2027,7 @@ function diningSmall() {
   for (const sz of [-1, 1]) mesh(BX(L - .06, .037, .02), M.black, -L / 2, .7085, sz * (W / 2 - .04), g); /* 검은 앞치마 */
   for (const x of [-.04, -L + .04]) for (const z of [-W / 2 + .04, W / 2 - .04]) mesh(BX(.025, .727, .025), M.black, x, .3635, z, g);
   // 복도 쪽(회전 π 후 로컬 -z) 의자는 식탁 밑으로 밀어 넣음
-  for (const x of [-.3, -.8]) { diningChair(g, x, -.32, 0); diningChair(g, x, .56, Math.PI); }
+  for (const x of [-.3, -.8]) { diningChair(g, x, -.56, 0); diningChair(g, x, .56, Math.PI); } /* 요청: 서쪽 의자도 밀어 넣지 않고 동쪽과 같은 간격 */
   for (const x of [-.3, -.8]) for (const pz of [-.2, .2]) { const m = mesh(BX(.34, .004, .28), std(0x8b6b4f, .85), x, .758, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); mesh(CY(.11, .1, .02, 30), M.whiteGloss, x, .768, pz, g); }
   tableRunner(g, L, .26, .7525, true); /* VR: 베이지 린넨 러너(양 끝은 상판 모서리에서 접혀 늘어짐) */
   for (const x of [-.3, -.8]) for (const pz of [-.2, .2]) { const n = mesh(BX(.13, .01, .07), std(0xd9822b, .9), x + .01, .784, pz, g, { cast: false }); n.rotation.y = .5; } /* 접은 주황 냅킨 */
@@ -2690,17 +2690,42 @@ function pantryGoods(g, lv, y) {
   const panel = (x0, z) => { cab(g, x0, x0 + .47, .02, 2.06, z - .006, z + .006, M.glass, { cast: false }); for (const [a, b, c, d] of [[x0, x0 + .03, .02, 2.06], [x0 + .44, x0 + .47, .02, 2.06], [x0, x0 + .47, .02, .07], [x0, x0 + .47, 2.0, 2.06]]) cab(g, a, b, c, d, z - .015, z + .015, M.rail); };
   panel(1.79, 3.635); panel(2.235, 3.66); panel(2.27, 3.685); } /* 문틀 옆면이 같은 평면에 겹치지 않게 5mm씩 어긋나게 */
 // 4 아일랜드식탁 (사진): 동쪽 벽에 붙은 페닌슐라, 남쪽(식탁 쪽)으로 도어, 식탁이 그 앞에 붙음
-function peninsula(k, name, x0, x1, z0, z1) {
+/* 전기밥솥(요청·VR): 흰 유광 몸통 + 연회색 뚜껑 + 은색 손잡이 + 앞면 검은 조작부(파란 표시창) — 앞면이 북쪽(주방) */
+function riceCooker(g, cx, y, cz) {
+  const p = new THREE.Group(); p.position.set(WX(cx), y, WZ(cz)); g.add(p);
+  const wb = std(0xf8f7f4, .18), lid = std(0xe6e5e1, .22), dk = std(0x15171a, .15, .2);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(CY(.012, .012, .008, 12), M.black, sx * .09, .004, sz * .11, p, { cast: false });
+  mesh(RB(.25, .17, .31, .06, 4), wb, 0, .093, 0, p);
+  mesh(RB(.24, .07, .3, .05, 4), lid, 0, .2, .005, p);
+  mesh(RB(.13, .03, .05, .012, 2), std(0xa4a9ae, .3, .6), 0, .245, -.09, p); /* 손잡이(앞쪽) */
+  mesh(CY(.016, .016, .012, 16), std(0x5a5e63, .4, .5), 0, .24, .08, p); /* 증기 배출구 */
+  mesh(RB(.16, .075, .012, .005, 1), dk, 0, .115, -.152, p); /* 조작부 */
+  mesh(BX(.05, .02, .002), std(0x0d1a2a, .2, 0, { emissive: 0x3aa0ff, emissiveIntensity: .8 }), 0, .13, -.159, p, { cast: false });
+  for (const dx of [-.05, .05]) mesh(BX(.022, .01, .002), std(0xd8dadc, .4), dx, .1, -.159, p, { cast: false });
+}
+function peninsula(k, name, x0, x1, z0, z1, niche = false) {
   const g = item(k, name);
   /* 남쪽(식탁 쪽) 여닫이 문 n짝 — 클릭하면 열림, 속이 빈 수납장 + 선반 + 그릇 */
   const inner = std(0xebe9e4, .6), n = Math.max(2, Math.round((x1 - x0) / .45)), zf = z1 - .03;
-  cab(g, x0 + .02, x1 - .02, .1, .86, z0, z0 + .02, inner); cab(g, x0, x0 + .02, .1, .86, z0, zf); cab(g, x1 - .02, x1, .1, .86, z0, zf); /* 뒤판은 옆판 사이에만(옆판 바깥면과 겹치면 z-fighting) */
-  cab(g, x0 + .02, x1 - .02, .1, .12, z0 + .02, zf, inner); cab(g, x0 + .02, x1 - .02, .47, .49, z0 + .02, zf, inner);
+  /* niche(요청·VR): 주방 쪽 뒷면 서쪽 끝 칸(안 폭 0.46)에 전기밥솥 1대만 든 오픈 칸 + 그 밑 작은 서랍 1개 */
+  const xa = niche ? x0 + .48 : x0 + .02, xs = niche ? x0 + .5 : x0 + .02;
+  cab(g, xa, x1 - .02, .1, .86, z0, z0 + .02, inner); cab(g, x0, x0 + .02, .1, .86, z0, zf); cab(g, x1 - .02, x1, .1, .86, z0, zf); /* 뒤판은 옆판 사이에만(옆판 바깥면과 겹치면 z-fighting) */
+  cab(g, x0 + .02, x1 - .02, .1, .12, z0 + .02, zf, inner); cab(g, xs, x1 - .02, .47, .49, z0 + .02, zf, inner);
   cab(g, x0 + .04, x1, 0, .1, z0 + .04, z1 - .04, M.black);
   cab(g, x0 - .03, x1, .86, .9, z0 - .03, z1 + .03, M.counter);
+  if (niche) { const nw = std(0xf6f5f1, .45), c0 = x0 + .02, c1 = x0 + .48;
+    cab(g, c1, xs, .12, .86, z0 + .02, zf, inner); /* 칸막이 */
+    cab(g, c0, c1, .1, .333, z0, z0 + .02, inner); /* 아래 막힌 판 */
+    cab(g, c0 + .003, c1 - .003, .336, .505, z0, z0 + .02, M.kdoor); /* 작은 서랍 앞판 */
+    cab(g, c0, c1, .505, .53, z0 + .014, z0 + .02, M.black); /* 서랍 위 손잡이 홈 */
+    cab(g, c0, c1, .336, .53, z0 + .02, z0 + .38, inner); /* 서랍 몸통 */
+    cab(g, c0, c1, .53, .55, z0, z0 + .4, nw); /* 칸 바닥 */
+    cab(g, c0, c1, .55, .86, z0 + .38, z0 + .4, nw); /* 칸 뒷벽 */
+    cab(g, c0, c0 + .005, .55, .86, z0, z0 + .38, nw); cab(g, c1 - .005, c1, .55, .86, z0, z0 + .38, nw); /* 칸 옆 마감 */
+    riceCooker(g, (c0 + c1) / 2, .55, z0 + .2); }
   { const lw = (x1 - x0) / n - .006; for (let c = 0; c < n; c++) { const u0 = x0 + (x1 - x0) * c / n + .003, u1 = u0 + lw, left = c < n / 2;
       const d = makeDoor({ parent: g, horiz: true, line: z1 - .012, t: .02, hu: left ? u0 : u1, du: left ? 1 : -1, side: 1, lw, lh: .74, lt: .02, mat: M.kdoor, from: u0, to: u1, name: '아일랜드 수납장 문', handle: false, startOpen: false }); d.pivot.position.y = .1; } }
-  { const wp = std(0xf7f6f2, .3), zc0 = (z0 + zf) / 2; for (let i = 0; i < 6; i++) mesh(CY(.11, .1, .012, 28), wp, WX(x0 + .3), .497 + i * .014, WZ(zc0), g, { cast: false });
+  { const wp = std(0xf7f6f2, .3), zc0 = (z0 + zf) / 2, px = niche ? x0 + .75 : x0 + .3; for (let i = 0; i < 6; i++) mesh(CY(.11, .1, .012, 28), wp, WX(px), .497 + i * .014, WZ(zc0), g, { cast: false });
     mesh(RB(.24, .14, .26, .02, 2), std(0xe9e6df, .6), WX(x1 - .3), .19, WZ(zc0), g); for (let i = 0; i < 3; i++) mesh(CY(.07, .05, .06, 20), wp, WX(x1 - .3), .52 + i * .02, WZ(zc0), g, { cast: false }); }
   // 상판 위 소품(사진 17): 회갈색 타원 펠트 매트 위에 검은 물결 리본 와인랙(와인병 3 눕힘) · 흰 연꽃 모양 도자기 볼, 옆에 와인잔
   const top = .9, zc = (z0 + z1) / 2; mesh(CY(.26, .26, .004, 48), std(0x8a7f72, .95), WX(x0 + .5), top + .002, WZ(zc), g, { cast: false }).scale.set(1.25, 1, .75);
@@ -2709,7 +2734,13 @@ function peninsula(k, name, x0, x1, z0, z1) {
   wineGlass(g, WX(x0 + .86), top, WZ(zc + .06));
 }
 // 평면도(옵션 그림) 방향: 4-1·4-3은 주방 왼쪽 앞(복도 쪽), 4-4는 팬트리 동선 때문에 작게 가운데로. 식탁은 아일랜드 남쪽에 붙음
-peninsula('o4island', '아일랜드식탁', 5.49, 6.79, 1.93, 2.53); /* 요청: 상판 서쪽 끝을 다용도실 흰 벽 면(x 5.46)에 붙이고 북쪽 끝을 세탁실 문틀(z 1.9)에 맞춤 */
+peninsula('o4island', '아일랜드식탁', 5.49, 6.79, 1.93, 2.53, true); /* 요청: 상판 서쪽 끝을 다용도실 흰 벽 면(x 5.46)에 붙이고 북쪽 끝을 세탁실 문틀(z 1.9)에 맞춤 · 주방 쪽 뒷면에 밥솥 칸 + 작은 서랍 */
+/* 요청: 아일랜드를 서쪽 벽(기본: 창고 벽 면 x 4.8, 현관구조 1: 팬트리 벽 면 x 5.06)까지 늘려 발코니 벽(면 z 2.41)에 파고들게 — 벽 속(z < 2.41)과 세탁실 쪽은 깎아서 세탁실에서는 안 보임 */
+function islandWing(k, xw) { const g = item(k, '아일랜드식탁'), zb = 2.36; /* zb: 벽 속으로 5cm */
+  cab(g, xw, 5.46, .86, .9, zb, 2.56, M.counter);
+  cab(g, xw, 5.49, .1, .86, zb, 2.524, M.kdoor); /* 고정 패널(문짝 앞면과 같은 면) */
+  cab(g, xw, 5.49, 0, .1, zb, 2.49, M.black); }
+islandWing('o4islandW', 4.8); islandWing('o4islandWP', 5.06);
 peninsula('o4islandS', '아일랜드식탁(소형)', 6.3, 7.2, 1.65, 2.2);
 // 5 쿡탑 — 서쪽 ㄱ자 코너
 const COOK = { x0: 5.52, x1: 6.0, z0: 1.07, z1: 1.68, y: .9 }; // 폭 61cm, 다리 가운데
@@ -2998,7 +3029,7 @@ function applyOptions() {
   show('o2-1', s['2'] === '2-1');
   show('o3', s['3'] === '3');
   const island = ['4-1', '4-3', '4-4'].includes(s['4']), stone = ['4-2', '4-3', '4-4'].includes(s['4']);
-  show('o4island', s['4'] === '4-1' || s['4'] === '4-3' || s['4'] === '4-4'); show('o4islandS', false); /* 4-4(현관구조 1)도 4-1·4-3과 같은 원래 자리에 아일랜드 */
+  show('o4island', s['4'] === '4-1' || s['4'] === '4-3' || s['4'] === '4-4'); show('o4islandS', false); { const isl = ['4-1', '4-3', '4-4'].includes(s['4']); show('o4islandW', isl && s['1'] !== '1'); show('o4islandWP', isl && s['1'] === '1'); } /* 서쪽 벽까지 늘린 아일랜드 날개 */ /* 4-4(현관구조 1)도 4-1·4-3과 같은 원래 자리에 아일랜드 */
   const cm = stone ? MAT_OPT.stone : MAT_OPT.mma; M.counter.map = cm.map; M.counter.color.set(cm.color); M.counter.roughness = cm.roughness; M.counter.needsUpdate = true;
   M.splash.map = stone ? MAT_OPT.stone.map : MAT_OPT.tile.map; M.splash.roughness = stone ? .18 : .25; M.splash.needsUpdate = true;
   // 식탁: 아일랜드가 있으면 그 남쪽 면에 붙이고(평탄면이 북쪽), 없으면 주방 가운데에 둠
@@ -3010,7 +3041,7 @@ function applyOptions() {
     if (selected && (selected === diningS || selected === diningL) && !selected.visible) select(null);
     // 북쪽 벽(z 2.66)·아일랜드(z ≤ 2.8)에 의자 등받이가 닿지 않도록 남쪽으로 당김
     if (pantry) { /* 요청(VR처럼 90° 회전): 작은 식탁의 평평한 끝을 아일랜드 남쪽 면(상판 z 3.07, 아일랜드 없으면 발코니 벽 면 z 2.41)에 붙여 남쪽으로 뻗게 — 의자는 동·서 양쪽 */
-      const islOn = ['4-1', '4-3', '4-4'].includes(s['4']), zEnd = islOn ? 2.56 : 2.41, xc = 5.8; /* 아일랜드 상판 남쪽 z 2.56 */
+      const islOn = ['4-1', '4-3', '4-4'].includes(s['4']), zEnd = islOn ? 2.56 : 2.41, xc = 6.04; /* 요청: 동쪽으로 24cm — 서쪽 의자 등받이는 예전 자리(x 5.26) 그대로 */ /* 아일랜드 상판 남쪽 z 2.56 */
       d.position.set(WX(xc), 0, WZ(zEnd)); d.rotation.y = Math.PI / 2;
       d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI / 2 };
       diningPendant.position.set(WX(xc), 0, WZ(zEnd + d.userData.len / 2));
