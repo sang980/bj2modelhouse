@@ -892,14 +892,14 @@ function addOpening(horiz, line, t, o, parent = structure) {
 wall(3.4, 0, 12.32, 0, TE, [
   { from: 6.3, to: 7.3, y0: .98, y1: 1.45, kind: 'window', sill: false }, // 주방 싱크 위 작은 창(사진 기준, 폭 1.0m)
   { from: 9.3, to: 10.45, y0: .2, y1: 2.1, kind: 'louver' },
-  { from: 10.98, to: 11.64, y0: 1.5, y1: 2.05, kind: 'window' }, // 드레스룸: 사진처럼 작은 2짝 창, 높게(행거에 가리지 않게)
+  { from: 11.06, to: 11.86, y0: 1.2, y1: 1.8, kind: 'window' }, /* 드레스룸: VR·평면도 — 작은 2짝 창, 창턱 1.2m · 윗선 1.8m · 폭 0.8m */
 ]);
-wall(12.32, 0, 12.32, 8.22, TE, [{ from: 3.07, to: 3.73, y0: 1.5, y1: 2.05, kind: 'window', light: true }]); // 55C(측세대): 침실1 욕실 앞 동쪽 창 — 드레스룸 창과 같은 크기·높이(작게, 위로 붙여)
+wall(12.32, 0, 12.32, 8.22, TE, [{ from: 3.0, to: 3.8, y0: 1.2, y1: 1.8, kind: 'window', light: true }]); // 55C(측세대): 침실1 욕실 앞 동쪽 창 — 드레스룸 창과 같은 크기·높이(작게, 위로 붙여)
 wall(0, 8.22, 12.32, 8.22, TE, [
-  { from: .5, to: 2.3, y0: .45, y1: 2.2, kind: 'window', rail: true, light: true },
-  { from: 3.4, to: 4.5, y0: .95, y1: 1.65, kind: 'window', light: true }, // 알파룸: 작은 창(블라인드)
-  { from: 5.75, to: 8.2, y0: .03, y1: 2.25, kind: 'slide', rail: true, light: true },
-  { from: 9.75, to: 11.55, y0: .03, y1: 2.2, kind: 'slide', rail: true, light: true },
+  { from: .71, to: 2.2, y0: 1.25, y1: 2.25, kind: 'window', light: true }, /* 침실2: VR·평면도 — 창턱 1.25m 반창(난간 없음), 폭 1.49m */
+  { from: 3.32, to: 4.49, y0: 1.23, y1: 2.25, kind: 'window', light: true }, /* 알파룸: VR·평면도 — 창턱 1.23m, 폭 1.17m(블라인드) */
+  { from: 5.54, to: 8.28, y0: .3, y1: 2.28, kind: 'slide', rail: true, light: true }, /* 거실: VR·평면도 — 창턱 0.3m(발코니 확장 창), 폭 2.74m */
+  { from: 9.55, to: 11.37, y0: .35, y1: 2.28, kind: 'slide', rail: true, light: true }, /* 침실1: VR·평면도 — 창턱 0.35m, 폭 1.82m */
 ]);
 wall(0, 2.2, 0, 8.22, TE, []);
 wall(0, 2.2, 3.4, 2.2, TE, [
@@ -1277,7 +1277,7 @@ ledRectWall(5.24, 1.55, 6.575, 2.0, 1.0, -1, 0, 0xffd9a8, 1.2, 2.4);
   } }
 // 거실 평판등 2개(우물천장 중앙) + 커튼
 ceilingPanel(6.45, 6.93, 5.55, 6.55, 1.4, 3.4); ceilingPanel(6.99, 7.47, 5.55, 6.55, 1.4, 3.4);
-curtainSet(5.25, 8.7, 5.75, 8.2, (() => { const m = M.curtainGrey.clone(); m.color.set(0xefe8dc); return m; })()); /* VR 55C: 거실은 크림색 커튼 */
+curtainSet(5.25, 8.7, 5.54, 8.28, (() => { const m = M.curtainGrey.clone(); m.color.set(0xefe8dc); return m; })()); /* VR 55C: 거실은 크림색 커튼 */
 
 // ── 현관 끝 백라이트 액자 + 현관 평판등 ──
 pbox(3.0, 3.8, .98, 1.92, 5.03, 5.04, M.ledWarm, fixed, { cast: false });
@@ -1300,7 +1300,7 @@ for (const z of [5.3, 7.6]) { const x = 9.17, y = 1.15;
   mesh(CY(.03, .03, .004, 20), M.ledWarm, WX(x), y - .002, WZ(z), fixed, { cast: false });
   ledRect(x - .05, x + .05, z - .05, z + .05, y - .01, -1, 0xffd9a8, .6, 1.4); }
 ceilingPanel(10.25, 10.85, 6.15, 6.75, 1.0, 2.8);
-curtainSet(9.3, 12.0, 9.75, 11.55, (() => { const m = M.curtainGrey.clone(); m.color.set(0xefe8dc); return m; })()); /* VR 55C: 크림색 커튼 */
+curtainSet(9.3, 12.0, 9.55, 11.37, (() => { const m = M.curtainGrey.clone(); m.color.set(0xefe8dc); return m; })()); /* VR 55C: 크림색 커튼 */
 
 // ── 알파룸: 하늘색 백라이트 책장, 원형 테이블, 노란 알파벳 러그, 블라인드 ──
 { const g = new THREE.Group(); g.userData = { name: '백라이트 책장', solid: true }; fixed.add(g);
@@ -1382,15 +1382,15 @@ for (let i = 0; i < 2; i++) { const b = mesh(BX(.2 - i * .02, .03, .26 - i * .02
 const alphaRug = piece('알파벳 러그', 3.8, 7.2, 0, { solid: false });
 { const r = alphaRug; mesh(CY(.85, .85, .01, 64), std(0xffffff, 1, 0, { map: toTex(rugAlphabet()) }), 0, .006, 0, r, { cast: false }); }
 { const g = fixed; const bz = 8.08; // 롤/우드 블라인드 (창 윗부분)
-  for (let i = 0; i < 6; i++) pbox(3.38, 4.52, 1.42 + i * .045, 1.45 + i * .045, bz - .03, bz, std(0xf2efe8, .7), g, { cast: false });
-  pbox(3.36, 4.54, 1.68, 1.73, bz - .05, bz, M.white, g); }
-{ const cm = M.curtainGrey.clone(); cm.color.set(0xf1ebe0); curtain(3.0, 3.38, 7.95, 2.27, fixed, cm, 7, .04); curtain(4.52, 4.95, 7.95, 2.27, fixed, cm, 7, .04); } /* VR 55C: 크림색 커튼 */
+  for (let i = 0; i < 7; i++) pbox(3.3, 4.51, 1.9 + i * .045, 1.93 + i * .045, bz - .03, bz, std(0xf2efe8, .7), g, { cast: false }); /* 새 창(1.23–2.25) 윗부분 */
+  pbox(3.28, 4.53, 2.2, 2.25, bz - .05, bz, M.white, g); }
+{ const cm = M.curtainGrey.clone(); cm.color.set(0xf1ebe0); curtain(2.94, 3.32, 7.95, 2.27, fixed, cm, 7, .04); curtain(4.49, 4.92, 7.95, 2.27, fixed, cm, 7, .04); } /* VR 55C: 크림색 커튼 */
 pbox(2.85, 5.06, 2.3, H, 7.88, 8.11, M.ceil, fixed, { cast: false });
 ceilingPanel(3.65, 4.25, 6.3, 6.9, 1.0, 2.8);
 // 침실2 커튼 + VR: 흰 콤비(지브라) 블라인드 — 창 위쪽
 curtain(.15, .65, 8.02); curtain(2.2, 2.7, 8.02);
 { const zb = toTex((() => { const c = mkCanvas(8, 32), x = c.getContext('2d'); x.fillStyle = '#f4f3ef'; x.fillRect(0, 0, 8, 32); x.fillStyle = 'rgba(244,243,239,.55)'; x.fillRect(0, 16, 8, 16); return c; })(), { rep: [1, 9] });
-  pbox(.5, 2.3, 1.62, 2.2, 8.08, 8.1, std(0xffffff, .85, 0, { map: zb, transparent: true, opacity: .96 }), fixed, { cast: false }); pbox(.5, 2.3, 1.6, 1.62, 8.075, 8.104, std(0xe9e8e4, .5), fixed, { cast: false }); pbox(.48, 2.32, 2.2, 2.27, 8.06, 8.11, std(0xf2f1ed, .5), fixed, { cast: false }); }
+  pbox(.65, 2.26, 1.75, 2.2, 8.08, 8.1, std(0xffffff, .85, 0, { map: zb, transparent: true, opacity: .96 }), fixed, { cast: false }); pbox(.65, 2.26, 1.73, 1.75, 8.075, 8.104, std(0xe9e8e4, .5), fixed, { cast: false }); pbox(.63, 2.28, 2.2, 2.27, 8.06, 8.11, std(0xf2f1ed, .5), fixed, { cast: false }); }
 
 // 현관(평면도): 서쪽 욕실1 벽을 따라 기본 신발장(앞벽 ~ 중문 앞, 욕실1 문 전까지) + 동쪽은 현관창고(기본) 또는 현관장+복도팬트리(물품옵션 1)
 
@@ -1715,7 +1715,7 @@ washer(4.33, '세탁기', 0xf4f4f2); washer(5.0, '건조기', 0xe6e1d9);
   mesh(CY(.06, .05, .1, 18), M.white, WX(4.75), 1.39, WZ(.24), g);
   for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; const l = mesh(BX(.012, .005, .2), M.plant, WX(4.75 + Math.cos(a) * .07), 1.5, WZ(.24 + Math.sin(a) * .07), g, { cast: false }); l.rotation.set(Math.sin(a) * .7, -a, Math.cos(a) * .7); }
   pbox(4.98, 5.18, 1.34, 1.46, .16, .32, std(0xe4d8c0, .9), g); }
-{ const fz = .85; mesh(CY(.05, .05, .02, 20), M.chrome, WX(5.33), 1.1, WZ(fz), fixed).rotation.z = Math.PI / 2; mesh(CY(.012, .012, .1), M.chrome, WX(5.28), 1.1, WZ(fz), fixed).rotation.z = Math.PI / 2; }
+/* (삭제) 세탁실 문틀 옆 벽 수전: 미닫이문 손잡이처럼 보여 지움 — 세탁기 뒤 수전은 따로 있음 */
 ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
 // ── 욕실 소품(견본주택 사진) ──
 { const g = fixed;
