@@ -2137,6 +2137,20 @@ function diningLarge() {
   tablePlant(g, -.975, .755, 0);
   g.userData.len = L; return g;
 }
+/* 6인 식탁(현관장+복도팬트리 + 아일랜드 없음, 요청): 길이 1.6m — 세탁실·발코니 벽면(z 2.41)에서 남쪽으로 뻗어 거실 경계(z 4.0)를 넘지 않게(복도 입구를 막지 않음)
+   의자는 동쪽 3 · 서쪽(팬트리 쪽) 2 — 세탁실 모서리 벽 앞 북서쪽 자리는 비움(5인) */
+function diningPantry6() {
+  const g = piece('식탁(6인)', 0, 0, 0), L = 1.6, W = .85;
+  mesh(RB(L, .025, W, .006), M.quartz, -L / 2, .74, 0, g);
+  for (const sz of [-1, 1]) mesh(BX(L - .06, .037, .02), M.black, -L / 2, .7085, sz * (W / 2 - .04), g);
+  for (const x of [-.05, -L + .05]) for (const z of [-W / 2 + .05, W / 2 - .05]) mesh(BX(.025, .727, .025), M.black, x, .3635, z, g);
+  const cx = [-.27, -.8, -1.33];
+  for (const x of cx) diningChair(g, x, .6, Math.PI); /* 동쪽 3 */
+  for (const x of cx.slice(1)) diningChair(g, x, -.6, 0); /* 서쪽(팬트리 쪽) 2 */
+  for (const x of cx) for (const pz of [-.2, .2]) { if (pz < 0 && x === cx[0]) continue; const m = mesh(CY(.16, .16, .004, 30), std(0x45474b, .8), x, .757, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); mesh(CY(.1, .09, .02, 30), M.whiteGloss, x, .768, pz, g); }
+  tablePlant(g, -.535, .7525, 0);
+  g.userData.len = L; return g;
+}
 function bed(x, z, rot, w = 1.6, l = 2.1, name = '침대', headTall = false) {
   const g = piece(name, x, z, rot);
   if (!headTall) { // 사진: 화이트 플로팅 프레임 + 하부 간접등
@@ -2213,7 +2227,7 @@ M.shagGrey = (() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fi
   return std(0xffffff, 1, 0, { map: toTex(c, { rep: [3, 4] }), bumpMap: toTex(c, { srgb: false, rep: [3, 4] }), bumpScale: 5 }); })();
 { const lr = rug(6.79, 6.6, 0); lr.traverse(o => { if (o.isMesh) { o.material = M.shagGrey; o.scale.y = 1.7; } }); }
 coffeeTable(6.84, 6.65, 0);
-const diningS = diningSmall(), diningL = diningLarge();
+const diningS = diningSmall(), diningL = diningLarge(), diningP6 = diningPantry6();
 const dining = diningS; // (예전 코드 호환용)
 // 평면도 방향: 침대 헤드는 서쪽 벽, 붙박이장(옵션 10)은 동쪽 벽
 { const b = bed(9.96, 6.45, Math.PI / 2, 1.6, 2.1, '침대'); /* VR 55A: 선명한 로열 블루 러너 + 짙은 회색 헤링본 쿠션 */
@@ -3168,9 +3182,9 @@ function applyOptions() {
   // 식탁: 평평한 끝을 서쪽 벽(왼쪽 벽)에 붙이고 동쪽으로 뻗게(로컬 -x → 월드 +x, 회전 π)
   //  · 현관장+복도팬트리(1) 선택: 서쪽 벽 = 팬트리 벽(x 5.0) → 작은 식탁
   //  · 기본형: 서쪽 벽 = 현관창고 벽(x 4.5)으로 0.5m 여유 → 큰 식탁, 의자 6개(아일랜드와 겹치는 자리는 뺌)
-  { const pantry = s['1'] === '1', d = pantry ? diningS : diningL;
-    diningS.visible = pantry; diningL.visible = !pantry;
-    if (selected && (selected === diningS || selected === diningL) && !selected.visible) select(null);
+  { const pantry = s['1'] === '1', islP = ['4-1', '4-3', '4-4'].includes(s['4']), d = pantry ? (islP ? diningS : diningP6) : diningL; /* 팬트리+아일랜드 없음 → 6인 식탁(의자 5) */
+    diningS.visible = pantry && islP; diningP6.visible = pantry && !islP; diningL.visible = !pantry;
+    if (selected && (selected === diningS || selected === diningL || selected === diningP6) && !selected.visible) select(null);
     // 북쪽 벽(z 2.66)·아일랜드(z ≤ 2.8)에 의자 등받이가 닿지 않도록 남쪽으로 당김
     if (pantry) { /* 요청(VR처럼 90° 회전): 작은 식탁의 평평한 끝을 아일랜드 남쪽 면(상판 z 3.07, 아일랜드 없으면 발코니 벽 면 z 2.41)에 붙여 남쪽으로 뻗게 — 의자는 동·서 양쪽 */
       const islOn = ['4-1', '4-3', '4-4'].includes(s['4']), zEnd = islOn ? 2.56 : 2.41, xc = 6.04; /* 요청: 동쪽으로 24cm — 서쪽 의자 등받이는 예전 자리(x 5.26) 그대로 */ /* 아일랜드 상판 남쪽 z 2.56 */
