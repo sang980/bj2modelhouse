@@ -1600,14 +1600,14 @@ await phase('침실을 꾸미는 중', 66);
 // ── 알파룸: 화이트 백라이트 책장(북쪽 벽, 칸마다 막대형 LED) ──
 { const g = item('b-book', '백라이트 책장');
   const x0 = 1.33, x1 = 3.39, z0 = 2.8, z1 = 3.14, wb = std(0xf4f3f0, .5);
-  pbox(x0, x1, .1, 2.25, z0, z0 + .02, std(0xf6efe0, .6), g); // 사진: 칸 뒤판이 따뜻하게 빛남
+  pbox(x0, x1, .1, 2.25, z0, z0 + .02, std(0xf6efe0, .6, 0, { emissive: 0xffe6c2, emissiveIntensity: .6 }), g); /* VR: 칸 뒤판이 따뜻하게 빛남(백라이트) */
   for (const y of [.1, .52, .94, 1.36, 1.78, 2.22]) pbox(x0, x1, y, y + .025, z0, z1, wb, g);
   for (let i = 0; i <= 5; i++) { const x = x0 + (x1 - x0) * i / 5; pbox(x - .012, x + .012, .1, 2.245, z0, z1, wb, g); }
   const rod = new THREE.CylinderGeometry(.006, .006, 1, 10); rod.rotateZ(Math.PI / 2);
   for (const y of [.5, .92, 1.34, 1.76, 2.2]) for (let c = 0; c < 5; c++) { const a = x0 + (x1 - x0) * c / 5 + .03, b2 = x0 + (x1 - x0) * (c + 1) / 5 - .03, r = new THREE.Mesh(rod, M.ledWarm); r.scale.set(b2 - a, 1, 1); r.position.set(WX((a + b2) / 2), y - .012, WZ(z0 + .07)); g.add(r); }
   pbox(x0, x1, 0, .1, z0, z1, M.white, g);
   // 칸 채우기(VR): 아래→위 5단 × 왼→오 5칸. s 세운 책, k 눕힌 책 더미(+소품), b 검은 화병, w 흰 도자기, p 늘어지는 화분, o 나무 조형물, - 빈 칸
-  { const plan = ['sk-ss', 's-wsk', 'ks-sp', 'bsk-s', '-sos-'], tops = [.125, .545, .965, 1.385, 1.805], cw = (x1 - x0) / 5, zc = z0 + .15;
+  { const plan = ['k-s-k', 's-wk-', 'kb-sp', '-sk-b', 'w-os-'] /* VR: 칸마다 한두 가지만 듬성듬성 */, tops = [.125, .545, .965, 1.385, 1.805], cw = (x1 - x0) / 5, zc = z0 + .15;
     const pal = [0xf1efe9, 0xd9d4ca, 0x2b2b2d, 0xbfb6a6, 0x8e9089, 0xe8e2d6, 0x4a4b4f], bm = pal.map(c => std(c, .75));
     const blackM = std(0x1d1d1f, .55), whiteM = std(0xf3f1ec, .35), woodM = std(0xb88a5a, .55), potM = std(0xe9e6df, .5), leafM = std(0x4f7a3a, .75);
     const cover = toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = '#151515'; x.fillRect(0, 0, 96, 128); x.fillStyle = '#f2f2f2'; x.font = 'bold 16px serif'; x.textAlign = 'center'; x.fillText('TOM', 48, 56); x.fillText('FORD', 48, 76); return c; })());
@@ -1615,9 +1615,9 @@ await phase('침실을 꾸미는 중', 66);
     let seed = 7; const r = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
     for (let row = 0; row < 5; row++) for (let col = 0; col < 5; col++) {
       const t = plan[row][col], y = tops[row] + .002, cx = x0 + (col + .5) * cw, X = v => WX(v), Z = v => WZ(v);
-      if (t === 's') { let bx = cx - cw / 2 + .05 + r() * .06; const n = 4 + (r() * 4 | 0); for (let i = 0; i < n; i++) { const w = .025 + r() * .02, h = .2 + r() * .1; mesh(BOOK.geo(w, h, .17 + r() * .04, 'z'), BOOK.mats[(r() * 7) | 0], X(bx + w / 2), y + h / 2, Z(zc - .02), g); bx += w + .003; }
+      if (t === 's') { let bx = cx - cw / 2 + .05 + r() * .06; const n = 2 + (r() * 3 | 0); for (let i = 0; i < n; i++) { const w = .025 + r() * .02, h = .2 + r() * .1; mesh(BOOK.geo(w, h, .17 + r() * .04, 'z'), BOOK.mats[(r() * 7) | 0], X(bx + w / 2), y + h / 2, Z(zc - .02), g); bx += w + .003; }
         const lean = mesh(BOOK.geo(.025, .22, .17, 'z'), BOOK.mats[(r() * 7) | 0], X(bx + .06), y + .105, Z(zc - .02), g); lean.rotation.z = -.28; }
-      else if (t === 'k') { let yy = y; const n = 2 + (r() * 3 | 0); for (let i = 0; i < n; i++) { const h = .025 + r() * .02, m = (row === 0 && i === n - 1) ? BOOK.mats[7] : BOOK.mats[(r() * 7) | 0]; const b = mesh(BOOK.geo(.22 + r() * .06, h, .17 + r() * .05, 'lie'), m, X(cx + (r() - .5) * .03), yy + h / 2, Z(zc), g); b.rotation.y = (r() - .5) * .2; yy += h; }
+      else if (t === 'k') { let yy = y; const n = 2 + (r() * 3 | 0); for (let i = 0; i < n; i++) { const h = .025 + r() * .02, m = (row === 0 && col === 0 && i === n - 1) ? BOOK.mats[7] : BOOK.mats[(r() * 7) | 0]; const b = mesh(BOOK.geo(.22 + r() * .06, h, .17 + r() * .05, 'lie'), m, X(cx + (r() - .5) * .03), yy + h / 2, Z(zc), g); b.rotation.y = (r() - .5) * .2; yy += h; }
         if (row === 1 && col === 4) mesh(lath([[0, 0], [.03, 0], [.04, .04], [.025, .09], [.012, .11], [0, .11]]), blackM, X(cx + .03), yy, Z(zc), g); } // 책 더미 위 작은 화병은 한 곳만
       else if (t === 'b' || t === 'w') { const m = t === 'b' ? blackM : whiteM;
         mesh(lath([[0, 0], [.05, 0], [.07, .06], [.065, .14], [.035, .21], [.03, .24], [0, .24]]), m, X(cx - .06), y, Z(zc), g);
@@ -1652,10 +1652,14 @@ await phase('침실을 꾸미는 중', 66);
 { const grey = std(0x77746f, 1, 0, { map: M.curtainGrey.map }); grey.side = THREE.DoubleSide;
   for (const [z0, z1] of [[2.88, 3.28], [4.22, 4.62]]) { const w = z1 - z0, c = curtain(0, w, 0, 2.3, fixed, grey, 8, .05); c.rotation.y = Math.PI / 2; c.position.set(WX(1.38), c.position.y, WZ((z0 + z1) / 2)); }
   pbox(1.31, 1.5, 2.3, H, 2.82, 4.68, M.ceil, fixed, { cast: false });
-  const poster = toTex((() => { const c = mkCanvas(384, 256), x = c.getContext('2d'); x.fillStyle = '#f6f6f4'; x.fillRect(0, 0, 384, 256); x.fillStyle = '#1b1b1b'; x.font = 'bold 30px sans-serif';
-    ['abcdefghi', 'jklmnopqr', 'stuvwxyz'].forEach((t, i) => x.fillText(t, 22, 52 + i * 38)); x.font = 'bold 26px sans-serif'; x.fillText('sturm blond', 22, 216);
-    x.fillStyle = '#e0473b'; x.beginPath(); x.arc(320, 120, 34, 0, 7); x.fill(); x.fillRect(340, 40, 16, 110); x.fillStyle = '#f6f6f4'; x.beginPath(); x.arc(320, 120, 16, 0, 7); x.fill(); return c; })());
-  pbox(1.45, 2.65, 1.05, 1.85, 5.01, 5.04, std(0xf2f2f0, .4), fixed); pbox(1.48, 2.62, 1.08, 1.82, 5.005, 5.01, std(0xffffff, .9, 0, { map: poster }), fixed, { cast: false }); }
+  const poster = toTex((() => { const c = mkCanvas(512, 360), x = c.getContext('2d'); x.fillStyle = '#f7f7f5'; x.fillRect(0, 0, 512, 360); x.fillStyle = '#1b1b1b'; x.font = 'bold 46px sans-serif'; /* VR: 큰 흰 아크릴 판 타이포그래피 포스터(바우하우스 알파벳) */
+    const L = ['abcdefghi', 'jklmnopqr', 'stuvwxyz']; L.forEach((t, i) => x.fillText(t, 26, 64 + i * 54));
+    x.strokeStyle = '#d8392e'; x.lineWidth = 2; for (const [i, pre, ch] of [[0, 'abcdef', 'g'], [1, 'j', 'k']]) { const ox = 26 + x.measureText(pre).width, w = x.measureText(ch).width; x.strokeRect(ox - 2, 64 + i * 54 - 36, w + 4, 48); }
+    x.font = '9px sans-serif'; x.fillStyle = '#444'; for (let i = 0; i < 4; i++) x.fillText(['HERBERT BAYER: Abb. 1. Alfabet "g" und "k" sind noch', 'unbefriedigend. Abb. 2. Anwendung des Alfabets', 'unity of form and type, 1925', 'bauhaus dessau'][i], 28, 200 + i * 12);
+    x.font = 'bold 40px sans-serif'; x.fillStyle = '#1b1b1b'; x.fillText('sturm blond', 26, 312);
+    x.fillStyle = '#e0473b'; x.beginPath(); x.arc(420, 156, 46, 0, 7); x.fill(); x.fillRect(448, 46, 22, 156); x.fillStyle = '#f7f7f5'; x.beginPath(); x.arc(420, 156, 22, 0, 7); x.fill();
+    x.save(); x.translate(494, 330); x.rotate(-Math.PI / 2); x.font = '11px sans-serif'; x.fillStyle = '#555'; x.fillText('bauhaus archiv  museum für gestaltung', 0, 0); x.restore(); return c; })());
+  pbox(1.42, 2.92, .95, 2.0, 5.01, 5.04, std(0xf6f6f4, .18, 0), fixed); pbox(1.44, 2.9, .97, 1.98, 5.005, 5.01, std(0xffffff, .55, 0, { map: poster }), fixed, { cast: false }); } /* 1.5 × 1.05m */
 // ── 침실1: 패브릭 헤드보드 벽판 + 위 간접등, 창 커튼 ──
 { const g = fixed, x = 5.73;
   pbox(x, x + .06, .45, 1.25, 8.6, 10.6, std(0xe8e4dc, .95), g);
