@@ -964,9 +964,14 @@ const OSMTX = {
   pub: () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#e5ddcd', .05, 1200); g.fillStyle = '#cfc2a8'; g.fillRect(0, 0, 512, 14); for (let k = 0; k < 3; k++) win(g, 26 + k * 166, 64, 128, 130, 3, 6, '#f4f1ea'); }),
   ind: () => facadeTex(512, 256, g => { g.fillStyle = '#b9bcbe'; g.fillRect(0, 0, 512, 256); g.fillStyle = 'rgba(0,0,0,.09)'; for (let x = 0; x < 512; x += 12) g.fillRect(x, 0, 5, 256); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, 0, 512, 6); }),
   /* 로드뷰 참고: 붉은 벽돌 빌라 · 석재 타일 빌라 · 흰 벽+회색 띠 고층 아파트 · 화강석 타일 중층 상가 */
+  /* 태평동 로드뷰(2026.08): 붉은 벽돌 + 흰 창틀·창턱, 흰 방범창, 실외기, 녹색 차양, 회색 칠 벽 */
   villaBrick: () => facadeTex(512, 256, g => { brickFill(g, 512, 256); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, 0, 512, 8);
-    win(g, 62, 74, 140, 112, 2, 8, '#f2f2ef', 1); win(g, 300, 64, 150, 140, 3, 8, '#f2f2ef', 1); g.fillStyle = 'rgba(25,25,25,.7)'; g.fillRect(292, 156, 166, 4); for (let x = 296; x < 458; x += 9) g.fillRect(x, 156, 2, 56);
-    g.fillStyle = '#d6d6d2'; g.fillRect(222, 164, 46, 32); }),
+    for (const [x0, w0] of [[56, 150], [300, 156]]) { g.fillStyle = '#efeeea'; g.fillRect(x0 - 8, 62, w0 + 16, 10); g.fillRect(x0 - 8, 192, w0 + 16, 9); win(g, x0, 74, w0, 116, 2, 7, '#f4f4f1', 1);
+      g.fillStyle = 'rgba(245,245,242,.95)'; for (let x = x0 + 6; x < x0 + w0; x += 13) g.fillRect(x, 74, 3, 116); g.fillRect(x0, 128, w0, 3); } /* 흰 방범창 */
+    g.fillStyle = '#e4e4e0'; g.fillRect(222, 168, 50, 34); g.fillStyle = '#9da0a3'; for (let y = 172; y < 200; y += 5) g.fillRect(226, y, 42, 2); g.fillStyle = '#7a7d80'; g.fillRect(480, 0, 6, 256); }),
+  villaGray: () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#b9bcbc', .06, 1500); g.fillStyle = 'rgba(0,0,0,.15)'; g.fillRect(0, 0, 512, 8);
+    win(g, 60, 80, 150, 110, 2, 7, '#e9e9e6', 1); win(g, 300, 70, 150, 130, 3, 7, '#e9e9e6', 1); g.fillStyle = '#2f7d55'; g.beginPath(); g.moveTo(52, 62); g.lineTo(218, 62); g.lineTo(208, 78); g.lineTo(62, 78); g.fill(); /* 녹색 차양 */
+    g.fillStyle = 'rgba(40,40,40,.7)'; g.fillRect(292, 160, 166, 4); for (let x = 296; x < 458; x += 8) g.fillRect(x, 160, 2, 50); g.fillStyle = '#e6e6e3'; g.fillRect(228, 160, 48, 34); g.fillStyle = '#8e9194'; g.fillRect(500, 0, 5, 256); }),
   villaTile: () => facadeTex(512, 256, g => { g.fillStyle = '#e9e3d6'; g.fillRect(0, 0, 512, 256); for (let y = 0; y < 256; y += 32) for (let x = (y / 32 & 1) * 32; x < 512; x += 64) { const v = (rand() - .5) * 16; g.fillStyle = `rgb(${226 + v | 0},${219 + v | 0},${204 + v | 0})`; g.fillRect(x + 1, y + 1, 62, 30); }
     g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(0, 0, 512, 8); win(g, 56, 70, 150, 116, 2, 8, '#fafaf8', 1); win(g, 300, 60, 160, 148, 3, 8, '#fafaf8', 1); g.fillStyle = 'rgba(40,40,40,.55)'; g.fillRect(292, 150, 176, 4); }),
   aptModern: () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#f3f3f1', .04, 1100); g.fillStyle = '#9aa0a7'; g.fillRect(0, 0, 34, 256); g.fillRect(478, 0, 34, 256); g.fillStyle = '#c9cdd1'; g.fillRect(240, 0, 32, 256);
@@ -996,7 +1001,7 @@ OSMTX.forestiaBase = () => facadeTex(512, 256, g => { g.fillStyle = '#cbc4b6'; g
 OSMTX.piloti = () => facadeTex(1024, 256, g => { g.fillStyle = '#2d2f32'; g.fillRect(0, 0, 1024, 256); const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(0,0,0,.5)'); gr.addColorStop(1, 'rgba(90,90,88,.4)'); g.fillStyle = gr; g.fillRect(0, 0, 1024, 256);
   const cc = ['#e8e8e6', '#2b2d30', '#9aa0a6', '#7a1f22', '#1f3550', '#c9c9c4']; for (let k = 0; k < 4; k++) { const x = 40 + k * 250 + rand() * 30; g.fillStyle = cc[(rand() * cc.length) | 0]; g.fillRect(x, 150, 170, 80); g.fillStyle = 'rgba(30,40,50,.75)'; g.fillRect(x + 30, 160, 110, 26); g.fillStyle = '#151515'; g.fillRect(x + 18, 222, 30, 14); g.fillRect(x + 122, 222, 30, 14); }
   g.fillStyle = '#cfcac0'; for (const x of [0, 340, 680, 1010]) g.fillRect(x, 0, 30, 256); g.fillStyle = '#bdb8ae'; g.fillRect(0, 0, 1024, 26); }, true);
-const OSM_TILE = { villa: 7, apt: 7, shop: 12, office: 7, pub: 8, ind: 8, villaBrick: 7, villaTile: 7, aptModern: 7, stone: 8, piloti: 12, aptK: 7, forestia: 13, forestiaBase: 8 };
+const OSM_TILE = { villa: 7, apt: 7, shop: 12, office: 7, pub: 8, ind: 8, villaBrick: 7, villaTile: 7, villaGray: 7, aptModern: 7, stone: 8, piloti: 12, aptK: 7, forestia: 13, forestiaBase: 8 };
 function buildOSM() {
   const B = GEO.bld, n = B.length, G = {}, M = {};
   for (const k in OSMTX) { G[k] = new GB(); M[k] = new THREE.MeshLambertMaterial({ map: OSMTX[k](), vertexColors: true }); }
@@ -1007,10 +1012,11 @@ function buildOSM() {
   const ROOF = { villa: ['#7f9a78', '#879f80', '#8d9194', '#a4a7a8', '#c4c2bb', '#8f7466', '#7f8a96', '#b2ada3', '#9aa09a'].map(vc), apt: ['#9aa0a5', '#a8acaf', '#8f979e'].map(vc), shop: ['#a2a4a5', '#8f9396'].map(vc), office: ['#a2a6aa'].map(vc), pub: ['#8f9a90', '#a1a49b'].map(vc), ind: ['#7f8a94', '#a3a9ad', '#8c8f8a'].map(vc) };
   ROOF.villaBrick = ROOF.villaTile = ROOF.villa; ROOF.aptModern = ROOF.apt; ROOF.stone = ROOF.office;
   /* 이 동네 주택 옥상: 초록·청록 방수 도장과 회색·파랑이 대부분(스카이뷰 참고) */
-  ROOF.villa = ROOF.villaBrick = ROOF.villaTile = ['#4f8f74', '#5a9a7c', '#3f8069', '#6aa087', '#8e979c', '#a9aeb1', '#5f7f9f', '#4a6f96', '#b8b4aa', '#8c6f5f'].map(vc);
+  ROOF.villa = ROOF.villaBrick = ROOF.villaTile = ROOF.villaGray = ['#4f8f74', '#5a9a7c', '#3f8069', '#6aa087', '#8e979c', '#a9aeb1', '#5f7f9f', '#4a6f96', '#b8b4aa', '#8c6f5f'].map(vc);
   WALL.aptK = ['#ffffff', '#f7f2e8', '#eef1f3', '#f4ece0', '#ffffff'].map(vc); WALL.forestia = ['#ffffff', '#f3f4f4'].map(vc); WALL.forestiaBase = ['#ffffff'].map(vc);
   ROOF.aptK = ROOF.apt; ROOF.forestia = ['#9ba1a6', '#a7acaf'].map(vc); ROOF.forestiaBase = ROOF.forestia;
-  for (const k of ['aptK', 'forestia', 'forestiaBase']) if (!G[k]) { G[k] = new GB(); M[k] = new THREE.MeshLambertMaterial({ map: OSMTX[k](), vertexColors: true }); }
+  WALL.villaGray = ['#ffffff', '#e9ebe6', '#dfe3e6', '#ece6dc'].map(vc);
+  for (const k of ['aptK', 'forestia', 'forestiaBase', 'villaGray']) if (!G[k]) { G[k] = new GB(); M[k] = new THREE.MeshLambertMaterial({ map: OSMTX[k](), vertexColors: true }); }
   const FOREST_P = ((GEO.env && GEO.env.land) || []).filter(l => l.n && /포레스티아/.test(l.n)).map(l => l.p);
   const inForestia = (x, z) => FOREST_P.some(p => inPoly(p, x, z));
   /* 큰길(간선·보조간선) 가까운지: 60m 격자에 도로 선분 */
@@ -1033,7 +1039,7 @@ function buildOSM() {
     const gavg = gs / np, top = (kind === 1 || lv >= 6 ? gmin + .3 : gavg) + h, base = gmin - .6 + mh, fh = h / lv; /* 경사지 아파트는 낮은 쪽 지면이 1층 */
     let tk = kind === 1 || lv >= 6 ? 'apt' : kind === 2 ? (lv <= 3 ? 'shop' : 'office') : kind === 3 ? 'pub' : kind === 5 ? 'ind' : 'villa';
     if (tk === 'apt' && kind === 2) tk = 'stone';
-    { const r = rand(); if (tk === 'villa') tk = r < .4 ? 'villaBrick' : r < .68 ? 'villaTile' : 'villa'; else if (tk === 'apt') tk = lv >= 12 && inForestia(cx, cz) ? 'forestia' : r < .65 ? 'aptK' : 'aptModern'; else if (tk === 'office' && r < .55) tk = 'stone'; }
+    { const r = rand(); if (tk === 'villa') tk = r < .42 ? 'villaBrick' : r < .62 ? 'villaGray' : r < .8 ? 'villaTile' : 'villa'; /* 태평·신흥동 로드뷰 비율 */ else if (tk === 'apt') tk = lv >= 12 && inForestia(cx, cz) ? 'forestia' : r < .65 ? 'aptK' : 'aptModern'; else if (tk === 'office' && r < .55) tk = 'stone'; }
     const isApt = /^(apt|aptK|aptModern|forestia)$/.test(tk);
     const rd = !/^(shop|pub|ind)$/.test(tk) && lv <= 9 && dist < 2600 ? roadDist(cx, cz) : 1e9, shopG = rd < 16 && lv >= 2;
     const wc = WALL[tk][(rand() * WALL[tk].length) | 0], rc = ROOF[tk][(rand() * ROOF[tk].length) | 0], tw = OSM_TILE[tk];
@@ -1059,12 +1065,13 @@ function buildOSM() {
     for (const [a, b, c] of tris) { const A3 = [P[a][0], top, P[a][1]], B3 = [P[b][0], top, P[b][1]], C3 = [P[c][0], top, P[c][1]], cr = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]);
       if (cr >= 0) R.tri(A3, B3, C3, [0, 1, 0], rc); else R.tri(A3, C3, B3, [0, 1, 0], rc); }
     /* 옥상 구조물: 아파트 기계실(1.8km 안), 빌라 계단실(1.1km 안) */
-    if ((isApt && lv >= 8 && dist < 1800) || (/^villa/.test(tk) && dist < 1100 && rand() < .6)) {
+    if ((isApt && lv >= 8 && dist < 1800) || (/^villa/.test(tk) && dist < 1100 && rand() < .5)) {
       let bl = 0, ux = 1, uz = 0; for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L > bl) { bl = L; ux = (b[0] - a[0]) / L; uz = (b[1] - a[1]) / L; } }
       const fo = tk === 'forestia', col = { gb: R, col: vc(fo ? '#d5d8da' : '#e4e4e0') }, colT = { gb: R, col: vc('#cfcfca') }, F = { front: col, back: col, left: col, right: col, top: colT };
       if (isApt) { for (const o of bl > 30 ? [-.25, .25] : [0]) obox(cx + ux * bl * o, cz + uz * bl * o, ux, uz, 6, 4.2, top, top + (fo ? 5.6 : 3.4), F);
         if (fo) { const fr = { gb: R, col: vc('#4c5259') }; for (let q = -2; q <= 2; q++) obox(cx + ux * q * 2.2, cz + uz * q * 2.2, ux, uz, .35, 5, top + 4.2, top + 9.5, { front: fr, back: fr, left: fr, right: fr, top: fr }); } } /* 포레스티아 옥상 수직 프레임 */
-      else { const o = (rand() - .5) * .3 * bl; obox(cx + ux * o, cz + uz * o, ux, uz, 3, 2.8, top, top + 2.5, F); }
+      else { const o = (rand() - .5) * .4 * bl, wcD = { gb: R, col: wc.map(v => v * .9) }, Fw = { front: wcD, back: wcD, left: wcD, right: wcD, top: { gb: R, col: vc('#9fa3a6') } }; obox(cx + ux * o, cz + uz * o, ux, uz, 2.4, 2.2, top, top + 2.3, Fw); /* 옥탑 계단실(벽 색) */
+        if (rand() < .55) { const tk2 = { gb: R, col: vc(rand() < .5 ? '#3f7fb3' : '#d9d9d4') }; obox(cx - ux * o * .8 + uz * 1.5, cz - uz * o * .8 - ux * 1.5, ux, uz, 1.4, 1.4, top, top + 1.5, { front: tk2, back: tk2, left: tk2, right: tk2, top: tk2 }); } } /* 물탱크 */
     }
     cnt++;
   }
