@@ -2952,7 +2952,7 @@ function applyOptions() {
   show('o2-1', s['2'] === '2-1');
   show('o3', s['3'] === '3');
   const island = ['4-1', '4-3', '4-4'].includes(s['4']), stone = ['4-2', '4-3', '4-4'].includes(s['4']);
-  show('o4island', s['4'] === '4-1' || s['4'] === '4-3'); show('o4islandS', s['4'] === '4-4');
+  show('o4island', s['4'] === '4-1' || s['4'] === '4-3' || s['4'] === '4-4'); show('o4islandS', false); /* 4-4(현관구조 1)도 4-1·4-3과 같은 원래 자리에 아일랜드 */
   const cm = stone ? MAT_OPT.stone : MAT_OPT.mma; M.counter.map = cm.map; M.counter.color.set(cm.color); M.counter.roughness = cm.roughness; M.counter.needsUpdate = true;
   M.splash.map = stone ? MAT_OPT.stone.map : MAT_OPT.tile.map; M.splash.roughness = stone ? .18 : .25; M.splash.needsUpdate = true;
   // 식탁: 아일랜드가 있으면 그 남쪽 면에 붙이고(평탄면이 북쪽), 없으면 주방 가운데에 둠
