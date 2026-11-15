@@ -1169,6 +1169,7 @@ function buildOSM() {
   WALL.villaGray = ['#ffffff', '#e9ebe6', '#dfe3e6', '#ece6dc'].map(vc);
   for (const k of ['aptK', 'forestia', 'forestiaBase', 'forestiaSide', 'villaGray']) if (!G[k]) { G[k] = new GB(); M[k] = new THREE.MeshLambertMaterial({ map: OSMTX[k](), vertexColors: true }); }
   if (!G.foSign) { G.foSign = new GB(); M.foSign = new THREE.MeshLambertMaterial({ map: foSignTex(), transparent: true, alphaTest: .35, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }); }
+  for (const k in M) if (k !== 'foSign' && M[k].map) { M[k].emissiveMap = M[k].map; M[k].emissive = new THREE.Color('#5c5c5c'); } /* 그늘진 면도 하늘빛을 받아 너무 어둡지 않게(주변 건물은 환경광 반사가 없음) */
   const FOREST_P = ((GEO.env && GEO.env.land) || []).filter(l => l.n && /포레스티아/.test(l.n)).map(l => l.p);
   const inForestia = (x, z) => FOREST_P.some(p => inPoly(p, x, z));
   /* 큰길(간선·보조간선) 가까운지: 60m 격자에 도로 선분 */
