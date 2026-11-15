@@ -1764,9 +1764,10 @@ function sofa(x, z, rot, style = 'arm') {
 }
 function coffeeTable(x, z, rot) {
   const g = piece('커피테이블', x, z, rot); // 사진: 스모크 유리 타원 상판 + 흰 판재 다리, 뒤쪽 흰 원형 보조테이블
-  const top = mesh(CY(.5, .5, .018, 48), M.smoke, 0, .38, 0, g); top.scale.set(.75, 1, 1.25);
+  const top = mesh(CY(.5, .5, .018, 48), new THREE.MeshStandardMaterial({ color: 0x15171a, roughness: .06, metalness: .3, transparent: true, opacity: .86 }), 0, .38, 0, g); top.scale.set(.75, 1, 1.25); /* VR: 짙은 스모크 유리 */
   mesh(BX(.012, .37, .62), M.whiteGloss, 0, .185, 0, g); mesh(BX(.42, .37, .012), M.whiteGloss, 0, .185, .1, g);
-  mesh(CY(.36, .36, .03, 48), M.whiteGloss, .05, .44, -.62, g); mesh(BX(.012, .43, .4), M.whiteGloss, .05, .215, -.62, g);
+  { const d = new THREE.CylinderGeometry(.38, .38, .03, 48, 1, false, Math.PI / 2, Math.PI); mesh(d, M.whiteGloss, .02, .44, -.4, g); /* VR: 유리 테이블 끝에 겹친 흰 D자 상판 */
+    const b = mesh(new THREE.CylinderGeometry(.34, .34, .425, 48, 1, true, Math.PI / 2, Math.PI), M.whiteGloss, .02, .2125, -.4, g); mesh(BX(.68, .425, .012), M.whiteGloss, .02, .2125, -.4, g); } /* 곡면 받침 + 곧은 뒤판 */
   // VR: 유리 상판 위 펼친 잡지(사진·글) + 남색 타원 트레이 위 파란 유리 화병·은색 구
   { const page = side => toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = '#f6f4ef'; x.fillRect(0, 0, 96, 128);
       if (side) { x.fillStyle = '#7f8ea0'; x.fillRect(10, 12, 76, 52); x.fillStyle = '#3c4654'; x.fillRect(10, 40, 76, 24); x.fillStyle = '#d9d2c4'; x.fillRect(52, 72, 34, 40); }
