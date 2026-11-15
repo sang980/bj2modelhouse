@@ -799,7 +799,7 @@ function makeDoor({ parent, horiz, line, t, hu, du, side, lw, lh, lt = .04, styl
     add(mesh(BX(lw, lh, lt), mat || M.door, lw / 2, lh / 2 + .01, 0));
   } else { // 유리문(검정 프레임)
     const g = style === 'tint' ? doorGlassTint : M.glass;
-    add(mesh(BX(lw - .06, lh - .06, .012), g, lw / 2, lh / 2 + .01, 0, null, { cast: false, recv: false }));
+    add(mesh(BX(lw - .06, lh - .06, Math.min(.012, lt - .004)), g, lw / 2, lh / 2 + .01, 0, null, { cast: false, recv: false })); /* 유리가 테와 두께가 같으면 앞면이 겹쳐 z-fighting */
     for (const [w, h, x, y] of [[.03, lh, .015, lh / 2], [.03, lh, lw - .015, lh / 2], [lw, .04, lw / 2, .03], [lw, .04, lw / 2, lh - .01]]) add(mesh(BX(w, h, lt), style === 'tint' ? M.rail : M.winFrame, x, y + .01, 0));
   }
   if (handle) for (const sz of [-1, 1]) add(mesh(BX(.14, .02, .02), M.chrome, lw - .1, 1.0, sz * (lt / 2 + .025), null, { cast: false })); // 손잡이(양쪽)
@@ -1276,7 +1276,7 @@ function shoeCabinet({ parent, axis, front, back, a0, a1, y0 = .1, y1 = 2.3, n =
   for (let c = 0; c < n; c++) { const u0 = a0 + (a1 - a0) * c / n + .003, u1 = u0 + lw, left = c < n / 2;
     const d = makeDoor({ parent, horiz: axis === 'z', line: front, t: 2 * lt + .008, hu: left ? u0 : u1, du: left ? 1 : -1, side: s, lw, lh, lt, mat, from: u0, to: u1, name, startOpen: false, handle: false });
     d.pivot.position.y = y0 - .007;
-    if (frame) for (const [w, h, x, y] of [[.012, lh, .006, lh / 2], [.012, lh, lw - .006, lh / 2], [lw, .012, lw / 2, .006], [lw, .012, lw / 2, lh - .006]]) { const f = mesh(BX(w, h, lt + .004), M.black, x, y + .01, 0, d.pivot); f.userData.door = d; doorMeshes.push(f); }
+    if (frame) for (const [w, h, x, y] of [[.014, lh, .005, lh / 2], [.014, lh, lw - .005, lh / 2], [lw + .004, .014, lw / 2, .005], [lw + .004, .014, lw / 2, lh - .005]] /* 테를 문짝 끝보다 2mm 내밀어 끝면 z-fighting 방지 */) { const f = mesh(BX(w, h, lt + .004), M.black, x, y + .01, 0, d.pivot); f.userData.door = d; doorMeshes.push(f); }
   } }function holeSlab(fn, x0, x1, y0, y1, z0, z1, hx0, hx1, hz0, hz1, mat) {
   fn(x0, hx0, y0, y1, z0, z1, mat); fn(hx1, x1, y0, y1, z0, z1, mat); fn(hx0, hx1, y0, y1, z0, hz0, mat); fn(hx0, hx1, y0, y1, hz1, z1, mat);
 }
@@ -1338,6 +1338,12 @@ function drapeCloth(parent, { hx, z0, z1, top, hang = .2, foot = 0, r = .05, th 
   return mesh(thickSurf(P, nx, nz, th), mat, 0, 0, 0, parent); }
 /* 푹신한 베개·쿠션(w×h×d, 가장 얇은 축이 두께): 둥근 사각 윤곽 + 가운데 볼록, 가장자리로 얇아짐(같은 크기는 형상 공유) */
 const _pillowC = new Map();
+/* 모서리가 뾰족한 일반 사각 베개(가운데 볼록, 가장자리로 갈수록 얇아져 솔기에서 만남) — 두께는 로컬 z */
+function sqPillowG(w, h, d) { const key = 'sq' + [w, h, d].join(); if (_pillowC.has(key)) return _pillowC.get(key); const parts = [];
+  for (const s of [1, -1]) { const g = new THREE.PlaneGeometry(1, 1, 22, 22); if (s < 0) g.rotateY(Math.PI); const p = g.attributes.position;
+    for (let i = 0; i < p.count; i++) { const u = p.getX(i) * 2, v = p.getY(i) * 2, f = Math.pow(Math.max(0, 1 - u * u), .5) * Math.pow(Math.max(0, 1 - v * v), .5); p.setXYZ(i, u * w / 2 * (1 - .05 * v * v), v * h / 2 * (1 - .05 * u * u), s * f * d / 2); }
+    g.computeVertexNormals(); parts.push(g); }
+  const g = mergeGeometries(parts, false); _pillowC.set(key, g); return g; }
 function pillowG(w, h, d) { const key = [w, h, d].join(); if (_pillowC.has(key)) return _pillowC.get(key);
   const S = [w, h, d], ax = S.indexOf(Math.min(w, h, d)), [a1, a2] = [0, 1, 2].filter(i => i !== ax), g = new THREE.SphereGeometry(1, 40, 24);
   if (ax === 0) g.rotateZ(Math.PI / 2); else if (ax === 2) g.rotateX(Math.PI / 2);
@@ -1456,9 +1462,9 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   { const k0 = og('b5base'), k1 = og('b5-1'), k2 = og('b5-2'), inner = std(0xebe9e4, .5), a = 1.45, b = 2.55;
     // 기본: 스탠드형 김치냉장고(화이트 글라스, 위 1도어 + 아래 서랍 2) + 위 수납장
     pbox(5.25, xf - .02, 0, 1.85, a + .06, b - .06, std(0x2a2b2d, .5), k0); // VR: 김치냉장고(위 흰 문 2짝 · 아래 베이지 서랍 2단)
-    for (const [z0, z1] of [[a + .07, (a + b) / 2 - .006], [(a + b) / 2 + .006, b - .07]]) pbox(xf - .02, xf, 1.0, 1.84, z0, z1, std(0xf3f2ee, .2, .05), k0);
+    for (const [z0, z1] of [[a + .07, (a + b) / 2 - .006], [(a + b) / 2 + .006, b - .07]]) pbox(xf - .02, xf, 1.0, 1.79, z0, z1, std(0xf3f2ee, .2, .05), k0); /* 위 수납장(1.8~)과 앞면이 겹치지 않게 1.79까지 */
     for (const [y0, y1] of [[.52, .98], [.04, .5]]) pbox(xf - .02, xf, y0, y1, a + .07, b - .07, std(0xdfd3c2, .25, .05), k0);
-    { const zc = (a + b) / 2; for (const [y0, y1, z0, z1] of [[1.0, 1.85, zc - .006, zc + .006], [.98, 1.0, a + .06, b - .06], [.5, .52, a + .06, b - .06], [.03, 1.86, a + .055, a + .065], [.03, 1.86, b - .065, b - .055], [1.84, 1.86, a + .06, b - .06]]) pbox(xf, xf + .004, y0, y1, z0, z1, M.black, k0); } // VR: 검은 줄눈
+    { const zc = (a + b) / 2; for (const [y0, y1, z0, z1] of [[1.0, 1.8, zc - .006, zc + .006], [.98, 1.0, a + .06, b - .06], [.5, .52, a + .06, b - .06], [.03, 1.8, a + .055, a + .065], [.03, 1.8, b - .065, b - .055], [1.79, 1.8, a + .06, b - .06]]) pbox(xf, xf + .004, y0, y1, z0, z1, M.black, k0); } // VR: 검은 줄눈
     pbox(5.21, xf, 1.8, H, a, b, M.kdoor, k0); pbox(5.21, xf, 0, 1.8, a, a + .02, M.kdoor, k0); pbox(5.21, xf, 0, 1.8, b - .02, b, M.kdoor, k0);
     // 5-1: 바닥~천장 키큰장 2도어
     pbox(5.21, xf, 0, H, a, b, M.kdoor, k1); pbox(xf, xf + .003, .1, 2.28, (a + b) / 2 - .001, (a + b) / 2 + .001, seamMat, k1); pbox(xf, xf + .003, 1.0, 1.003, a, b, seamMat, k1);
@@ -2126,12 +2132,11 @@ await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
 // 침실1: 머리는 서쪽 벽(헤드보드 벽판), 양옆 협탁
 { const b = bed(10.03, 6.6, Math.PI / 2, 1.6, 2.1, '침대'); /* VR(56T 침실1): 흰 침구(담요 없음), 뒤 베이지 베개 + 앞 베이지 띠·흰 단추 흰 쿠션 2 */
   const L = 2.1, rm = [], lightWood = std(0xe6d3b3, .55, 0, { map: M.linen.map }), wl = std(0xf7f6f2, .95, 0, { map: M.linen.map }), lyG = pillowG(.64, .19, .4), ly = [];
-  b.traverse(o => { if (!o.isMesh) return; if (o.material === M.whiteGloss) o.material = lightWood; else if (o.material === M.check || o.material === M.throwBlue || o.material === M.charcoal) rm.push(o); else if (o.geometry === lyG) ly.push(o); }); rm.forEach(o => o.parent.remove(o)); /* VR: 밝은 원목 프레임 */
-  for (const o of ly) { o.material = wl; o.position.z = -L / 2 + .42; o.position.y = .68; o.rotation.x = -.62; mesh(RB(.69, .01, .45, .005), wl, 0, -.01, 0, o, { cast: false }); } /* VR: 가운데 줄 = 테두리 단이 있는 흰 베개 2, 비스듬히 기댐 */
-  for (const px of [-.4, .4]) { const p = mesh(pillowG(.74, .52, .2), wl, px, .82, -L / 2 + .19, b); p.rotation.x = -.18; for (const s of [-1, 1]) { const t = mesh(CY(.003, .003, .07, 5), wl, s * .3, .2, .1, p, { cast: false }); t.rotation.z = s * .5; } } /* VR: 뒤 줄 = 큰 흰 베개 2(모서리 끈) */
+  b.traverse(o => { if (!o.isMesh) return; if (o.material === M.whiteGloss) o.material = lightWood; else if (o.material === M.check || o.material === M.throwBlue || o.material === M.charcoal || o.geometry === lyG) rm.push(o); }); rm.forEach(o => o.parent.remove(o)); /* VR: 밝은 원목 프레임 · 베개는 뒤 큰 흰 베개 2 + 앞 띠 쿠션 2만(가운데 납작 베개·테두리 판·끈 장식은 지저분해 뺌) */
+  for (const px of [-.39, .39]) { const p = mesh(sqPillowG(.72, .54, .22), wl, px, .81, -L / 2 + .22, b); p.rotation.set(-.2, -px * .1, 0); } /* VR: 뒤 줄 = 큰 흰 사각 베개 2 */
   const band = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#f7f6f2'; x.fillRect(0, 0, 64, 64); x.fillStyle = '#d6c7ad'; x.fillRect(0, 22, 64, 20); x.fillStyle = 'rgba(0,0,0,.08)'; x.fillRect(0, 22, 64, 1); x.fillRect(0, 41, 64, 1); return c; })());
   const bm = std(0xffffff, .95, 0, { map: band });
-  for (const [px, ry] of [[-.32, .1], [.32, -.1]]) { const p = mesh(pillowG(.54, .44, .15), bm, px, .74, -L / 2 + .72, b); p.rotation.set(-.3, ry, 0); const bt = mesh(CY(.028, .028, .01, 24), std(0xf6f5f1, .35), 0, 0, .074, p, { cast: false }); bt.rotation.x = Math.PI / 2; } } /* VR: 앞 줄 = 베이지 띠 흰 쿠션 2, 납작한 흰 원형 단추 */
+  for (const [px, ry] of [[-.33, .1], [.33, -.1]]) { const p = mesh(sqPillowG(.52, .46, .16), bm, px, .74, -L / 2 + .46, b); p.rotation.set(-.32, ry, 0); const bt = mesh(CY(.026, .026, .008, 24), std(0xf6f5f1, .35), 0, 0, .079, p, { cast: false }); bt.rotation.x = Math.PI / 2; } } /* VR: 앞 줄 = 베이지 띠 흰 쿠션 2, 납작한 흰 원형 단추 */
 rug(10.35, 6.6, Math.PI / 2); // VR: 침대 아래 회색 털 러그
 // (VR: 침대 옆 협탁 없음) sideTable(9.22, 5.42, true);
 // sideTable(9.22, 7.78, false);
@@ -2695,7 +2700,7 @@ let b6door = null;
   { const mg = new THREE.Group(); mg.position.y = my0; g.add(mg);
     const lw = nx1 - nx0 - .012, lh = my1 + .02 - my0 - .006;
     const d = makeDoor({ parent: mg, horiz: true, line: z1 - .135, t: .024, hu: nx0 + .006, du: 1, side: 1, lw, lh, lt: .02, mat: M.mirrorBed2, from: nx0, to: nx1, name: '거울장 문', startOpen: false, handle: false });
-    for (const [w, h, x, y] of [[lw, .006, lw / 2, .013], [lw, .006, lw / 2, lh + .007], [.006, lh, .003, lh / 2 + .01], [.006, lh, lw - .003, lh / 2 + .01]]) {
+    for (const [w, h, x, y] of [[lw + .004, .008, lw / 2, .012], [lw + .004, .008, lw / 2, lh + .008], [.008, lh, .002, lh / 2 + .01], [.008, lh, lw - .002, lh / 2 + .01]] /* 테를 문짝 끝보다 2mm 내밀어 끝면 z-fighting 방지 */) {
       const f = mesh(BX(w, h, .022), M.black, x, y, 0, d.pivot); f.userData.door = d; doorMeshes.push(f); } } // 얇은 블랙 테
   // 오픈 선반 소품: 화분 + 디퓨저
   tablePlant(g, WX(nx0 + .12), cnt, WZ(nb + .18)).scale.setScalar(.75);

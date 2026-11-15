@@ -794,7 +794,7 @@ function makeDoor({ parent, horiz, line, t, hu, du, side, lw, lh, lt = .04, styl
     add(mesh(BX(lw, lh, lt), mat || M.door, lw / 2, lh / 2 + .01, 0));
   } else { // 유리문(검정 프레임)
     const g = style === 'tint' ? doorGlassTint : M.glass;
-    add(mesh(BX(lw - .06, lh - .06, .012), g, lw / 2, lh / 2 + .01, 0, null, { cast: false, recv: false }));
+    add(mesh(BX(lw - .06, lh - .06, Math.min(.012, lt - .004)), g, lw / 2, lh / 2 + .01, 0, null, { cast: false, recv: false })); /* 유리가 테와 두께가 같으면 앞면이 겹쳐 z-fighting */
     for (const [w, h, x, y] of [[.03, lh, .015, lh / 2], [.03, lh, lw - .015, lh / 2], [lw, .04, lw / 2, .03], [lw, .04, lw / 2, lh - .01]]) add(mesh(BX(w, h, lt), style === 'tint' ? M.rail : M.winFrame, x, y + .01, 0));
   }
   if (handle) for (const sz of [-1, 1]) add(mesh(BX(.14, .02, .02), M.chrome, lw - .1, 1.0, sz * (lt / 2 + .025), null, { cast: false })); // 손잡이(양쪽)
@@ -1227,7 +1227,7 @@ function shoeCabinet({ parent, axis, front, back, a0, a1, y0 = .1, y1 = 2.3, n =
   for (let c = 0; c < n; c++) { const u0 = a0 + (a1 - a0) * c / n + .003, u1 = u0 + lw, left = c < n / 2;
     const d = makeDoor({ parent, horiz: axis === 'z', line: front, t: 2 * lt + .008, hu: left ? u0 : u1, du: left ? 1 : -1, side: s, lw, lh, lt, mat, from: u0, to: u1, name, startOpen: false, handle: false });
     d.pivot.position.y = y0 - .007;
-    if (frame) for (const [w, h, x, y] of [[.012, lh, .006, lh / 2], [.012, lh, lw - .006, lh / 2], [lw, .012, lw / 2, .006], [lw, .012, lw / 2, lh - .006]]) { const f = mesh(BX(w, h, lt + .004), M.black, x, y + .01, 0, d.pivot); f.userData.door = d; doorMeshes.push(f); }
+    if (frame) for (const [w, h, x, y] of [[.014, lh, .005, lh / 2], [.014, lh, lw - .005, lh / 2], [lw + .004, .014, lw / 2, .005], [lw + .004, .014, lw / 2, lh - .005]] /* 테를 문짝 끝보다 2mm 내밀어 끝면 z-fighting 방지 */) { const f = mesh(BX(w, h, lt + .004), M.black, x, y + .01, 0, d.pivot); f.userData.door = d; doorMeshes.push(f); }
   } }function holeSlab(fn, x0, x1, y0, y1, z0, z1, hx0, hx1, hz0, hz1, mat) {
   fn(x0, hx0, y0, y1, z0, z1, mat); fn(hx1, x1, y0, y1, z0, z1, mat); fn(hx0, hx1, y0, y1, z0, hz0, mat); fn(hx0, hx1, y0, y1, hz1, z1, mat);
 }
@@ -2710,7 +2710,7 @@ let b6door = null;
   { const g2 = item('b7', '드레스룸 시스템선반(북쪽)'); systemShelf(g2, 7.68, 8.7, 4.81, 5.3, false, { pal: [0xf7f6f2, 0xd2b184, 0xf3eee4, 0xfbfaf7, 0xc4a27a, 0xeae3d6, 0xf1ece2] }); } // VR: ㄱ자 시스템선반
   suitcase(item('b7', '캐리어', false), 8.1, 6.4, .2); }
 // 8-1 침실1 붙박이장(슬라이딩장): 동쪽 벽 전체 6짝
-{ const g = item('b8-1', '침실1 붙박이장'); wardrobe(g, 8.69, 9.23, 7.19, 11.14, 'x-', 4); for (let i = 0; i <= 4; i++) { const z = 7.19 + (11.14 - 7.19) * i / 4; cab(g, 8.676, 8.69, .08, 2.25, z - .008, z + .008, M.black); } cab(g, 8.676, 8.69, 2.24, 2.26, 7.19, 11.14, M.black); } // VR: 큰 슬라이딩 문 4짝 + 검은 프로파일
+{ const g = item('b8-1', '침실1 붙박이장'); wardrobe(g, 8.69, 9.23, 7.19, 11.14, 'x-', 4); for (let i = 0; i <= 4; i++) { const z = 7.19 + (11.14 - 7.19) * i / 4; cab(g, 8.672, 8.69, .08, 2.25, z - .008, z + .008, M.black); } cab(g, 8.672, 8.69, 2.24, 2.26, 7.19, 11.14, M.black); } // VR: 큰 슬라이딩 문 4짝 + 검은 프로파일(문 테와 같은 면이 되지 않게 4mm 앞으로)
 // 8-2 슬라이딩장 + 화장대: 슬라이딩장 4짝(드레스룸 쪽) + 창 쪽 화장대 칸(벽 속 거울장·2단 서랍·스툴)
 { const g = item('b8-2', '침실1 붙박이장(화장대)'); wardrobe(g, 8.69, 9.23, 7.19, 9.85, 'x-', 4);
   const v = item('b8-2', '화장대'), z0 = 9.87, z1 = 11.14, xb = 9.23, top = std(0xf4f3ef, .45);
@@ -2749,7 +2749,7 @@ let b6door = null;
   { const mg = new THREE.Group(); mg.position.y = my0; g.add(mg);
     const lw = nx1 - nx0 - .012, lh = my1 + .02 - my0 - .006;
     const d = makeDoor({ parent: mg, horiz: true, line: z1 - .135, t: .024, hu: nx0 + .006, du: 1, side: 1, lw, lh, lt: .02, mat: M.mirrorBed2, from: nx0, to: nx1, name: '거울장 문', startOpen: false, handle: false });
-    for (const [w, h, x, y] of [[lw, .006, lw / 2, .013], [lw, .006, lw / 2, lh + .007], [.006, lh, .003, lh / 2 + .01], [.006, lh, lw - .003, lh / 2 + .01]]) {
+    for (const [w, h, x, y] of [[lw + .004, .008, lw / 2, .012], [lw + .004, .008, lw / 2, lh + .008], [.008, lh, .002, lh / 2 + .01], [.008, lh, lw - .002, lh / 2 + .01]] /* 테를 문짝 끝보다 2mm 내밀어 끝면 z-fighting 방지 */) {
       const f = mesh(BX(w, h, .022), M.black, x, y, 0, d.pivot); f.userData.door = d; doorMeshes.push(f); } } // 얇은 블랙 테
   // 오픈 선반 소품: 화분 + 디퓨저
   tablePlant(g, WX(nx0 + .12), cnt, WZ(nb + .18)).scale.setScalar(.75);
