@@ -722,6 +722,40 @@ const CY = (rt, rb, h, s = 28) => new THREE.CylinderGeometry(rt, rb, h, s);
 function pbox(x0, x1, y0, y1, z0, z1, mat, parent = structure, opt) {
   return mesh(BX(Math.abs(x1 - x0), y1 - y0, Math.abs(z1 - z0)), mat, WX((x0 + x1) / 2), (y0 + y1) / 2, WZ((z0 + z1) / 2), parent, opt);
 }
+/* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
+   cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
+   frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
+const _af = {};
+function afShadowTex() { if (_af.sh) return _af.sh; const S = 128, c = mkCanvas(S, S), x = c.getContext('2d'); x.filter = 'blur(10px)'; x.fillStyle = '#000'; x.fillRect(24, 22, S - 48, S - 44); x.filter = 'none'; const t = toTex(c, { srgb: false }); t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return (_af.sh = t); }
+function afArtTex(art, iw, ih, mat, matColor, fit = 'cover') { /* 매트 + 그림을 고해상도 한 장으로(그림은 비율 유지하며 창에 맞춤) */
+  const src = art && art.isTexture ? art.image : art, ppm = Math.min(1600, (LOWMEM ? 560 : 1100) / Math.max(iw, ih)), W = Math.max(8, Math.round(iw * ppm)), H = Math.max(8, Math.round(ih * ppm));
+  const c = mkCanvas(W, H), x = c.getContext('2d'); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; let s = 97; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const m = Math.round(mat * ppm), ax = m, ay = m, aw = W - 2 * m, ah = H - 2 * m;
+  if (m > 0) { x.fillStyle = matColor; x.fillRect(0, 0, W, H); for (let i = 0; i < W * H / 60; i++) { const v = r() < .5 ? 255 : 0; x.fillStyle = `rgba(${v},${v},${v},${.02 + r() * .035})`; x.fillRect(r() * W, r() * H, 1, 1 + r()); } }
+  if (src) { const sw = src.width, sh = src.height, k = fit === 'contain' ? Math.min(aw / sw, ah / sh) : Math.max(aw / sw, ah / sh), dw = sw * k, dh = sh * k;
+    x.save(); x.beginPath(); x.rect(ax, ay, aw, ah); x.clip(); if (fit === 'contain') { x.fillStyle = matColor; x.fillRect(ax, ay, aw, ah); } x.drawImage(src, ax + (aw - dw) / 2, ay + (ah - dh) / 2, dw, dh); x.restore(); }
+  if (m > 0) { const b = Math.max(2, Math.round(.004 * ppm)); /* 베벨 컷: 창 둘레 흰 심 + 위·왼쪽 안쪽 그늘(매트가 그림보다 도톰하게 보이게) */
+    x.strokeStyle = '#fdfcf8'; x.lineWidth = b; x.strokeRect(ax - b / 2, ay - b / 2, aw + b, ah + b);
+    const gs = Math.max(2, Math.round(.006 * ppm)); let g = x.createLinearGradient(0, ay, 0, ay + gs); g.addColorStop(0, 'rgba(0,0,0,.22)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(ax, ay, aw, gs);
+    g = x.createLinearGradient(ax, 0, ax + gs, 0); g.addColorStop(0, 'rgba(0,0,0,.16)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(ax, ay, gs, ah);
+    g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(0,0,0,.05)'); g.addColorStop(.15, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H); } /* 위 테 그늘 */
+  const t = toTex(c); t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return t; }
+function wallArt(parent, o) {
+  const { cx, cy, cz, nx = 0, nz = 1, w, h, fw = .025, d = .03, frame = null, mat = 0, matColor = '#f6f4ef', art, glass = true, shadow = true, edge = 0xf2f1ed, tilt = 0, fit = 'cover', shadowOp = .3 } = o;
+  const g = new THREE.Group(); g.position.set(WX(cx), cy, WZ(cz)); g.rotation.order = 'YXZ'; g.rotation.y = Math.atan2(nx, nz); g.rotation.x = -tilt; parent.add(g); /* 로컬: x 벽 따라, y 위, z 벽에서 방 쪽 */
+  if (shadow) { const sp = mesh(new THREE.PlaneGeometry(w * 1.16 + .03, h * 1.14 + .03), new THREE.MeshBasicMaterial({ map: afShadowTex(), transparent: true, opacity: shadowOp, depthWrite: false, toneMapped: false, color: 0x000000 }), .004, -.012 - h * .015, .0015, g, { cast: false, recv: false }); sp.renderOrder = 1; }
+  if (!frame) { /* 테 없는 캔버스 그림: 앞면 그림 + 옆면(캔버스 감싼 색) */
+    const sideM = std(edge, .85), front = std(0xffffff, .78, 0, { map: afArtTex(art, w, h, 0, matColor, fit) });
+    mesh(RB(w, h, d, .003, 2), sideM, 0, 0, d / 2, g, { cast: false }); mesh(new THREE.PlaneGeometry(w - .004, h - .004), front, 0, 0, d + .0006, g, { cast: false }); return g; }
+  const r = Math.min(.005, fw * .22, d * .3), li = Math.max(.004, Math.min(.008, fw * .25)), bar = (bw, bh, bd, px, py, pz) => mesh(RB(bw, bh, bd, r, 2), frame, px, py, pz, g, { cast: false });
+  bar(w, fw, d, 0, h / 2 - fw / 2, d / 2); bar(w, fw, d, 0, -h / 2 + fw / 2, d / 2); bar(fw, h - 2 * fw + .002, d, -w / 2 + fw / 2, 0, d / 2); bar(fw, h - 2 * fw + .002, d, w / 2 - fw / 2, 0, d / 2);
+  const iw = w - 2 * fw, ih = h - 2 * fw, ld = d - .008; /* 안쪽 턱: 테 앞면보다 8mm 낮은 한 단 — 단면이 계단처럼 보이게 */
+  mesh(BX(iw, li, ld), frame, 0, ih / 2 - li / 2, ld / 2, g, { cast: false }); mesh(BX(iw, li, ld), frame, 0, -ih / 2 + li / 2, ld / 2, g, { cast: false });
+  mesh(BX(li, ih - 2 * li, ld), frame, -iw / 2 + li / 2, 0, ld / 2, g, { cast: false }); mesh(BX(li, ih - 2 * li, ld), frame, iw / 2 - li / 2, 0, ld / 2, g, { cast: false });
+  const pw = iw - 2 * li, ph = ih - 2 * li, zArt = Math.max(.006, d - .016);
+  mesh(new THREE.PlaneGeometry(pw, ph), std(0xffffff, .82, 0, { map: afArtTex(art, pw, ph, mat, matColor, fit) }), 0, 0, zArt, g, { cast: false });
+  if (glass) mesh(new THREE.PlaneGeometry(pw, ph), _af.gl || (_af.gl = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: .04, metalness: 0, transparent: true, opacity: .08, depthWrite: false, envMapIntensity: 1.8 })), 0, 0, ld - .0015, g, { cast: false, recv: false });
+  return g; }
 // horizontal plane with world-scaled UVs
 function floorRect(x0, x1, z0, z1, y, mat, uvScale = 1.6, parent = structure, down = false) {
   const g = new THREE.PlaneGeometry(x1 - x0, z1 - z0);
@@ -3049,9 +3083,9 @@ function setTime(eve) {
   paintSky(eve); skyTex.needsUpdate = true;
   scene.background.set(eve ? 0x1b2236 : 0xcfdbe6);
   skyFloor.material.color.set(eve ? 0x161c1c : 0x8a9a7c);
-  sun.intensity = eve ? 0 : 3.4; sun.castShadow = tier < 2; // 저녁에도 그림자 설정은 그대로(빛만 0) — 바꾸면 모든 셰이더를 다시 만들어 멈춤
-  hemi.intensity = (eve ? .06 : .32) * (tier >= 3 ? 2.6 : 1); // 최저 단계는 면광원을 끄는 대신 주변광을 올림
-  if (window.__amb) window.__amb.intensity = tier >= 3 ? (eve ? 1.1 : 1.5) : 0;
+  sun.intensity = eve || tier >= 2 ? 0 : 3.4; sun.castShadow = tier < 2; /* 그림자가 꺼진 단계(가벼움 이하)에서 햇빛을 켜 두면 벽을 뚫고 방 안 벽·침대를 비춤 → 해는 끄고 주변광으로 보충 */ // 저녁에도 그림자 설정은 그대로(빛만 0) — 바꾸면 모든 셰이더를 다시 만들어 멈춤
+  hemi.intensity = (eve ? .06 : .32) * (tier >= 3 ? 2.6 : tier === 2 ? 1.6 : 1); // 최저 단계는 면광원을 끄는 대신 주변광을 올림
+  if (window.__amb) window.__amb.intensity = tier >= 3 ? (eve ? 1.1 : 1.5) : tier === 2 && !eve ? .4 : 0;
   hemi.color.set(eve ? 0x6a72a0 : 0xe4edf6);
   rectLights.forEach(r => { r.intensity = eve ? .25 : 1.6; r.color.set(eve ? 0x9a8fc0 : 0xf2f6ff); });
   roomLights.forEach(p => p.intensity = eve ? 2.6 : 0);
@@ -3199,15 +3233,15 @@ function applyTier(t) {
   const sm = t === 0 && !isTouch ? 4096 : 2048;
   if (sun.shadow.mapSize.x !== sm) { sun.shadow.mapSize.set(sm, sm); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } }
   sun.shadow.radius = t === 0 ? 4 : 2; // 화질 향상: 부드러운 그림자
-  sun.castShadow = t < 2; // 시간대와 무관(셰이더 재생성 방지)
+  sun.castShadow = t < 2; sun.intensity = state.time === 'eve' || t >= 2 ? 0 : 3.4; /* 그림자 없는 단계는 햇빛 끔(벽 뚫고 비치는 빛 방지) */ // 시간대와 무관(셰이더 재생성 방지)
   const area = t < 3; // 최저 단계: 면광원·점광원을 장면에서 빼서 픽셀당 조명 계산을 없앰
   for (const l of ledLights) l.light.visible = area;
   rectLights.forEach(r => { r.visible = area; }); roomLights.forEach(p => { p.visible = area; });
   for (const sl of rectPool.concat(pointPool)) sl.l.visible = area; lpForce = lpInstant = true; // 셰이더에 들어가는 건 풀 조명뿐
   if (window.__cove) window.__cove.visible = area; if (window.__coveDown) window.__coveDown.visible = area;
-  hemi.intensity = (state.time === 'eve' ? .06 : .32) * (t >= 3 ? 2.6 : 1);
+  hemi.intensity = (state.time === 'eve' ? .06 : .32) * (t >= 3 ? 2.6 : t === 2 ? 1.6 : 1);
   if (!window.__amb) { window.__amb = new THREE.AmbientLight(0xfff4e8, 0); scene.add(window.__amb); }
-  window.__amb.intensity = t >= 3 ? (state.time === 'eve' ? 1.1 : 1.5) : 0; // 거의 공짜인 주변광으로 밝기 보충
+  window.__amb.intensity = t >= 3 ? (state.time === 'eve' ? 1.1 : 1.5) : t === 2 && state.time !== 'eve' ? .4 : 0; // 거의 공짜인 주변광으로 밝기 보충
   // 최저 단계: 환경맵 반사(픽셀당 큐브맵 샘플링)도 끄고, PBR 재질을 가벼운 램버트 재질로 교체
   scene.environment = t >= 3 ? null : (bakedEnv || placeholderEnv);
   setLiteMaterials(t >= 3);
