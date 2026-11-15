@@ -580,9 +580,10 @@ async function build() {
     /* 적응형 격자: 평평한 칸은 2m, 단 경계·단지 경계에 걸친 칸만 0.25m로 잘게(옹벽 톱니 줄임) */
     const st = 2, SUB = LOW ? 4 : 8, gx = Math.ceil((x1 - x0) / st) + 1, gz = Math.ceil((z1 - z0) / st) + 1, Y = new Float32Array(gx * gz), IN = new Uint8Array(gx * gz);
     for (let j = 0; j < gz; j++) for (let i = 0; i < gx; i++) { const x = x0 + i * st, z = z0 + j * st; Y[j * gx + i] = levelAt(x, z); IN[j * gx + i] = inPoly(SITE, x, z) ? 1 : 0; }
-    const fp = [], fu = [], wp = [], wu = [];
+    const fp = [], fu = [], wp = [], wu = [], lp = [], lu = []; /* lp: 3.5m 미만 낮은 단 벽(모형: 무늬 없는 밝은 회색) */
     const tri = (ax, az, ay, bx, bz, by, cx, cz, cy) => { const mx = (ax + bx + cx) / 3, mz = (az + bz + cz) / 3; if (!inPoly(SITE, mx, mz)) return;
       if (Math.max(ay, by, cy) - Math.min(ay, by, cy) < .6) { fp.push(ax, ay, az, bx, by, bz, cx, cy, cz); for (const [x, z] of [[ax, az], [bx, bz], [cx, cz]]) { const u = planUV(x, z); fu.push(u[0], u[1]); } }
+      else if (Math.max(ay, by, cy) - Math.min(ay, by, cy) < 3.5) { lp.push(ax, ay, az, bx, by, bz, cx, cy, cz); lu.push((ax + az) / 6, ay / 3, (bx + bz) / 6, by / 3, (cx + cz) / 6, cy / 3); }
       else { wp.push(ax, ay, az, bx, by, bz, cx, cy, cz); wu.push((ax + az) / 20, ay / 10, (bx + bz) / 20, by / 10, (cx + cz) / 20, cy / 10); } };
     const quadT = (xa, za, xb, zb, a, b, c, d) => { tri(xa, za, a, xa, zb, c, xb, za, b); tri(xb, za, b, xa, zb, c, xb, zb, d); };
     for (let j = 0; j < gz - 1; j++) for (let i = 0; i < gx - 1; i++) {
@@ -593,7 +594,8 @@ async function build() {
       const s = st / SUB, L = []; for (let q = 0; q <= SUB; q++) { L.push([]); for (let p = 0; p <= SUB; p++) L[q].push(levelAt(xa + p * s, za + q * s)); }
       for (let q = 0; q < SUB; q++) for (let p = 0; p < SUB; p++) quadT(xa + p * s, za + q * s, xa + (p + 1) * s, za + (q + 1) * s, L[q][p], L[q][p + 1], L[q + 1][p], L[q + 1][p + 1]); }
     const mk = (p, u, mat) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(u, 2)); g.computeVertexNormals(); const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.castShadow = mat === wallMat; scene.add(m); };
-    const deckMat = new THREE.MeshStandardMaterial({ map: planTex, roughness: .95 }); detailDeck(deckMat); mk(fp, fu, deckMat); mk(wp, wu, wallMat); }
+    const deckMat = new THREE.MeshStandardMaterial({ map: planTex, roughness: .95 }); detailDeck(deckMat); mk(fp, fu, deckMat); mk(wp, wu, wallMat);
+    if (lp.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#c9cac7', .03, 600); g.fillStyle = 'rgba(0,0,0,.06)'; g.fillRect(0, 0, 256, 3); const t = tex(c); const lm = new THREE.MeshStandardMaterial({ map: t, roughness: .9, side: THREE.DoubleSide }); mk(lp, lu, lm); } }
   /* 단지 둘레 옹벽: 안쪽 단 높이 ↔ 바깥 실제 지면 높이 사이(바깥이 높으면 산을 막는 옹벽) */
   { const gb = new GB(); let s = 0;
     for (let i = 0; i < SITE.length; i++) { const a = SITE[i], b = SITE[(i + 1) % SITE.length], ex = b[0] - a[0], ez = b[1] - a[1], L = Math.hypot(ex, ez), n = Math.max(1, Math.ceil(L / 4));
