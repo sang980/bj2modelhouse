@@ -211,11 +211,14 @@ function levelAbs(x, z) {
 }
 const levelAt = (x, z) => levelAbs(x, z) - Y0;
 /* 도면 GL − SRTM 차이(보정점, 월드 x,z,차이m): 서측 40m 도로·신흥초·북측 산자락 */
+/* 학교 부지(도면 GL·스카이뷰): 신흥초 운동장 GL 106.2~106.4, 성남여중 GL 100.4~100.7 — 평탄한 부지 */
+const SCHOOL_PADS = [{ p: [[22, 92], [130, 84], [142, 162], [62, 174]], h: 106.3, n: '신흥초' }, { p: [[-70, 108], [22, 92], [62, 174], [-36, 214]], h: 100.6, n: '성남여중' }]; const SCHOOL_BLD = [];
 const GLC = [[-152.4, 11.5, -7.5], [-152.2, 16.1, -7.1], [-142.4, 32.2, -6.2], [-133.4, 40, -5.8], [-125, 48.5, -6], [-117.4, 61.4, -4.7], [-118.8, 66, -4.8], [-107.9, 77.8, -5.2], [-108.9, 82.8, -5.7],
   [-98.8, 92.7, -5.1], [-99.1, 98.8, -5.5], [-88.2, 116, -6.5], [-80.9, 130.6, -6.6], [42.3, 104.3, -.5], [31.5, 107, -.2], [31.6, 113.4, .6], [85.4, 112.9, -2.3],
   [-98.2, -70.8, -8.5], [-119.6, -59.9, -4.7], [-128.8, -53.7, -3.5], [-152.7, -39.8, -1.4], [-27.9, -112.7, -2.3], [-49.3, -100, -1.4]];
 function corrAt(x, z) { let sw = 1 / 90000, s = -3.5 * sw; for (const [px, pz, v] of GLC) { const w = 1 / ((x - px) ** 2 + (z - pz) ** 2 + 400); sw += w; s += v * w; } return s / sw; }
-const groundAt = (x, z) => GEO.ok ? demRaw(x, z) + corrAt(x, z) - Y0 : -4;
+function groundAt(x, z) { if (!GEO.ok) return -4; let h = demRaw(x, z) + corrAt(x, z) - Y0;
+  for (const sp of SCHOOL_PADS) { const d = polyDist(sp.p, x, z); if (d < 12) { const t = smooth(-4, 12, d); h = (sp.h - Y0) * (1 - t) + h * t; } } return h; }
 const siteY = (x, z) => polyDist(SITE, x, z) < 0 ? levelAt(x, z) : groundAt(x, z); /* 단지 안은 단 높이, 밖은 실제 지면 */
 function forestAt(x, z) { const F = GEO.fmask; if (!F) return smooth(-12, 18, -polyDist(FOREST, x, z)); const M = F.M; let fx = (x + F.E) / (2 * F.E) * M - .5, fz = (z + F.E) / (2 * F.E) * M - .5;
   if (fx < 0 || fz < 0 || fx > M - 1.01 || fz > M - 1.01) return 0; const i = fx | 0, j = fz | 0, ax = fx - i, az = fz - j, a = F.a;
@@ -515,7 +518,7 @@ async function build() {
   prog(62); await tick();
 
   /* ===== 주변 건물: 실제 데이터(OSM 윤곽·층수)가 있으면 그것으로, 없으면 개략 생성 ===== */
-  if (GEO.ok && GEO.bld) buildOSM(); else buildSurroundings(T);
+  if (GEO.ok && GEO.bld) { buildOSM(); buildSchools(); } else buildSurroundings(T);
   prog(80); await tick();
 
   /* ===== 나무 ===== */
@@ -724,6 +727,51 @@ function buildAmenities(MAT) {
   for (const x of [sm, rm]) { x.castShadow = x.receiveShadow = true; scene.add(x); }
 }
 
+/* ---------- 신흥초·성남여중(카카오 스카이뷰·로드뷰 2026.08 + 도면 GL) ----------
+   신흥초: 부지 GL 106.3, 북쪽 ㄷ자 4층 교사(연노랑+주황·흰 띠, 초록 지붕), 동쪽 체육관(파란 지붕 + 태양광), 흙 운동장, 무지개색 담장
+   성남여중: 부지 GL 100.6, 붉은 벽돌 4층 본관(공원로변), 파란 지붕 체육관(새 건물), 줄무늬 지붕 부속동, 흙 운동장 */
+function buildSchools() {
+  const mk = draw => { const c = cnv(512, 256), g = c.getContext('2d'); draw(g); const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughnessMap: roughFrom(t), roughness: 1, envMapIntensity: .6 }); };
+  const M = {
+    sh: mk(g => { g.fillStyle = '#efe6cf'; g.fillRect(0, 0, 512, 256); g.fillStyle = '#e59a52'; g.fillRect(0, 0, 512, 22); g.fillRect(0, 234, 512, 22); for (let k = 0; k < 4; k++) { win(g, 18 + k * 124, 64, 100, 120, 3, 6, '#ffffff', 2); g.fillStyle = '#f6b26b'; g.fillRect(18 + k * 124, 196, 100, 10); } g.fillStyle = '#d7cdb4'; g.fillRect(0, 22, 6, 212); }),
+    shEnd: mk(g => { g.fillStyle = '#f2a65c'; g.fillRect(0, 0, 512, 256); g.fillStyle = '#ffffff'; for (let x = 0; x < 512; x += 64) g.fillRect(x, 0, 10, 256); win(g, 200, 70, 110, 110, 2, 6, '#ffffff', 2); }),
+    brick: mk(g => { brickFill(g, 512, 256); g.fillStyle = '#e8e2d8'; g.fillRect(0, 0, 512, 16); g.fillRect(0, 240, 512, 16); for (let k = 0; k < 4; k++) win(g, 20 + k * 124, 60, 96, 128, 2, 7, '#f1efea', 1); }),
+    gym: mk(g => { g.fillStyle = '#e9ecee'; g.fillRect(0, 0, 512, 256); g.fillStyle = '#c9d0d6'; for (let x = 0; x < 512; x += 16) g.fillRect(x, 0, 2, 256); glass(g, 20, 150, 472, 60, 1); g.fillStyle = '#8fa3b3'; g.fillRect(0, 0, 512, 18); }),
+    gymR: new THREE.MeshStandardMaterial({ color: '#3f6fa6', roughness: .55, metalness: .2 }),
+    roofG: new THREE.MeshStandardMaterial({ color: '#5f9a78', roughness: .9 }), roofB: new THREE.MeshStandardMaterial({ color: '#6e4636', roughness: .85 }), roofW: new THREE.MeshStandardMaterial({ color: '#d9d9d4', roughness: .9 }),
+    stripe: mk(g => { const C = ['#f0f0ee', '#e98a52', '#f0f0ee', '#9db7cf']; for (let x = 0; x < 512; x += 32) { g.fillStyle = C[(x / 32) % 4]; g.fillRect(x, 0, 32, 256); } }),
+    solar: new THREE.MeshStandardMaterial({ map: (() => { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#2a3f5f'; g.fillRect(0, 0, 256, 256); g.strokeStyle = '#7e93ad'; g.lineWidth = 2; for (let x = 0; x <= 256; x += 32) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 256); g.stroke(); } for (let y = 0; y <= 256; y += 20) { g.beginPath(); g.moveTo(0, y); g.lineTo(256, y); g.stroke(); } return tex(c); })(), roughness: .3, metalness: .4 }),
+    dirt: new THREE.MeshLambertMaterial({ color: '#c8ad86' }), wallR: mk(g => { const C = ['#e85d5d', '#f39c4a', '#f4d35e', '#7ec27e', '#5aa9e6', '#9b7fd1']; for (let x = 0; x < 512; x += 85) { g.fillStyle = C[(x / 85) % 6]; g.fillRect(x, 0, 85, 256); } }),
+  };
+  const G = {}; for (const k in M) G[k] = new GB();
+  const a = .52, ux = Math.cos(-a), uz = Math.sin(-a); /* 학교 건물 축: 단지 남쪽 옹벽과 나란 */
+  const box = (k, c, L, D, y0, y1, roof = 'roofG', ends) => obox(c[0], c[1], ux, uz, L, D, y0, y1, { front: { gb: G[k], uv: uvTile(13, 3.6, 0) }, back: { gb: G[k], uv: uvTile(13, 3.6, 0) }, left: { gb: G[ends || k], uv: uvTile(13, 3.6) }, right: { gb: G[ends || k], uv: uvTile(13, 3.6) }, top: { gb: G[roof] } });
+  const pad = (h, P) => { const yy = h - Y0 + .03, sh = new THREE.Shape(P.map(p => new THREE.Vector2(p[0], -p[1]))), g = new THREE.ShapeGeometry(sh); g.rotateX(-Math.PI / 2); g.translate(0, yy, 0); const m = new THREE.Mesh(g, M.dirt); m.receiveShadow = true; scene.add(m); };
+  /* OSM 실제 윤곽으로 학교 건물: 신흥초 = 연노랑·주황 띠 + 초록 지붕, 성남여중 = 붉은 벽돌 + 갈색 지붕, 4각형 큰 건물(성남여중 쪽) = 파란 지붕 체육관 */
+  const ext = (P, y0, y1, wk, rk) => { let A = 0; for (let k = 0; k < P.length; k++) { const p = P[k], q = P[(k + 1) % P.length]; A += p[0] * q[1] - q[0] * p[1]; } const sg = A > 0 ? 1 : -1; let s = 0;
+    for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length], dx = b2[0] - a2[0], dz = b2[1] - a2[1], L = Math.hypot(dx, dz); if (L < .05) continue;
+      const nx = dz / L * sg, nz = -dx / L * sg, [p, q, sp, sq] = sg < 0 ? [a2, b2, s, s + L] : [b2, a2, s + L, s];
+      G[wk].quad([p[0], y0, p[1]], [q[0], y0, q[1]], [q[0], y1, q[1]], [p[0], y1, p[1]], [nx, 0, nz], [sp / 13, 0, sq / 13, 0, sq / 13, (y1 - y0) / 3.6, sp / 13, (y1 - y0) / 3.6]); s += L; }
+    for (const [i0, i1, i2] of THREE.ShapeUtils.triangulateShape(P.map(p => new THREE.Vector2(p[0], p[1])), [])) { const A3 = [P[i0][0], y1, P[i0][1]], B3 = [P[i1][0], y1, P[i1][1]], C3 = [P[i2][0], y1, P[i2][1]], cr = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]); cr >= 0 ? G[rk].tri(A3, B3, C3, [0, 1, 0]) : G[rk].tri(A3, C3, B3, [0, 1, 0]); }
+    for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length], dx = b2[0] - a2[0], dz = b2[1] - a2[1], L = Math.hypot(dx, dz); if (L < .5) continue; obox((a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2, dx / L, dz / L, L, .3, y1, y1 + .9, { front: { gb: G.roofW }, back: { gb: G.roofW }, top: { gb: G.roofW } }); } }; /* 옥상 난간 */
+  for (const b of SCHOOL_BLD) { const sp = SCHOOL_PADS.find(q => inPoly(q.p, b.cx, b.cz)) || SCHOOL_PADS[0], y = sp.h - Y0, xs = b.P.map(p => p[0]), zs = b.P.map(p => p[1]), area = (Math.max(...xs) - Math.min(...xs)) * (Math.max(...zs) - Math.min(...zs));
+    if (b.np === 4 && sp.n === '성남여중' && area > 900) ext(b.P, y - .6, y + 12.5, 'gym', 'gymR');
+    else if (sp.n === '신흥초') ext(b.P, y - .6, y + 4 * 3.6, 'sh', 'roofG');
+    else ext(b.P, y - .6, y + 4 * 3.6, 'brick', 'roofB'); }
+  /* 신흥초: 흙 운동장 + 태양광 지붕 강당(스카이뷰 동쪽) + 무지개 담장 */
+  { const y = 106.3 - Y0; pad(106.3, [[56, 122], [96, 114], [104, 156], [64, 164]]);
+    box('gym', [114, 138], 26, 34, y - .6, y + 11, 'gymR'); obox(114, 138, ux, uz, 24, 32, y + 11.05, y + 11.1, { top: { gb: G.solar } });
+    for (const [p0, p1] of [[[64, 166], [106, 158]], [[106, 158], [128, 156]]]) { const L = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), vx = (p1[0] - p0[0]) / L, vz = (p1[1] - p0[1]) / L;
+      obox((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, vx, vz, L, .3, y - 1, y + 1.6, { front: { gb: G.wallR, uv: uvTile(6, 1.6) }, back: { gb: G.wallR, uv: uvTile(6, 1.6) }, top: { gb: G.roofW } }); } }
+  /* 성남여중: 흙 운동장 + 남쪽 줄무늬 지붕 부속동 */
+  { const y = 100.6 - Y0; pad(100.6, [[-24, 160], [14, 150], [26, 186], [-12, 198]]);
+    const v = [Math.cos(-.68), Math.sin(-.68)]; obox(-30, 196, v[0], v[1], 36, 10, y - .6, y + 2 * 3.6, { front: { gb: G.brick, uv: uvTile(13, 3.6) }, back: { gb: G.brick, uv: uvTile(13, 3.6) }, left: { gb: G.brick, uv: uvTile(13, 3.6) }, right: { gb: G.brick, uv: uvTile(13, 3.6) } });
+    obox(-30, 196, v[0], v[1], 37, 11, y + 2 * 3.6, y + 2 * 3.6 + .1, { top: { gb: G.stripe, uv: true, uvTop: uvPlanar(8) } }); }
+  for (const k in G) { if (!G[k].i.length) continue; const m = new THREE.Mesh(G[k].build(), M[k]); m.castShadow = m.receiveShadow = true; scene.add(m); }
+  SCHOOL_SKIP = [[-80, 85, 140, 200]];
+}
+let SCHOOL_SKIP = null;
+
 /* ---------- 나무 ---------- */
 /* 비색인 지오메트리 여러 개를 하나로 합치고, 높이에 따라 아래는 어둡게(lo) 위는 밝게 정점 색을 넣음 */
 function mergeShade(geos, lo) {
@@ -867,6 +915,7 @@ function buildOSM() {
     const P = new Array(np); for (let k = 0; k < np; k++) { P[k] = [B[i] * .2, B[i + 1] * .2]; i += 2; }
     let cx = 0, cz = 0; for (const p of P) { cx += p[0]; cz += p[1]; } cx /= np; cz /= np;
     const dist = Math.hypot(cx, cz - 15); if (LOW && dist > 1800) continue;
+    if ((kind === 3 || kind === 4 || lv === 4) && cx > -80 && cx < 140 && cz > 85 && cz < 200 && SCHOOL_PADS.some(sp => inPoly(sp.p, cx, cz))) { SCHOOL_BLD.push({ P, lv, h, cx, cz, np }); continue; } /* 학교 건물은 따로 상세 모델 */
     if (Math.abs(cx) < OE - 60 && Math.abs(cz) < OE - 60) { og.beginPath(); P.forEach((p, k) => { const X = (p[0] + OE) / ORS, Z = (p[1] + OE) / ORS; k ? og.lineTo(X, Z) : og.moveTo(X, Z); }); og.closePath(); og.fill(); og.lineWidth = 1.2; og.stroke(); }
     let gmin = Infinity, gs = 0; for (const p of P) { const gy = heightAt(p[0], p[1]); gmin = Math.min(gmin, gy); gs += gy; }
     const gavg = gs / np, top = gavg + h, base = gmin - .6 + mh, fh = h / lv;
