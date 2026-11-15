@@ -480,7 +480,8 @@ function texConcrete() { const c = cnv(1024, 512), g = c.getContext('2d'); noise
   return tex(c); }
 /* 56T 아래 옹벽: 갈색 도장(페인트) 마감 + 짙은 홈 무늬(벽돌·줄눈 없음) */
 function texPodium() { const c = cnv(1024, 512), g = c.getContext('2d'); paintBrown(g, 1024, 512); /* 모형: 저층과 같은 갈색 도장 + 짙은 홈 무늬 */
-  mazeShapes(g, 1024, 512, 'rgba(38,24,18,.9)', 57, 34); return tex(c); }
+  { const rr = rng(57); g.fillStyle = 'rgba(30,20,16,.85)'; for (let row = 0; row < 4; row++) { const y = 40 + row * 120; for (let x = 18 + (row & 1) * 40; x < 1010; x += 80 + (rr() * 3 | 0) * 16) { const h = 40 + (rr() * 3 | 0) * 18; g.fillRect(x, y + (rr() * 20 | 0), 20, h); } } } /* 모형 사진: 작은 짙은 세로 홈이 고르게(한 장 20m×10m: 홈 0.4m×0.8~1.5m) */
+  return tex(c); }
 /* 56T 테라스 세대(모형): 짙은 회색 틀 + 큰 유리문·창(흰 문살), 위 처마 띠 — 한 세대 폭 × 한 층 */
 function texTerr() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#3f4146', .04, 800);
   for (const [x0, w0] of [[40, 300], [380, 300], [720, 140], [880, 110]]) { glass(g, x0, 40, w0, 196, 0); g.fillStyle = 'rgba(255,236,200,.18)'; g.fillRect(x0, 40, w0, 196); g.fillStyle = '#ecebe8'; g.strokeStyle = '#ecebe8'; g.lineWidth = 6; g.strokeRect(x0, 40, w0, 196); for (let x = x0 + w0 / 3; x < x0 + w0 - 5; x += w0 / 3) g.fillRect(x - 2, 40, 4, 196); }
