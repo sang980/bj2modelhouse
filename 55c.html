@@ -2088,8 +2088,10 @@ const sideTableN = new THREE.Group(); /* VR 55C: 침대 옆 사이드테이블 �
 const bed2 = bed(.72, 7.0, Math.PI, 1.1, 2.0, '싱글 침대'); // 사진: 화이트 플로팅 프레임 + 하부 간접등, 머리는 창 쪽
 /* VR(55C 침실2): 베이지 담요 + 흰 쿠션·기하무늬 쿠션 */
 { const beige = std(0xcdbb9c, .98, 0, { map: M.throwBlue.map }); bed2.traverse(o => { if (o.isMesh && o.material === M.throwBlue) o.material = beige; });
-  const geoTex = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#f2f1ed'; x.fillRect(0, 0, 64, 64); x.strokeStyle = '#7b7d80'; x.lineWidth = 3; for (let i = -1; i < 3; i++) for (let j = -1; j < 3; j++) { x.beginPath(); x.moveTo(16 + i * 32, j * 32); x.lineTo(32 + i * 32, 16 + j * 32); x.lineTo(16 + i * 32, 32 + j * 32); x.lineTo(i * 32, 16 + j * 32); x.closePath(); x.stroke(); } return c; })(), { rep: [2, 2] });
-  const L = 2.0; for (const [px, ry, m] of [[-.2, .06, std(0xf6f5f2, .95)], [.16, -.1, std(0xffffff, .95, 0, { map: geoTex })]]) { const p = mesh(pillowG(.46, .36, .15), m, px, .74, -L / 2 + .2, bed2); p.rotation.set(-.3, ry, 0); } }
+  const geoTex = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#f3f2ee'; x.fillRect(0, 0, 64, 64); x.strokeStyle = '#8a8c8f'; x.lineWidth = 2.2; for (let i = -1; i < 3; i++) for (let j = -1; j < 3; j++) { x.beginPath(); x.arc(i * 32 + 16, j * 32 + 16, 17, 0, 7); x.stroke(); } return c; })(), { rep: [2, 2] }); /* VR: 회색 선 맞물린 원 무늬 */
+  const L = 2.0, lyG = pillowG(.64, .19, .4), rm = []; bed2.traverse(o => { if (o.isMesh && o.geometry === lyG) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
+  { const w = mesh(sqPillowG(.62, .48, .2), std(0xf6f5f2, .95, 0, { map: M.linen.map }), -.06, .8, -L / 2 + .17, bed2); w.rotation.set(-.2, .05, 0); }
+  { const c = mesh(sqPillowG(.44, .42, .14), std(0xffffff, .95, 0, { map: geoTex }), .14, .74, -L / 2 + .4, bed2); c.rotation.set(-.42, -.18, -.04); } } /* VR(55C 침실2): 뒤 큰 흰 베개 + 앞 원 무늬 쿠션(서로 박히지 않게 앞뒤로) */
 /* VR: 흰 책상(한쪽 4단 서랍) + 흰 스탠드 · 꽃병 · 잡지, 알루미늄 의자 */
 const desk2 = piece('책상', .395, 5.64, Math.PI / 2); desk2.scale.x = -1; /* VR 55C: 서쪽 벽 북쪽 끝(침대 머리 반대편), 서랍이 문 쪽(북쪽) — 좌우 반전 */
 { const d = desk2, wt = std(0xf6f5f2, .4), seam = std(0xc9c6bf, .6), alu = std(0xc6cacf, .28, .85);
