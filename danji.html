@@ -186,6 +186,7 @@ async function loadGeo() {
     const dm = new Uint16Array(await d.arrayBuffer()); GEO.N = 512; GEO.E = 5000; GEO.dem = new Float32Array(dm.length); for (let i = 0; i < dm.length; i++) GEO.dem[i] = dm[i] / 10 - 100;
     if (b.ok) GEO.bld = new Int16Array(await b.arrayBuffer());
     if (e.ok) GEO.env = await e.json();
+    if (GEO.bld && GEO.env) synthPlanned();
     GEO.ok = true;
   } catch (err) { console.warn('geo', err); }
 }
@@ -226,8 +227,80 @@ function forestAt(x, z) { const F = GEO.fmask; if (!F) return smooth(-12, 18, -p
   return (a[j * M + i] * (1 - ax) + a[j * M + i + 1] * ax) * (1 - az) + (a[(j + 1) * M + i] * (1 - ax) + a[(j + 1) * M + i + 1] * ax) * az; }
 function heightAt(x, z) {
   if (!GEO.ok) return heightProc(x, z);
-  if (polyDist(SITE, x, z) < 0) { let m = levelAt(x, z); for (const [dx, dz] of [[7, 0], [-7, 0], [0, 7], [0, -7], [5, 5], [-5, 5], [5, -5], [-5, -5]]) m = Math.min(m, levelAt(x + dx, z + dz)); return m - 2; } /* 단지 안 지형은 주변 가장 낮은 단보다 아래로 숨김 */
+  if (polyDist(SITE, x, z) < 0) { let m = levelAt(x, z); for (const [dx, dz] of [[7, 0], [-7, 0], [0, 7], [0, -7], [5, 5], [-5, 5], [5, -5], [-5, -5]]) m = Math.min(m, levelAt(x + dx, z + dz)); return Math.min(m - 2, groundAt(x, z) - 1.2); } /* 단지 안 지형은 주변 가장 낮은 단보다 아래로 숨김 */
   return groundAt(x, z);
+}
+
+/* ---------- 공사 중·최근 준공 단지 채우기(OSM 공사 부지 + 지도 단지명): 실제 건물 윤곽이 아직 없는 곳만 판상형 아파트를 배치 ----------
+   해링턴스퀘어신흥역·상대원2구역·성남복정1지구(B-1·B-2BL, C-1~C-5 주상복합)·엘리프남위례역에듀포레·산성역 일대 재개발 */
+function synthPlanned() {
+  const B = GEO.bld, cents = []; let i = 0;
+  while (i < B.length) { const kind = B[i], lv = B[i + 1], np = B[i + 4]; i += 5; let cx = 0, cz = 0; for (let k = 0; k < np; k++) { cx += B[i] * .2; cz += B[i + 1] * .2; i += 2; } cents.push([cx / np, cz / np, kind, lv]); }
+  const out = [], push = (kind, lv, h, P) => { out.push(kind, lv, Math.round(h * 10), 0, P.length); for (const [x, z] of P) out.push(Math.round(x / .2), Math.round(z / .2)); };
+  let n = 0;
+  for (const l of GEO.env.land || []) {
+    if (l.k !== 'construction') continue; const P = l.p, nm = l.n || '';
+    let cx = 0, cz = 0; for (const p of P) { cx += p[0]; cz += p[1]; } cx /= P.length; cz /= P.length; const dist = Math.hypot(cx, cz - 15);
+    let rule = null;
+    if (/해링턴스퀘어|상대원2구역/.test(nm)) rule = { f: [20, 29], L: 44, D: 14, su: 58, sv: 50 };
+    else if (/공동주택|엘리프|에듀포레/.test(nm)) rule = { f: [15, 25], L: 42, D: 14, su: 56, sv: 48 };
+    else if (/주상복합/.test(nm)) rule = { f: [28, 36], tower: true };
+    else if (!nm && dist < 1300) { let A = 0; for (let k = 0; k < P.length; k++) { const a = P[k], b = P[(k + 1) % P.length]; A += a[0] * b[1] - b[0] * a[1]; } if (Math.abs(A) / 2 > 30000) rule = { f: [18, 29], L: 42, D: 14, su: 56, sv: 48 }; }
+    if (!rule) continue;
+    if (cents.filter(c => c[2] !== 5 && c[3] >= 5 && inPoly(P, c[0], c[1])).length >= 3) continue; /* 이미 실제 윤곽이 있으면 그대로 */
+    let bl = 0, ux = 1, uz = 0; for (let k = 0; k < P.length; k++) { const a = P[k], b = P[(k + 1) % P.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L > bl) { bl = L; ux = (b[0] - a[0]) / L; uz = (b[1] - a[1]) / L; } }
+    const fx = -uz, fz = ux, rr = rng(Math.round(cx * 7 + cz * 13));
+    const box = (x, z, L, D) => [[x - ux * L / 2 - fx * D / 2, z - uz * L / 2 - fz * D / 2], [x + ux * L / 2 - fx * D / 2, z + uz * L / 2 - fz * D / 2], [x + ux * L / 2 + fx * D / 2, z + uz * L / 2 + fz * D / 2], [x - ux * L / 2 + fx * D / 2, z - uz * L / 2 + fz * D / 2]];
+    const inside = Q => Q.every(q => polyDist(P, q[0], q[1]) < -6);
+    if (rule.tower) { const pod = box(cx, cz, 60, 40); if (inside(pod)) { push(2, 3, 12, pod); for (const o of [-14, 14]) { const T = box(cx + ux * o, cz + uz * o, 22, 20), f = rule.f[0] + (rr() * (rule.f[1] - rule.f[0]) | 0); push(1, f, 12 + (f - 3) * 2.9, T); n++; } } continue; }
+    let u0 = 1e9, u1 = -1e9, v0 = 1e9, v1 = -1e9; for (const p of P) { const u = (p[0] - cx) * ux + (p[1] - cz) * uz, v = (p[0] - cx) * fx + (p[1] - cz) * fz; u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v); }
+    for (let u = u0 + rule.su / 2; u < u1; u += rule.su) for (let v = v0 + rule.sv / 2; v < v1; v += rule.sv) {
+      const x = cx + ux * u + fx * v, z = cz + uz * u + fz * v, Q = box(x, z, rule.L, rule.D); if (!inside(Q) || rr() < .12) continue;
+      const f = rule.f[0] + (rr() * (rule.f[1] - rule.f[0] + 1) | 0); push(1, f, f * 2.9 + 1, Q); n++; }
+  }
+  if (out.length) { const nb = new Int16Array(B.length + out.length); nb.set(B); nb.set(out, B.length); GEO.bld = nb; }
+  console.log('planned/constructed apartments', n);
+}
+
+/* ---------- 도로: 실제 폭(OSM 차로 수)대로 지형 위에 띠로 깔아 선명하게(반경 2.2km) — 큰길은 중앙선·차선 ---------- */
+function buildRoads() {
+  const env = GEO.env; if (!env || !env.roads) return;
+  const mkTex = (w, h, draw) => { const c = cnv(w, h), g = c.getContext('2d'); draw(g, w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.ClampToEdgeWrapping; t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; return t; };
+  const asphalt = (g, w, h, c0) => { g.fillStyle = c0; g.fillRect(0, 0, w, h); for (let k = 0; k < 2500; k++) { const v = (rand() - .5) * .1; g.fillStyle = v > 0 ? `rgba(255,255,255,${v})` : `rgba(0,0,0,${-v})`; g.fillRect(rand() * w, rand() * h, 1.5, 1.5); } };
+  const TX = {
+    big: mkTex(256, 512, (g, w, h) => { asphalt(g, w, h, '#4b4e53'); g.fillStyle = '#e0b83a'; g.fillRect(w / 2 - 5, 0, 3, h); g.fillRect(w / 2 + 2, 0, 3, h); g.fillStyle = '#e8e8e2'; for (const x of [w * .25, w * .75]) for (let y = 0; y < h; y += 128) g.fillRect(x - 2, y, 4, 70); g.fillRect(4, 0, 3, h); g.fillRect(w - 7, 0, 3, h); }),
+    mid: mkTex(128, 512, (g, w, h) => { asphalt(g, w, h, '#53565b'); g.fillStyle = '#e0b83a'; g.fillRect(w / 2 - 2, 0, 4, h); g.fillStyle = '#e8e8e2'; g.fillRect(3, 0, 2, h); g.fillRect(w - 5, 0, 2, h); }),
+    small: mkTex(64, 256, (g, w, h) => { asphalt(g, w, h, '#5d6064'); }),
+    walk: mkTex(64, 256, (g, w, h) => { g.fillStyle = '#bdb7ab'; g.fillRect(0, 0, w, h); g.fillStyle = 'rgba(0,0,0,.08)'; for (let y = 0; y < h; y += 16) g.fillRect(0, y, w, 1); }),
+  };
+  const G = { big: [], mid: [], small: [], walk: [] }, U = { big: [], mid: [], small: [], walk: [] }, Rmax = LOW ? 1500 : 2200;
+  const ribbon = (pts, w, k, lift) => { const P = G[k], UV = U[k]; let acc = 0;
+    for (let i = 0; i < pts.length - 1; i++) { const [x0, z0] = pts[i], [x1, z1] = pts[i + 1], L = Math.hypot(x1 - x0, z1 - z0); if (L < .1) continue;
+      const n = Math.max(1, Math.ceil(L / 6)), nx = -(z1 - z0) / L * w / 2, nz = (x1 - x0) / L * w / 2;
+      for (let s = 0; s < n; s++) { const t0 = s / n, t1 = (s + 1) / n, ax = x0 + (x1 - x0) * t0, az = z0 + (z1 - z0) * t0, bx = x0 + (x1 - x0) * t1, bz = z0 + (z1 - z0) * t1;
+        if (polyDist(SITE, ax, az) < -8 && polyDist(SITE, bx, bz) < -8) { acc += L / n; continue; } /* 단지 안쪽 깊은 곳만 생략 */
+        const inS = polyDist(SITE, ax, az) < 0 || polyDist(SITE, bx, bz) < 0;
+        const hA = inS ? groundAt(ax, az) : heightAt(ax, az), hB = inS ? groundAt(bx, bz) : heightAt(bx, bz), ya = hA + lift, yb = hB + lift, va = acc / 12, vb = (acc + L / n) / 12; acc += L / n;
+        P.push(ax + nx, ya, az + nz, bx - nx, yb, bz - nz, ax - nx, ya, az - nz, ax + nx, ya, az + nz, bx + nx, yb, bz + nz, bx - nx, yb, bz - nz); /* 위를 보는 면 */
+        UV.push(0, va, 1, vb, 1, va, 0, va, 0, vb, 1, vb); } } };
+  for (const r of env.roads) { if (r.t === 1) continue; let near = false; for (const p of r.p) if (Math.hypot(p[0], p[1] - 15) < Rmax) { near = true; break; } if (!near) continue;
+    const path = /^(footway|path|steps|cycleway|pedestrian|track)$/.test(r.k);
+    if (path) { ribbon(r.p, Math.max(1.6, r.w), 'walk', .32); continue; }
+    if (r.w >= 12) ribbon(r.p, r.w + 6, 'walk', .3);
+    ribbon(r.p, r.w, r.w >= 16 ? 'big' : r.w >= 10 ? 'mid' : 'small', r.w >= 16 ? .42 : r.w >= 10 ? .4 : .38); }
+  for (const k in G) { if (!G[k].length) continue; const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(G[k], 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(U[k], 2)); g.computeVertexNormals();
+    const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: TX[k], polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: k === 'walk' ? -2 : -6 })); m.receiveShadow = true; m.renderOrder = 2; scene.add(m); }
+}
+
+/* ---------- 남위례역(8호선, 지하): 출입구 캐노피 4곳 + 이름표 ---------- */
+function buildStation() {
+  const sx = -322, sz = -1278, G2 = new GB(), Gl = new GB(), y = heightAt(sx, sz);
+  for (const [dx, dz, a] of [[-28, -18, .9], [26, -14, .9], [-24, 20, .9], [30, 22, .9]]) { const x = sx + dx, z = sz + dz, ux = Math.cos(a), uz = Math.sin(a), yy = heightAt(x, z);
+    obox(x, z, ux, uz, 9, 4.2, yy, yy + 3.2, { front: { gb: Gl }, back: { gb: Gl }, left: { gb: Gl }, right: { gb: Gl } }); obox(x, z, ux, uz, 9.6, 4.8, yy + 3.2, yy + 3.6, { front: { gb: G2 }, back: { gb: G2 }, left: { gb: G2 }, right: { gb: G2 }, top: { gb: G2 } }); }
+  const a = new THREE.Mesh(G2.build(), new THREE.MeshStandardMaterial({ color: '#d7dde3', roughness: .4, metalness: .3 })), b = new THREE.Mesh(Gl.build(), new THREE.MeshStandardMaterial({ color: '#7fa2b8', roughness: .1, metalness: .2, transparent: true, opacity: .55 }));
+  scene.add(a, b);
+  const c = cnv(512, 96), g = c.getContext('2d'); g.font = '700 40px "Noto Sans KR", sans-serif'; g.fillStyle = 'rgba(0,92,170,.9)'; roundRect(g, 66, 14, 380, 66, 20); g.fill(); g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('M 남위례역 (8호선)', 256, 48);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false, fog: false })); sp.position.set(sx, y + 40, sz); scene.add(sp); areaLabels.push(sp);
 }
 
 /* ---------- 지형 높이(데이터가 없을 때의 개략형) ---------- */
@@ -463,7 +536,7 @@ async function build() {
   const planTex = new THREE.CanvasTexture(pc); planTex.colorSpace = THREE.SRGBColorSpace; planTex.anisotropy = ANISO;
   const planUV = (x, z) => [((x / S + OX) / PK) / PW, 1 - ((z / S + OY) / PK) / PH];
   /* 주변 띠(지형을 따라) */
-  { const x0 = -OX * S, x1 = (2655 - OX) * S, z0 = (330 * PK - OY) * S, z1 = (2693 - OY) * S, st = 2.5;
+  if (!GEO.ok) { const x0 = -OX * S, x1 = (2655 - OX) * S, z0 = (330 * PK - OY) * S, z1 = (2693 - OY) * S, st = 2.5;
     const gx = Math.ceil((x1 - x0) / st) + 1, gz = Math.ceil((z1 - z0) / st) + 1, pp = new Float32Array(gx * gz * 3), uu = new Float32Array(gx * gz * 2), id = [];
     for (let j = 0; j < gz; j++) for (let i = 0; i < gx; i++) { const x = Math.min(x1, x0 + i * st), z = Math.min(z1, z0 + j * st), k = j * gx + i; pp[k * 3] = x; pp[k * 3 + 1] = heightAt(x, z) + .08; pp[k * 3 + 2] = z; const u = planUV(x, z); uu[k * 2] = u[0]; uu[k * 2 + 1] = u[1]; }
     const ins = new Uint8Array(gx * gz); for (let k = 0; k < gx * gz; k++) ins[k] = polyDist(SITE, pp[k * 3], pp[k * 3 + 2]) < 1.5 ? 1 : 0; /* 단지 안·경계 칸은 뺌(옹벽이 담당) */
@@ -524,7 +597,7 @@ async function build() {
   prog(62); await tick();
 
   /* ===== 주변 건물: 실제 데이터(OSM 윤곽·층수)가 있으면 그것으로, 없으면 개략 생성 ===== */
-  if (GEO.ok && GEO.bld) { buildOSM(); buildSchools(); } else buildSurroundings(T);
+  if (GEO.ok && GEO.bld) { buildOSM(); buildSchools(); buildRoads(); buildStation(); } else buildSurroundings(T);
   prog(80); await tick();
 
   /* ===== 나무 ===== */
