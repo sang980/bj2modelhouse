@@ -821,7 +821,7 @@ function buildDong(D, G, MAT) {
     if (t) obox(cx, cz, ux, uz, L, DEP, 0, yT, { front: { gb: G.terr, uv: uvTile(tw, FH) }, back: { gb: G.bback, uv: uvTile(tw, FH) }, left: { gb: G.bside, uv: uvTile(DEP, FH) }, right: { gb: G.bside, uv: uvTile(DEP, FH) } });
     obox(cx, cz, ux, uz, L, DEP, D.pit ? pitH : (t ? yT : 0), base, { front: { gb: G.bfront, uv: uvTile(tw, FH) }, back: { gb: G.bback, uv: uvTile(tw, FH) }, left: { gb: G.bside, uv: uvTile(DEP, FH) }, right: { gb: G.bside, uv: uvTile(DEP, FH) } });
     obox(cx, cz, ux, uz, L, DEP, base, H, { front: { gb: G.front, uv: uvTile(tw, FH) }, back: { gb: G.back, uv: uvTile(tw, FH) }, top: { gb: NOSOLAR.has(D.d) ? G.white : G.roof, uv: true, uvTop: uvPlanar(8) } });
-    { const north = D.d >= 112 && D.d !== 117 && !SIDEP.has(D.d), yb2 = SIDEP.has(D.d) ? H : north ? base : Math.min(H, base + 2 * FH), SP = { gb: G.sideP, uv: uvTile(DEP, FH) }, SN = { gb: north ? G.sideT : G.side, uv: uvTile(DEP, FH) }; /* 북쪽 줄(VE26)은 저층 위부터 청록 판넬 */ /* 모형 VE08: 측벽 남색 판넬은 갈색 저층 위 2개 층 회색 띠 위부터 꼭대기까지 */
+    { const north = D.d >= 112 && ![117, 118, 122].includes(D.d) && !SIDEP.has(D.d), yb2 = SIDEP.has(D.d) ? H : north ? base : Math.min(H, base + 2 * FH), SP = { gb: G.sideP, uv: uvTile(DEP, FH) }, SN = { gb: north ? G.sideT : G.side, uv: uvTile(DEP, FH) }; /* 북쪽 줄(VE26)은 저층 위부터 청록 판넬 */ /* 모형 VE08: 측벽 남색 판넬은 갈색 저층 위 2개 층 회색 띠 위부터 꼭대기까지 */
       if (yb2 > base) obox(cx, cz, ux, uz, L, DEP, base, yb2, { left: SP, right: SP }); if (yb2 < H) obox(cx, cz, ux, uz, L, DEP, yb2, H, { left: SN, right: SN }); }
     /* 옥상 난간 */
     const pr = (px2, pz2, l, d, uxx, uzz) => { obox(px2, pz2, uxx, uzz, l, d, H, H + .35, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } });
@@ -871,7 +871,7 @@ function buildDong(D, G, MAT) {
       const yS = yF1 + Math.min(base + 1.7, H - 3.2); m.position.set(sx, yS, sz); m.lookAt(sx + ux * e, yS, sz + uz * e); scene.add(m); } /* 모형: 동 번호는 갈색 저층부 바로 위 측벽 */
     YOFF = 0;
     /* 동 뒤(공동현관 쪽) 보행로(모형 VE08: 동을 따라 곧게 뻗은 회색 보도블록 길) — 단 높이가 같은 구간만 */
-    { const off = DEP / 2 + CORE_D + 3.2, pcx = cx - fx * off, pcz = cz - fz * off, y0 = levelAt(pcx, pcz), hl = L / 2 + 4, w = 1.4, ns = Math.ceil(hl * 2 / 3);
+    { const off = DEP / 2 + CORE_D + 3.6, pcx = cx - fx * off, pcz = cz - fz * off, y0 = levelAt(pcx, pcz), hl = L / 2 + ([118, 119].includes(D.d) ? 14 : 4), w = [118, 119].includes(D.d) ? 3 : 2, ns = Math.ceil(hl * 2 / 3);
       if (polyDist(SITE, pcx, pcz) < -3) for (let k = 0; k < ns; k++) { const a = -hl + k * hl * 2 / ns, b = a + hl * 2 / ns, mx = pcx + ux * (a + b) / 2, mz = pcz + uz * (a + b) / 2;
         if (Math.abs(levelAt(mx, mz) - y0) > .4 || polyDist(SITE, mx, mz) > -2) continue; const P = [pcx + ux * a, pcz + uz * a], Q = [pcx + ux * b, pcz + uz * b], y = y0 + .16;
         G.path.quad([P[0] + fx * w, y, P[1] + fz * w], [Q[0] + fx * w, y, Q[1] + fz * w], [Q[0] - fx * w, y, Q[1] - fz * w], [P[0] - fx * w, y, P[1] - fz * w], [0, 1, 0], [(P[0]) / 4, -P[1] / 4, Q[0] / 4, -Q[1] / 4, (Q[0] - fx * 2 * w) / 4, -(Q[1] - fz * 2 * w) / 4, (P[0] - fx * 2 * w) / 4, -(P[1] - fz * 2 * w) / 4]); } }
