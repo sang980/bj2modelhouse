@@ -1925,6 +1925,10 @@ function diningChair(parent, cx, cz, rot) { /* VR(55C): 크림색 가죽 파슨�
 }
 await yieldUI();
 // 식탁 모델 2종 — 둘 다 로컬 원점이 '평평한 끝' 가운데, 식탁은 로컬 -x 방향으로 뻗음(벽에 붙이기 쉽게)
+function tableRunner(g, L, w, top = .755) { /* 린넨 러너: 상판 길이만큼 + 양 끝은 모서리에서 접혀 0.15m 아래로 늘어짐(허공에 뻗지 않게) */
+  const m = std(0xd8ccb6, .95, 0, { map: M.navy.map }), t = .003, drop = .15;
+  mesh(BX(L, t, w), m, -L / 2, top + t / 2, 0, g, { cast: false });
+  for (const x of [t / 2 + .0005, -L - t / 2 - .0005]) mesh(BX(t, drop, w), m, x, top + t - drop / 2, 0, g, { cast: false }); }
 // 작은 식탁(현관장+복도팬트리 선택 시): 반타원 0.96m, 의자 3
 function diningSmall() {
   const g = piece('식탁(소형)', 0, 0, 0), L = 1.1, W = .78; /* VR: 흰 대리석 직사각 상판 + 가는 검은 다리, 양옆 2개씩 4인 */
@@ -1933,8 +1937,8 @@ function diningSmall() {
   for (const x of [-.04, -L + .04]) for (const z of [-W / 2 + .04, W / 2 - .04]) mesh(BX(.065, .715, .065), M.oak, x, .3575, z, g);
   // 복도 쪽(회전 π 후 로컬 -z) 의자는 식탁 밑으로 밀어 넣음
   for (const x of [-.3, -.8]) { diningChair(g, x, -.32, 0); diningChair(g, x, .56, Math.PI); }
-  for (const x of [-.3, -.8]) for (const pz of [-.2, .2]) { const m = mesh(BX(.34, .004, .28), std(0x8b6b4f, .85), x, .757, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); mesh(CY(.11, .1, .02, 30), M.whiteGloss, x, .768, pz, g); }
-  mesh(BX(L + .16, .003, .26), std(0xd8ccb6, .95, 0, { map: M.navy.map }), -L / 2, .7565, 0, g, { cast: false }); /* VR: 베이지 린넨 러너 */
+  for (const x of [-.3, -.8]) for (const pz of [-.2, .2]) { const m = mesh(BX(.34, .004, .28), std(0x8b6b4f, .85), x, .76, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); mesh(CY(.11, .1, .02, 30), M.whiteGloss, x, .768, pz, g); }
+  tableRunner(g, L, .26); /* VR: 베이지 린넨 러너(양 끝은 상판 모서리에서 접혀 늘어짐) */
   for (const x of [-.3, -.8]) for (const pz of [-.2, .2]) { const n = mesh(BX(.13, .01, .07), std(0xd9822b, .9), x + .01, .784, pz, g, { cast: false }); n.rotation.y = .5; } /* 접은 주황 냅킨 */
   tablePlant(g, -.55, .7525, 0);
   g.userData.len = L; return g;
@@ -1951,8 +1955,8 @@ function diningLarge() {
   const cx = [-.33, -.975, -1.62];
   for (const [k, x, z, r] of [['n1', cx[0], -.4, 0], ['n2', cx[1], -.4, 0], ['n3', cx[2], -.4, 0], ['s1', cx[0], .66, Math.PI], ['s2', cx[1], .66, Math.PI], ['s3', cx[2], .66, Math.PI]])
     g.userData.chairs[k] = diningChair(g, x, z, r);
-  for (const px of cx) for (const pz of [-.24, .24]) { const m = mesh(BX(.34, .004, .28), std(0x8b6b4f, .85), px, .757, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); mesh(CY(.1, .09, .02, 30), M.whiteGloss, px, .768, pz, g); }
-  mesh(BX(L + .16, .003, .28), std(0xd8ccb6, .95, 0, { map: M.navy.map }), -L / 2, .7565, 0, g, { cast: false }); /* VR: 베이지 린넨 러너 */
+  for (const px of cx) for (const pz of [-.24, .24]) { const m = mesh(BX(.34, .004, .28), std(0x8b6b4f, .85), px, .76, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); mesh(CY(.1, .09, .02, 30), M.whiteGloss, px, .768, pz, g); }
+  tableRunner(g, L, .28); /* VR: 베이지 린넨 러너(양 끝은 상판 모서리에서 접혀 늘어짐) */
   for (const px of cx) for (const pz of [-.24, .24]) { const n = mesh(BX(.13, .01, .07), std(0xd9822b, .9), px + .01, .784, pz, g, { cast: false }); n.rotation.y = .5; } /* 접은 주황 냅킨 */
   tablePlant(g, -.975, .755, 0);
   g.userData.len = L; return g;
