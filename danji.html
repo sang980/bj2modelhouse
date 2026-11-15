@@ -661,7 +661,10 @@ function paintEnv(g, env, P, px) {
   g.lineJoin = 'round'; g.lineCap = 'round';
   const LAND = { residential: 'rgba(170,166,158,.45)', commercial: 'rgba(160,158,154,.55)', retail: 'rgba(160,158,154,.55)', industrial: 'rgba(150,152,150,.6)', construction: 'rgba(166,148,120,.75)',
     school: '#c9b99b', education: '#c9b99b', university: '#cbbfa6', college: '#cbbfa6', parking: '#8c8e91', pitch: '#86a066', military: 'rgba(130,150,110,.5)', railway: 'rgba(150,146,138,.6)' };
-  for (const l of env.land || []) if (LAND[l.k] && !(l.k === 'construction' && /성남복정2/.test(l.n || ''))) fill(l.p, l.k === 'residential' && l.n && /아파트|단지|포레스티아|자이|푸르지오|위브|힐스테이트|센트리빌|아이파크|주공|타운/.test(l.n) ? 'rgba(112,142,96,.85)' : l.k === 'school' || l.k === 'education' ? '#b9b2a2' : LAND[l.k]); /* 아파트 단지 안은 조경 녹지 */
+  for (const l of env.land || []) if (LAND[l.k] && !(l.k === 'construction' && /성남복정2/.test(l.n || ''))) fill(l.p, (l.k === 'residential' && l.n && /아파트|단지|포레스티아|자이|푸르지오|위브|힐스테이트|센트리빌|아이파크|주공|타운/.test(l.n)) || (l.k === 'construction' && /해링턴스퀘어|상대원2구역|공동주택|엘리프|에듀포레|주상복합/.test(l.n || '')) ? 'rgba(112,142,96,.85)' : l.k === 'school' || l.k === 'education' ? '#b9b2a2' : LAND[l.k]); /* 아파트 단지 안은 조경 녹지 */
+  if (GEO.bld) { const B = GEO.bld; let i = 0; g.fillStyle = 'rgba(112,142,96,.42)'; /* OSM에 단지 경계가 없는 아파트: 동 둘레 조경 녹지(이웃 동과 이어지게 넉넉히) */
+    while (i < B.length) { const kind = B[i], lv = B[i + 1], np = B[i + 4]; i += 5; let cx = 0, cz = 0, x0 = 1e9, x1 = -1e9; for (let k = 0; k < np; k++) { const x = B[i] * .2, z = B[i + 1] * .2; cx += x; cz += z; x0 = Math.min(x0, x); x1 = Math.max(x1, x); i += 2; } cx /= np; cz /= np;
+      if (kind !== 1 || lv < 8 || Math.hypot(cx, cz - 15) > 2600) continue; const r = P(cx, cz), rad = Math.max(26, Math.min(48, (x1 - x0) * 1.1 + 16)) * px; g.beginPath(); g.arc(r[0], r[1], rad, 0, 7); g.fill(); } }
   for (const l of env.land || []) if (l.k === 'pitch') fill(l.p, /여자중|초등/.test(l.n || '') || l.p.some(p => Math.hypot(p[0] - 30, p[1] - 170) < 120) ? '#bba98c' : '#86a066'); /* 학교 운동장은 흙 */
   for (const gr of env.green || []) if (gr.k === 'park') fill(gr.p, 'rgba(118,150,90,.85)');
   for (const w of env.water || []) if (!w.line) fill(w.p, '#5b7c88');
@@ -878,7 +881,7 @@ function buildYard() {
     else { tower(-3, 0, 'y'); swing(4, 0); } }
   for (const [k, c] of [['r', '#d9533b'], ['y', '#f0c33c'], ['b', '#3d7fc1'], ['w', '#f1f0ec']]) { const m = new THREE.Mesh(PL[k].build(), new THREE.MeshStandardMaterial({ color: c, roughness: .6 })); m.castShadow = true; scene.add(m); }
   /* 주차1(모형·위성사진 '주차장용지'): 진입광장 옹벽 아래, 공원로와 성남여중 사이 — 짙은 아스팔트 + 흰 주차칸(8m 한 장 = 2.5m 칸 × 5m + 3m 통로) */
-  if (GEO.ok) { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#3d4044'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 2500; i++) { const v = (rand() - .5) * .12; g.fillStyle = v > 0 ? `rgba(255,255,255,${v})` : `rgba(0,0,0,${-v})`; g.fillRect(rand() * 256, rand() * 256, 2, 2); }
+  if (GEO.ok) { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#565a5e'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 2500; i++) { const v = (rand() - .5) * .12; g.fillStyle = v > 0 ? `rgba(255,255,255,${v})` : `rgba(0,0,0,${-v})`; g.fillRect(rand() * 256, rand() * 256, 2, 2); }
     g.fillStyle = 'rgba(225,225,220,.55)'; for (let x = 0; x < 256; x += 80) g.fillRect(x, 0, 2, 160); g.fillRect(0, 158, 256, 2);
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO;
     drapePoly([[-100, 101], [-70, 95], [-56, 101], [-50, 116], [-58, 131], [-80, 139], [-98, 124]], new THREE.MeshLambertMaterial({ map: t, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }), .25); }
@@ -1238,13 +1241,18 @@ function buildOSM() {
   for (const r of (GEO.env && GEO.env.roads) || []) { if (r.t === 1 || /^(footway|path|steps|track)$/.test(r.k)) continue; og.lineWidth = (r.w + 2) / ORS; og.beginPath(); r.p.forEach((p, k) => { const X = (p[0] + OE) / ORS, Z = (p[1] + OE) / ORS; k ? og.lineTo(X, Z) : og.moveTo(X, Z); }); og.stroke(); }
   { const d = og.getImageData(0, 0, ON, ON).data, a = new Uint8Array(ON * ON); for (let k = 0; k < a.length; k++) a[k] = d[k * 4 + 3] > 60 ? 1 : 0; OCC = { E: OE, r: ORS, n: ON, a }; ocv.width = ocv.height = 1; }
   /* 아파트 단지·공원 조경수: 이름 있는 주거단지와 공원 안 빈 땅(건물·도로 자리는 뺌) */
-  if (GEO.env) { const polys = []; for (const l of GEO.env.land || []) if (l.k === 'residential' && l.n) polys.push([l.p, /포레스티아/.test(l.n) ? 34 : 70]); /* 위성사진: 포레스티아는 동 사이가 나무로 빽빽 */ for (const gr of GEO.env.green || []) if (gr.k === 'park') polys.push([gr.p, 150]);
+  if (GEO.env) { const polys = []; for (const l of GEO.env.land || []) if ((l.k === 'residential' && l.n) || (l.k === 'construction' && /해링턴스퀘어|상대원2구역|공동주택|엘리프|에듀포레/.test(l.n || ''))) polys.push([l.p, /포레스티아/.test(l.n) ? 34 : 70]); /* 아파트를 세운 공사 부지도 준공 단지처럼 조경 */ /* 위성사진: 포레스티아는 동 사이가 나무로 빽빽 */ for (const gr of GEO.env.green || []) if (gr.k === 'park') polys.push([gr.p, 150]);
     for (const [p, per] of polys) { let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const q of p) { x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); z0 = Math.min(z0, q[1]); z1 = Math.max(z1, q[1]); }
       if (Math.hypot((x0 + x1) / 2, (z0 + z1) / 2 - 15) > 1600 || (x1 - x0) * (z1 - z0) > 1.5e6) continue;
       let A = 0; for (let k = 0; k < p.length; k++) { const a = p[k], b = p[(k + 1) % p.length]; A += a[0] * b[1] - b[0] * a[1]; }
       const cntT = Math.min(2600, Math.abs(A) / 2 / per | 0);
       for (let k = 0; k < cntT * 2; k++) { const x = x0 + rand() * (x1 - x0), z = z0 + rand() * (z1 - z0); if (polyDist(p, x, z) > -1.5 || polyDist(SITE, x, z) < 5) continue;
         if (occAt(x, z) || occAt(x + 2, z) || occAt(x - 2, z) || occAt(x, z + 2) || occAt(x, z - 2)) continue; extraTrees.push([x, heightAt(x, z) - .3, z, 1.9 + rand() * 1.5, 3]); } }
+    { const B = GEO.bld; let i = 0, nT = 0; const named = polys.map(q => q[0]); /* 단지 경계 없는 아파트 동 둘레 조경수 */
+      while (i < B.length) { const kind = B[i], lv = B[i + 1], np = B[i + 4]; i += 5; let cx = 0, cz = 0; for (let k = 0; k < np; k++) { cx += B[i] * .2; cz += B[i + 1] * .2; i += 2; } cx /= np; cz /= np;
+        if (kind !== 1 || lv < 8 || Math.hypot(cx, cz - 15) > 1600 || polyDist(SITE, cx, cz) < 30 || named.some(p => inPoly(p, cx, cz))) continue;
+        for (let k = 0; k < 30; k++) { const a = rand() * 6.283, rr2 = 11 + rand() * 24, x = cx + Math.cos(a) * rr2, z = cz + Math.sin(a) * rr2; if (occAt(x, z) || occAt(x + 2, z) || occAt(x - 2, z) || occAt(x, z + 2) || occAt(x, z - 2)) continue; extraTrees.push([x, heightAt(x, z) - .3, z, 1.9 + rand() * 1.4, 3]); nT++; } }
+      console.log('apt ring trees', nT); }
     /* 단지 이름표(OSM 주거단지 이름) */
     const labs = []; for (const l of GEO.env.land || []) { if (l.k !== 'residential' || !l.n || !/아파트|단지|자이|푸르지오|포레스티아|위브|센트리빌|아이파크|힐스테이트|래미안|편한세상|캐슬|호반|더샵|주공|타운/.test(l.n) || /빌라|연립|빌리지/.test(l.n)) continue;
       let A = 0, x = 0, z = 0; for (let k = 0; k < l.p.length; k++) { const a = l.p[k], b = l.p[(k + 1) % l.p.length], c2 = a[0] * b[1] - b[0] * a[1]; A += c2; x += (a[0] + b[0]) * c2; z += (a[1] + b[1]) * c2; }
