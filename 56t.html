@@ -751,7 +751,7 @@ function wallArt(parent, o) {
   if (shadow) { const sp = mesh(new THREE.PlaneGeometry(w * 1.16 + .03, h * 1.14 + .03), new THREE.MeshBasicMaterial({ map: afShadowTex(), transparent: true, opacity: shadowOp, depthWrite: false, toneMapped: false, color: 0x000000 }), .004, -.012 - h * .015, .0015, g, { cast: false, recv: false }); sp.renderOrder = 1; }
   if (!frame) { /* 테 없는 캔버스 그림: 앞면 그림 + 옆면(캔버스 감싼 색) */
     const sideM = std(edge, .85), front = std(0xffffff, .78, 0, { map: afArtTex(art, w, h, 0, matColor, fit) });
-    mesh(RB(w, h, d, .003, 2), sideM, 0, 0, d / 2, g, { cast: false }); mesh(new THREE.PlaneGeometry(w - .004, h - .004), front, 0, 0, d + .0006, g, { cast: false }); return g; }
+    mesh(RB(w, h, d, .003, 2), sideM, 0, 0, d / 2, g, { cast: false }); mesh(new THREE.PlaneGeometry(w - .004, h - .004), front, 0, 0, d + .002, g, { cast: false }); return g; } /* 상자 앞면과 2mm 띄움(같은 면이면 멀리서 깜빡임) */
   const r = Math.min(.005, fw * .22, d * .3), li = Math.max(.004, Math.min(.008, fw * .25)), bar = (bw, bh, bd, px, py, pz) => mesh(RB(bw, bh, bd, r, 2), frame, px, py, pz, g, { cast: false });
   bar(w, fw, d, 0, h / 2 - fw / 2, d / 2); bar(w, fw, d, 0, -h / 2 + fw / 2, d / 2); bar(fw, h - 2 * fw + .002, d, -w / 2 + fw / 2, 0, d / 2); bar(fw, h - 2 * fw + .002, d, w / 2 - fw / 2, 0, d / 2);
   const iw = w - 2 * fw, ih = h - 2 * fw, ld = d - .008; /* 안쪽 턱: 테 앞면보다 8mm 낮은 한 단 — 단면이 계단처럼 보이게 */
@@ -1569,9 +1569,8 @@ await phase('거실을 꾸미는 중', 56);
 }
 // ── 복도: 백라이트 액자(현관에서 들어오며 보이는 벽 — 침실2·알파룸 문 사이) ──
 { const g = fixed, z = 5.26;
-  const art = toTex((() => { const c = mkCanvas(270, 256), c2 = c.getContext('2d'); c2.fillStyle = '#f2efe8'; c2.fillRect(0, 0, 270, 256); c2.fillStyle = '#a77a4c'; c2.beginPath(); c2.moveTo(0, 150); c2.lineTo(0, 200); c2.lineTo(120, 170); c2.lineTo(150, 60); c2.lineTo(270, 70); c2.lineTo(270, 30); c2.lineTo(140, 25); c2.lineTo(105, 140); c2.fill(); return c; })());
-  pbox(3.1, 4.05, 1.0, 2.0, z - .03, z, std(0xc8a57a, .5), g);
-  pbox(3.13, 4.02, 1.03, 1.97, z - .034, z - .03, std(0xffffff, .9, 0, { map: art }), g, { cast: false });
+  const art = toTex((() => { const c = mkCanvas(810, 768), c2 = c.getContext('2d'); c2.scale(3, 3); c2.fillStyle = '#f2efe8'; /* 3배 해상도 */ c2.fillRect(0, 0, 270, 256); c2.fillStyle = '#a77a4c'; c2.beginPath(); c2.moveTo(0, 150); c2.lineTo(0, 200); c2.lineTo(120, 170); c2.lineTo(150, 60); c2.lineTo(270, 70); c2.lineTo(270, 30); c2.lineTo(140, 25); c2.lineTo(105, 140); c2.fill(); return c; })());
+  wallArt(g, { cx: 3.575, cy: 1.5, cz: z, nx: 0, nz: -1, w: .95, h: 1.0, fw: .03, d: .036, frame: std(0xc8a57a, .5), mat: 0, art, glass: false, shadow: false }); /* 원목 테(턱 있는 단면) — 뒤 간접광은 그대로 */
   ledRectWall(3.575, 1.5, z - .05, .9, 1.0, 0, -1, 0xffe2bd, .3, .8);
 }
 // ── 현관(VR): 신발장(서쪽, 문은 현관 쪽) — 블랙 테 전신거울 문 3짝 + 평판등 ──
@@ -1703,19 +1702,19 @@ await phase('침실을 꾸미는 중', 66);
   mesh(hg, std(0xf6f4ef, .6), WX(x), .3, WZ(6.6), g);
   { const lw = std(0xe6d3b3, .55, 0, { map: M.linen.map }); mesh(RB(.045, .8, 1.76, .012), lw, WX(9.005), .58, WZ(6.6), g); /* VR: 흰 박공 패널 앞, 베개 뒤 밝은 원목 사각 헤드보드(원목 테두리 없음) */
     const t = piece('협탁', 9.12, 7.68, 0); mesh(BX(.38, .025, .38), lw, 0, .4875, 0, t); for (const s of [-1, 1]) mesh(BX(.38, .475, .02), lw, 0, .2375, s * .18, t); mesh(BX(.02, .475, .34), lw, -.18, .2375, 0, t); mesh(BX(.36, .02, .34), lw, 0, .05, 0, t); mesh(BX(.34, .018, .34), lw, .01, .27, 0, t); mesh(BX(.36, .03, .34), std(0xcfb998, .6, 0, { map: M.linen.map }), 0, .015, 0, t); } /* VR: 창 쪽 밝은 원목 오픈 협탁 */
-  const ab = k => toTex((() => { const c = mkCanvas(200, 200), q = c.getContext('2d'); q.fillStyle = '#f4f3ef'; q.fillRect(0, 0, 200, 200); q.strokeStyle = q.fillStyle = '#121212'; q.lineCap = 'butt'; /* VR: 굵은 먹 막대 + 먹 덩어리 추상화(마른 붓 자국) */
+  const ab = k => toTex((() => { const c = mkCanvas(600, 600), q = c.getContext('2d'); q.scale(3, 3); q.fillStyle = '#f4f3ef'; /* 3배 해상도 */ q.fillRect(0, 0, 200, 200); q.strokeStyle = q.fillStyle = '#121212'; q.lineCap = 'butt'; /* VR: 굵은 먹 막대 + 먹 덩어리 추상화(마른 붓 자국) */
     const S = k ? [[40, 176, 110, 24, 30], [110, 24, 150, 176, 22], [55, 110, 180, 100, 24], [30, 58, 96, 76, 10]] : [[52, 20, 58, 180, 30], [40, 48, 165, 40, 22], [120, 60, 170, 130, 10]], P = k ? [[120, 120], [175, 112], [180, 160], [128, 170]] : [[70, 110], [150, 98], [160, 150], [84, 162]];
     q.beginPath(); P.forEach(([px, py], i) => i ? q.lineTo(px, py) : q.moveTo(px, py)); q.closePath(); q.fill(); P.forEach((pt, i) => { const nx2 = P[(i + 1) % 4]; S.push([pt[0], pt[1], nx2[0], nx2[1], 9]); });
     for (const [x0, y0, x1, y1, w] of S) { const dx = x1 - x0, dy = y1 - y0, l = Math.hypot(dx, dy), nx = -dy / l, ny = dx / l;
       q.globalAlpha = 1; q.lineWidth = w * .75; q.beginPath(); q.moveTo(x0 + dx * .04, y0 + dy * .04); q.lineTo(x1 - dx * .05, y1 - dy * .05); q.stroke();
       for (let s = 0; s < 26; s++) { const o = (rnd() - .5) * w, a = rnd() * .1, e = 1 - rnd() * .12; q.globalAlpha = .3 + rnd() * .6; q.lineWidth = 1 + rnd() * 2.5; q.beginPath(); q.moveTo(x0 + dx * a + nx * o, y0 + dy * a + ny * o); q.lineTo(x0 + dx * e + nx * o, y0 + dy * e + ny * o); q.stroke(); } }
     return c; })());
-  { const fm = std(0x4f5256, .4, .5); for (const [z, k] of [[6.27, 0], [6.93, 1]]) { pbox(x, x + .008, 1.635, 2.105, z - .235, z + .235, std(0xffffff, .9, 0, { map: ab(k) }), g, { cast: false }); for (const [y0, y1, z0, z1] of [[2.105, 2.12, z - .25, z + .25], [1.62, 1.635, z - .25, z + .25], [1.62, 2.12, z - .25, z - .235], [1.62, 2.12, z + .235, z + .25]]) pbox(x, x + .04, y0, y1, z0, z1, fm, g); } } /* VR: 가는 짙은 회색 금속 액자(깊은 박스형) 2 */
-  const txt = toTex((() => { const c = mkCanvas(256, 224), q = c.getContext('2d'); q.fillStyle = '#f7f6f2'; q.fillRect(0, 0, 256, 224); q.fillStyle = '#e8e5de'; q.fillRect(34, 30, 188, 164); /* VR: 흰 매트 + 연회색 바탕에 흐린 손글씨 줄 추상화 */
+  { const fm = std(0x4f5256, .4, .5); for (const [z, k] of [[6.27, 0], [6.93, 1]]) wallArt(g, { cx: x, cy: 1.87, cz: z, nx: 1, nz: 0, w: .5, h: .5, fw: .015, d: .04, frame: fm, mat: 0, art: ab(k) }); } /* 가는 짙은 회색 금속 박스 액자 + 유리 + 벽 그림자 */ /* VR: 가는 짙은 회색 금속 액자(깊은 박스형) 2 */
+  const txt = toTex((() => { const c = mkCanvas(768, 672), q = c.getContext('2d'); q.scale(3, 3); q.fillStyle = '#f7f6f2'; q.fillRect(0, 0, 256, 224); q.fillStyle = '#e8e5de'; q.fillRect(34, 30, 188, 164); /* VR: 흰 매트 + 연회색 바탕에 흐린 손글씨 줄 추상화 */
     q.strokeStyle = 'rgba(120,112,100,.75)'; q.lineCap = 'round'; for (let r = 0; r < 11; r++) { let px = 48 + rnd() * 10; const py = 50 + r * 12.5; q.lineWidth = .8 + rnd() * .9; q.beginPath(); q.moveTo(px, py);
       while (px < 206 - rnd() * 30) { const w = 3 + rnd() * 5; q.quadraticCurveTo(px + w * .5, py - 3 - rnd() * 4, px + w, py + (rnd() - .5) * 2); px += w; if (rnd() < .12) { px += 4 + rnd() * 6; q.moveTo(px, py); } } q.stroke(); }
     q.strokeStyle = 'rgba(0,0,0,.06)'; q.lineWidth = 2; q.strokeRect(34, 30, 188, 164); return c; })());
-  pbox(12.18, 12.21, 1.15, 1.85, 5.9, 6.7, std(0xe9d8b8, .5, 0, { map: M.linen.map }), g); pbox(12.175, 12.18, 1.18, 1.82, 5.93, 6.67, std(0xffffff, .9, 0, { map: txt }), g, { cast: false }); /* VR: 큰 밝은 원목 액자(0.8 × 0.7m) */
+  wallArt(g, { cx: 12.21, cy: 1.5, cz: 6.3, nx: -1, nz: 0, w: .8, h: .7, fw: .03, d: .035, frame: std(0xe9d8b8, .5, 0, { map: M.linen.map }), mat: 0, art: txt }); /* VR: 큰 밝은 원목 액자(0.8 × 0.7m) */
   curtain(9.2, 9.75, 8.02, 2.27, fixed, M.sheer); curtain(11.05, 11.6, 8.02, 2.27, fixed, M.sheer);
   { const cr = M.sheer.clone(); cr.color.set(0xe9dfc8); cr.opacity = Math.min(1, (cr.opacity || 1) + .15); curtain(9.2, 9.6, 7.94, 2.27, fixed, cr, 9, .045); curtain(11.2, 11.6, 7.94, 2.27, fixed, cr, 9, .045); } /* VR: 방 쪽 겹은 크림색, 창 쪽은 흰 속커튼 */
   pbox(8.97, 11.62, 2.3, H, 7.85, 8.09, M.ceil, fixed, { cast: false });
@@ -2121,10 +2120,10 @@ M.shag = (() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillSt
 { const lr = rug(6.85, 6.8, 0); lr.traverse(o => { if (o.isMesh) { o.material = M.shag; o.scale.y = 1.7; } }); }
 // (56T: 커피테이블은 아래 흰 타원형)
 // 거실(VR): 소파 위 연두색 선 그림 액자(흰 액자) + 흰 타원 커피테이블 + 연두·노랑 쿠션
-{ const art = toTex((() => { const c = mkCanvas(512, 300), x = c.getContext('2d'); x.fillStyle = '#f7f7f3'; x.fillRect(0, 0, 512, 300); // VR: 연두색 점이 소용돌이처럼 퍼지는 그림
+{ const art = toTex((() => { const c = mkCanvas(1536, 900), x = c.getContext('2d'); x.scale(3, 3); x.fillStyle = '#f7f7f3'; x.fillRect(0, 0, 512, 300); // VR: 연두색 점이 소용돌이처럼 퍼지는 그림
     for (let i = 0; i < 900; i++) { const a = i * .23, r = 4 + i * .2; const px = 150 + Math.cos(a) * r * 1.2 + (i > 500 ? (i - 500) * .45 : 0), py = 150 + Math.sin(a) * r * .55; if (px < 30 || px > 482 || py < 25 || py > 275) continue;
       x.fillStyle = ['#b8d23a', '#d6e27a', '#9cbf3a', '#e9eda6'][i % 4]; x.beginPath(); x.arc(px, py, 1.6 + (i % 3) * .8, 0, 7); x.fill(); } return c; })());
-  pbox(5.21, 5.25, 1.2, 1.9, 6.0, 7.5, std(0xc9cbcd, .3, .7), fixed); pbox(5.25, 5.255, 1.24, 1.86, 6.04, 7.46, std(0xffffff, .9, 0, { map: art }), fixed, { cast: false }); }
+  wallArt(fixed, { cx: 5.21, cy: 1.55, cz: 6.75, nx: 1, nz: 0, w: 1.5, h: .7, fw: .022, d: .04, frame: std(0xc9cbcd, .3, .7), mat: 0, art }); } /* 은색 테 + 유리 + 벽 그림자 */
 // VR 커피테이블: 두꺼운 흰 타원 상판 + 그 아래 연노랑 층 + 흰 받침, 위에 노란 화병 둥근 잎 화분 · 검은 책 2권 + 흰 커피잔
 function coffeeOvalT(x, z) { const g = piece('커피테이블', x, z, 0), w = std(0xf7f6f3, .3);
   const top = mesh(CY(.5, .5, .07, 56), w, 0, .37, 0, g); top.scale.set(.7, 1, 1.1);
@@ -2200,8 +2199,8 @@ const diningT = diningWhiteT(), diningT6 = diningWhiteT(1.95, 3); /* 기본형(�
     if (i === 3) { x.beginPath(); x.moveTo(40, 40); x.lineTo(44, 84); x.lineTo(80, 84); x.lineTo(84, 40); x.closePath(); x.stroke(); x.beginPath(); x.arc(90, 58, 9, -1.4, 1.4); x.stroke(); for (const sx of [52, 62, 72]) { x.beginPath(); x.moveTo(sx, 34); x.quadraticCurveTo(sx + 5, 26, sx, 18); x.stroke(); } }
     x.globalAlpha = .55; for (let k = 0; k < 3; k++) x.fillRect(22, 100 + k * 7 - (i === 2 ? 0 : 4), 50 - k * 12, 3); x.globalAlpha = 1; };
   for (let i = 0; i < 4; i++) { const r = i >> 1, c = i & 1, z = 3.33 + c * .222 + (i === 1 ? .004 : 0), y = 1.63 - r * .222 + (i === 1 ? .012 : 0); // 다용도실 문틀에서 떨어진 벽 가운데
-    const t = toTex((() => { const cv = mkCanvas(128, 128), x = cv.getContext('2d'); x.fillStyle = cols[i]; x.fillRect(0, 0, 128, 128); draw(i, x); return cv; })());
-    pbox(8.338, 8.35, y - .105, y + .105, z - .105, z + .105, std(0xffffff, .85, 0, { map: t }), fixed, { cast: false }); } }
+    const t = toTex((() => { const cv = mkCanvas(384, 384), x = cv.getContext('2d'); x.scale(3, 3); x.fillStyle = cols[i]; x.fillRect(0, 0, 128, 128); draw(i, x); return cv; })());
+    wallArt(fixed, { cx: 8.35, cy: y, cz: z, nx: -1, nz: 0, w: .21, h: .21, d: .012, frame: null, art: t, edge: 0xf4f2ec, shadowOp: .22 }); } } /* 두꺼운 카드(흰 옆면) + 벽 그림자 */
 diningB.position.set(WX(6.05), 0, WZ(3.1)); diningB.rotation.y = Math.PI; diningB.userData.home = { x: diningB.position.x, z: diningB.position.z, r: Math.PI };
 const diningPendB = new THREE.Group(); { const p = diningPendB; p.position.set(WX(7.0), 0, WZ(3.1)); fixed.add(p); // 식탁 펜던트
   // VR: 흰 돔(반구) 펜던트
@@ -2233,8 +2232,8 @@ const b2art = new THREE.Group(); fixed.add(b2art);
   bed2.traverse(o => { if (!o.isMesh) return; if (o.material === M.linen && (o.geometry.type === 'BufferGeometry' || o.geometry.type === 'CylinderGeometry')) o.material = qm; else if (o.material === M.throwBlue || o.geometry === lyingPil) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
   const stripe = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#f6f7f6'; x.fillRect(0, 0, 64, 64); x.fillStyle = '#6fb3d6'; for (let i = 0; i < 4; i++) x.fillRect(0, i * 16 + 3, 64, 8); return c; })());
   const L = 1.95; for (const [px, pz, ry, w, h, m, y] of [[-.22, .14, .07, .5, .42, std(0xd9cbb5, .95, 0, { map: M.linen.map }), .74], [.2, .2, -.1, .44, .34, std(0xffffff, .9, 0, { map: stripe }), .7], [-.02, .32, .05, .32, .22, std(0xf7f6f2, .95), .64]]) { const p = mesh(pillowG(w, h, .15), m, px, y, -L / 2 + pz, bed2); p.rotation.set(-.3, ry, 0); }
-  const dots = toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = '#f4f4f2'; x.fillRect(0, 0, 96, 128); x.fillStyle = '#7fcfc6'; x.fillRect(14, 16, 68, 92); x.fillStyle = '#e8b04a'; for (let i = 0; i < 9; i++) for (let j = 0; j < 12; j++) if ((i + j) % 2) { x.beginPath(); x.arc(20 + i * 7, 22 + j * 7, 2, 0, 7); x.fill(); } return c; })());
-  pbox(2.77, 2.8, 1.05, 1.75, 5.55, 6.1, std(0xdedcd7, .5), b2art); pbox(2.765, 2.77, 1.09, 1.71, 5.59, 6.06, std(0xffffff, .9, 0, { map: dots }), b2art, { cast: false }); }
+  const dots = toTex((() => { const c = mkCanvas(384, 512), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#f4f4f2'; x.fillRect(0, 0, 96, 128); x.fillStyle = '#7fcfc6'; x.fillRect(14, 16, 68, 92); x.fillStyle = '#e8b04a'; for (let i = 0; i < 9; i++) for (let j = 0; j < 12; j++) if ((i + j) % 2) { x.beginPath(); x.arc(20 + i * 7, 22 + j * 7, 2, 0, 7); x.fill(); } return c; })());
+  wallArt(b2art, { cx: 2.80, cy: 1.4, cz: 5.825, nx: -1, nz: 0, w: .55, h: .7, fw: .02, d: .03, frame: std(0xdedcd7, .5), mat: 0, art: dots }); }
 /* VR(56T 침실2): 침대 머리 쪽 벽 옆 흰 파슨스 책상 + 흑백 사진 액자 2 + 작은 책, 흰 셸 의자, 위 흰 벽선반 2단(장식 공 2 / 작은 화분 2) — 책상과 함께 움직임 */
 const desk2T = piece('책상', .42, 6.4, Math.PI / 2); /* 북쪽 벽 붙박이장(옵션 8) 자리와 겹치지 않게 */
 { const d = desk2T, wt = std(0xf6f5f2, .4);
@@ -2269,7 +2268,7 @@ const kidBed = piece('원목 아이 침대', 4.0, 7.48, Math.PI / 2); // 창 쪽
   { const p = mesh(pillowG(.42, .32, .14), std(0xa6d23f, .95), .26, .7, -L / 2 + .16, g); p.rotation.set(-.25, -.15, 0); } }
 const dartG = new THREE.Group(); fixed.add(dartG); // 다트판: 기본(분리)일 때만 — 1-1 통합·1-2 꺾음이면 뺌
 const alphaPosters = {};
-{ const poster = (bg, draw) => toTex((() => { const c = mkCanvas(192, 256), x = c.getContext('2d'); x.fillStyle = bg; x.fillRect(0, 0, 192, 256); draw(x); return c; })());
+{ const poster = (bg, draw) => toTex((() => { const c = mkCanvas(576, 768), x = c.getContext('2d'); x.scale(3, 3); x.fillStyle = bg; x.fillRect(0, 0, 192, 256); draw(x); return c; })());
   const ell = (x, cx, cy, rx, ry, col) => { x.fillStyle = col; x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 7); x.fill(); };
   const monkey = poster('#86b83e', x => { /* VR: 초록 바탕 — 줄에 매달린 바나나 아래 원숭이 얼굴 */
     x.strokeStyle = '#f4f1e6'; x.lineWidth = 2; x.beginPath(); x.moveTo(96, 0); x.lineTo(96, 40); x.stroke();
@@ -2285,7 +2284,7 @@ const alphaPosters = {};
     x.fillStyle = '#f4c23a'; x.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, r = k % 2 ? 4 : 9; x.lineTo(98 + Math.cos(a) * r, 30 + Math.sin(a) * r); } x.fill();
     x.fillStyle = '#f3efe4'; x.fillRect(0, 236, 192, 20); });
   // 포스터: 문틀(x 4.3)에 겹치지 않게 조금 왼쪽으로. 1-2 꺾음이면 문 쪽 벽이 x 3.48까지 오므로 원숭이 포스터만 오른쪽으로 옮기고 코뿔소는 뺌(applyOptions)
-  for (const [x0, tex, key] of [[3.15, monkey, 'm'], [3.78, rhino, 'r']]) { const pg = new THREE.Group(); fixed.add(pg); alphaPosters[key] = pg; pbox(x0, x0 + .5, 1.15, 1.8, 5.38, 5.405, std(0x2b2b2d, .45), pg); pbox(x0 + .012, x0 + .488, 1.162, 1.788, 5.405, 5.41, std(0xffffff, .9, 0, { map: tex }), pg, { cast: false }); } /* VR: 얇은 검정 액자 */
+  for (const [x0, tex, key] of [[3.15, monkey, 'm'], [3.78, rhino, 'r']]) { const pg = new THREE.Group(); fixed.add(pg); alphaPosters[key] = pg; wallArt(pg, { cx: x0 + .25, cy: 1.605, cz: 5.38, /* 문 옆 스위치(높이 1.2) 위로 13cm 올림 — 유리 속으로 스위치가 비치지 않게 */ nx: 0, nz: 1, w: .5, h: .65, fw: .012, d: .022, frame: std(0x2b2b2d, .45), mat: 0, art: tex }); } /* 얇은 검정 테 + 유리 + 벽 그림자 */ /* VR: 얇은 검정 액자 */
   /* VR: 전자 다트기 — 크림색 몸통(위 둥근 아치) + 노랑·검정 판 + 아래 파란 점수 화면·버튼 */
   const dart = toTex((() => { const c = mkCanvas(256, 256), x = c.getContext('2d'), C = 128; x.fillStyle = '#efe7cf'; x.fillRect(0, 0, 256, 256);
     x.fillStyle = '#2a2a2a'; x.beginPath(); x.arc(C, C, 112, 0, 7); x.fill();
