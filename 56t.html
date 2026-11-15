@@ -1958,7 +1958,7 @@ function bed(x, z, rot, w = 1.6, l = 2.1, name = '침대', headTall = false) {
   mesh(RB(w + .06, .26, l, .02), M.oak, 0, .13, 0, g);
   mesh(RB(w, .24, l - .06, .06), M.linen, 0, .38, .02, g);
   drapeCloth(g, { hx: w / 2 + .02, z0: -l * .16, z1: l / 2 - .01, top: .54, hang: .2, foot: .18, r: .06, th: .04, mat: M.linen, seed: w * 7 }); /* 이불: 옆·발치로 둥글게 흘러내림 */
-  { const f = mesh(CY(.028, .028, w - .02, 20), M.linen, 0, .525, -l * .16, g); f.rotation.z = Math.PI / 2; } /* 접힌 이불 윗단 */
+  { const hw = w / 2 - .05, pts = []; for (let i = 0; i <= 24; i++) { const t = i / 24 * 2 - 1; pts.push(new THREE.Vector2(.028 * Math.sqrt(Math.max(0, 1 - Math.pow(Math.abs(t), 6))), t * hw)); } const f = mesh(new THREE.LatheGeometry(pts, 20), M.linen, 0, .525, -l * .16, g); f.rotation.z = Math.PI / 2; } /* 접힌 이불 윗단: 양 끝을 둥글게 오므려 옆으로 삐져나오지 않게 */
   drapeCloth(g, { hx: w / 2 + .04, z0: l / 2 - .75, z1: l / 2 - .14, top: .56, hang: .25, r: .08, th: .008, mat: M.throwBlue, nz: 24, wr: .008, seed: w * 3 + 1 }); /* 발치 러너(담요) */
   if (headTall) mesh(RB(w + .06, .9, .06, .02), M.oak, 0, .45, -l / 2 - .02, g);
   const pw = w > 1.2 ? 2 : 1;
