@@ -1657,10 +1657,13 @@ await phase('침실을 꾸미는 중', 66);
       for (let s = 0; s < 26; s++) { const o = (rnd() - .5) * w, a = rnd() * .1, e = 1 - rnd() * .12; q.globalAlpha = .3 + rnd() * .6; q.lineWidth = 1 + rnd() * 2.5; q.beginPath(); q.moveTo(x0 + dx * a + nx * o, y0 + dy * a + ny * o); q.lineTo(x0 + dx * e + nx * o, y0 + dy * e + ny * o); q.stroke(); } }
     return c; })());
   { const fm = std(0x4f5256, .4, .5); for (const [z, k] of [[6.27, 0], [6.93, 1]]) { pbox(x, x + .008, 1.635, 2.105, z - .235, z + .235, std(0xffffff, .9, 0, { map: ab(k) }), g, { cast: false }); for (const [y0, y1, z0, z1] of [[2.105, 2.12, z - .25, z + .25], [1.62, 1.635, z - .25, z + .25], [1.62, 2.12, z - .25, z - .235], [1.62, 2.12, z + .235, z + .25]]) pbox(x, x + .04, y0, y1, z0, z1, fm, g); } } /* VR: 가는 짙은 회색 금속 액자(깊은 박스형) 2 */
-  const txt = toTex((() => { const c = mkCanvas(128, 128), q = c.getContext('2d'); q.fillStyle = '#f4f1ea'; q.fillRect(0, 0, 128, 128); q.fillStyle = '#8b8378'; for (let i = 0; i < 9; i++) q.fillRect(26, 28 + i * 8, 76 - (i % 3) * 10, 3); return c; })());
-  pbox(12.18, 12.21, 1.25, 1.85, 6.0, 6.6, std(0xdcd3c4, .5), g); pbox(12.175, 12.18, 1.29, 1.81, 6.04, 6.56, std(0xffffff, .9, 0, { map: txt }), g, { cast: false });
+  const txt = toTex((() => { const c = mkCanvas(256, 224), q = c.getContext('2d'); q.fillStyle = '#f7f6f2'; q.fillRect(0, 0, 256, 224); q.fillStyle = '#e8e5de'; q.fillRect(34, 30, 188, 164); /* VR: 흰 매트 + 연회색 바탕에 흐린 손글씨 줄 추상화 */
+    q.strokeStyle = 'rgba(120,112,100,.75)'; q.lineCap = 'round'; for (let r = 0; r < 11; r++) { let px = 48 + rnd() * 10; const py = 50 + r * 12.5; q.lineWidth = .8 + rnd() * .9; q.beginPath(); q.moveTo(px, py);
+      while (px < 206 - rnd() * 30) { const w = 3 + rnd() * 5; q.quadraticCurveTo(px + w * .5, py - 3 - rnd() * 4, px + w, py + (rnd() - .5) * 2); px += w; if (rnd() < .12) { px += 4 + rnd() * 6; q.moveTo(px, py); } } q.stroke(); }
+    q.strokeStyle = 'rgba(0,0,0,.06)'; q.lineWidth = 2; q.strokeRect(34, 30, 188, 164); return c; })());
+  pbox(12.18, 12.21, 1.15, 1.85, 5.9, 6.7, std(0xe9d8b8, .5, 0, { map: M.linen.map }), g); pbox(12.175, 12.18, 1.18, 1.82, 5.93, 6.67, std(0xffffff, .9, 0, { map: txt }), g, { cast: false }); /* VR: 큰 밝은 원목 액자(0.8 × 0.7m) */
   curtain(9.2, 9.75, 8.02, 2.27, fixed, M.sheer); curtain(11.05, 11.6, 8.02, 2.27, fixed, M.sheer);
-  curtain(9.2, 9.6, 7.94, 2.27, fixed, M.sheer, 9, .045); curtain(11.2, 11.6, 7.94, 2.27, fixed, M.sheer, 9, .045);
+  { const cr = M.sheer.clone(); cr.color.set(0xe9dfc8); cr.opacity = Math.min(1, (cr.opacity || 1) + .15); curtain(9.2, 9.6, 7.94, 2.27, fixed, cr, 9, .045); curtain(11.2, 11.6, 7.94, 2.27, fixed, cr, 9, .045); } /* VR: 방 쪽 겹은 크림색, 창 쪽은 흰 속커튼 */
   pbox(8.97, 11.62, 2.3, H, 7.85, 8.09, M.ceil, fixed, { cast: false });
   ceilingPanel(10.1, 10.8, 6.2, 6.9, 1.0, 2.8);
   { const wf = std(0xeadbc0, .5, 0, { map: M.linen.map }); for (const [a, b, c, d] of [[10.07, 10.83, 6.17, 6.2], [10.07, 10.83, 6.9, 6.93], [10.07, 10.1, 6.2, 6.9], [10.8, 10.83, 6.2, 6.9]]) pbox(a, b, H - .045, H - .003, c, d, wf, ceilingGroup, { cast: false }); } /* VR: 평판등 원목 테두리 */
