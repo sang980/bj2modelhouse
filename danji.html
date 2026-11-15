@@ -853,8 +853,9 @@ function buildDong(D, G, MAT) {
       /* (모형: 옥탑 기계실이 태양광 캐노피 뒤에 낮게 숨어 보이지 않음) */
       /* 공동현관: 코어 뒤쪽 캐노피 + 유리문 */
       const ex = ccx - fx * (CORE_D / 2 + 1.1), ez = ccz - fz * (CORE_D / 2 + 1.1);
-      obox(ex, ez, ux, uz, 4.2, 2.2, yBackR + 3.0, yBackR + 3.25, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.fin } });
-      obox(ccx - fx * (CORE_D / 2 + .02), ccz - fz * (CORE_D / 2 + .02), ux, uz, 2.4, .04, yBackR, yBackR + 2.6, { back: { gb: G.fin } }); }
+      /* 공동현관(모형 VE22·VE24): 코어 뒤로 튀어나온 작은 밝은 회색 상자 + 짙은 문 */
+      obox(ex, ez, ux, uz, 4.4, 2.4, yBackR - .1, yBackR + 3.3, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } });
+      obox(ex - fx * 1.22, ez - fz * 1.22, ux, uz, 2.2, .04, yBackR, yBackR + 2.5, { back: { gb: G.fin } }); }
     /* 테라스(56T): 테라스 층 앞 포디움(낮은 단 ~ 테라스 바닥) — 앞 옹벽까지, 위는 옥상정원 */
     if (t) { const dep = Math.max(3.8, (dW || DEP / 2 + 3.8) - DEP / 2), ox = DEP / 2 + dep / 2, F = (gb, uv) => ({ gb, uv });
       /* 도장 옹벽(아래 단 ~ 테라스 바닥) + 테라스 바닥 */
