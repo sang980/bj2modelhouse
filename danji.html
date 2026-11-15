@@ -1205,7 +1205,7 @@ function buildAmenities(MAT) {
     const aGl = am(g => { g.fillStyle = '#8e9396'; g.fillRect(0, 0, 512, 256); glass(g, 10, 30, 492, 200, 0); g.fillStyle = '#c9ccce'; for (let x = 10; x < 512; x += 82) g.fillRect(x, 30, 6, 200); g.fillRect(10, 128, 492, 6); });
     m(G.brick, aB); m(G.white, aG); m(G.stone, aS); m(G.glass, aGl); m(G.para, new THREE.MeshStandardMaterial({ color: '#d6d4cf', roughness: .8, side: THREE.DoubleSide })); m(G.lg, am(g => { noiseFill(g, 512, 256, '#c6c4bf', .03, 900); g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(0, 0, 512, 6); for (let k = 0; k < 4; k++) { const x = 34 + k * 124; g.fillStyle = '#3b3d41'; g.fillRect(x, 70, 70, 96); if ((k * 7) % 5 === 1) { g.fillStyle = '#dfe9f2'; g.fillRect(x + 6, 76, 58, 84); } } })); /* 모형 VE12: 밝은 회색 + 펀칭 창 */
     m(G.gateL, am(g => { g.fillStyle = '#8f9292'; g.fillRect(0, 0, 512, 256); g.fillStyle = '#5d6062'; for (let x = 6; x < 512; x += 16) g.fillRect(x, 40, 7, 176); g.fillStyle = '#a9acac'; g.fillRect(0, 0, 512, 34); g.fillRect(0, 222, 512, 34); }));
-    m(G.roof, new THREE.MeshStandardMaterial({ color: '#8b8d87', roughness: .97 })); m(G.roofGd, MAT.green); } /* 모형: 지붕은 밝은 회색 자갈 */
+    m(G.roof, (() => { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill(g, 256, 256, '#8a8f7f', .12, 6000); const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughness: .97 }); })()); /* 모형 사진: 부대시설 지붕은 녹회색 자갈 */ m(G.roofGd, MAT.green); } /* 모형: 지붕은 밝은 회색 자갈 */
   /* 영장산터널 갱구는 도로 아래(깎기 구간)에 있어 모형에서도 보이지 않음 — 지상 차로만 표현(buildNW) */
   /* 학교·구청(단지 남측) */
   const S2 = new GB(), R2 = new GB(); const su = [Math.cos(-.52), Math.sin(-.52)];
