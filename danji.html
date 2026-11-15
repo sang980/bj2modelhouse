@@ -193,6 +193,9 @@ async function loadGeo() {
 function demRaw(x, z) { const N = GEO.N, E = GEO.E, D = GEO.dem; let fx = (x + E) / (2 * E) * N - .5, fz = (z + E) / (2 * E) * N - .5; fx = Math.max(0, Math.min(N - 1.001, fx)); fz = Math.max(0, Math.min(N - 1.001, fz));
   const i = fx | 0, j = fz | 0, ax = fx - i, az = fz - j, a = D[j * N + i], b = D[j * N + i + 1], c = D[(j + 1) * N + i], d = D[(j + 1) * N + i + 1]; return (a * (1 - ax) + b * ax) * (1 - az) + (c * (1 - ax) + d * ax) * az; }
 const groundAt = (x, z) => GEO.ok ? demRaw(x, z) - GEO.B : -4;
+function forestAt(x, z) { const F = GEO.fmask; if (!F) return smooth(-12, 18, -polyDist(FOREST, x, z)); const M = F.M; let fx = (x + F.E) / (2 * F.E) * M - .5, fz = (z + F.E) / (2 * F.E) * M - .5;
+  if (fx < 0 || fz < 0 || fx > M - 1.01 || fz > M - 1.01) return 0; const i = fx | 0, j = fz | 0, ax = fx - i, az = fz - j, a = F.a;
+  return (a[j * M + i] * (1 - ax) + a[j * M + i + 1] * ax) * (1 - az) + (a[(j + 1) * M + i] * (1 - ax) + a[(j + 1) * M + i + 1] * ax) * az; }
 function heightAt(x, z) {
   if (!GEO.ok) return heightProc(x, z);
   let h = demRaw(x, z) - GEO.B; const dS = polyDist(SITE, x, z);
@@ -289,15 +292,14 @@ function rail(g, x, y, w, h) { g.fillStyle = 'rgba(226,236,243,.34)'; g.fillRect
 function wallBase(g, W2, H2, brick, col) { if (brick) brickFill(g, W2, H2); else noiseFill(g, W2, H2, col, .05, 2600); }
 
 /* 단지조감도처럼: 연회색 벽 + 촘촘한 흰 수직 기둥 + 층마다 흰 수평 띠 + 청회색 유리·유리 난간, 저층은 붉은 벽돌 기둥, 일부 세대는 차콜 패널 */
-function texFront(brick, dark) { const c = cnv(1024, 256), g = c.getContext('2d'), piers = [0, 205, 410, 614, 819, 1024];
-  if (brick) brickFill(g, 1024, 256); else noiseFill(g, 1024, 256, dark ? '#464a51' : '#d9d6ce', .04, 1500);
-  for (let k = 0; k < 5; k++) { const x0 = piers[k] + 15, x1 = piers[k + 1] - 15, w = x1 - x0;
-    if ((k === 4 || k === 0) && !dark) { win(g, x0 + w * .2, 62, w * .6, 128, 2, 6, '#eeeeeb', 2); continue; } /* 양끝 방: 벽 + 창 */
-    const gx = x0 + 16, gw = w - 32; glass(g, gx, 30, gw, 216, 2); g.fillStyle = dark ? '#5b6168' : '#eceeee'; g.fillRect(gx + gw / 2 - 3, 30, 6, 216); g.fillRect(gx, 138, gw, 5);
-    rail(g, gx, 154, gw, 92); }
-  g.fillStyle = brick ? '#7f412f' : dark ? '#52575f' : '#f4f4f1'; for (const x of piers) g.fillRect(x - 15, 0, 30, 256);
-  if (brick) { g.fillStyle = 'rgba(255,230,210,.08)'; for (const x of piers) for (let y = 4; y < 256; y += 8) g.fillRect(x - 15, y, 30, 1); }
-  g.fillStyle = brick ? '#6f3829' : dark ? '#5f646b' : '#f7f7f4'; g.fillRect(0, 0, 1024, 22); g.fillStyle = 'rgba(0,0,0,.13)'; g.fillRect(0, 22, 1024, 5);
+/* 모형 사진 기준: 밝은 회색 벽 + 흰 창틀 창 5열(가운데 거실 2열은 난간) + 회색·짙은 회색 수직 띠, 저층은 갈색 벽돌, 일부 세대 저·중층은 차콜 */
+function texFront(brick, dark) { const c = cnv(1024, 256), g = c.getContext('2d'), cols = [102, 307, 512, 717, 922];
+  if (brick) brickFill(g, 1024, 256); else noiseFill(g, 1024, 256, dark ? '#3d4045' : '#d2d4d3', .035, 1400);
+  if (!brick) { g.fillStyle = dark ? '#4b4f55' : '#a3a6a8'; for (const x of [0, 205, 819]) g.fillRect(x - 9, 0, 18, 256); g.fillStyle = dark ? '#33363b' : '#6f7377'; g.fillRect(410 - 7, 0, 14, 256); g.fillRect(614 - 7, 0, 14, 256); g.fillRect(1024 - 10, 0, 10, 256); g.fillRect(0, 0, 10, 256); }
+  cols.forEach((cx, k) => { const liv = k === 1 || k === 2 || k === 3, w = liv ? 164 : 132, x0 = cx - w / 2, fr = dark ? '#6b7076' : '#f4f4f2';
+    win(g, x0, liv ? 34 : 56, w, liv ? 206 : 150, liv ? 3 : 2, 7, fr, 2); g.fillStyle = fr; g.fillRect(x0, liv ? 132 : 128, w, 5);
+    if (liv) rail(g, x0, 160, w, 80); });
+  g.fillStyle = brick ? '#6c3a2b' : dark ? '#55595f' : '#e9eae9'; g.fillRect(0, 0, 1024, 14); g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(0, 14, 1024, 4);
   return tex(c, true); }
 function texBack(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) brickFill(g, 1024, 256); else noiseFill(g, 1024, 256, '#dcd9d2', .04, 1500);
   win(g, 90, 74, 200, 104, 2, 6, '#f1f1ee'); win(g, 440, 76, 70, 62, 1, 6, '#f1f1ee'); win(g, 650, 64, 250, 130, 2, 6, '#f1f1ee');
@@ -305,11 +307,12 @@ function texBack(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (
   g.fillStyle = brick ? '#7f412f' : '#f2f2ef'; g.fillRect(0, 0, 26, 256); g.fillRect(998, 0, 26, 256); g.fillRect(560, 0, 22, 256);
   g.fillStyle = brick ? '#6f3829' : '#f5f5f2'; g.fillRect(0, 0, 1024, 18); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, 18, 1024, 4);
   return tex(c, true); }
-function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) brickFill(g, 1024, 256); else noiseFill(g, 1024, 256, '#ebe9e4', .04, 1500);
-  g.fillStyle = brick ? '#6f3829' : '#f5f5f2'; g.fillRect(0, 0, 1024, 16);
-  g.fillStyle = '#3f454d'; g.fillRect(430, 0, 164, 256); win(g, 470, 40, 84, 196, 1, 5, '#5b636c', 1);
-  g.fillStyle = brick ? 'rgba(0,0,0,0)' : '#d9d6ce'; g.fillRect(60, 0, 300, 256); g.fillRect(664, 0, 300, 256);
-  win(g, 150, 84, 120, 100, 2, 6, '#f1f1ee'); win(g, 754, 84, 120, 100, 2, 6, '#f1f1ee');
+/* 측벽(모형): 밝은 회색 + 짙은 막대무늬(길이 제각각 세로 막대) + 작은 창 */
+function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) brickFill(g, 1024, 256); else noiseFill(g, 1024, 256, '#d9dbda', .035, 1400);
+  g.fillStyle = brick ? '#6c3a2b' : '#ecedec'; g.fillRect(0, 0, 1024, 12);
+  if (!brick) { g.fillStyle = '#b9bcbd'; g.fillRect(300, 0, 26, 256); g.fillRect(700, 0, 26, 256);
+    const rr = rng(77); g.fillStyle = '#3c3f44'; for (let x = 40; x < 1000; x += 34) { if (rr() < .45) continue; const w = 10 + rr() * 10, h = 60 + rr() * 196, top = rr() < .5; g.fillRect(x, top ? 0 : 256 - h, w, h); } }
+  win(g, 380, 70, 110, 120, 2, 6, '#f1f1ef', 2); win(g, 560, 70, 110, 120, 2, 6, '#f1f1ef', 2);
   return tex(c); }
 /* 유리는 매끈하게(하늘이 비침), 벽은 거칠게: 색 텍스처에서 거칠기 지도를 만듦 */
 function roughFrom(t) { const src = t.image, w = src.width, h = src.height, c = cnv(w, h), g = c.getContext('2d'); g.drawImage(src, 0, 0); const d = g.getImageData(0, 0, w, h), a = d.data;
@@ -325,9 +328,10 @@ function texRoof() { const c = cnv(512, 512), g = c.getContext('2d'); noiseFill(
 function texGreen() { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill(g, 256, 256, '#6b8a4e', .12, 1800);
   for (let i = 0; i < 70; i++) { g.fillStyle = `rgba(${40 + rand() * 30 | 0},${80 + rand() * 40 | 0},${35 + rand() * 20 | 0},.8)`; g.beginPath(); g.arc(rand() * 256, rand() * 256, 4 + rand() * 9, 0, 7); g.fill(); }
   return tex(c); }
-function texConcrete() { const c = cnv(512, 256), g = c.getContext('2d'); noiseFill(g, 512, 256, '#a9a59c', .08, 3500);
-  g.fillStyle = 'rgba(0,0,0,.07)'; for (let x = 0; x < 512; x += 128) g.fillRect(x, 0, 2, 256); for (let y = 0; y < 256; y += 85) g.fillRect(0, y, 512, 2);
-  g.fillStyle = 'rgba(0,0,0,.18)'; for (let x = 32; x < 512; x += 64) for (let y = 20; y < 256; y += 42) g.fillRect(x, y, 3, 3);
+/* 데크 옹벽(모형): 밝은 회색 판 + 짙은 바코드 막대 패턴 */
+function texConcrete() { const c = cnv(512, 256), g = c.getContext('2d'); noiseFill(g, 512, 256, '#c9cbc8', .05, 2500);
+  g.fillStyle = 'rgba(0,0,0,.08)'; for (let x = 0; x < 512; x += 128) g.fillRect(x, 0, 2, 256); g.fillRect(0, 127, 512, 2);
+  const rr = rng(31); g.fillStyle = '#42454a'; for (let x = 8; x < 500; x += 21) { if (rr() < .4) continue; const w = 7 + rr() * 9, h = 40 + rr() * 150, y = rr() < .5 ? 20 + rr() * 30 : 256 - h - 10 - rr() * 30; g.fillRect(x, y, w, h); }
   return tex(c); }
 function texVilla() { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill(g, 256, 256, '#efefef', .06, 600);
   g.fillStyle = '#cfcfcf'; g.fillRect(0, 0, 256, 10); win(g, 70, 70, 120, 104, 2, 7, '#fafafa', 1); return tex(c); }
@@ -492,12 +496,19 @@ function paintTerrain(N, E) {
   const M = LOW ? 320 : 512, mc = cnv(M, M), mg = mc.getContext('2d'), img = mg.createImageData(M, M);
   const fm = cnv(M, M), fmg = fm.getContext('2d'), fimg = fmg.createImageData(M, M);
   const um = cnv(M, M), umg = um.getContext('2d'), uimg = umg.createImageData(M, M);
+  /* 숲 경계: OSM 실제 숲 윤곽이 있으면 그것을, 없으면 개략 다각형 */
+  let oF = null; const woods = GEO.env && GEO.env.green ? GEO.env.green.filter(q => q.k === 'forest') : [];
+  if (woods.length > 10) { const H = M >> 1, fc = cnv(H, H), fg2 = fc.getContext('2d'); fg2.fillStyle = '#fff';
+    for (const q of woods) { fg2.beginPath(); q.p.forEach((p, i) => { const X = (p[0] + E) / (2 * E) * H, Z = (p[1] + E) / (2 * E) * H; i ? fg2.lineTo(X, Z) : fg2.moveTo(X, Z); }); fg2.closePath(); fg2.fill(); }
+    const up = cnv(M, M), ug = up.getContext('2d'); ug.imageSmoothingEnabled = true; ug.drawImage(fc, 0, 0, M, M); const d = ug.getImageData(0, 0, M, M).data; oF = new Float32Array(M * M); for (let i = 0; i < M * M; i++) oF[i] = d[i * 4 + 3] / 255; }
+  GEO.fmask = { M, E, a: new Float32Array(M * M) };
   for (let j = 0; j < M; j++) for (let i = 0; i < M; i++) {
     const x = -E + (i + .5) / M * 2 * E, z = -E + (j + .5) / M * 2 * E, k = (j * M + i) * 4;
-    const dF = -polyDist(FOREST, x, z), f = smooth(-12, 18, dF), n = fbm(x / 260, z / 260), n2 = fbm(x / 1400 + 5, z / 1400);
+    const f = oF ? oF[j * M + i] * (polyDist(SITE, x, z) < 0 ? 0 : 1) : smooth(-12, 18, -polyDist(FOREST, x, z)), n = fbm(x / 260, z / 260), n2 = fbm(x / 1400 + 5, z / 1400);
+    GEO.fmask.a[j * M + i] = f;
     const hgt = heightAt(x, z);
     let r = 166 + 26 * (n - .5), gg = 161 + 22 * (n - .5), b = 151 + 16 * (n - .5);
-    const parky = smooth(.62, .7, n2) * (1 - f); r += (112 - r) * parky * .7; gg += (138 - gg) * parky * .7; b += (92 - b) * parky * .7;
+    const parky = oF ? 0 : smooth(.62, .7, n2) * (1 - f); r += (112 - r) * parky * .7; gg += (138 - gg) * parky * .7; b += (92 - b) * parky * .7;
     const alt = smooth(80, 330, hgt);
     const fr = 50 + 26 * (n - .5) + 14 * alt, fgc = 76 + 30 * (n - .5) + 8 * alt, fb = 44 + 16 * (n - .5) + 12 * alt;
     r += (fr - r) * f; gg += (fgc - gg) * f; b += (fb - b) * f;
@@ -543,7 +554,7 @@ function buildDong(D, G, MAT) {
   const wings = D.w.map(w => { const a0 = W(...w.a), b0 = W(...w.b), L = Math.hypot(b0[0] - a0[0], b0[1] - a0[1]), ux = (b0[0] - a0[0]) / L, uz = (b0[1] - a0[1]) / L;
     const a = [a0[0] - uz * DOFF, a0[1] + ux * DOFF], b = [b0[0] - uz * DOFF, b0[1] + ux * DOFF]; return { ...w, A: a, B: b, L, ux, uz }; });
   wings.forEach((w, wi) => {
-    const { A, L, ux, uz, f, n } = w, cx = A[0] + ux * L / 2, cz = A[1] + uz * L / 2, fx = -uz, fz = ux, H = f * FH, tw = L / n, base = Math.min(2, f) * FH;
+    const { A, L, ux, uz, f, n } = w, cx = A[0] + ux * L / 2, cz = A[1] + uz * L / 2, fx = -uz, fz = ux, H = f * FH, tw = L / n, base = (f >= 12 ? 3 : 2) * FH; /* 모형: 저층 2~3개 층 벽돌 */
     /* 저층부 벽돌 + 상층부 */
     obox(cx, cz, ux, uz, L, DEP, 0, base, { front: { gb: G.bfront, uv: uvTile(tw, FH) }, back: { gb: G.bback, uv: uvTile(tw, FH) }, left: { gb: G.bside, uv: uvTile(DEP, FH) }, right: { gb: G.bside, uv: uvTile(DEP, FH) } });
     obox(cx, cz, ux, uz, L, DEP, base, H, { front: { gb: G.front, uv: uvTile(tw, FH) }, back: { gb: G.back, uv: uvTile(tw, FH) }, left: { gb: G.side, uv: uvTile(DEP, FH) }, right: { gb: G.side, uv: uvTile(DEP, FH) }, top: { gb: G.roof, uv: true, uvTop: uvPlanar(8) } });
@@ -552,12 +563,15 @@ function buildDong(D, G, MAT) {
     pr(cx + fx * (DEP / 2 - .15), cz + fz * (DEP / 2 - .15), L, .3, ux, uz); pr(cx - fx * (DEP / 2 - .15), cz - fz * (DEP / 2 - .15), L, .3, ux, uz);
     pr(cx + ux * (L / 2 - .15), cz + uz * (L / 2 - .15), DEP - .6, .3, fx, fz); pr(cx - ux * (L / 2 - .15), cz - uz * (L / 2 - .15), DEP - .6, .3, fx, fz);
     /* 세대 경계 수직 핀(앞면) + 층 띠 */
-    for (let k = 0; k <= n; k++) { const s = k * tw - L / 2, ex = Math.max(-L / 2 + .3, Math.min(L / 2 - .3, s)); const px2 = cx + ux * ex + fx * (DEP / 2 + .22), pz2 = cz + uz * ex + fz * (DEP / 2 + .22);
-      obox(px2, pz2, ux, uz, .6, .45, base, H + .6, { front: { gb: G.fin }, left: { gb: G.fin }, right: { gb: G.fin }, top: { gb: G.fin } }); }
-    for (let fl = 3; fl <= f; fl++) { const y = (fl - 1) * FH; obox(cx + fx * (DEP / 2 + .14), cz + fz * (DEP / 2 + .14), ux, uz, L, .28, y - .1, y + .12, { front: { gb: G.white }, top: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white } }); }
-    /* 차콜 패널 강조(단지조감도처럼 4라인 동 가운데 세대 중층부) */
-    if (n === 4 && f >= 8) { const k = 2, s = -L / 2 + tw * (k + .5), y0 = 2 * FH, y1 = Math.min(f - 2, 9) * FH, ox = DEP / 2 + .03;
-      obox(cx + ux * s + fx * ox, cz + uz * s + fz * ox, ux, uz, tw - .8, .02, y0, y1, { front: { gb: G.frontDk, uv: (w, a, b) => [k + .04, a / FH, k + .96, a / FH, k + .96, b / FH, k + .04, b / FH] } }); }
+    for (let k = 0; k <= n; k++) { const s = k * tw - L / 2, ex = Math.max(-L / 2 + .25, Math.min(L / 2 - .25, s)); const px2 = cx + ux * ex + fx * (DEP / 2 + .14), pz2 = cz + uz * ex + fz * (DEP / 2 + .14);
+      obox(px2, pz2, ux, uz, .42, .3, base, H + .5, { front: { gb: G.fin }, left: { gb: G.fin }, right: { gb: G.fin }, top: { gb: G.fin } }); }
+    /* 모형 기준 앞면 구역: 가운데 세대 저·중층 차콜 패널, 2라인 동은 동쪽 끝 모서리 벽돌 띠(6층까지) */
+    const panel = (k0, k1, y0, y1, gb, s0f = 0, s1f = 1) => { const ox = DEP / 2 + .03, a = -L / 2 + tw * (k0 + s0f), b = -L / 2 + tw * (k1 - 1 + s1f), sm = (a + b) / 2;
+      obox(cx + ux * sm + fx * ox, cz + uz * sm + fz * ox, ux, uz, b - a, .02, y0, y1, { front: { gb, uv: (w, p, q) => [k0 + s0f, p / FH, k1 - 1 + s1f, p / FH, k1 - 1 + s1f, q / FH, k0 + s0f, q / FH] } }); };
+    const nb = base / FH;
+    if (n === 4 && f >= 8) panel(1, 3, base, Math.min(f - 3, nb + 4) * FH, G.frontDk);
+    else if (n === 2 && f >= 8 && D.w.length === 1) { panel(0, 1, base, Math.min(f - 3, nb + 3) * FH, G.frontDk, .05, .7); panel(1, 2, 0, Math.min(f - 2, 6) * FH, G.bfront, .72, .995);
+      const sx = cx + ux * (L / 2 + .03), sz = cz + uz * (L / 2 + .03); obox(sx, sz, fx, fz, DEP, .02, 0, Math.min(f - 2, 6) * FH, { back: { gb: G.bside, uv: uvTile(DEP, FH) }, front: { gb: G.bside, uv: uvTile(DEP, FH) } }); }
     /* 코어(계단·엘리베이터) — 뒤쪽, 옥상 기계실까지 */
     const cores = D.w.length > 1 ? (wi === 0 ? [.5] : []) : (n === 4 ? [.25, .75] : [.5]);
     for (const t of cores) { const s = t * L - L / 2, ccx = cx + ux * s - fx * (DEP / 2 + CORE_D / 2 - .4), ccz = cz + uz * s - fz * (DEP / 2 + CORE_D / 2 - .4), ch = H + 3.9;
@@ -660,8 +674,8 @@ function buildTrees(planData, PW, PH, PK) {
   /* 숲: 단지 주변 1.2km */
   const nF = LOW ? 5000 : 16000, R = LOW ? 800 : 1250; let tries = 0, made = 0;
   while (made < nF && tries < nF * 6) { tries++;
-    const x = (rand() * 2 - 1) * R, z = -R + rand() * (R + 600); if (x * x + (z - 15) * (z - 15) > R * R) continue;
-    const dF = -polyDist(FOREST, x, z); if (dF < 4) continue; if (nearRoad(x, z, 2)) continue;
+    const x = (rand() * 2 - 1) * R, z = 15 + (rand() * 2 - 1) * R; if (x * x + (z - 15) * (z - 15) > R * R) continue;
+    if (forestAt(x, z) < .72 || polyDist(SITE, x, z) < 6) continue; if (!GEO.env && nearRoad(x, z, 2)) continue; if (OCC && occAt(x, z)) continue;
     pts.push([x, heightAt(x, z) - .4, z, 3.4 + rand() * 2.8, rand() < .28 ? 2 : 1]); made++; }
   for (const t of extraTrees) pts.push(t);
   /* 침엽수(원뿔) */
@@ -724,6 +738,9 @@ const OSMTX = {
   stone: () => facadeTex(512, 256, g => { g.fillStyle = '#cfcac0'; g.fillRect(0, 0, 512, 256); for (let y = 0; y < 256; y += 40) for (let x = 0; x < 512; x += 80) { const v = (rand() - .5) * 14; g.fillStyle = `rgb(${205 + v | 0},${200 + v | 0},${190 + v | 0})`; g.fillRect(x + 1, y + 1, 78, 38); }
     for (let k = 0; k < 4; k++) win(g, 22 + k * 124, 58, 92, 146, 2, 6, '#e9e9e6', 2); }),
 };
+/* 점유 지도: 건물·도로 자리(2m 격자, 반경 1.7km) — 나무가 건물·도로 위에 서지 않게 */
+let OCC = null;
+function occAt(x, z) { const O = OCC; if (!O) return false; const i = Math.floor((x + O.E) / O.r), j = Math.floor((z + O.E) / O.r); if (i < 0 || j < 0 || i >= O.n || j >= O.n) return false; return O.a[j * O.n + i] === 1; }
 const OSM_TILE = { villa: 7, apt: 7, shop: 12, office: 7, pub: 8, ind: 8, villaBrick: 7, villaTile: 7, aptModern: 7, stone: 8 };
 function buildOSM() {
   const B = GEO.bld, n = B.length, G = {}, M = {};
@@ -742,11 +759,13 @@ function buildOSM() {
   const roadDist = (x, z) => { const l = hash.get(key(Math.floor(x / CS), Math.floor(z / CS))); if (!l) return 1e9; let best = 1e9;
     for (const [x0, z0, x1, z1, w] of l) { const ex = x1 - x0, ez = z1 - z0, t = Math.max(0, Math.min(1, ((x - x0) * ex + (z - z0) * ez) / (ex * ex + ez * ez || 1))), d = Math.hypot(x - x0 - ex * t, z - z0 - ez * t) - w / 2; if (d < best) best = d; } return best; };
   const V2 = THREE.Vector2; let i = 0, cnt = 0;
+  const OE = 1700, ORS = 2, ON = OE * 2 / ORS, ocv = cnv(ON, ON), og = ocv.getContext('2d', { willReadFrequently: true }); og.fillStyle = '#000'; og.strokeStyle = '#000'; og.lineJoin = 'round'; og.lineCap = 'round';
   while (i < n) {
     const kind = B[i], lv = Math.max(1, B[i + 1]), h = B[i + 2] / 10, mh = B[i + 3] / 10, np = B[i + 4]; i += 5;
     const P = new Array(np); for (let k = 0; k < np; k++) { P[k] = [B[i] * .2, B[i + 1] * .2]; i += 2; }
     let cx = 0, cz = 0; for (const p of P) { cx += p[0]; cz += p[1]; } cx /= np; cz /= np;
     const dist = Math.hypot(cx, cz - 15); if (LOW && dist > 1800) continue;
+    if (Math.abs(cx) < OE - 60 && Math.abs(cz) < OE - 60) { og.beginPath(); P.forEach((p, k) => { const X = (p[0] + OE) / ORS, Z = (p[1] + OE) / ORS; k ? og.lineTo(X, Z) : og.moveTo(X, Z); }); og.closePath(); og.fill(); og.lineWidth = 1.2; og.stroke(); }
     let gmin = Infinity, gs = 0; for (const p of P) { const gy = heightAt(p[0], p[1]); gmin = Math.min(gmin, gy); gs += gy; }
     const gavg = gs / np, top = gavg + h, base = gmin - .6 + mh, fh = h / lv;
     let tk = kind === 1 || lv >= 6 ? 'apt' : kind === 2 ? (lv <= 3 ? 'shop' : 'office') : kind === 3 ? 'pub' : kind === 5 ? 'ind' : 'villa';
@@ -784,6 +803,8 @@ function buildOSM() {
   }
   const add = (gb, mat, near) => { if (!gb.i.length) return; const m = new THREE.Mesh(gb.build(), mat); m.castShadow = true; m.receiveShadow = true; scene.add(m); envMeshes.push(m); };
   for (const k in G) add(G[k], M[k]); add(R, new THREE.MeshLambertMaterial({ vertexColors: true }));
+  for (const r of (GEO.env && GEO.env.roads) || []) { if (r.t === 1 || /^(footway|path|steps|track)$/.test(r.k)) continue; og.lineWidth = (r.w + 2) / ORS; og.beginPath(); r.p.forEach((p, k) => { const X = (p[0] + OE) / ORS, Z = (p[1] + OE) / ORS; k ? og.lineTo(X, Z) : og.moveTo(X, Z); }); og.stroke(); }
+  { const d = og.getImageData(0, 0, ON, ON).data, a = new Uint8Array(ON * ON); for (let k = 0; k < a.length; k++) a[k] = d[k * 4 + 3] > 60 ? 1 : 0; OCC = { E: OE, r: ORS, n: ON, a }; ocv.width = ocv.height = 1; }
   /* 가로수: 큰길 양쪽 1.1km 안 */
   for (const r of (GEO.env && GEO.env.roads) || []) { if (r.t || !/^(primary|secondary|tertiary)$/.test(r.k)) continue;
     for (let k = 0; k < r.p.length - 1; k++) { const [x0, z0] = r.p[k], [x1, z1] = r.p[k + 1], L = Math.hypot(x1 - x0, z1 - z0); if (L < 1) continue; const ux = (x1 - x0) / L, uz = (z1 - z0) / L;
