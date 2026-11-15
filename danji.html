@@ -707,7 +707,7 @@ async function build() {
   const G = {}; for (const k of ['vent', 'sideB', 'sideT', 'path', 'grille', 'sideP', 'podium', 'terr', 'tdeck', 'rail', 'front', 'frontDk', 'frontLt', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
   for (const D of DONG) buildDong(D, G, MAT);
   for (const k in G) { if (!G[k].i.length) continue; const m = new THREE.Mesh(G[k].build(), MAT[k]); m.castShadow = true; m.receiveShadow = true; scene.add(m); }
-  buildAmenities(MAT); buildYard(); T_GREEN_REF.t = T.green; buildEntrance(); if (GEO.ok) { buildNW(); buildCut(); }
+  T_GREEN_REF.t = T.green; buildAmenities(MAT); buildYard(); buildEntrance(); if (GEO.ok) { buildNW(); buildCut(); }
   prog(62); await tick();
 
   /* ===== 주변 건물: 실제 데이터(OSM 윤곽·층수)가 있으면 그것으로, 없으면 개략 생성 ===== */
@@ -932,6 +932,8 @@ const YARD = { court: YRECT(-7.1, 90.2, 14.5, 11.5), teal: YRECT(-29.5, 102, 19,
 /* 남쪽 마당 산책로(모형 사진: 104·105동 앞 숲 사이를 구불구불 지나는 회색 보도블록 길 + 테니스장·놀이터로 가지길) */
 YARD.path = (() => { const c = [-15, 65], n = [.502, .865], u = [.865, -.502], P = []; for (let s = -34; s <= 86; s += 3) { const off = 16 + Math.sin(s / 9) * 2.2; P.push([c[0] + n[0] * off + u[0] * s, c[1] + n[1] * off + u[1] * s]); } return P; })();
 YARD.branches = (() => { const c = [-15, 65], n = [.502, .865], u = [.865, -.502], at = (s, o) => [c[0] + n[0] * o + u[0] * s, c[1] + n[1] * o + u[1] * s]; return [[at(-6, 16), at(-6, 20.5)], [at(54, 16.5), at(54, 22.5)], [at(-26, 15.5), at(-24, 19.5)]]; })();
+/* 북쪽 언덕 산책로(모형 VE24·VN14·VN16: 단지 북동쪽 모퉁이에서 언덕을 비스듬히 오르는 밝은 흙길) */
+const HILLPATH = (() => { const P = []; for (let t = 0; t <= 1.0001; t += .05) { const x = 92 - 190 * t, z = -112 - 34 * t - 18 * Math.sin(t * Math.PI); P.push([x, z]); } P.unshift([104, -100], [98, -106]); return P; })();
 /* 동쪽 둘레 산책로(모형 VE28·VE32): 단지 동쪽 경계 안쪽 6m를 따라 도는 넓은 보도블록 길 */
 YARD.ring = (() => { const S = SITE, ids = []; for (let i = 12; i <= 25; i++) ids.push(i); const out = [];
   for (const i of ids) { const p = S[i], a = S[i - 1], b = S[i + 1], n1 = [-(p[1] - a[1]), p[0] - a[0]], n2 = [-(b[1] - p[1]), b[0] - p[0]], l1 = Math.hypot(...n1), l2 = Math.hypot(...n2); let nx = n1[0] / l1 + n2[0] / l2, nz = n1[1] / l1 + n2[1] / l2; const l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l;
@@ -977,6 +979,12 @@ function buildYard() {
     const pm = new THREE.MeshStandardMaterial({ map: pt, roughness: .95, polygonOffset: true, polygonOffsetFactor: -5, polygonOffsetUnits: -10 });
     const strip = (L, w) => { const A = [], B = []; for (let i = 0; i < L.length; i++) { const a = L[Math.max(0, i - 1)], b = L[Math.min(L.length - 1, i + 1)], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz), nx = -dz / l * w / 2, nz = dx / l * w / 2; A.push([L[i][0] + nx, L[i][1] + nz]); B.push([L[i][0] - nx, L[i][1] - nz]); } return A.concat(B.reverse()); };
     const uvP = (x, z) => [x / 4, -z / 4];
+    if (GEO.ok) { const A = [], B = []; const L = HILLPATH; for (let i = 0; i < L.length; i++) { const a = L[Math.max(0, i - 1)], b = L[Math.min(L.length - 1, i + 1)], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz), nx = -dz / l * 1.3, nz = dx / l * 1.3; A.push([L[i][0] + nx, L[i][1] + nz]); B.push([L[i][0] - nx, L[i][1] - nz]); }
+      drapePoly(A.concat(B.reverse()), new THREE.MeshLambertMaterial({ color: '#c9b99c', polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }), .3, 2.5); } /* 북쪽 언덕 흙길 */
+    if (GEO.ok) { const S = SITE, ids = []; for (let i = 0; i <= 16; i++) ids.push(i); const In = [], Out = [];
+      for (const i of ids) { const p = S[i], a2 = S[(i - 1 + S.length) % S.length], b2 = S[i + 1], n1 = [-(p[1] - a2[1]), p[0] - a2[0]], n2 = [-(b2[1] - p[1]), b2[0] - p[0]], l1 = Math.hypot(...n1), l2 = Math.hypot(...n2); let nx = n1[0] / l1 + n2[0] / l2, nz = n1[1] / l1 + n2[1] / l2; const l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l;
+        if (polyDist(S, p[0] + nx * 3, p[1] + nz * 3) < 0) { nx = -nx; nz = -nz; } In.push([p[0] + nx * 1.5, p[1] + nz * 1.5]); Out.push([p[0] + nx * 30, p[1] + nz * 30]); }
+      drapePoly(In.concat(Out.reverse()), new THREE.MeshLambertMaterial({ map: T_GREEN_REF.t || null, color: T_GREEN_REF.t ? '#ffffff' : '#52703a', polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 }), .2, 3); } /* 모형 VE24·VN14: 단지 북쪽 경계 밖 비탈은 잔디 */
     { const R = YARD.ring, rg = new GB(), w = 2; for (let i = 0; i < R.length - 1; i++) { const a = R[i], b = R[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]), n2 = Math.max(1, Math.ceil(L / 2.5)), nx = -(b[1] - a[1]) / L * w, nz = (b[0] - a[0]) / L * w;
         for (let k = 0; k < n2; k++) { const p = [a[0] + (b[0] - a[0]) * k / n2, a[1] + (b[1] - a[1]) * k / n2], q = [a[0] + (b[0] - a[0]) * (k + 1) / n2, a[1] + (b[1] - a[1]) * (k + 1) / n2], yp = levelAt(p[0], p[1]) + .15, yq = levelAt(q[0], q[1]) + .15; if (Math.abs(yp - yq) > 2.5) continue;
           const v = [[p[0] + nx, yp, p[1] + nz], [q[0] + nx, yq, q[1] + nz], [q[0] - nx, yq, q[1] - nz], [p[0] - nx, yp, p[1] - nz]], cr = (v[1][2] - v[0][2]) * (v[2][0] - v[0][0]) - (v[1][0] - v[0][0]) * (v[2][2] - v[0][2]);
@@ -1354,7 +1362,7 @@ function buildTrees(planData, PW, PH, PK) {
   const nF = LOW ? 5000 : 16000, R = LOW ? 800 : 1250; let tries = 0, made = 0;
   while (made < nF && tries < nF * 6) { tries++;
     const x = (rand() * 2 - 1) * R, z = 15 + (rand() * 2 - 1) * R; if (x * x + (z - 15) * (z - 15) > R * R) continue;
-    if (forestAt(x, z) < .72 || polyDist(SITE, x, z) < 6 || SCHOOL_PADS.some(sp => polyDist(sp.p, x, z) < 6)) continue; if (!GEO.env && nearRoad(x, z, 2)) continue; if (OCC && occAt(x, z)) continue;
+    if (forestAt(x, z) < .72 || polyDist(SITE, x, z) < 6 || pathDist(HILLPATH, x, z) < 2.4 || SCHOOL_PADS.some(sp => polyDist(sp.p, x, z) < 6)) continue; if (!GEO.env && nearRoad(x, z, 2)) continue; if (OCC && occAt(x, z)) continue;
     pts.push([x, heightAt(x, z) - .4, z, 3.4 + rand() * 2.8, rand() < .28 ? 2 : 1]); made++; }
   /* 모형 VE08·VE16: 동 뒤 보행로 양옆으로 나무·관목 줄 */
   for (const [P, Q, w] of WALKS) { const L = Math.hypot(Q[0] - P[0], Q[1] - P[1]), ux = (Q[0] - P[0]) / L, uz = (Q[1] - P[1]) / L, nx = -uz, nz = ux;
