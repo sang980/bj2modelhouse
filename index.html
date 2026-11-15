@@ -29,6 +29,14 @@ h1{font:600 clamp(26px,5vw,40px)/1.15 var(--display);margin:0 0 10px;letter-spac
 .tag{align-self:flex-start;font:600 12px var(--body);padding:4px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
 .card.soon .type{color:var(--muted)}
 .card.soon .tag{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.danji{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:14px;padding:20px 22px;border-radius:16px;background:var(--accent);color:var(--panel);text-decoration:none;transition:transform .15s ease,box-shadow .15s ease}
+.danji:hover,.danji:focus-visible{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.14)}
+.danji:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.d-txt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.d-k{font:600 20px/1.25 var(--display);letter-spacing:-.01em}
+.d-s{font-size:13px;opacity:.85;line-height:1.5}
+.d-go{flex:none;font:600 13px var(--body);padding:8px 14px;border-radius:999px;background:var(--panel);color:var(--accent)}
+@media (max-width:520px){.danji{flex-direction:column;align-items:flex-start}}
 footer{margin-top:28px;font-size:12px;color:var(--muted);line-height:1.6}
 #toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-size:14px;transition:opacity .2s ease,transform .2s ease;max-width:calc(100% - 32px);text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
@@ -45,6 +53,10 @@ footer{margin-top:28px;font-size:12px;color:var(--muted);line-height:1.6}
     <a class="card" href="55c.html"><span class="type">55C</span><span class="name">55C 타입</span><span class="tag">입장하기</span><span class="meta">전용 55.98㎡<br>측세대 · 드레스룸 창</span></a>
     <a class="card" href="56t.html"><span class="type">56T</span><span class="name">56T 테라스 타입</span><span class="tag">입장하기</span><span class="meta">전용 56.94㎡<br>테라스형 · 침실1 발코니</span></a>
   </section>
+  <a class="danji" href="danji.html">
+    <span class="d-txt"><span class="d-k">3D 단지 조감도</span><span class="d-s">22개 동 892세대와 주변 3km를 드론처럼 날아다니며 둘러보기</span></span>
+    <span class="d-go">둘러보기 →</span>
+  </a>
   <footer>평면도 치수 기반의 데모입니다. 실제 시공과 다를 수 있습니다.</footer>
 </main>
 <div id="toast" role="status" aria-live="polite"></div>
