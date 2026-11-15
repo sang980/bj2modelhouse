@@ -411,7 +411,7 @@ const cnv = (w, h) => { const c = document.createElement('canvas'); c.width = w;
 function tex(c, mirror = false) { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = mirror ? THREE.MirroredRepeatWrapping : THREE.RepeatWrapping; t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; return t; }
 function noiseFill(g, w, h, base, amp, n) { g.fillStyle = base; g.fillRect(0, 0, w, h); for (let i = 0; i < n; i++) { const a = (rand() - .5) * amp; g.fillStyle = a > 0 ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${-a})`; g.fillRect(rand() * w, rand() * h, 1 + rand() * 2.5, 1 + rand() * 2.5); } }
 function brickFill(g, w, h) { g.fillStyle = '#6e3b2c'; g.fillRect(0, 0, w, h); const bh = 8, bw = 22; for (let y = 0; y < h; y += bh) { const off = ((y / bh) & 1) * bw / 2; for (let x = -bw; x < w + bw; x += bw) { const v = (rand() - .5) * 26; g.fillStyle = `rgb(${140 + v | 0},${76 + v * .6 | 0},${57 + v * .5 | 0})`; g.fillRect(x + off + 1, y + 1, bw - 2, bh - 2); } } }
-function glass(g, x, y, w, h, dark = 0) { const gr = g.createLinearGradient(x, y, x + w * .25, y + h), P = dark === 3 ? ['#fbf6ea', '#efe6d2', '#d9cbb0'] : dark === 2 ? ['#a3adb3', '#66737b', '#323c44'] : [dark ? '#6f8597' : '#9fb5c6', dark ? '#3a4d60' : '#5c7790', '#283848']; gr.addColorStop(0, P[0]); gr.addColorStop(.38, P[1]); gr.addColorStop(1, P[2]); g.fillStyle = gr; g.fillRect(x, y, w, h);
+function glass(g, x, y, w, h, dark = 0) { const gr = g.createLinearGradient(x, y, x + w * .25, y + h), P = dark === 3 ? ['#fbf2dc', '#f0e2c2', '#dcc8a2'] : dark === 2 ? ['#a3adb3', '#66737b', '#323c44'] : [dark ? '#6f8597' : '#9fb5c6', dark ? '#3a4d60' : '#5c7790', '#283848']; gr.addColorStop(0, P[0]); gr.addColorStop(.38, P[1]); gr.addColorStop(1, P[2]); g.fillStyle = gr; g.fillRect(x, y, w, h);
   g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); g.fillStyle = 'rgba(255,255,255,.10)'; g.beginPath(); g.moveTo(x + w * .55, y); g.lineTo(x + w * .8, y); g.lineTo(x + w * .35, y + h); g.lineTo(x + w * .1, y + h); g.fill(); g.restore(); }
 function win(g, x, y, w, h, panes, fw = 6, col = '#f2f3f3', dark = 0) { g.fillStyle = col; g.fillRect(x - fw, y - fw, w + fw * 2, h + fw * 2); glass(g, x, y, w, h, dark); g.fillStyle = col; for (let i = 1; i < panes; i++) g.fillRect(x + w * i / panes - fw / 2, y, fw, h); }
 function rail(g, x, y, w, h) { g.fillStyle = 'rgba(226,236,243,.34)'; g.fillRect(x, y, w, h); g.fillStyle = '#f4f5f5'; g.fillRect(x, y - 3, w, 5); }
@@ -424,9 +424,9 @@ function wallBase(g, W2, H2, brick, col) { if (brick) brickFill(g, W2, H2); else
 /* 모형 104동 남쪽 면 기준(한 세대 폭 × 한 층): 회갈색 바탕 + 짙은 차콜 세로 띠 2줄(작은 창) + 흰 창틀 거실 큰 창(흰 격자 난간) + 좁은 방 창 2개
    variant: 0 회갈색, 1 밝은 회색 판(1호 라인), 2 차콜(저층 강조), brick 갈색 도장(저층 3개 층) */
 function texFront(brick, dark, light) { const c = cnv(1024, 256), g = c.getContext('2d');
-  const base = brick ? null : dark ? '#363432' : light ? '#9c9994' : '#64605c'; /* 모형: 따뜻한 토프·베이지 */
+  const base = brick ? null : dark ? '#363432' : light ? '#a09a92' : '#5f544b'; /* 모형: 따뜻한 토프·베이지 */
   if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, base, .035, 1600);
-  const strip = brick ? '#5b3528' : dark ? '#252423' : light ? '#84817c' : '#37342f', fr = dark ? '#a9a6a0' : '#b8b4ad';
+  const strip = brick ? '#5b3528' : dark ? '#252423' : light ? '#857e75' : '#3b322c', fr = dark ? '#a9a6a0' : '#9a9087';
   g.fillStyle = strip; g.fillRect(150, 0, 84, 256); g.fillRect(612, 0, 84, 256);
   win(g, 160, 70, 64, 92, 1, 6, fr, dark ? 1 : 3); win(g, 622, 70, 64, 92, 1, 6, fr, dark ? 1 : 3);              /* 띠 안 작은 창 */
   win(g, 272, 34, 300, 196, 3, 8, fr, dark ? 1 : 3); g.fillStyle = fr; g.fillRect(272, 150, 300, 6);    /* 거실 큰 창 */
