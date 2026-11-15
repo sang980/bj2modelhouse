@@ -2149,6 +2149,9 @@ rug(10.35, 6.6, Math.PI / 2); // VR: 침대 아래 회색 털 러그
 // sideTable(9.22, 7.78, false);
 // 침실2: 창 쪽 싱글 침대(머리 서쪽) — 책상·벽 선반은 놓을 자리가 없어 뺌(56T만)
 const bed2 = bed(1.12, 7.45, Math.PI / 2, 1.1, 1.95, '싱글 침대');
+{ const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = '#c4c3bf'; x.fillRect(0, 0, 256, 256); x.lineCap = 'round';
+  for (let i = 0; i < 2600; i++) { const px = rnd() * 256, py = rnd() * 256, a = rnd() * 6.28, l = 5 + rnd() * 10, v = 160 + rnd() * 75 | 0; x.strokeStyle = 'rgb(' + v + ',' + v + ',' + Math.max(0, v - 3) + ')'; x.lineWidth = 1.4 + rnd() * 1.8; x.beginPath(); x.moveTo(px, py); x.quadraticCurveTo(px + Math.cos(a + 1) * l * .6, py + Math.sin(a + 1) * l * .6, px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke(); }
+  const r = piece('원형 털 러그', 1.45, 6.4, 0, { solid: false }); mesh(CY(.62, .62, .03, 64), std(0xffffff, 1, 0, { map: toTex(c, { rep: [2, 2] }), bumpMap: toTex(c, { srgb: false, rep: [2, 2] }), bumpScale: 5 }), 0, .015, 0, r, { cast: false }); } /* VR 56T 침실2: 침대와 책상 사이 둥근 회색 털 러그 */
 // 56T(VR) 침실2: 민트 이불·줄무늬 쿠션, 민트 점무늬 액자
 // 액자는 묶음(b2art)으로 — 1-2 꺾음 시공이면 문 쪽 벽이 알파룸 쪽으로 옮겨지므로 함께 옮기고, 1-1 통합이면 벽이 없어 숨김
 const b2art = new THREE.Group(); fixed.add(b2art);
