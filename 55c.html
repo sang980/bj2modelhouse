@@ -2709,7 +2709,8 @@ function peninsula(k, name, x0, x1, z0, z1) {
   wineGlass(g, WX(x0 + .86), top, WZ(zc + .06));
 }
 // 평면도(옵션 그림) 방향: 4-1·4-3은 주방 왼쪽 앞(복도 쪽), 4-4는 팬트리 동선 때문에 작게 가운데로. 식탁은 아일랜드 남쪽에 붙음
-peninsula('o4island', '아일랜드식탁', 5.49, 6.79, 2.2, 2.8); // 서쪽 벽(x 5.46)에 상판이 맞닿게
+peninsula('o4island', '아일랜드식탁', 5.09, 6.39, 2.44, 3.04); /* 요청: 왼쪽 벽(현관구조 1 팬트리 벽 면 x 5.06)에 상판을 붙이고 발코니 벽(면 z 2.41) 바로 앞 */
+peninsula('o4islandB', '아일랜드식탁', 4.83, 6.13, 2.44, 3.04); /* 기본(현관창고)일 때: 창고 벽 면 x 4.8에 붙임 */
 peninsula('o4islandS', '아일랜드식탁(소형)', 6.3, 7.2, 1.65, 2.2);
 // 5 쿡탑 — 서쪽 ㄱ자 코너
 const COOK = { x0: 5.52, x1: 6.0, z0: 1.07, z1: 1.68, y: .9 }; // 폭 61cm, 다리 가운데
@@ -2998,7 +2999,7 @@ function applyOptions() {
   show('o2-1', s['2'] === '2-1');
   show('o3', s['3'] === '3');
   const island = ['4-1', '4-3', '4-4'].includes(s['4']), stone = ['4-2', '4-3', '4-4'].includes(s['4']);
-  show('o4island', s['4'] === '4-1' || s['4'] === '4-3' || s['4'] === '4-4'); show('o4islandS', false); /* 4-4(현관구조 1)도 4-1·4-3과 같은 원래 자리에 아일랜드 */
+  { const isl = s['4'] === '4-1' || s['4'] === '4-3' || s['4'] === '4-4'; show('o4island', isl && s['1'] === '1'); show('o4islandB', isl && s['1'] !== '1'); } show('o4islandS', false); /* 4-4(현관구조 1)도 4-1·4-3과 같은 원래 자리에 아일랜드 */
   const cm = stone ? MAT_OPT.stone : MAT_OPT.mma; M.counter.map = cm.map; M.counter.color.set(cm.color); M.counter.roughness = cm.roughness; M.counter.needsUpdate = true;
   M.splash.map = stone ? MAT_OPT.stone.map : MAT_OPT.tile.map; M.splash.roughness = stone ? .18 : .25; M.splash.needsUpdate = true;
   // 식탁: 아일랜드가 있으면 그 남쪽 면에 붙이고(평탄면이 북쪽), 없으면 주방 가운데에 둠
@@ -3009,10 +3010,16 @@ function applyOptions() {
     diningS.visible = pantry; diningL.visible = !pantry;
     if (selected && (selected === diningS || selected === diningL) && !selected.visible) select(null);
     // 북쪽 벽(z 2.66)·아일랜드(z ≤ 2.8)에 의자 등받이가 닿지 않도록 남쪽으로 당김
-    const wallFace = pantry ? 5.06 : 4.8, dz = pantry ? 3.7 : 3.78;
-    d.position.set(WX(wallFace), 0, WZ(dz)); d.rotation.y = Math.PI;
-    d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI };
-    diningPendant.position.set(WX(wallFace + d.userData.len / 2), 0, WZ(dz)); }
+    if (pantry) { /* 요청(VR처럼 90° 회전): 작은 식탁의 평평한 끝을 아일랜드 남쪽 면(상판 z 3.07, 아일랜드 없으면 발코니 벽 면 z 2.41)에 붙여 남쪽으로 뻗게 — 의자는 동·서 양쪽 */
+      const islOn = ['4-1', '4-3', '4-4'].includes(s['4']), zEnd = islOn ? 3.07 : 2.41, xc = 5.75;
+      d.position.set(WX(xc), 0, WZ(zEnd)); d.rotation.y = Math.PI / 2;
+      d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI / 2 };
+      diningPendant.position.set(WX(xc), 0, WZ(zEnd + d.userData.len / 2));
+    } else { /* 기본(현관창고): 큰 식탁(1.95m)은 평평한 끝을 창고 벽(면 x 4.8)에 붙여 동쪽으로 — 아일랜드에 의자가 닿지 않게 남쪽으로 */
+      const wallFace = 4.8, dz = 4.0;
+      d.position.set(WX(wallFace), 0, WZ(dz)); d.rotation.y = Math.PI;
+      d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI };
+      diningPendant.position.set(WX(wallFace + d.userData.len / 2), 0, WZ(dz)); } }
   show('o5base', !s['5']); show('o5-1', s['5'] === '5-1'); show('o5-2', s['5'] === '5-2');
   show('o6base', !s['6']); show('o6-1', s['6'] === '6-1'); show('o6-2', s['6'] === '6-2');
   show('o7-1', s['7'] === '7-1'); tagGroup('dress71').visible = s['7'] === '7-1';
