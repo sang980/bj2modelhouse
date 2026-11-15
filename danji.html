@@ -1117,9 +1117,12 @@ function buildAmenities(MAT) {
   /* 주민공동시설(진입광장 북쪽, 부대복리시설-1): 광장 FH 110 ~ 북쪽 단 130 사이 옹벽에 붙은 5층 — 아래 2층 벽돌, 위 3층 회색·유리 */
   { /* 남쪽 면을 옹벽보다 0.9m 광장 쪽으로. 모형: 서쪽 절반은 갈색 도장, 동쪽 절반은 1층 갈색 위 회색 석재 박스(큰 짙은 창) + 갈색 띠 + 물러난 회색 맨 위층 */
     const PW = [[-119.69, 55.95], [-92, 38.35], [-100.2, 25.55], [-127.3, 42.81]], PE = [[-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-100.2, 25.55]]; /* 동쪽 절반은 121→110 옹벽이 1m 앞에 있어 앞면을 1.6m 광장 쪽으로 */
-    prism(PW, Y(109.6), Y(130.4), G.brick, G.roof); prism(PW, Y(130.4), Y(131.3), G.para);
-    prism(PE, Y(109.6), Y(114), G.brick); prism(PE, Y(114), Y(122.4), G.white); prism(PE, Y(122.4), Y(126), G.brick, G.roof); prism(PE, Y(126), Y(126.9), G.para);
-    const QE = shrink(PE, 2.2); prism(QE, Y(126), Y(130.4), G.stone, G.roof); prism(QE, Y(130.4), Y(131.2), G.para); }
+    /* 모형 사진(주민공동시설4): 아래 2개 층 회색 석재+큰 짙은 창, 가운데 2개 층 갈색, 맨 위층은 안으로 물러난 회색 석재(옥상 테라스 화단) */
+    prism(PW, Y(109.6), Y(117.4), G.white); prism(PW, Y(117.4), Y(125.4), G.brick, G.roof); prism(PW, Y(125.4), Y(126.3), G.para);
+    const QW = shrink(PW, 2.4); prism(QW, Y(125.4), Y(130.4), G.stone, G.roof); prism(QW, Y(130.4), Y(131.3), G.para);
+    prism(PE, Y(109.6), Y(117.4), G.white); prism(PE, Y(117.4), Y(123.2), G.brick, G.roof); prism(PE, Y(123.2), Y(124.1), G.para);
+    const QE = shrink(PE, 2.2); prism(QE, Y(123.2), Y(128.6), G.stone, G.roof); prism(QE, Y(128.6), Y(129.5), G.para);
+    for (const Pp of [PW, PE]) { const cx2 = Pp.reduce((s2, p) => s2 + p[0], 0) / Pp.length, cz2 = Pp.reduce((s2, p) => s2 + p[1], 0) / Pp.length; for (let k = 0; k < Pp.length; k++) { const a2 = Pp[k], b2 = Pp[(k + 1) % Pp.length], mx = (a2[0] + b2[0]) / 2, mz = (a2[1] + b2[1]) / 2, dl = Math.hypot(mx - cx2, mz - cz2); extraTrees.push([mx + (cx2 - mx) / dl * 1.2, Y(Pp === PW ? 125.4 : 123.2), mz + (cz2 - mz) / dl * 1.2, .8, 3]); } } }
   /* 하부외부계단 1(모형 VE10·사진: 정문 옆 도로 모퉁이의 낮은 밝은 회색 상자, 2개 층) */
   { const v = [.501, .866], w = [.866, -.501], c = [-123.5 + w[0] * 2.1 + v[0] * 2.6, 49.4 + w[1] * 2.1 + v[1] * 2.6], ST = { gb: G.stone, uv: uvTile(6, 3.6) }, GL = { gb: G.glass, uv: uvTile(6, 3.6) };
     obox(c[0], c[1], v[0], v[1], 10, 4.6, Y(109.6), Y(117.8), { front: ST, back: GL, left: ST, right: ST, top: { gb: G.roof } }); obox(c[0], c[1], v[0], v[1], 10.4, 5, Y(117.8), Y(118.6), { front: { gb: G.para }, back: { gb: G.para }, left: { gb: G.para }, right: { gb: G.para }, top: { gb: G.para } }); }
