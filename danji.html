@@ -646,7 +646,7 @@ async function build() {
   const G = {}; for (const k of ['podium', 'terr', 'tdeck', 'rail', 'front', 'frontDk', 'frontLt', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
   for (const D of DONG) buildDong(D, G, MAT);
   for (const k in G) { if (!G[k].i.length) continue; const m = new THREE.Mesh(G[k].build(), MAT[k]); m.castShadow = true; m.receiveShadow = true; scene.add(m); }
-  buildAmenities(MAT); buildYard(); T_GREEN_REF.t = T.green; buildEntrance();
+  buildAmenities(MAT); buildYard(); T_GREEN_REF.t = T.green; buildEntrance(); if (GEO.ok) buildNW();
   prog(62); await tick();
 
   /* ===== 주변 건물: 실제 데이터(OSM 윤곽·층수)가 있으면 그것으로, 없으면 개략 생성 ===== */
@@ -907,6 +907,41 @@ const ENT = (() => { const R = [-90, 55.4], d = [.867, -.498], n = [.498, .867],
   return { R, d, n, at, gate: at(22), mouth: at(25), road: at(31), ne: [-60.8, 38.1], sse: [-76.7, 78.8], sculp: [-71.8, 62.1],
     PZ: [[-116.4, 52.7], [-68.6, 24.7], [-34.8, 83], [-61, 84.6], [-70, 89.2], [-86.5, 97.5], [-97.5, 94.7], [-105.7, 78.2], [-116.7, 59]] }; })();
 const ENT_GAP = (() => { const a = ENT.at(20), b = ENT.at(33), n = ENT.n, w = 5.2; return [[a[0] - n[0] * w, a[1] - n[1] * w], [b[0] - n[0] * w, b[1] - n[1] * w], [b[0] + n[0] * w, b[1] + n[1] * w], [a[0] + n[0] * w, a[1] + n[1] * w]]; })(); /* 진입로가 지나는 곳은 둘레 옹벽·화단을 비움 */
+/* ---------- 북서쪽 부출입구(공사계획평면도·모형 VE14): 서측 도로 지상 차로(GL 117→126.6)를 단지 서쪽 옹벽 따라 북쪽으로, 117동 모퉁이에 부출입구(옹벽 속 지하주차장 입구+횡단보도), 옆에 데크 하부 시설 ---------- */
+function buildNW() {
+  const mkT = draw => { const c = cnv(256, 256), g = c.getContext('2d'); draw(g); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
+  const asp = mkT(g => { g.fillStyle = '#4c4f54'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 2600; i++) { const v = (rand() - .5) * .12; g.fillStyle = v > 0 ? `rgba(255,255,255,${v})` : `rgba(0,0,0,${-v})`; g.fillRect(rand() * 256, rand() * 256, 2, 2); } });
+  const pav = mkT(g => { g.fillStyle = '#9d9e9a'; g.fillRect(0, 0, 256, 256); for (let y = 0; y < 256; y += 32) for (let x = 0; x < 256; x += 32) { const v = 196 + (rand() - .5) * 22 | 0; g.fillStyle = `rgb(${v},${v - 1},${v - 5})`; g.fillRect(x + 1, y + 1, 30, 30); } });
+  const off = (f, u) => ({ polygonOffset: true, polygonOffsetFactor: f, polygonOffsetUnits: u });
+  /* 도로 중심선: 단지 서쪽 경계에서 10m 바깥 */
+  const C = [[-152, 14], [-161, 1], [-172, -15.5], [-185, -36], [-200, -60]];
+  const band = (L, o0, o1) => { const A = [], B = []; for (let i = 0; i < L.length; i++) { const a = L[Math.max(0, i - 1)], b = L[Math.min(L.length - 1, i + 1)], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz), nx = -dz / l, nz = dx / l; A.push([L[i][0] + nx * o0, L[i][1] + nz * o0]); B.push([L[i][0] + nx * o1, L[i][1] + nz * o1]); } return A.concat(B.reverse()); };
+  /* 노선 왼쪽(+법선)이 단지 쪽인지 확인 */
+  const sd = (() => { const a = C[2], b = C[3], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz); return polyDist(SITE, a[0] - dz / l * 6, a[1] + dx / l * 6) < polyDist(SITE, a[0] + dz / l * 6, a[1] - dx / l * 6) ? 1 : -1; })();
+  drapePoly(band(C, -5 * sd, 5 * sd), new THREE.MeshLambertMaterial({ map: asp, ...off(-5, -10) }), .45, 2.5);
+  drapePoly(band(C, 5 * sd, 9.2 * sd), new THREE.MeshLambertMaterial({ map: pav, ...off(-3, -6) }), .55, 2.5); /* 옹벽 앞 보도 */
+  { const W = new THREE.MeshLambertMaterial({ color: '#e7a23a', ...off(-8, -16) }); for (let i = 0; i < C.length - 1; i++) { const a = C[i], b = C[i + 1]; drapePoly(band([a, b], -.08, .08), W, .5, 2); } } /* 주황 중앙선 */
+  /* 부출입구: 117동 모퉁이(경계 (-163.5,-20.8)~(-174.5,-29)) — 옹벽 면에 어두운 지하주차장 입구 + 흰 틀 + 진입 아스팔트 + 횡단보도 */
+  { const a = [-163.5, -20.8], b = [-174.5, -29], m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], el = Math.hypot(b[0] - a[0], b[1] - a[1]), e = [(b[0] - a[0]) / el, (b[1] - a[1]) / el];
+    let n = [-e[1], e[0]]; if (polyDist(SITE, m[0] + n[0] * 3, m[1] + n[1] * 3) > 0) n = [-n[0], -n[1]]; /* n: 단지 안쪽 */
+    const yr = heightAt(m[0] - n[0] * 3, m[1] - n[1] * 3) + .45, dk = new GB(), fr = new GB(), F4 = gb => ({ front: { gb }, back: { gb }, left: { gb }, right: { gb }, top: { gb } });
+    obox(m[0] - n[0] * .35, m[1] - n[1] * .35, e[0], e[1], 7.6, .1, yr - .2, yr + 4.2, { front: { gb: dk }, back: { gb: dk } });
+    obox(m[0] - n[0] * .55, m[1] - n[1] * .55, e[0], e[1], 9, .5, yr + 4.2, yr + 5, F4(fr)); for (const s2 of [-4.2, 4.2]) obox(m[0] + e[0] * s2 - n[0] * .55, m[1] + e[1] * s2 - n[1] * .55, e[0], e[1], .7, .5, yr - .2, yr + 4.2, F4(fr));
+    obox(m[0] - n[0] * 2.2, m[1] - n[1] * 2.2, e[0], e[1], 9.4, 3.6, yr + 5, yr + 5.3, F4(fr)); /* 캐노피 */
+    drapePoly([[m[0] + e[0] * 4 - n[0] * .3, m[1] + e[1] * 4 - n[1] * .3], [m[0] - e[0] * 4 - n[0] * .3, m[1] - e[1] * 4 - n[1] * .3], [m[0] - e[0] * 5 - n[0] * 12, m[1] - e[1] * 5 - n[1] * 12], [m[0] + e[0] * 5 - n[0] * 12, m[1] + e[1] * 5 - n[1] * 12]], new THREE.MeshLambertMaterial({ map: asp, ...off(-6, -12) }), .62, 2);
+    const Wm = new THREE.MeshLambertMaterial({ color: '#efefe9', ...off(-9, -18) }); for (let k = -3.2; k <= 3.3; k += .9) { const c = [m[0] - n[0] * 3.2 + e[0] * k, m[1] - n[1] * 3.2 + e[1] * k]; drapePoly([[c[0] - n[0] * 1.6 - e[0] * .22, c[1] - n[1] * 1.6 - e[1] * .22], [c[0] - n[0] * 1.6 + e[0] * .22, c[1] - n[1] * 1.6 + e[1] * .22], [c[0] + n[0] * 1.6 + e[0] * .22, c[1] + n[1] * 1.6 + e[1] * .22], [c[0] + n[0] * 1.6 - e[0] * .22, c[1] + n[1] * 1.6 - e[1] * .22]], Wm, .68, 1); }
+    scene.add(new THREE.Mesh(dk.build(), new THREE.MeshBasicMaterial({ color: '#15171a' }))); const fm = new THREE.Mesh(fr.build(), new THREE.MeshStandardMaterial({ color: '#dcdad4', roughness: .7 })); fm.castShadow = true; scene.add(fm);
+    /* 부출입구 사인(모형: 흰 판 + 짙은 글씨) */
+    const sc = cnv(512, 128), sg = sc.getContext('2d'); sg.fillStyle = '#f2f2ef'; roundRect(sg, 6, 10, 500, 108, 16); sg.fill(); sg.fillStyle = '#3a3f46'; sg.font = '800 64px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; sg.textAlign = 'center'; sg.textBaseline = 'middle'; sg.fillText('부출입구', 256, 66);
+    const st = new THREE.CanvasTexture(sc); st.colorSpace = THREE.SRGBColorSpace; const sm = new THREE.Mesh(new THREE.PlaneGeometry(3.6, .9), new THREE.MeshStandardMaterial({ map: st, roughness: .6, side: THREE.DoubleSide })); const sp = [m[0] - n[0] * 4.6, m[1] - n[1] * 4.6]; sm.position.set(sp[0], yr + 5.9, sp[1]); sm.lookAt(sp[0] - n[0], yr + 5.9, sp[1] - n[1]); scene.add(sm); }
+  /* 데크 하부 시설(모형 VE14: 부출입구 남쪽, 도로 높이의 밝은 회색 1층 + 큰 창) — 서쪽 옹벽 면에 붙음 */
+  { const a = [-152.5, -4.3], b = [-163.5, -20.8], el = Math.hypot(b[0] - a[0], b[1] - a[1]), e = [(b[0] - a[0]) / el, (b[1] - a[1]) / el], c0 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    let n = [-e[1], e[0]]; if (polyDist(SITE, c0[0] + n[0] * 3, c0[1] + n[1] * 3) > 0) n = [-n[0], -n[1]];
+    const c = [c0[0] - n[0] * 1.6, c0[1] - n[1] * 1.6], y0 = heightAt(c[0] - n[0] * 3, c[1] - n[1] * 3) + .3;
+    const tx = (() => { const cv = cnv(512, 256), g = cv.getContext('2d'); noiseFill(g, 512, 256, '#c9c6c0', .03, 700); for (const x0 of [30, 190, 350]) { g.fillStyle = '#4a4c50'; g.fillRect(x0 - 6, 60, 140, 140); const gr = g.createLinearGradient(0, 66, 0, 196); gr.addColorStop(0, '#cfe0ee'); gr.addColorStop(1, '#93b2c8'); g.fillStyle = gr; g.fillRect(x0, 66, 128, 128); } g.fillStyle = '#e4e2dc'; g.fillRect(0, 0, 512, 26); const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; return t; })();
+    const gb = new GB(), F = { gb, uv: uvTile(6, 4.2) }; obox(c[0], c[1], e[0], e[1], 13, 3.2, y0 - .4, y0 + 4.2, { front: F, back: F, left: F, right: F });
+    const mesh = new THREE.Mesh(gb.build(), new THREE.MeshStandardMaterial({ map: tx, roughness: .8 })); mesh.castShadow = true; scene.add(mesh); }
+}
 function buildEntrance() {
   const mkT = draw => { const c = cnv(256, 256), g = c.getContext('2d'); draw(g); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
   const pav = mkT(g => { g.fillStyle = '#9d9e9a'; g.fillRect(0, 0, 256, 256); for (let y = 0; y < 256; y += 32) for (let x = 0; x < 256; x += 32) { const v = 196 + (rand() - .5) * 22 | 0; g.fillStyle = `rgb(${v},${v - 1},${v - 5})`; g.fillRect(x + 1, y + 1, 30, 30); } }); /* 40cm 보도블록(한 장 4m) */
@@ -1036,12 +1071,7 @@ function buildAmenities(MAT) {
     const aGl = am(g => { g.fillStyle = '#8e9396'; g.fillRect(0, 0, 512, 256); glass(g, 10, 30, 492, 200, 0); g.fillStyle = '#c9ccce'; for (let x = 10; x < 512; x += 82) g.fillRect(x, 30, 6, 200); g.fillRect(10, 128, 492, 6); });
     m(G.brick, aB); m(G.white, aG); m(G.stone, aS); m(G.glass, aGl); m(G.para, new THREE.MeshStandardMaterial({ color: '#d6d4cf', roughness: .8, side: THREE.DoubleSide })); m(G.gateL, am(g => { g.fillStyle = '#8f9292'; g.fillRect(0, 0, 512, 256); g.fillStyle = '#5d6062'; for (let x = 6; x < 512; x += 16) g.fillRect(x, 40, 7, 176); g.fillStyle = '#a9acac'; g.fillRect(0, 0, 512, 34); g.fillRect(0, 222, 512, 34); }));
     m(G.roof, new THREE.MeshStandardMaterial({ color: '#a7a99f', roughness: .97 })); m(G.roofGd, MAT.green); } /* 모형: 지붕은 밝은 회색 자갈 */
-  /* 영장산터널 남측 갱구: 콘크리트 면벽 + 상·하행 2개 터널 */
-  { const C = new GB(), K = new GB(), dx = .443, dz = .896, px = dz, pz = -dx, cx = -186 - dx * 2, cz = -37 - dz * 2, y0 = GEO.ok ? groundAt(-172, 2) - 1.5 : heightAt(cx, cz) - 2;
-    obox(cx, cz, px, pz, 46, 3, y0, y0 + 11, { front: { gb: C, uv: uvTile(6, 3) }, left: { gb: C, uv: uvTile(3, 3) }, right: { gb: C, uv: uvTile(3, 3) }, top: { gb: C, uv: true, uvTop: uvPlanar(6) } });
-    for (const s of [-9.5, 9.5]) obox(cx + px * s + dx * 1.52, cz + pz * s + dz * 1.52, px, pz, 15, .05, y0, y0 + 7.5, { front: { gb: K } });
-    for (const s of [-1, 1]) obox(cx + px * s * 24 + dx * 6, cz + pz * s * 24 + dz * 6, dx, dz, 12, 1.2, y0, y0 + 6, { front: { gb: C, uv: uvTile(6, 3) }, back: { gb: C, uv: uvTile(6, 3) }, top: { gb: C } });
-    m(C, MAT.concrete); m(K, new THREE.MeshBasicMaterial({ color: '#0d0f12' })); }
+  /* 영장산터널 갱구는 도로 아래(깎기 구간)에 있어 모형에서도 보이지 않음 — 지상 차로만 표현(buildNW) */
   /* 학교·구청(단지 남측) */
   const S2 = new GB(), R2 = new GB(); const su = [Math.cos(-.52), Math.sin(-.52)];
   /* 배치도 남측의 밝은 회색 지붕(학교 건물) 윤곽을 잰 값 + 체육관 + 수정구청 */
