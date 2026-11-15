@@ -2076,7 +2076,7 @@ function coffeeOvalT(x, z) { const g = piece('커피테이블', x, z, 0), w = st
   const top = mesh(CY(.5, .5, .07, 56), w, 0, .37, 0, g); top.scale.set(.7, 1, 1.1);
   const tier = mesh(CY(.52, .52, .05, 56), std(0xf0d98f, .22), 0, .31, 0, g); tier.scale.set(.7, 1, 1.1);
   const base = mesh(CY(.3, .33, .285, 40), w, 0, .1425, 0, g); base.scale.set(.7, 1, 1.1);
-  roundLeafPlant(g, -.08, .405, -.12);
+  roundLeafPlant(g, -.12, .405, -.17); /* 화병이 책 더미 모서리를 파고들지 않게 */
   const bk = new THREE.Group(); bk.position.set(.05, .405, .02); bk.rotation.y = -.35; g.add(bk);
   mesh(BX(.25, .022, .18), std(0x2c2e31, .55), 0, .011, 0, bk); mesh(BX(.23, .02, .17), std(0x44474c, .5), .006, .032, -.004, bk);
   mesh(BX(.252, .018, .001), std(0xe9e6df, .8), 0, .011, .0905, bk, { cast: false }); // 책 종이 단면
