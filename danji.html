@@ -601,6 +601,7 @@ async function build() {
       let nx2 = ez / L, nz2 = -ex / L; /* 바깥쪽 법선 */
       if (polyDist(SITE, (a[0] + b[0]) / 2 + nx2 * .5, (a[1] + b[1]) / 2 + nz2 * .5) < 0) { nx2 = -nx2; nz2 = -nz2; }
       for (let k = 0; k < n; k++) { const t0 = k / n, t1 = (k + 1) / n, P = [a[0] + ex * t0, a[1] + ez * t0], Q = [a[0] + ex * t1, a[1] + ez * t1];
+        if (AMEN_POLYS.some(A2 => polyDist(A2, (P[0] + Q[0]) / 2, (P[1] + Q[1]) / 2) < -.2)) { s += L / n; continue; } /* 부대시설 건물 외벽이 옹벽 대신 */
         const yin = p => levelAt(p[0] - nx2 * 1.2, p[1] - nz2 * 1.2), yout = p => GEO.ok ? groundAt(p[0] + nx2 * 2, p[1] + nz2 * 2) : -4;
         const tP = Math.max(yin(P), yout(P)) + .02, tQ = Math.max(yin(Q), yout(Q)) + .02, bP = Math.min(yin(P), yout(P)) - 1.5, bQ = Math.min(yin(Q), yout(Q)) - 1.5, l = L / n;
         gb.quad([P[0], bP, P[1]], [Q[0], bQ, Q[1]], [Q[0], tQ, Q[1]], [P[0], tP, P[1]], [nx2, 0, nz2], [s / 20, bP / 10, (s + l) / 20, bQ / 10, (s + l) / 20, tQ / 10, s / 20, tP / 10]); s += l; } }
@@ -610,7 +611,7 @@ async function build() {
     for (let i = 0; i < SITE.length; i++) { const a = SITE[i], b = SITE[(i + 1) % SITE.length], ex = b[0] - a[0], ez = b[1] - a[1], L0 = Math.hypot(ex, ez); if (L0 < 2) continue;
       const ux = ex / L0, uz = ez / L0; let nx2 = uz, nz2 = -ux; if (polyDist(SITE, (a[0] + b[0]) / 2 + nx2 * .5, (a[1] + b[1]) / 2 + nz2 * .5) < 0) { nx2 = -nx2; nz2 = -nz2; }
       const n = Math.max(1, Math.ceil(L0 / 8)), L = L0 / n;
-      for (let k = 0; k < n; k++) { const t = (k + .5) / n, px = a[0] + ex * t, pz = a[1] + ez * t, mx = px - nx2 * 1.1, mz = pz - nz2 * 1.1, yy = levelAt(mx, mz);
+      for (let k = 0; k < n; k++) { const t = (k + .5) / n, px = a[0] + ex * t, pz = a[1] + ez * t, mx = px - nx2 * 1.1, mz = pz - nz2 * 1.1, yy = levelAt(mx, mz); if (AMEN_POLYS.some(A2 => polyDist(A2, px, pz) < 0)) continue;
         obox(mx, mz, ux, uz, L, 1.6, yy, yy + .75, { front: hedge, back: hedge, left: hedge, right: hedge, top });
         obox(px - nx2 * .08, pz - nz2 * .08, ux, uz, L, .06, yy, yy + 1.15, { front: { gb: Rl }, back: { gb: Rl }, top: { gb: Rl } }); } }
     const hm = new THREE.Mesh(H2.build(), new THREE.MeshLambertMaterial({ map: T.green })); hm.receiveShadow = hm.castShadow = true; scene.add(hm);
@@ -854,9 +855,9 @@ function buildYard() {
 }
 
 /* ---------- 부대시설(주민공동시설·근린생활시설·경비실) ---------- */
-const AMEN_POLYS = [[[-146.8, -1.5], [-116.5, -1], [-116.2, 32.3], [-124.1, 36.4]], [[-115.8, 53.7], [-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-124, 40.9]], [[-114.2, 52], [-98.1, 50.9], [-97.1, 59], [-113.3, 60.1]], [[-104.2, 71.6], [-96.2, 68], [-80.6, 96.5], [-88.7, 101.1]]]; /* 나무가 지붕을 뚫지 않게 */
+const AMEN_POLYS = [[[-150.46, 0.5], [-116.5, -1], [-116.2, 32.3], [-129.32, 39.25]], [[-119.69, 55.95], [-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-127.3, 42.81]], [[-114.2, 52], [-98.1, 50.9], [-97.1, 59], [-113.3, 60.1]], [[-104.2, 71.6], [-96.2, 68], [-80.6, 96.5], [-88.7, 101.1]]]; /* 나무가 지붕을 뚫지 않게 */
 function buildAmenities(MAT) {
-  const G = { brick: new GB(), white: new GB(), glass: new GB(), roof: new GB(), roofGd: new GB(), stone: new GB(), para: new GB() };
+  const G = { brick: new GB(), white: new GB(), glass: new GB(), roof: new GB(), roofGd: new GB(), stone: new GB(), para: new GB(), gateL: new GB() };
   const ru = [.484, .875], rl = Math.hypot(...ru), ux = ru[0] / rl, uz = ru[1] / rl; /* 서측 대로와 나란한 방향 */
   /* 바닥 해발고(도면): 주민공동시설-3은 서측 도로 GL≈115 → 윗층이 북쪽 단(130)에 닿음, 어린이집·경비실은 진입광장 FH 110, 근린생활시설은 도로 GL≈107 */
   const blk = (c, L, D, y0, h1, h2, absBase) => { if (absBase !== undefined) { const d = absBase - Y0 - .4 - y0; y0 += d; h1 += d; h2 += d; }
@@ -872,10 +873,10 @@ function buildAmenities(MAT) {
     if (roof) for (const [i0, i1, i2] of THREE.ShapeUtils.triangulateShape(P.map(p => new THREE.Vector2(p[0], p[1])), [])) { const A3 = [P[i0][0], y1, P[i0][1]], B3 = [P[i1][0], y1, P[i1][1]], C3 = [P[i2][0], y1, P[i2][1]], cr = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]); cr >= 0 ? roof.tri(A3, B3, C3, [0, 1, 0]) : roof.tri(A3, C3, B3, [0, 1, 0]); } };
   const Y = h => h - Y0, shrink = (P, d) => { const cx = P.reduce((s, p) => s + p[0], 0) / P.length, cz = P.reduce((s, p) => s + p[1], 0) / P.length; return P.map(p => { const l = Math.hypot(p[0] - cx, p[1] - cz); return [p[0] - (p[0] - cx) / l * d, p[1] - (p[1] - cz) / l * d]; }); };
   /* 주민공동시설(서측 대로변, 부대복리시설-2): 도로 GL≈115 → 1·2층 벽돌, 3·4층 회색, 4층은 안으로 물러남, 옥상 정원 */
-  { const P = [[-146.8, -1.5], [-116.5, -1], [-116.2, 32.3], [-124.1, 36.4]]; /* 도로 쪽 면을 단지 옹벽보다 0.8m 바깥으로(도로에서 건물 외벽이 보이게) */ prism(P, Y(114.6), Y(127.2), G.brick, G.roof); prism(P, Y(127.2), Y(128.1), G.para); const Q = shrink(P, 3); prism(Q, Y(127.2), Y(131.4), G.stone, G.roof); prism(Q, Y(131.4), Y(132.2), G.para); } /* 모형: 도로 쪽 갈색 도장 3개 층 + 물러난 회색 석재 맨 위층, 회색 자갈 지붕·난간 */
+  { const P = [[-150.46, 0.5], [-116.5, -1], [-116.2, 32.3], [-129.32, 39.25]]; /* 모형: 도로 쪽 면이 보도에 바로 면함 — 단지 경계 옹벽선보다 0.8m 바깥(전에는 3~5m 안쪽이라 옹벽에 가려짐) */ prism(P, Y(114.6), Y(127.2), G.brick, G.roof); prism(P, Y(127.2), Y(128.1), G.para); const Q = shrink(P, 3); prism(Q, Y(127.2), Y(131.4), G.stone, G.roof); prism(Q, Y(131.4), Y(132.2), G.para); } /* 모형: 도로 쪽 갈색 도장 3개 층 + 물러난 회색 석재 맨 위층, 회색 자갈 지붕·난간 */
   /* 주민공동시설(진입광장 북쪽, 부대복리시설-1): 광장 FH 110 ~ 북쪽 단 130 사이 옹벽에 붙은 5층 — 아래 2층 벽돌, 위 3층 회색·유리 */
   { /* 남쪽 면을 옹벽보다 0.9m 광장 쪽으로. 모형: 서쪽 절반은 갈색 도장, 동쪽 절반은 1층 갈색 위 회색 석재 박스(큰 짙은 창) + 갈색 띠 + 물러난 회색 맨 위층 */
-    const PW = [[-115.8, 53.7], [-92, 38.35], [-100.2, 25.55], [-124, 40.9]], PE = [[-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-100.2, 25.55]]; /* 동쪽 절반은 121→110 옹벽이 1m 앞에 있어 앞면을 1.6m 광장 쪽으로 */
+    const PW = [[-119.69, 55.95], [-92, 38.35], [-100.2, 25.55], [-127.3, 42.81]], PE = [[-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-100.2, 25.55]]; /* 동쪽 절반은 121→110 옹벽이 1m 앞에 있어 앞면을 1.6m 광장 쪽으로 */
     prism(PW, Y(109.6), Y(130.4), G.brick, G.roof); prism(PW, Y(130.4), Y(131.3), G.para);
     prism(PE, Y(109.6), Y(114), G.brick); prism(PE, Y(114), Y(122.4), G.white); prism(PE, Y(122.4), Y(126), G.brick, G.roof); prism(PE, Y(126), Y(126.9), G.para);
     const QE = shrink(PE, 2.2); prism(QE, Y(126), Y(130.4), G.stone, G.roof); prism(QE, Y(130.4), Y(131.2), G.para); }
@@ -887,8 +888,9 @@ function buildAmenities(MAT) {
     const g3 = new THREE.CylinderGeometry(4.2, 4.2, .35, 40), m3 = new THREE.Mesh(g3, new THREE.MeshLambertMaterial({ color: '#d9d6cf' })); m3.position.set(-90, Y(110) + .17, 55.4); scene.add(m3); }
   /* 주출입구 게이트(모형): 진입로 위를 가로지르는 평지붕 캐노피 + 기둥 4개 */
   { const gc = [-106, 57], gy = 110 - Y0, W4 = { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.roof } };
-    obox(gc[0], gc[1], ux, uz, 18, 7.5, gy + 5, gy + 5.7, W4);
-    for (const a of [-8, 8]) for (const b of [-3.2, 3.2]) obox(gc[0] + ux * a - uz * b, gc[1] + uz * a + ux * b, ux, uz, .5, .5, gy, gy + 5, W4); }
+    const LV = { gb: G.gateL, uv: uvTile(6, 1.6) }; obox(gc[0], gc[1], ux, uz, 19.4, 7.5, gy + 4.8, gy + 6.4, { front: LV, back: LV, left: LV, right: LV, top: { gb: G.roof } }); /* 모형: 두꺼운 회색 박스 프레임 + 루버 */
+    obox(gc[0], gc[1], ux, uz, 18.2, 6.3, gy + 4.75, gy + 4.8, { front: { gb: G.para }, back: { gb: G.para } });
+    for (const a of [-9.1, 9.1]) obox(gc[0] + ux * a, gc[1] + uz * a, ux, uz, 1.2, 7.5, gy, gy + 4.8, W4); } /* 양쪽 벽 다리 */
   { const P = [[-104.2, 71.6], [-96.2, 68], [-80.6, 96.5], [-88.7, 101.1]]; prism(P, Y(105.4), Y(109.8), G.brick); prism(P, Y(109.8), Y(113.6), G.white, G.roof); prism(P, Y(113.6), Y(114.4), G.para); } /* 근린생활시설(도로 GL≈106, 2층), 회색 지붕 */
   const m = (gb, mat) => { const x = new THREE.Mesh(gb.build(), mat); x.castShadow = x.receiveShadow = true; scene.add(x); };
   { const am = (draw) => { const c = cnv(512, 256), g = c.getContext('2d'); draw(g); const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughnessMap: roughFrom(t), roughness: 1, envMapIntensity: .7 }); };
@@ -897,7 +899,7 @@ function buildAmenities(MAT) {
     const aG = am(g => { stoneBase(g); for (const x0 of [56, 300]) { g.fillStyle = '#4a4c50'; g.fillRect(x0 - 8, 52, 172, 156); glass(g, x0, 60, 156, 140, 2); g.fillStyle = '#4a4c50'; g.fillRect(x0 + 76, 60, 4, 140); } }); /* 모형: 회색 석재 판 + 큰 짙은 창 */
     const aS = am(g => { stoneBase(g); for (let k = 0; k < 3; k++) win(g, 30 + k * 165, 80, 128, 96, 2, 6, '#e8e8e6', 0); g.fillStyle = 'rgba(255,240,210,.22)'; for (let k = 0; k < 3; k++) g.fillRect(30 + k * 165, 80, 128, 96); }); /* 맨 위층: 회색 석재 + 창 줄 */
     const aGl = am(g => { g.fillStyle = '#8e9396'; g.fillRect(0, 0, 512, 256); glass(g, 10, 30, 492, 200, 0); g.fillStyle = '#c9ccce'; for (let x = 10; x < 512; x += 82) g.fillRect(x, 30, 6, 200); g.fillRect(10, 128, 492, 6); });
-    m(G.brick, aB); m(G.white, aG); m(G.stone, aS); m(G.glass, aGl); m(G.para, new THREE.MeshStandardMaterial({ color: '#d6d4cf', roughness: .8, side: THREE.DoubleSide }));
+    m(G.brick, aB); m(G.white, aG); m(G.stone, aS); m(G.glass, aGl); m(G.para, new THREE.MeshStandardMaterial({ color: '#d6d4cf', roughness: .8, side: THREE.DoubleSide })); m(G.gateL, am(g => { g.fillStyle = '#8f9292'; g.fillRect(0, 0, 512, 256); g.fillStyle = '#5d6062'; for (let x = 6; x < 512; x += 16) g.fillRect(x, 40, 7, 176); g.fillStyle = '#a9acac'; g.fillRect(0, 0, 512, 34); g.fillRect(0, 222, 512, 34); }));
     m(G.roof, new THREE.MeshStandardMaterial({ color: '#a7a99f', roughness: .97 })); m(G.roofGd, MAT.green); } /* 모형: 지붕은 밝은 회색 자갈 */
   /* 영장산터널 남측 갱구: 콘크리트 면벽 + 상·하행 2개 터널 */
   { const C = new GB(), K = new GB(), dx = .443, dz = .896, px = dz, pz = -dx, cx = -186 - dx * 2, cz = -37 - dz * 2, y0 = GEO.ok ? groundAt(-172, 2) - 1.5 : heightAt(cx, cz) - 2;
@@ -1394,7 +1396,7 @@ $('#uv-x').addEventListener('click', exitUnit);
 addEventListener('keydown', e => { if (e.key === 'Escape' && unit) exitUnit(); });
 $('#cd-ho').addEventListener('submit', e => { e.preventDefault(); const d = +$('#dong').value; const ho = parseInt(($('#cd-hoin').value || '').replace(/[^0-9]/g, ''), 10);
   const raw = ($('#cd-hoin').value || '').trim(), isB = /^(b|지하)/i.test(raw), ho2 = isB ? -ho : ho; const err = !ho || ho < 101 ? '호수를 숫자로 입력해 주세요. 예: 1003 = 10층 3호, 테라스 세대는 B101' : enterUnit(d, ho2); $('#cd-err').textContent = err || ''; });
-window.__danji = { BLD, TZ, levelAt, unitView, enterUnit, exitUnit, scene, camera, controls, goTo, select, heightAt, renderer, look: enterUnit };
+window.__danji = { BLD, TZ, SITE, polyDist, groundAt, levelAt, unitView, enterUnit, exitUnit, scene, camera, controls, goTo, select, heightAt, renderer, look: enterUnit };
 
 /* ---------- 루프 ---------- */
 const clock = new THREE.Clock(), fwd = new THREE.Vector3(), rgt = new THREE.Vector3(), mv = new THREE.Vector3();
