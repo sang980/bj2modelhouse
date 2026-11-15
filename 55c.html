@@ -3135,7 +3135,7 @@ function applyOptions() {
     if (selected && (selected === diningS || selected === diningL || selected === diningP6) && !selected.visible) select(null);
     // 북쪽 벽(z 2.66)·아일랜드(z ≤ 2.8)에 의자 등받이가 닿지 않도록 남쪽으로 당김
     if (pantry) { /* 요청(VR처럼 90° 회전): 작은 식탁의 평평한 끝을 아일랜드 남쪽 면(상판 z 3.07, 아일랜드 없으면 발코니 벽 면 z 2.41)에 붙여 남쪽으로 뻗게 — 의자는 동·서 양쪽 */
-      const islOn = ['4-1', '4-3', '4-4'].includes(s['4']), zEnd = islOn ? 2.56 : 2.41, xc = 6.04; /* 요청: 동쪽으로 24cm — 서쪽 의자 등받이는 예전 자리(x 5.26) 그대로 */ /* 아일랜드 상판 남쪽 z 2.56 */
+      const islOn = ['4-1', '4-3', '4-4'].includes(s['4']), zEnd = islOn ? 2.56 : 2.01, xc = 6.04; /* 6인 식탁(아일랜드 없음): 요청 — 복도 침범 없게 북쪽(주방·세탁실 문 앞 바닥)으로 0.4m, 남쪽 끝 3.61 */ /* 요청: 동쪽으로 24cm — 서쪽 의자 등받이는 예전 자리(x 5.26) 그대로 */ /* 아일랜드 상판 남쪽 z 2.56 */
       d.position.set(WX(xc), 0, WZ(zEnd)); d.rotation.y = Math.PI / 2;
       d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI / 2 };
       diningPendant.position.set(WX(xc), 0, WZ(zEnd + d.userData.len / 2));
