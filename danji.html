@@ -641,7 +641,7 @@ async function build() {
         if (AMEN_POLYS.some(A2 => polyDist(A2, (P[0] + Q[0]) / 2, (P[1] + Q[1]) / 2) < -.2) || inPoly(ENT_GAP, (P[0] + Q[0]) / 2, (P[1] + Q[1]) / 2)) { s += L / n; continue; } /* 부대시설 건물 외벽이 옹벽 대신 */
         const yin = p => levelAt(p[0] - nx2 * 1.2, p[1] - nz2 * 1.2), yout = p => GEO.ok ? groundAt(p[0] + nx2 * 2, p[1] + nz2 * 2) : -4;
         const tP = Math.max(yin(P), yout(P)) + .02, tQ = Math.max(yin(Q), yout(Q)) + .02, bP = Math.min(yin(P), yout(P)) - 1.5, bQ = Math.min(yin(Q), yout(Q)) - 1.5, l = L / n;
-        const east = nx2 > .4 && (P[0] + Q[0]) / 2 > 115 && (P[1] + Q[1]) / 2 > -60, dP = yin(P) - yout(P), dQ = yin(Q) - yout(Q);
+        const east = (nx2 > .4 && (P[0] + Q[0]) / 2 > 115 && (P[1] + Q[1]) / 2 > -60) || (nz2 < -.35 && (P[0] + Q[0]) / 2 > -60), dP = yin(P) - yout(P), dQ = yin(Q) - yout(Q);
         if (east && dP > 4.5 && dQ > 4.5) { const nt = Math.min(3, Math.ceil(Math.max(dP, dQ) / 3.8)), off = 3.4;
           for (let j = 0; j < nt; j++) { const o = j * off, tPj = yin(P) - dP * j / nt + .02, tQj = yin(Q) - dQ * j / nt + .02, bPj = yin(P) - dP * (j + 1) / nt - (j === nt - 1 ? 1.5 : 0), bQj = yin(Q) - dQ * (j + 1) / nt - (j === nt - 1 ? 1.5 : 0);
             const P2 = [P[0] + nx2 * o, P[1] + nz2 * o], Q2 = [Q[0] + nx2 * o, Q[1] + nz2 * o];
