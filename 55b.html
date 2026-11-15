@@ -1472,8 +1472,14 @@ await phase('거실을 꾸미는 중', 56);
     x.beginPath(); x.moveTo(256, 62); x.bezierCurveTo(215, 80, 190, 118, 150, 135); x.bezierCurveTo(110, 150, 60, 150, 8, 158); x.bezierCurveTo(60, 163, 110, 167, 150, 161); x.bezierCurveTo(185, 156, 220, 150, 256, 140); x.closePath(); x.fill();
     x.beginPath(); x.moveTo(70, 270); x.bezierCurveTo(70, 230, 72, 200, 90, 185); x.bezierCurveTo(115, 168, 150, 170, 175, 165); x.lineTo(256, 150); x.lineTo(256, 176); x.bezierCurveTo(220, 182, 200, 190, 196, 215); x.bezierCurveTo(192, 240, 195, 255, 198, 270); x.closePath(); x.fill();
     for (let i = 0; i < 2600; i++) { x.fillStyle = `rgba(90,66,40,${rnd() * .06})`; x.fillRect(rnd() * 256, rnd() * 270, 1.5, 1.5); } x.fillStyle = '#5e4c3a'; x.fillRect(206, 256, 28, 2); return c; })());
-  pbox(x, x + .03, 1.0, 2.0, 3.0, 3.95, std(0xc8a57a, .5), g);
-  pbox(x + .03, x + .034, 1.03, 1.97, 3.03, 3.92, std(0xffffff, .9, 0, { map: art }), g, { cast: false });
+  /* VR: 모서리를 비스듬히 깎은 얇은 원목 액자 + 뒤에서 벽으로 번지는 따뜻한 빛 */
+  const cham = (w, h, c) => { const s = new THREE.Shape(); s.moveTo(-w / 2 + c, -h / 2); s.lineTo(w / 2 - c, -h / 2); s.lineTo(w / 2, -h / 2 + c); s.lineTo(w / 2, h / 2 - c); s.lineTo(w / 2 - c, h / 2); s.lineTo(-w / 2 + c, h / 2); s.lineTo(-w / 2, h / 2 - c); s.lineTo(-w / 2, -h / 2 + c); s.closePath(); return s; };
+  const W = .95, Hh = 1.0, iw = W - .05, ih = Hh - .05, ring = cham(W, Hh, .08); ring.holes.push(cham(iw, ih, .065));
+  const fg = new THREE.ExtrudeGeometry(ring, { depth: .03, bevelEnabled: false }); fg.rotateY(Math.PI / 2); mesh(fg, std(0xc8a57a, .5), WX(x), 1.5, WZ(3.475), g);
+  const ag = new THREE.ShapeGeometry(cham(iw, ih, .065)), ap = ag.attributes.position, au = ag.attributes.uv; for (let i = 0; i < ap.count; i++) au.setXY(i, (ap.getX(i) + iw / 2) / iw, (ap.getY(i) + ih / 2) / ih);
+  ag.rotateY(Math.PI / 2); mesh(ag, std(0xffffff, .9, 0, { map: art }), WX(x + .026), 1.5, WZ(3.475), g, { cast: false });
+  { const gc = mkCanvas(128, 128), gx = gc.getContext('2d'); gx.shadowColor = 'rgba(255,214,160,1)'; gx.shadowBlur = 26; gx.fillStyle = 'rgba(255,214,160,1)'; gx.fillRect(30, 30, 68, 68);
+    const halo = new THREE.Mesh(new THREE.PlaneGeometry(1.35, 1.4), new THREE.MeshBasicMaterial({ map: toTex(gc), transparent: true, opacity: .5, depthWrite: false, blending: THREE.AdditiveBlending })); halo.rotation.y = Math.PI / 2; halo.position.set(WX(x + .003), 1.5, WZ(3.475)); const hg = new THREE.Group(); hg.add(halo); g.add(hg); }
   ledRectWall(x + .05, 1.5, 3.475, .9, 1.0, 1, 0, 0xffe2bd, .3, .8);
 }
 // ── 현관: 신발장(남쪽, 문은 현관 쪽) — 블랙 테 전신거울 문 3짝(VR) + 평판등 ──
