@@ -2807,18 +2807,18 @@ let b6door = null;
   const d = { pivot: g, thetaC: 0, thetaO: 1, open: true, cur: 1, target: 1, name: '현관중문',
     box: { minX: WX(5.64), maxX: WX(5.8), minZ: WZ(z0), maxZ: WZ(z1) }, apply: v => panels.forEach((p, i) => { p.position.z = zc(i) + (zo(i) - zc(i)) * v; }) };
   d.apply(1); for (const m of parts) { m.userData.door = d; doorMeshes.push(m); } doors.push(d); }
-// 6 드레스룸: 블랙 프레임 검은빛 반투명 유리 슬라이딩 도어 — 침실 쪽 벽면, 열면 동쪽(벽 앞)으로
+/* 6 드레스룸: 블랙 프레임 검은빛 반투명 유리 슬라이딩 도어 — 침실 쪽 벽면, 열면 서쪽(빈 벽 앞)으로. 예전엔 동쪽으로 열려 화장대·붙박이장 끝과 겹쳐 유리 너머로 흰 줄이 비쳤음 */
 { const g = item('b6', '드레스룸 슬라이딩도어', false);
   const ox0 = 7.66, ox1 = 8.45, zf = 7.055, top = 2.12, pw = ox1 - ox0 + .06, ph = top - .02;
-  cab(g, 7.62, 9.23, top, top + .05, 7.04, 7.09, std(0x1b1c1e, .4, .4));
+  cab(g, 6.8, 8.5, top, top + .05, 7.04, 7.09, std(0x1b1c1e, .4, .4)); /* 레일: 닫힘(입구)~열림(서쪽) 구간 */
   const smoke = new THREE.MeshStandardMaterial({ color: 0x24272b, roughness: .18, metalness: .1, transparent: true, opacity: .58, side: THREE.DoubleSide, depthWrite: false });
   const blk = std(0x151618, .35, .3), p = new THREE.Group(); g.add(p); const parts = [];
   const add = m => { p.add(m); parts.push(m); return m; };
   add(mesh(BX(pw - .06, ph - .06, .008), smoke, 0, ph / 2 + .01, 0, null, { cast: false, recv: false }));
   for (const [w, h, x, y] of [[pw, .035, 0, .0275], [pw, .035, 0, ph - .0075], [.035, ph, -pw / 2 + .0175, ph / 2 + .01], [.035, ph, pw / 2 - .0175, ph / 2 + .01], [pw, .025, 0, ph * .36], [pw, .025, 0, ph * .68]])
     add(mesh(BX(w, h, .032), blk, x, y, 0));
-  for (const s of [-1, 1]) add(mesh(BX(.022, .5, .02), blk, -pw / 2 + .07, 1.05, s * .03));
-  const xClosed = WX((ox0 + ox1) / 2), xOpen = WX(ox1 + pw / 2 - .02);
+  for (const s of [-1, 1]) add(mesh(BX(.022, .5, .02), blk, pw / 2 - .07, 1.05, s * .03)); /* 손잡이는 여는 방향 반대쪽(동쪽) 끝 */
+  const xClosed = WX((ox0 + ox1) / 2), xOpen = WX(ox0 - pw / 2 + .02);
   p.position.set(xClosed, 0, WZ(zf));
   const d = { pivot: g, thetaC: 0, thetaO: 1, open: true, cur: 1, target: 1, name: '드레스룸 슬라이딩 문',
     box: { minX: WX(ox0), maxX: WX(ox1), minZ: WZ(6.91), maxZ: WZ(7.04) }, apply: v => { p.position.x = xClosed + (xOpen - xClosed) * v; } };
