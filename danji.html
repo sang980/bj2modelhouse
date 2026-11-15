@@ -282,28 +282,39 @@ const cnv = (w, h) => { const c = document.createElement('canvas'); c.width = w;
 function tex(c, mirror = false) { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = mirror ? THREE.MirroredRepeatWrapping : THREE.RepeatWrapping; t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; return t; }
 function noiseFill(g, w, h, base, amp, n) { g.fillStyle = base; g.fillRect(0, 0, w, h); for (let i = 0; i < n; i++) { const a = (rand() - .5) * amp; g.fillStyle = a > 0 ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${-a})`; g.fillRect(rand() * w, rand() * h, 1 + rand() * 2.5, 1 + rand() * 2.5); } }
 function brickFill(g, w, h) { g.fillStyle = '#6e3b2c'; g.fillRect(0, 0, w, h); const bh = 8, bw = 22; for (let y = 0; y < h; y += bh) { const off = ((y / bh) & 1) * bw / 2; for (let x = -bw; x < w + bw; x += bw) { const v = (rand() - .5) * 26; g.fillStyle = `rgb(${140 + v | 0},${76 + v * .6 | 0},${57 + v * .5 | 0})`; g.fillRect(x + off + 1, y + 1, bw - 2, bh - 2); } } }
-function glass(g, x, y, w, h, dark = 0) { const gr = g.createLinearGradient(x, y, x + w * .25, y + h); gr.addColorStop(0, dark ? '#6f8597' : '#9fb5c6'); gr.addColorStop(.38, dark ? '#3a4d60' : '#5c7790'); gr.addColorStop(1, '#283848'); g.fillStyle = gr; g.fillRect(x, y, w, h);
+function glass(g, x, y, w, h, dark = 0) { const gr = g.createLinearGradient(x, y, x + w * .25, y + h), P = dark === 2 ? ['#a3adb3', '#66737b', '#323c44'] : [dark ? '#6f8597' : '#9fb5c6', dark ? '#3a4d60' : '#5c7790', '#283848']; gr.addColorStop(0, P[0]); gr.addColorStop(.38, P[1]); gr.addColorStop(1, P[2]); g.fillStyle = gr; g.fillRect(x, y, w, h);
   g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); g.fillStyle = 'rgba(255,255,255,.10)'; g.beginPath(); g.moveTo(x + w * .55, y); g.lineTo(x + w * .8, y); g.lineTo(x + w * .35, y + h); g.lineTo(x + w * .1, y + h); g.fill(); g.restore(); }
 function win(g, x, y, w, h, panes, fw = 6, col = '#f2f3f3', dark = 0) { g.fillStyle = col; g.fillRect(x - fw, y - fw, w + fw * 2, h + fw * 2); glass(g, x, y, w, h, dark); g.fillStyle = col; for (let i = 1; i < panes; i++) g.fillRect(x + w * i / panes - fw / 2, y, fw, h); }
 function rail(g, x, y, w, h) { g.fillStyle = 'rgba(226,236,243,.34)'; g.fillRect(x, y, w, h); g.fillStyle = '#f4f5f5'; g.fillRect(x, y - 3, w, 5); }
 function wallBase(g, W2, H2, brick, col) { if (brick) brickFill(g, W2, H2); else noiseFill(g, W2, H2, col, .05, 2600); }
 
-function texFront(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); wallBase(g, 1024, 256, brick, '#e9ebec');
-  g.fillStyle = brick ? '#5e3125' : '#d2d6da'; g.fillRect(0, 0, 1024, 16);
-  win(g, 80, 50, 210, 178, 3); rail(g, 80, 150, 210, 78);
-  win(g, 340, 36, 350, 210, 4); rail(g, 340, 150, 350, 96);
-  win(g, 740, 50, 210, 178, 3); rail(g, 740, 150, 210, 78);
+/* 단지조감도처럼: 연회색 벽 + 촘촘한 흰 수직 기둥 + 층마다 흰 수평 띠 + 청회색 유리·유리 난간, 저층은 붉은 벽돌 기둥, 일부 세대는 차콜 패널 */
+function texFront(brick, dark) { const c = cnv(1024, 256), g = c.getContext('2d'), piers = [0, 205, 410, 614, 819, 1024];
+  if (brick) brickFill(g, 1024, 256); else noiseFill(g, 1024, 256, dark ? '#464a51' : '#d9d6ce', .04, 1500);
+  for (let k = 0; k < 5; k++) { const x0 = piers[k] + 15, x1 = piers[k + 1] - 15, w = x1 - x0;
+    if ((k === 4 || k === 0) && !dark) { win(g, x0 + w * .2, 62, w * .6, 128, 2, 6, '#eeeeeb', 2); continue; } /* 양끝 방: 벽 + 창 */
+    const gx = x0 + 16, gw = w - 32; glass(g, gx, 30, gw, 216, 2); g.fillStyle = dark ? '#5b6168' : '#eceeee'; g.fillRect(gx + gw / 2 - 3, 30, 6, 216); g.fillRect(gx, 138, gw, 5);
+    rail(g, gx, 154, gw, 92); }
+  g.fillStyle = brick ? '#7f412f' : dark ? '#52575f' : '#f4f4f1'; for (const x of piers) g.fillRect(x - 15, 0, 30, 256);
+  if (brick) { g.fillStyle = 'rgba(255,230,210,.08)'; for (const x of piers) for (let y = 4; y < 256; y += 8) g.fillRect(x - 15, y, 30, 1); }
+  g.fillStyle = brick ? '#6f3829' : dark ? '#5f646b' : '#f7f7f4'; g.fillRect(0, 0, 1024, 22); g.fillStyle = 'rgba(0,0,0,.13)'; g.fillRect(0, 22, 1024, 5);
   return tex(c, true); }
-function texBack(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); wallBase(g, 1024, 256, brick, '#e8eaeb');
-  g.fillStyle = brick ? '#5e3125' : '#d5d9dc'; g.fillRect(0, 0, 1024, 14);
-  win(g, 90, 72, 200, 100, 2); win(g, 440, 74, 70, 60, 1); win(g, 640, 62, 250, 128, 2);
-  g.fillStyle = '#b8bec4'; g.fillRect(310, 118, 92, 92); g.fillStyle = '#9aa1a8'; for (let y = 122; y < 206; y += 8) g.fillRect(314, y, 84, 3);
+function texBack(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) brickFill(g, 1024, 256); else noiseFill(g, 1024, 256, '#dcd9d2', .04, 1500);
+  win(g, 90, 74, 200, 104, 2, 6, '#f1f1ee'); win(g, 440, 76, 70, 62, 1, 6, '#f1f1ee'); win(g, 650, 64, 250, 130, 2, 6, '#f1f1ee');
+  g.fillStyle = '#c3c6c8'; g.fillRect(312, 118, 96, 94); g.fillStyle = '#9ea4a9'; for (let y = 122; y < 208; y += 7) g.fillRect(316, y, 88, 3);
+  g.fillStyle = brick ? '#7f412f' : '#f2f2ef'; g.fillRect(0, 0, 26, 256); g.fillRect(998, 0, 26, 256); g.fillRect(560, 0, 22, 256);
+  g.fillStyle = brick ? '#6f3829' : '#f5f5f2'; g.fillRect(0, 0, 1024, 18); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, 18, 1024, 4);
   return tex(c, true); }
-function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); wallBase(g, 1024, 256, brick, '#e7e9ea');
-  g.fillStyle = brick ? '#5e3125' : '#d2d6da'; g.fillRect(0, 0, 1024, 14);
-  g.fillStyle = '#3d4855'; g.fillRect(420, 0, 184, 256); win(g, 466, 40, 92, 190, 1, 5, '#56626f', 1);
-  win(g, 120, 82, 110, 100, 2); win(g, 800, 82, 110, 100, 2);
+function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) brickFill(g, 1024, 256); else noiseFill(g, 1024, 256, '#ebe9e4', .04, 1500);
+  g.fillStyle = brick ? '#6f3829' : '#f5f5f2'; g.fillRect(0, 0, 1024, 16);
+  g.fillStyle = '#3f454d'; g.fillRect(430, 0, 164, 256); win(g, 470, 40, 84, 196, 1, 5, '#5b636c', 1);
+  g.fillStyle = brick ? 'rgba(0,0,0,0)' : '#d9d6ce'; g.fillRect(60, 0, 300, 256); g.fillRect(664, 0, 300, 256);
+  win(g, 150, 84, 120, 100, 2, 6, '#f1f1ee'); win(g, 754, 84, 120, 100, 2, 6, '#f1f1ee');
   return tex(c); }
+/* 유리는 매끈하게(하늘이 비침), 벽은 거칠게: 색 텍스처에서 거칠기 지도를 만듦 */
+function roughFrom(t) { const src = t.image, w = src.width, h = src.height, c = cnv(w, h), g = c.getContext('2d'); g.drawImage(src, 0, 0); const d = g.getImageData(0, 0, w, h), a = d.data;
+  for (let i = 0; i < a.length; i += 4) { const r = a[i], gg = a[i + 1], b = a[i + 2], l = .3 * r + .59 * gg + .11 * b, gl = b > r + 6 && l < 200; const v = gl ? 22 : 228; a[i] = a[i + 1] = a[i + 2] = v; }
+  g.putImageData(d, 0, 0); const rt = new THREE.CanvasTexture(c); rt.wrapS = t.wrapS; rt.wrapT = t.wrapT; rt.anisotropy = ANISO; return rt; }
 function texCore() { const c = cnv(512, 256), g = c.getContext('2d'); noiseFill(g, 512, 256, '#eceef0', .05, 900);
   g.fillStyle = '#d4d8dc'; g.fillRect(0, 0, 512, 12);
   g.fillStyle = '#56626f'; g.fillRect(188, 0, 136, 256); glass(g, 196, 0, 120, 256, 1); g.fillStyle = '#56626f'; g.fillRect(196, 120, 120, 6); g.fillRect(253, 0, 6, 256);
@@ -366,9 +377,12 @@ async function build() {
   prog(10); await tick();
 
   /* ===== 텍스처 ===== */
-  const T = { front: texFront(0), back: texBack(0), side: texSide(0), bfront: texFront(1), bback: texBack(1), bside: texSide(1), core: texCore(), roof: texRoof(), green: texGreen(), concrete: texConcrete(), villa: texVilla(), apt: texApt() };
+  const T = { front: texFront(0), frontDk: texFront(0, 1), back: texBack(0), side: texSide(0), bfront: texFront(1), bback: texBack(1), bside: texSide(1), core: texCore(), roof: texRoof(), green: texGreen(), concrete: texConcrete(), villa: texVilla(), apt: texApt() };
   const std = (map, r = .86) => new THREE.MeshStandardMaterial({ map, roughness: r, metalness: 0 });
-  const MAT = { front: std(T.front, .8), back: std(T.back), side: std(T.side), bfront: std(T.bfront, .9), bback: std(T.bback, .9), bside: std(T.bside, .9), core: std(T.core, .8), roof: std(T.roof, .7),
+  const pbr = map => new THREE.MeshStandardMaterial({ map, roughnessMap: roughFrom(map), roughness: 1, metalness: 0, envMapIntensity: .7 }); /* 유리에 하늘 반사 */
+  /* 하늘을 환경맵으로: 유리창에 하늘이 비치게 */
+  { const pm = new THREE.PMREMGenerator(renderer), es = new THREE.Scene(); es.add(new THREE.Mesh(sky.geometry, sky.material)); scene.environment = pm.fromScene(es, .02, 1, 30000).texture; pm.dispose(); }
+  const MAT = { front: pbr(T.front), frontDk: pbr(T.frontDk), back: pbr(T.back), side: pbr(T.side), bfront: pbr(T.bfront), bback: pbr(T.bback), bside: pbr(T.bside), core: pbr(T.core), roof: std(T.roof, .55),
     white: new THREE.MeshStandardMaterial({ color: '#eef0f1', roughness: .8 }), fin: new THREE.MeshStandardMaterial({ color: '#46505a', roughness: .7 }), green: std(T.green, 1), concrete: std(T.concrete, .95),
     brick: new THREE.MeshStandardMaterial({ color: '#8b4c39', roughness: .9 }), glassBox: new THREE.MeshStandardMaterial({ color: '#4c6378', roughness: .35 }) };
 
@@ -433,7 +447,7 @@ async function build() {
   prog(50); await tick();
 
   /* ===== 단지 동 ===== */
-  const G = {}; for (const k of ['front', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
+  const G = {}; for (const k of ['front', 'frontDk', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
   for (const D of DONG) buildDong(D, G, MAT);
   for (const k in G) { if (!G[k].i.length) continue; const m = new THREE.Mesh(G[k].build(), MAT[k]); m.castShadow = true; m.receiveShadow = true; scene.add(m); }
   buildAmenities(MAT);
@@ -541,6 +555,9 @@ function buildDong(D, G, MAT) {
     for (let k = 0; k <= n; k++) { const s = k * tw - L / 2, ex = Math.max(-L / 2 + .3, Math.min(L / 2 - .3, s)); const px2 = cx + ux * ex + fx * (DEP / 2 + .22), pz2 = cz + uz * ex + fz * (DEP / 2 + .22);
       obox(px2, pz2, ux, uz, .6, .45, base, H + .6, { front: { gb: G.fin }, left: { gb: G.fin }, right: { gb: G.fin }, top: { gb: G.fin } }); }
     for (let fl = 3; fl <= f; fl++) { const y = (fl - 1) * FH; obox(cx + fx * (DEP / 2 + .14), cz + fz * (DEP / 2 + .14), ux, uz, L, .28, y - .1, y + .12, { front: { gb: G.white }, top: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white } }); }
+    /* 차콜 패널 강조(단지조감도처럼 4라인 동 가운데 세대 중층부) */
+    if (n === 4 && f >= 8) { const k = 2, s = -L / 2 + tw * (k + .5), y0 = 2 * FH, y1 = Math.min(f - 2, 9) * FH, ox = DEP / 2 + .03;
+      obox(cx + ux * s + fx * ox, cz + uz * s + fz * ox, ux, uz, tw - .8, .02, y0, y1, { front: { gb: G.frontDk, uv: (w, a, b) => [k + .04, a / FH, k + .96, a / FH, k + .96, b / FH, k + .04, b / FH] } }); }
     /* 코어(계단·엘리베이터) — 뒤쪽, 옥상 기계실까지 */
     const cores = D.w.length > 1 ? (wi === 0 ? [.5] : []) : (n === 4 ? [.25, .75] : [.5]);
     for (const t of cores) { const s = t * L - L / 2, ccx = cx + ux * s - fx * (DEP / 2 + CORE_D / 2 - .4), ccz = cz + uz * s - fz * (DEP / 2 + CORE_D / 2 - .4), ch = H + 3.9;
