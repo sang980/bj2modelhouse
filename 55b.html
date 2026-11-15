@@ -1767,6 +1767,15 @@ const leafTex = toTex((() => { const c = mkCanvas(64, 128), x = c.getContext('2d
   return c; })());
 const plantLeafMat = new THREE.MeshStandardMaterial({ vertexColors: true, map: leafTex, roughness: .48, side: THREE.DoubleSide });
 const plantPotMat = std(0xe7e3dc, .6), plantSoilMat = std(0x3b2c22, .95), plantStemMat = std(0x5f7a3c, .7);
+function grassTuft(parent, x, y, z, n = 18, h = .1, w = .004) { /* 동글동글한 구 잎 대신 가늘게 휘는 풀잎 다발(작은 화분용) — 좌표는 parent 기준 */
+  const P = [], C = [], a = new THREE.Vector3(), t = new THREE.Vector3(), sd = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), col = new THREE.Color();
+  for (let i = 0; i < n; i++) { const yaw = i * 2.39996 + rnd() * .4, r0 = rnd() * .008, hh = h * (.6 + rnd() * .5), arch = .2 + rnd() * .55, dx = Math.sin(yaw), dz = Math.cos(yaw);
+    const cv = new THREE.QuadraticBezierCurve3(new THREE.Vector3(dx * r0, 0, dz * r0), new THREE.Vector3(dx * (r0 + hh * .12), hh * .8, dz * (r0 + hh * .12)), new THREE.Vector3(dx * (r0 + hh * arch * .6), hh * (1 - arch * .45), dz * (r0 + hh * arch * .6)));
+    col.setHSL(.26 + rnd() * .05, .45 + rnd() * .2, .26 + rnd() * .12); let pL = null, pR = null;
+    for (let s = 0; s <= 6; s++) { const u = s / 6; cv.getPoint(u, a); cv.getTangent(u, t); sd.crossVectors(t, up); if (sd.lengthSq() < 1e-6) sd.set(1, 0, 0); sd.normalize(); const ww = w * (1 - u * .9), Lp = a.clone().addScaledVector(sd, ww), Rp = a.clone().addScaledVector(sd, -ww);
+      if (pL) { P.push(pL.x, pL.y, pL.z, pR.x, pR.y, pR.z, Lp.x, Lp.y, Lp.z, pR.x, pR.y, pR.z, Rp.x, Rp.y, Rp.z, Lp.x, Lp.y, Lp.z); const k1 = .75 + u * .35; for (let q = 0; q < 6; q++) C.push(col.r * k1, col.g * k1, col.b * k1); } pL = Lp; pR = Rp; } }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(C, 3)); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, grassTuft._m || (grassTuft._m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .6, side: THREE.DoubleSide }))); m.position.set(x, y, z); parent.add(m); return m; }
 function tablePlant(parent, x, y, z) {
   const pg = plantGeos(), g = new THREE.Group(); g.position.set(x, y, z); parent.add(g);
   const pot = new THREE.Mesh(pg.pot, plantPotMat); pot.castShadow = pot.receiveShadow = true; g.add(pot);
@@ -2173,7 +2182,7 @@ const desk2 = piece('책상', 1.66, 1.88, Math.PI / 2);
   { const card = toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = '#fbf7ee'; x.fillRect(0, 0, 96, 128); const cols = ['#f2b8a2', '#9dc7b5', '#f3d27a', '#b9c8e8']; for (let i = 0; i < 4; i++) { x.fillStyle = cols[i]; x.fillRect(10 + (i % 2) * 40, 14 + (i >> 1) * 52, 34, 44); } return c; })());
     const cd = mesh(BX(.15, .2, .006), std(0xffffff, .8, 0, { map: card }), -.05, top + .1, -.2, desk2); cd.rotation.x = -.14; mesh(BX(.012, .17, .012), M.oak, -.05, top + .08, -.24, desk2).rotation.x = .3; }
   { mesh(CY(.045, .036, .075, 24), std(0xf3f1ec, .45), .42, top + .038, -.17, desk2);
-    for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2, l = mesh(new THREE.SphereGeometry(.03, 10, 6), M.plant, .42 + Math.cos(a) * .025, top + .1 + (i % 3) * .018, -.17 + Math.sin(a) * .025, desk2, { cast: false }); l.scale.set(.55, 1.25, .25); l.rotation.set(Math.sin(a) * .5, -a, Math.cos(a) * .5); } }
+    grassTuft(desk2, .42, top + .07, -.17, 22, .16, .005); } /* 화분: 풀잎 */
   // 골드 선반 위(월드): 1단(x 2.2–2.9, 위 1.575) 분홍 컵 2·세운 책, 2단(x 2.9–3.6, 위 1.875) 작은 꽃병·액자
   { const g = fixed, y1 = 1.575, y2 = 1.875;
     for (const [x, c] of [[2.33, 0xe8a99c], [2.42, 0xf1c2b4]]) mesh(CY(.03, .027, .075, 20), std(c, .4), WX(x), y1 + .0375, WZ(.2), g);
