@@ -520,23 +520,24 @@ function paintSky(evening) {
   x.fillStyle = g; x.fillRect(0, 0, w, h);
   if (!evening) for (let i = 0; i < 70; i++) {
     const cx = rnd() * w, cy = rnd() * hz * .7, r = 40 + rnd() * 140;
-    const rg = x.createRadialGradient(cx, cy, 0, cx, cy, r); rg.addColorStop(0, 'rgba(255,255,255,.55)'); rg.addColorStop(1, 'rgba(255,255,255,0)');
-    x.fillStyle = rg; x.save(); x.translate(cx, cy); x.scale(2.6, .7); x.translate(-cx, -cy); x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill(); x.restore();
+    for (const o of [-w, 0, w]) { const ux = cx + o; if (ux + r * 2.6 < 0 || ux - r * 2.6 > w) continue; /* 원통 이음매(남쪽)에서 구름이 잘려 네모 얼룩이 생기지 않게 양 끝으로 이어 그림 */
+      const rg = x.createRadialGradient(ux, cy, 0, ux, cy, r); rg.addColorStop(0, 'rgba(255,255,255,.55)'); rg.addColorStop(1, 'rgba(255,255,255,0)');
+      x.fillStyle = rg; x.save(); x.translate(ux, cy); x.scale(2.6, .7); x.translate(-ux, -cy); x.beginPath(); x.arc(ux, cy, r, 0, 7); x.fill(); x.restore(); }
   }
   // distant hills
   x.fillStyle = evening ? '#3b3f58' : '#a9bccb';
-  x.beginPath(); x.moveTo(0, hz); for (let px = 0; px <= w; px += 40) x.lineTo(px, hz - 20 - Math.sin(px * .003) * 18 - Math.sin(px * .011) * 8); x.lineTo(w, hz + 10); x.lineTo(0, hz + 10); x.fill();
+  x.beginPath(); x.moveTo(0, hz); for (let px = 0; px <= w; px += 40) x.lineTo(px, hz - 20 - Math.sin(px * Math.PI * 4 / w) * 18 - Math.sin(px * Math.PI * 14 / w) * 8); x.lineTo(w, hz + 10); x.lineTo(0, hz + 10); x.fill(); /* 주기를 폭에 맞춰 양 끝 높이가 같게 */
   // towers in clusters
   for (let i = 0; i < 230; i++) {
     const cluster = Math.floor(rnd() * 9), cx = (cluster / 9) * w + rnd() * w / 6;
     const bw = 18 + rnd() * 46, bh = 30 + rnd() * (cluster % 3 === 0 ? 210 : 120), by = hz + 8 - bh;
     const shade = rnd() * 22;
     x.fillStyle = evening ? `rgb(${40 + shade | 0},${44 + shade | 0},${62 + shade | 0})` : `rgb(${206 - shade | 0},${212 - shade | 0},${220 - shade | 0})`;
-    x.fillRect(cx, by, bw, bh);
-    x.fillStyle = evening ? 'rgba(0,0,0,.25)' : 'rgba(80,95,110,.18)'; x.fillRect(cx + bw * .7, by, bw * .3, bh);
+    const offs = cx + bw > w ? [0, -w] : [0], body = x.fillStyle; /* 오른쪽 끝을 넘는 건물은 왼쪽 끝에도 이어 그림(이음매) */
+    for (const o of offs) { x.fillStyle = body; x.fillRect(cx + o, by, bw, bh); x.fillStyle = evening ? 'rgba(0,0,0,.25)' : 'rgba(80,95,110,.18)'; x.fillRect(cx + o + bw * .7, by, bw * .3, bh); }
     for (let wy = by + 4; wy < hz; wy += lite ? 12 : 6) for (let wx = cx + 3; wx < cx + bw - 3; wx += lite ? 10 : 5) {
-      if (evening) { if (rnd() < .35) { x.fillStyle = `rgba(255,${200 + rnd() * 40 | 0},140,${.5 + rnd() * .5})`; x.fillRect(wx, wy, 2.5, 3); } }
-      else if (rnd() < .5) { x.fillStyle = 'rgba(90,110,130,.18)'; x.fillRect(wx, wy, 2.5, 3); }
+      if (evening) { if (rnd() < .35) { x.fillStyle = `rgba(255,${200 + rnd() * 40 | 0},140,${.5 + rnd() * .5})`; for (const o of offs) x.fillRect(wx + o, wy, 2.5, 3); } }
+      else if (rnd() < .5) { x.fillStyle = 'rgba(90,110,130,.18)'; for (const o of offs) x.fillRect(wx + o, wy, 2.5, 3); }
     }
   }
   // tree band & ground
@@ -546,11 +547,11 @@ function paintSky(evening) {
   for (let i = 0; i < (lite ? 1600 : 5000); i++) {
     const tx = rnd() * w, ty = hz + 2 + rnd() * h * .2, r = 2 + rnd() * 6;
     x.fillStyle = evening ? `rgba(20,${35 + rnd() * 20 | 0},30,.7)` : `rgba(${60 + rnd() * 40 | 0},${100 + rnd() * 40 | 0},${55 + rnd() * 30 | 0},.75)`;
-    x.beginPath(); x.arc(tx, ty, r, 0, 7); x.fill();
+    for (const o of (tx < r ? [0, w] : tx > w - r ? [0, -w] : [0])) { x.beginPath(); x.arc(tx + o, ty, r, 0, 7); x.fill(); }
   }
   // roads
   x.strokeStyle = evening ? 'rgba(255,200,120,.35)' : 'rgba(200,200,195,.8)'; x.lineWidth = 6;
-  for (let i = 0; i < 6; i++) { x.beginPath(); const y0 = hz + h * (.22 + i * .05); x.moveTo(0, y0); x.bezierCurveTo(w * .3, y0 + 30, w * .6, y0 - 30, w, y0); x.stroke(); }
+  for (let i = 0; i < 6; i++) { x.beginPath(); const y0 = hz + h * (.22 + i * .05); x.moveTo(0, y0); x.bezierCurveTo(w * .3, y0 + 30, w * .7, y0 - 30, w, y0); x.stroke(); } /* 양 끝 기울기가 같아 이음매에서 꺾이지 않게 */
 }
 await phase('하늘과 바깥 풍경을 그리는 중', 6);
 paintSky(false);
@@ -801,7 +802,12 @@ function makeDoor({ parent, horiz, line, t, hu, du, side, lw, lh, lt = .04, styl
     add(mesh(BX(lw - .06, lh - .06, Math.min(.012, lt - .004)), g, lw / 2, lh / 2 + .01, 0, null, { cast: false, recv: false })); /* 유리가 테와 두께가 같으면 앞면이 겹쳐 z-fighting */
     for (const [w, h, x, y] of [[.03, lh, .015, lh / 2], [.03, lh, lw - .015, lh / 2], [lw, .04, lw / 2, .03], [lw, .04, lw / 2, lh - .01]]) add(mesh(BX(w, h, lt), style === 'tint' ? M.rail : M.winFrame, x, y + .01, 0));
   }
-  if (handle) for (const sz of [-1, 1]) add(mesh(BX(.14, .02, .02), M.chrome, lw - .1, 1.0, sz * (lt / 2 + .025), null, { cast: false })); // 손잡이(양쪽)
+  if (handle && handle !== 'lever') for (const sz of [-1, 1]) add(mesh(BX(.14, .02, .02), M.chrome, lw - .1, 1.0, sz * (lt / 2 + .025), null, { cast: false })); /* 유리문 등: 막대 손잡이 */
+  if (handle === 'lever') { /* 방문 레버 손잡이(양쪽): 둥근 받침(로제트) + 목 + 경첩 쪽으로 뻗은 둥근 모서리 레버 — 예전 떠 있는 크롬 막대 대신 */
+    const HG = makeDoor._hg || (makeDoor._hg = { ros: CY(.027, .027, .008, 28), neck: CY(.009, .009, .03, 16), lev: RB(.13, .018, .014, .007, 3) }), hx = lw - .065;
+    for (const sz of [-1, 1]) { const r = add(mesh(HG.ros, M.chrome, hx, 1.0, sz * (lt / 2 + .004), null, { cast: false })); r.rotation.x = Math.PI / 2;
+      const nk = add(mesh(HG.neck, M.chrome, hx, 1.0, sz * (lt / 2 + .023), null, { cast: false })); nk.rotation.x = Math.PI / 2;
+      add(mesh(HG.lev, M.chrome, hx - .055, 1.0, sz * (lt / 2 + .038 + .007), null, { cast: false })); } }
   // 닫힘/열림 각도 (로컬 +x가 문짝 방향)
   const thetaC = horiz ? (du > 0 ? 0 : Math.PI) : -du * Math.PI / 2;
   const thetaO = horiz ? -side * Math.PI / 2 : (side > 0 ? 0 : Math.PI);
@@ -860,12 +866,20 @@ function addOpening(horiz, line, t, o, parent = structure) {
     if (o.kind === 'front') {
       frontSpots.push({ horiz, line, t, o }); // 현관 일괄소등 스위치 자리
       put(o.from + fw, o.to - fw, 0, lh, -lt / 2, lt / 2, M.metalDark);
-      put(o.to - fw - .14, o.to - fw - .08, .95, 1.1, lt / 2, lt / 2 + .05, M.chrome);
+      { /* 디지털 도어락(실내 쪽): 검은 유광 본체 + 은색 세로 당김 손잡이(받침 2) + 열림 버튼·표시등 — 예전 흰 네모 상자 대신 */
+        const a = o.to - fw - .17, f = lt / 2, dk = std(0x1f2124, .25, .35), sv = M.chrome;
+        put(a, a + .075, .84, 1.24, f, f + .026, dk);
+        put(a + .004, a + .071, .846, 1.234, f + .026, f + .028, std(0x2c2e32, .12, .45), { cast: false });
+        put(a + .03, a + .045, .985, 1.0, f + .028, f + .046, sv, { cast: false }); put(a + .03, a + .045, 1.12, 1.135, f + .028, f + .046, sv, { cast: false });
+        put(a + .026, a + .049, .955, 1.165, f + .046, f + .062, sv);
+        put(a + .024, a + .051, 1.185, 1.212, f + .028, f + .031, std(0xd9dadc, .35, .5), { cast: false });
+        put(a + .034, a + .041, .89, .897, f + .028, f + .03, std(0x6fd6ff, .3, 0, { emissive: 0x3ab8ff, emissiveIntensity: .7 }), { cast: false });
+        put(a + .014, a + .061, .865, .871, f + .028, f + .03, sv, { cast: false }); }
     } else {
       // 여닫이 문: 경첩(o.hinge 'a'|'b')을 축으로 회전, 열리는 쪽 o.side(+1/-1). 처음엔 열린 상태
       const hu = o.hinge === 'b' ? o.to - fw : o.from + fw;
       doorSpots.push({ horiz, line, t, o });
-      makeDoor({ parent: grp, horiz, line, t, hu, du: o.hinge === 'b' ? -1 : 1, side: o.side, lw, lh, lt, style: o.glass ? 'glass' : 'solid', from: o.from, to: o.to, name: o.name || '방문', startOpen: !o.closed }); // o.closed: 처음엔 닫힌 문(창고·팬트리)
+      makeDoor({ parent: grp, horiz, line, t, hu, du: o.hinge === 'b' ? -1 : 1, side: o.side, lw, lh, lt, style: o.glass ? 'glass' : 'solid', from: o.from, to: o.to, name: o.name || '방문', handle: 'lever', startOpen: !o.closed }); // o.closed: 처음엔 닫힌 문(창고·팬트리)
     }
   } else if (o.kind === 'window' || o.kind === 'slide' || o.kind === 'louver') {
     const ft = .07, inset = 0;
