@@ -930,13 +930,13 @@ wall(3.4, 2.29, 3.4, 3.72, TI, [{ from: 2.68, to: 3.42, kind: 'open', y1: 2.1 }]
   for (const [hu, du] of [[z0 + .013, 1], [z1 - .013, -1]]) {
     const d = makeDoor({ parent: sg, horiz: false, line: xw, t: .12, hu, du, side: -1, lw: half, lh: h - .025, lt: .03, mat: M.kdoor, from: z0, to: z1, name: '현관창고 문', handle: false, startOpen: false });
     const e = mesh(BX(.01, h - .027, .032), M.black, half - .0035, (h - .025) / 2 + .01, 0, d.pivot); e.userData.door = d; doorMeshes.push(e); } }
-wall(4.74, 2.29, 4.74, 3.72, TI, [], 'storage'); /* 평면도: 창고 동쪽 벽 x 4.74(창고 폭 1330) */
-wall(3.4, 3.72, 4.74, 3.72, TI, [], 'storage');
+wall(4.7175, 2.29, 4.7175, 3.72, .115, [], 'storage'); /* 평면도: 창고 동쪽 벽 x 4.66~4.775 */ /* 평면도: 창고 동쪽 벽 x 4.74(창고 폭 1330) */
+wall(3.4, 3.72, 4.7175, 3.72, TI, [], 'storage');
 // 물품옵션 1: 팬트리가 주방 쪽으로 확장(동쪽 벽 x=5.0) · 팬트리 도어는 복도(남쪽) 방향
 wall(5.0, 2.29, 5.0, 3.72, TI, [], 'o1wall');
 wall(3.4, 3.72, 3.96, 3.72, TI, [], 'o1wall');
 /* VR: 식탁 옆 벽 검정 플로팅 선반 2단(엇갈림, 아래 간접등) + 흑백 사진 액자·책·작은 화분 — 기본은 창고 벽, 옵션1은 새 벽에 */
-for (const [tag, xw] of [['storage', 4.8], ['o1wall', 5.06]]) { const g = tagGroup(tag), blk = std(0x1a1b1d, .45);
+for (const [tag, xw] of [['storage', 4.775], ['o1wall', 5.06]]) { const g = tagGroup(tag), blk = std(0x1a1b1d, .45);
   for (const [y, z0, z1] of [[1.6, 2.78, 3.28], [1.3, 3.08, 3.58]]) { pbox(xw, xw + .16, y - .03, y, z0, z1, blk, g); pbox(xw + .02, xw + .14, y - .034, y - .03, z0 + .02, z1 - .02, M.ledWarm, g, { cast: false }); }
   const photo = k => toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = '#f4f3ef'; x.fillRect(0, 0, 96, 128); const gr = x.createLinearGradient(0, 12, 0, 116); gr.addColorStop(0, k ? '#5b5e62' : '#c9cbcd'); gr.addColorStop(1, k ? '#1e1f22' : '#6f7276'); x.fillStyle = gr; x.fillRect(12, 12, 72, 104);
     x.fillStyle = k ? '#d9dadc' : '#2a2b2e'; if (k) { x.beginPath(); x.moveTo(20, 110); x.lineTo(48, 40); x.lineTo(76, 110); x.fill(); } else { for (let i = 0; i < 5; i++) x.fillRect(20 + i * 12, 50 - i * 6, 8, 66 + i * 6); } return c; })());
@@ -944,8 +944,8 @@ for (const [tag, xw] of [['storage', 4.8], ['o1wall', 5.06]]) { const g = tagGro
     mesh(BX(.014, h, w), blk, 0, h / 2, 0, f); mesh(BX(.002, h - .03, w - .03), std(0xffffff, .7, 0, { map: photo(k) }), .008, h / 2, 0, f, { cast: false }); }
   for (let i = 0; i < 2; i++) mesh(BX(.12, .025, .17), [std(0xe9e4d8, .7), std(0x2b2d31, .6)][i], WX(xw + .085), 1.6 + .0125 + i * .025, WZ(3.16), g); /* 눕힌 책 2 */
   mesh(CY(.03, .025, .06, 18), std(0xf2f0eb, .4), WX(xw + .085), 1.33, WZ(3.18), g); grassTuft(g, WX(xw + .085), 1.36, WZ(3.18), 16, .09); } /* 작은 화분: 풀잎 */
-wall(3.52, 2.29, 5.34, 2.29, .24, []); /* 서쪽 끝 3.40(현관문 벽과 겹치는 모서리) — 현관문 틀 안으로 튀어나오지 않게 */ /* 동쪽 끝 면을 다용도실 벽 면(x 5.46)과 맞춰 단차 없앰 */ /* 평면도: 발코니 남쪽 내력벽 z 2.29(두께 0.24, 면 2.17·2.41) — 예전 2.6은 식당 쪽 벽을 25cm 짧게 만들었음 */
-wall(5.4, 0, 5.4, 2.29, TI, [{ from: .47, to: 1.9, y1: 2.1, kind: 'open' }]); /* 평면도·VR: 세탁실 문 남쪽 끝 z 1.9(문틀~모서리 흰 벽 약 51cm), 북쪽은 주방 상부장 옆면(z 0.46)에 바로 붙임 */
+wall(3.52, 2.29, 5.394, 2.29, .24, []); /* 동쪽 끝 면 5.514(평면도: 세탁실 모서리 벽 면) */ /* 서쪽 끝 3.40(현관문 벽과 겹치는 모서리) — 현관문 틀 안으로 튀어나오지 않게 */ /* 동쪽 끝 면을 다용도실 벽 면(x 5.46)과 맞춰 단차 없앰 */ /* 평면도: 발코니 남쪽 내력벽 z 2.29(두께 0.24, 면 2.17·2.41) — 예전 2.6은 식당 쪽 벽을 25cm 짧게 만들었음 */
+wall(5.427, 0, 5.427, 2.29, .174, [{ from: .47, to: 1.9, y1: 2.1, kind: 'open' }]); /* 평면도: 세탁실 쪽 면 5.34는 그대로, 주방·식당 쪽 면 5.514 */ /* 평면도·VR: 세탁실 문 남쪽 끝 z 1.9(문틀~모서리 흰 벽 약 51cm), 북쪽은 주방 상부장 옆면(z 0.46)에 바로 붙임 */
 // 주방 ↔ 다용도실(세탁실): 사진처럼 2짝 슬라이딩 도어 — 흰 알루미늄 프레임 + 민트빛 반투명(샌드블라스트) 유리
 // 주방 상판 쪽(북쪽) 짝은 고정, 남쪽 짝이 고정 짝 뒤로 미끄러져 열림
 { const g = new THREE.Group(); structure.add(g);
@@ -1007,7 +1007,7 @@ floorRect(8.47, 10.69, 2.28, 3.94, OV, M.bathFloor, 1.2);
   x.fillStyle = 'rgba(120,118,112,.5)'; x.fillRect(0, 127, 256, 2); x.fillRect(127, 0, 2, 256);
   floorRect(1.77, 3.34, 2.41, 3.63, OV, std(0xffffff, .4, 0, { map: toTex(c) }), 1.2);
   pbox(1.77, 3.34, OV, OV + .006, 3.6, 3.64, std(0x18191b, .45), fixed, { cast: false }); } /* 평면도: 현관 바닥은 신발장 끝(z 3.6)까지 */
-floorRect(3.46, 4.68, 2.41, 3.66, OV, M.stone, 1.2, tagGroup('storage'));
+floorRect(3.46, 4.66, 2.41, 3.66, OV, M.stone, 1.2, tagGroup('storage'));
 floorRect(3.51, 5.34, .11, 2.17, OV, M.balc, 1.2);
 floorRect(9.06, 10.69, .11, 1.44, OV, M.balc, 1.2);
 // 현관 step edge
@@ -2215,7 +2215,7 @@ const EYE_H = AVATAR_H - .12;
 /* ───────── rooms (for minimap + teleport) ───────── */
 const rooms = [
   { n: '현관', x0: 1.71, x1: 3.4, z0: 2.25, z1: 3.7, sp: [2.65, 3.0] },
-  { n: '창고', x0: 3.4, x1: 4.74, z0: 2.29, z1: 3.72, sp: [3.95, 3.6] },
+  { n: '창고', x0: 3.4, x1: 4.7175, z0: 2.29, z1: 3.72, sp: [3.95, 3.6] },
   { n: '발코니', x0: 3.4, x1: 5.4, z0: 0, z1: 2.29, sp: [4.6, 1.3] },
   { n: '주방·식당', x0: 5.4, x1: 8.385, z0: 0, z1: 4.0, sp: [6.6, 3.6] },
   { n: '욕실1', x0: 0, x1: 1.71, z0: 2.54, z1: 4.99, sp: [1.3, 3.9] },
@@ -2746,13 +2746,13 @@ function peninsula(k, name, x0, x1, z0, z1, niche = false) {
   wineGlass(g, WX(x0 + .86), top, WZ(zc + .06));
 }
 // 평면도(옵션 그림) 방향: 4-1·4-3은 주방 왼쪽 앞(복도 쪽), 4-4는 팬트리 동선 때문에 작게 가운데로. 식탁은 아일랜드 남쪽에 붙음
-peninsula('o4island', '아일랜드식탁', 5.49, 6.43, 1.93, 2.53, true); /* 요청: 실제보다 길어 동쪽 끝을 0.36m 깎음(끝 x 6.43 = 4인 식탁 동쪽 끝과 맞춤) */ /* 요청: 상판 서쪽 끝을 다용도실 흰 벽 면(x 5.46)에 붙이고 북쪽 끝을 세탁실 문틀(z 1.9)에 맞춤 · 주방 쪽 뒷면에 밥솥 칸 + 작은 서랍 */
+peninsula('o4island', '아일랜드식탁', 5.544, 6.43, 1.93, 2.53, true); /* 서쪽 끝 = 모서리 벽 면 5.514 */ /* 요청: 실제보다 길어 동쪽 끝을 0.36m 깎음(끝 x 6.43 = 4인 식탁 동쪽 끝과 맞춤) */ /* 요청: 상판 서쪽 끝을 다용도실 흰 벽 면(x 5.46)에 붙이고 북쪽 끝을 세탁실 문틀(z 1.9)에 맞춤 · 주방 쪽 뒷면에 밥솥 칸 + 작은 서랍 */
 /* 요청: 아일랜드를 서쪽 벽(기본: 창고 벽 면 x 4.8, 현관구조 1: 팬트리 벽 면 x 5.06)까지 늘려 발코니 벽(면 z 2.41)에 파고들게 — 벽 속(z < 2.41)과 세탁실 쪽은 깎아서 세탁실에서는 안 보임 */
 function islandWing(k, xw) { const g = item(k, '아일랜드식탁'), zb = 2.41; /* zb: 벽 면(z 2.41)에서 시작 — 벽 끝면과 같은 면이 겹치지 않게 */
-  cab(g, xw, 5.46, .86, .9, zb, 2.56, M.counter);
-  cab(g, xw, 5.49, .1, .86, zb, 2.524, M.kdoor); /* 고정 패널(문짝 앞면과 같은 면) */
-  cab(g, xw, 5.49, 0, .1, zb, 2.49, M.black); }
-islandWing('o4islandW', 4.8); islandWing('o4islandWP', 5.06);
+  cab(g, xw, 5.514, .86, .9, zb, 2.56, M.counter);
+  cab(g, xw, 5.544, .1, .86, zb, 2.524, M.kdoor); /* 고정 패널(문짝 앞면과 같은 면) */
+  cab(g, xw, 5.544, 0, .1, zb, 2.49, M.black); }
+islandWing('o4islandW', 4.775); islandWing('o4islandWP', 5.06);
 peninsula('o4islandS', '아일랜드식탁(소형)', 6.3, 7.2, 1.65, 2.2);
 // 5 쿡탑 — 서쪽 ㄱ자 코너
 const COOK = { x0: 5.66, x1: 6.14, z0: 1.07, z1: 1.68, y: .9 }; // 폭 61cm, 다리 가운데
@@ -3083,7 +3083,7 @@ function applyOptions() {
       d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI / 2 };
       diningPendant.position.set(WX(xc), 0, WZ(zEnd + d.userData.len / 2));
     } else { /* 기본(현관창고): 큰 식탁(1.95m)은 평평한 끝을 창고 벽(면 x 4.8)에 붙여 동쪽으로 — 아일랜드에 의자가 닿지 않게 남쪽으로 */
-      const wallFace = 4.8, islOn = ['4-1', '4-3'].includes(s['4']), dz = islOn ? 3.415 : 2.86; /* 요청: 아일랜드가 없으면 식탁 북쪽 모서리를 세탁실 벽면(z 2.41)에 붙이고 그 벽 앞 북서쪽 의자(s1)는 뺌 */ d.userData.chairs.s1.visible = islOn; /* 요청: 북쪽 의자 등받이(식탁 중심에서 0.885)를 아일랜드 문 앞(z 2.53, 등받이 0.8m는 상판 0.86m 밑으로) 또는 아일랜드 없으면 발코니 벽 면(z 2.42)에 딱 붙게 — 복도 침범 줄임 */
+      const wallFace = 4.775, islOn = ['4-1', '4-3'].includes(s['4']), dz = islOn ? 3.415 : 2.86; /* 요청: 아일랜드가 없으면 식탁 북쪽 모서리를 세탁실 벽면(z 2.41)에 붙이고 그 벽 앞 북서쪽 의자(s1)는 뺌 */ d.userData.chairs.s1.visible = islOn; /* 요청: 북쪽 의자 등받이(식탁 중심에서 0.885)를 아일랜드 문 앞(z 2.53, 등받이 0.8m는 상판 0.86m 밑으로) 또는 아일랜드 없으면 발코니 벽 면(z 2.42)에 딱 붙게 — 복도 침범 줄임 */
       d.position.set(WX(wallFace), 0, WZ(dz)); d.rotation.y = Math.PI;
       d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI };
       diningPendant.position.set(WX(wallFace + d.userData.len / 2), 0, WZ(dz)); } }
