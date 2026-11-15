@@ -2082,7 +2082,7 @@ function flutedPedestal(x, z, withLamp) { const g = piece('사이드 테이블',
   mesh(geo, w, 0, .26, 0, g); mesh(CY(.22, .22, .03, 40), w, 0, .535, 0, g);
   if (withLamp) { // VR: 흰 도자기 화병 + 흰 카라 4송이(노란 꽃술), 옆에 검은 유리 캔들
     const vase = new THREE.LatheGeometry([[0, 0], [.045, 0], [.055, .04], [.05, .12], [.035, .17], [.03, .2], [0, .2]].map(([a, b]) => new THREE.Vector2(a, b)), 28);
-    mesh(vase, std(0xf2efe8, .35), .04, .55, -.02, g);
+    mesh(vase, std(0xf2efe8, .35), .04, .55, -.02, g); mesh(new THREE.CylinderGeometry(.0585, .0495, .07, 28, 1, true), std(0x8c8f93, .45), .04, .585, -.02, g); mesh(CY(.0495, .0495, .003, 28), std(0x8c8f93, .45), .04, .5515, -.02, g); /* VR: 아래쪽이 회색인 투톤 화병 */
     const callaG = new THREE.LatheGeometry([[0, 0], [.006, 0], [.012, .02], [.022, .05], [.032, .075], [.03, .085]].map(([a, b]) => new THREE.Vector2(a, b)), 16, 0, Math.PI * 1.6); // 한쪽이 트인 나팔 모양
     const white = std(0xfbfaf6, .55); white.side = THREE.DoubleSide; const stemM = std(0x5f8a3c, .6), pist = std(0xe8c34a, .6);
     for (let i = 0; i < 4; i++) { const a = i * 1.7 + .4, h = .3 + i * .045, tilt = .16 + (i % 2) * .1, dx = Math.sin(a) * tilt * h, dz = Math.cos(a) * tilt * h;
