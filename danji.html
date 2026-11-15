@@ -1219,6 +1219,7 @@ function buildOSM() {
       else if (tk === 'forestia') { const yb2 = gavg + 2 * fh, gab = Math.abs(dx / L * fux + dz / L * fuz) < .4 && L > 7 && L < 22 && L < fbl * .6; /* 긴 축에 직각인 짧은 벽 = 측벽 */
         quad(G.forestiaBase, base, yb2, sp / 8, sq / 8, (base - gavg) / (2 * fh), 1, WALL.forestiaBase[0]);
         if (gab) { quad(G.forestiaSide, yb2, top, sp / 6, sq / 6, vb(yb2), lv, WALL.forestiaSide[0]); if (lv >= 15 && dist < 2000) foSigns.push([p, q, nx, nz, L]); } else quad(G.forestia, yb2, top, sp / tw, sq / tw, vb(yb2), lv, wc); } /* 저층 2개 층 석재, 측벽 테라코타 */
+      else if (tk === 'xi') { const yb2 = gavg + 2 * fh; quad(G.forestiaBase, base, yb2, sp / 8, sq / 8, (base - gavg) / (2 * fh), 1, WALL.forestiaBase[0]); quad(G.xi, yb2, top, sp / tw, sq / tw, vb(yb2), lv, wc); } /* 로드뷰: 저층 2개 층 베이지 석재 */
       else quad(G[tk], base, top, sp / tw, sq / tw, vb(base), lv, wc);
       s += L; }
     for (const [p, q, nx, nz, L] of foSigns) { const w = Math.min(L * .62, 9), h = w * .9, cx2 = (p[0] + q[0]) / 2 + nx * .12, cz2 = (p[1] + q[1]) / 2 + nz * .12, rx = nz, rz = -nx, y1 = top - 1.2, y0 = y1 - h; /* HDC IPARK 로고 */
