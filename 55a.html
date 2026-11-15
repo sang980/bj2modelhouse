@@ -2097,7 +2097,9 @@ const dining = diningS; // (예전 코드 호환용)
   const hc = mkCanvas(64, 64), x = hc.getContext('2d'); x.fillStyle = '#4b4d51'; x.fillRect(0, 0, 64, 64); x.lineWidth = 2;
   for (let c = 0; c < 8; c++) for (let r = -1; r < 9; r++) { x.strokeStyle = (c + r) % 2 ? '#7d7f84' : '#36383c'; x.beginPath(); if (c % 2) { x.moveTo(c * 8, r * 8); x.lineTo(c * 8 + 8, r * 8 + 8); } else { x.moveTo(c * 8 + 8, r * 8); x.lineTo(c * 8, r * 8 + 8); } x.stroke(); }
   const blue = std(0x2c5fb8, .95, 0, { map: M.throwBlue.map, bumpMap: M.throwBlue.bumpMap, bumpScale: .8 }), tw = std(0xffffff, .95, 0, { map: toTex(hc, { rep: [2, 2] }) });
-  b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = blue; else if (o.material === M.check) o.material = tw; }); }
+  const g1 = pillowG(.5, .46, .17), g2 = pillowG(.6, .28, .15), rm = []; b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = blue; else if (o.geometry === g1 || o.geometry === g2) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
+  const L = 2.1; { const c = mesh(sqPillowG(.5, .48, .18), std(0x1d2026, .85, 0, { map: M.charcoal.map }), .22, .79, -L / 2 + .42, b); c.rotation.set(-.24, -.12, -.03); }
+  { const c = mesh(sqPillowG(.56, .32, .15), tw, -.17, .7, -L / 2 + .64, b); c.rotation.set(-.42, .28, .06); } } /* VR 55A: 뒤 오른쪽 짙은 남색 사각 쿠션 + 앞 왼쪽 회색 헤링본 긴 쿠션(서로 박히지 않게 앞뒤로 띄움) */
 sideTable(9.14, 7.6, true);
 const sideTableN = sideTable(9.14, 5.3, false);
 const bed2 = bed(.72, 7.0, Math.PI, 1.1, 2.0, '싱글 침대'); // 사진: 화이트 플로팅 프레임 + 하부 간접등, 머리는 창 쪽
