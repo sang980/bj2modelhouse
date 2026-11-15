@@ -2739,11 +2739,19 @@ let b6door = null;
     box: { minX: WX(x0), maxX: WX(x1), minZ: WZ(4.1), maxZ: WZ(4.25) }, apply: v => panels.forEach((p, i) => { p.position.x = xc(i) + (xo(i) - xc(i)) * v; }) };
   d.apply(1); for (const m of parts) { m.userData.door = d; doorMeshes.push(m); } doors.push(d); }
 // 6 침실1 드레스룸(도어 및 시스템선반 설치) — VR 옵션 그림: 검은 테 격자 유리 여닫이문(입구, 침실 쪽으로 열림) + 동쪽 벽 블랙 기둥·화이트 선반(행거)
-{ const g = item('b6', '드레스룸 도어', false), ox0 = 10.17, ox1 = 10.97, lw = ox1 - ox0 - .01, lh = 2.08;
-  const d = makeDoor({ parent: g, horiz: true, line: 4.36, t: .12, hu: ox1 - .005, du: -1, side: 1, lw, lh, lt: .03, style: 'tint', from: ox0, to: ox1, name: '드레스룸 문', handle: false, startOpen: true });
-  for (const y of [.75, 1.4]) { const b = mesh(BX(lw, .03, .034), M.rail, lw / 2, y, 0, d.pivot); b.userData.door = d; doorMeshes.push(b); }
-  { const b = mesh(BX(.03, lh, .034), M.rail, lw / 2, lh / 2 + .01, 0, d.pivot); b.userData.door = d; doorMeshes.push(b); }
-  { const h = mesh(BX(.02, .35, .02), M.rail, .07, 1.05, .04, d.pivot); h.userData.door = d; doorMeshes.push(h); }
+{ const g = item('b6', '드레스룸 도어', false), ox0 = 10.17, ox1 = 10.97, zf = 4.44, top = 2.12, pw = ox1 - ox0 + .06, ph = top - .02; /* 다른 타입(55B)과 같은 블랙 프레임 검은빛 반투명 유리 슬라이딩 도어 — 침실 쪽 벽면, 열면 동쪽(화장대 쪽 벽 앞)으로 */
+  cab(g, ox0 - .04, ox1 + pw - .02, top, top + .05, 4.42, 4.47, std(0x1b1c1e, .4, .4)); /* 레일 */
+  const smoke = new THREE.MeshStandardMaterial({ color: 0x24272b, roughness: .18, metalness: .1, transparent: true, opacity: .58, side: THREE.DoubleSide, depthWrite: false });
+  const blk = std(0x151618, .35, .3), p = new THREE.Group(); g.add(p); const parts = [], add = m => { p.add(m); parts.push(m); return m; };
+  add(mesh(BX(pw - .06, ph - .06, .008), smoke, 0, ph / 2 + .01, 0, null, { cast: false, recv: false }));
+  for (const [w, h, x, y] of [[pw, .035, 0, .0275], [pw, .035, 0, ph - .0075], [.035, ph, -pw / 2 + .0175, ph / 2 + .01], [.035, ph, pw / 2 - .0175, ph / 2 + .01], [pw, .025, 0, ph * .36], [pw, .025, 0, ph * .68]]) add(mesh(BX(w, h, .032), blk, x, y, 0));
+  for (const s of [-1, 1]) add(mesh(BX(.022, .5, .02), blk, -pw / 2 + .07, 1.05, s * .03));
+  const xClosed = WX((ox0 + ox1) / 2), xOpen = WX(ox1 + pw / 2 - .02); p.position.set(xClosed, 0, WZ(zf));
+  const d = { pivot: g, thetaC: 0, thetaO: 1, open: true, cur: 1, target: 1, name: '드레스룸 슬라이딩 문', box: { minX: WX(ox0), maxX: WX(ox1), minZ: WZ(4.3), maxZ: WZ(4.42) }, apply: v => { p.position.x = xClosed + (xOpen - xClosed) * v; } };
+  d.apply(1); for (const m of parts) { m.userData.door = d; doorMeshes.push(m); } doors.push(d);
+  /* (예전 여닫이문 가로대 제거) */
+  /* (예전 여닫이문 가로대 제거) */
+  /* (예전 여닫이문 손잡이 제거) */
   b6door = d;
   const sh = item('b6', '드레스룸 시스템선반'), post = std(0x1b1c1e, .4, .3), wsh = std(0xf2f0eb, .5);
   for (const z of [3.06, 3.68, 4.28]) pbox(11.55, 11.58, 0, 2.2, z - .015, z + .015, post, sh);
@@ -2768,9 +2776,10 @@ let b6door = null;
 { const g = item('b7-1', '침실1 붙박이장'); wardrobe(g, 11.63, 12.21, 4.42, 8.07, 'x-', 3); } // VR 옵션 그림: 큰 슬라이딩 문 3짝
 // 7-2 슬라이딩장 + 화장대(VR 옵션 그림): 드레스룸 쪽(북쪽) 끝 화장대 칸(벽 속 거울장·2단 서랍·스툴) + 슬라이딩장 2짝
 { const g = item('b7-2', '침실1 붙박이장(화장대)'); wardrobe(g, 11.63, 12.21, 5.64, 8.07, 'x-', 2); // VR 옵션 그림: 화장대는 드레스룸 쪽(북쪽) 끝, 나머지 슬라이딩 2짝
-  const v = item('b7-2', '화장대'), z0 = 4.42, z1 = 5.62, xb = 12.21, top = std(0xf4f3ef, .45);
+  const v = item('b7-2', '화장대'), z0 = 4.47, z1 = 5.62, xb = 12.21, top = std(0xf4f3ef, .45); /* 북쪽 벽에서 5cm 띄움 — 열린 드레스룸 슬라이딩 문(벽 앞 z 4.42~4.46)과 겹치지 않게 */
+  cab(v, 11.63, xb, 0, 2.25, z0, z0 + .02, M.kdoor); /* 북쪽 끝 옆판(띄운 쪽을 깔끔하게 마감) */
   cab(v, 11.63, xb, 2.25, H, z0, z1, M.kdoor); cab(v, 11.63, 11.65, 0, 2.25, z1 - .02, z1, M.kdoor);
-  cab(v, 11.73, xb, .68, .72, z0, z1 - .02, top);
+  cab(v, 11.73, xb, .68, .72, z0 + .02, z1 - .02, top);
   cab(v, 11.76, xb, .44, .68, z0 + .02, z1 - .04, M.kdoor); cab(v, 11.755, 11.76, .555, .557, z0 + .03, z1 - .05, seamMat); cab(v, 11.75, 11.755, .6, .62, (z0 + z1) / 2 - .17, (z0 + z1) / 2 + .17, M.metalDark);
   cab(v, 11.9, xb, 1.1, 2.0, z0 + .05, z1 - .07, std(0xdedcd7, .5));
   for (const [a, b] of [[z0 + .06, (z0 + z1) / 2 - .01], [(z0 + z1) / 2 + .002, z1 - .08]]) cab(v, 11.895, 11.9, 1.11, 1.99, a, b, M.mirrorBed1, { cast: false });
