@@ -1868,7 +1868,7 @@ function kitchenProps(k) {
   // 레트로 커피머신 (x 6.13)
   { const cx = 6.13, cz = .29;
     { const s = new THREE.Shape(); s.moveTo(-.12, 0); s.lineTo(.1, 0); s.quadraticCurveTo(.12, 0, .12, .03); s.lineTo(.12, .15); s.bezierCurveTo(.12, .245, .095, .29, .04, .29); s.lineTo(-.095, .29); s.quadraticCurveTo(-.12, .29, -.12, .265); s.closePath(); /* 옆모습: 앞이 둥글게 넘어가는 레트로 몸체 */
-      const bg = new THREE.ExtrudeGeometry(s, { depth: .2, bevelEnabled: true, bevelThickness: .012, bevelSize: .012, bevelSegments: 3, curveSegments: 18 }); bg.translate(0, 0, -.1); bg.rotateY(-Math.PI / 2); at(bg, std(0xc5c8cc, .28, .75), cx, T + .012, cz); } /* VR 55C: 은색 에스프레소 머신 */
+      const bg = new THREE.ExtrudeGeometry(s, { depth: .2, bevelEnabled: true, bevelThickness: .012, bevelSize: .012, bevelSegments: 3, curveSegments: 18 }); bg.translate(0, 0, -.1); bg.rotateY(-Math.PI / 2); at(bg, std(0x4c4f54, .3, .6), cx, T + .012, cz); } /* VR 55C: 짙은 건메탈 에스프레소 머신 */
     at(RB(.2, .01, .16, .004, 2), chrome, cx, T + .308, cz - .025); /* 위 컵워머 판 + 크롬 레일 */
     for (const [ux, uz, L, ax] of [[0, -.105, .2, 'x'], [0, .055, .2, 'x'], [-.1, -.025, .16, 'z'], [.1, -.025, .16, 'z']]) { const r = at(CY(.0035, .0035, L, 8), chrome, cx + ux, T + .345, cz + uz); if (ax === 'x') r.rotation.z = Math.PI / 2; else r.rotation.x = Math.PI / 2; }
     for (const [ux, uz] of [[-.1, -.105], [.1, -.105], [-.1, .055], [.1, .055]]) at(CY(.003, .003, .04, 6), chrome, cx + ux, T + .325, cz + uz);
@@ -1893,31 +1893,7 @@ function kitchenProps(k) {
       else { x.fillStyle = '#c4462c'; x.fillRect(12, 14, 70, 8); x.fillStyle = '#555'; for (let i = 0; i < 14; i++) x.fillRect(12, 34 + i * 8, 90 - (i % 3) * 14, 2); x.fillStyle = '#e9a23b'; x.fillRect(84, 100, 30, 40); } return c; })());
     for (const s of [0, 1]) { const p = mesh(BX(.15, .2, .004), std(0xffffff, .8, 0, { map: pg(s) }), (s ? .077 : -.077), .135, .012 + .006, st, { cast: false }); p.rotation.y = s ? -.12 : .12; }
     mesh(BX(.31, .205, .006), std(0x3a6b4a, .6), 0, .133, .01, st); }
-  // 블랙 펠트 받침 + 전기주전자 (x 6.45)
-  { const cx = 6.46, cz = .3;
-    at(CY(.15, .15, .004, 40), felt, cx, T + .002, cz + .02);
-    at(CY(.085, .09, .02, 32), blk, cx, T + .014, cz);
-    at(lathe([[0, 0], [.075, 0], [.085, .03], [.085, .13], [.07, .18], [.04, .2], [0, .2]]), M.whiteGloss, cx, T + .024, cz);
-    at(CY(.02, .02, .012, 16), blk, cx, T + .23, cz);
-    const sp = at(CY(.008, .015, .09, 12), M.whiteGloss, cx + .095, T + .15, cz); sp.rotation.z = -Math.PI / 3.2;
-    const h = at(new THREE.TorusGeometry(.06, .011, 8, 20, Math.PI), M.whiteGloss, cx - .085, T + .12, cz); h.rotation.z = Math.PI / 2; }
-  // 블랙 레일 + 도구(국자·뒤집개·거품기) + 작은 걸이 바구니
-  { const z = .14, y = 1.37;
-    at(BX(.5, .025, .02), blk, 5.78, y, z);
-    for (const x of [5.6, 5.96]) at(BX(.02, .04, .03), blk, x, y, z - .005);
-    const tools = [[5.66, 'ladle'], [5.76, 'spat'], [5.86, 'whisk']];
-    for (const [x, t] of tools) {
-      at(CY(.004, .004, .24, 8), chrome, x, y - .14, z + .015);
-      if (t === 'ladle') { const b = at(new THREE.SphereGeometry(.035, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), chrome, x, y - .26, z + .03); }
-      if (t === 'spat') at(BX(.05, .07, .004), chrome, x, y - .29, z + .015);
-      if (t === 'whisk') for (let i = 0; i < 6; i++) { const w = at(new THREE.TorusGeometry(.025, .0015, 4, 16), chrome, x, y - .29, z + .015); w.scale.set(1, 1.8, 1); w.rotation.y = i * Math.PI / 6; }
-    }
-    { const cx = 5.92, cy = y - .09, cz = z + .045, wb = .1, db = .08, hb = .08; /* VR: 검정 철망 걸이 바구니 + 흰 머그컵 2 */
-      at(BX(wb, .004, db), blk, cx, cy, cz); for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) at(BX(.004, hb, .004), blk, cx + dx * wb / 2, cy + hb / 2, cz + dz * db / 2);
-      for (const yy of [cy + hb * .55, cy + hb]) { for (const s of [-1, 1]) { at(BX(wb, .003, .003), blk, cx, yy, cz + s * db / 2); at(BX(.003, .003, db), blk, cx + s * wb / 2, yy, cz); } }
-      at(BX(.004, .03, .004), blk, cx - wb / 2 + .01, y, z + .012); at(BX(.004, .03, .004), blk, cx + wb / 2 - .01, y, z + .012);
-      const wm = std(0xf6f5f1, .3); for (const dx of [-.024, .024]) { at(CY(.02, .018, .06, 16), wm, cx + dx, cy + .033, cz); const h = at(new THREE.TorusGeometry(.013, .003, 6, 12), wm, cx + dx, cy + .035, cz + .022); h.rotation.y = Math.PI / 2; } }
-  }
+  /* VR 55C: 전기주전자·벽 레일·도구 없음 */
   // 끝쪽(VR 55C): 흰 머그컵 걸이(기둥 + 가지 3, 흰 머그 3) + 작은 흰 접시
   { const cx = 8.18, cz = .36, wm = std(0xf5f4f0, .3), wp = std(0xf2f1ed, .35, .2);
     at(CY(.07, .075, .015, 28), wp, cx, T + .0075, cz); at(CY(.008, .008, .32, 10), wp, cx, T + .175, cz); at(new THREE.SphereGeometry(.014, 12, 8), wp, cx, T + .34, cz);
