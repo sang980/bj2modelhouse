@@ -2179,6 +2179,10 @@ const desk2 = piece('책상', 1.66, 1.88, Math.PI / 2);
   // 책상(로컬: 뒤 -z가 벽, 위 .745) — 왼쪽 노란 책 2권, 가운데 그림 카드(받침), 오른쪽 작은 화분
   const top = .745;
   mesh(BX(.22, .028, .16), std(0xe9c64c, .6), -.35, top + .014, -.05, desk2).rotation.y = .18; mesh(BX(.2, .022, .15), std(0x7fb3a6, .6), -.34, top + .039, -.06, desk2).rotation.y = -.06;
+  { const cov = toTex((() => { const c = mkCanvas(160, 120), x = c.getContext('2d'); x.fillStyle = '#f7efd9'; x.fillRect(0, 0, 160, 120); x.fillStyle = '#8fc0d8'; x.fillRect(0, 0, 160, 62); /* VR: 세워 둔 그림책 — 하늘·버스 그림 표지 */
+      x.fillStyle = '#e2533b'; x.beginPath(); x.roundRect(26, 46, 104, 40, 8); x.fill(); x.fillStyle = '#dff1fb'; for (let i = 0; i < 4; i++) x.fillRect(36 + i * 22, 52, 16, 14); x.fillStyle = '#2b2b2b'; for (const wx of [50, 108]) { x.beginPath(); x.arc(wx, 88, 9, 0, 7); x.fill(); }
+      x.fillStyle = '#6aa84f'; x.fillRect(0, 96, 160, 24); x.fillStyle = '#2b2b2b'; x.font = 'bold 15px sans-serif'; x.fillText('BUS', 64, 26); return c; })());
+    const pb = mesh(BX(.22, .17, .016), std(0xffffff, .7, 0, { map: cov }), -.6, top + .09, -.31, desk2); pb.rotation.x = -.12; } /* 책상 끝 벽에 기대 세운 그림책 */
   { const card = toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = '#fbf7ee'; x.fillRect(0, 0, 96, 128); const cols = ['#f2b8a2', '#9dc7b5', '#f3d27a', '#b9c8e8']; for (let i = 0; i < 4; i++) { x.fillStyle = cols[i]; x.fillRect(10 + (i % 2) * 40, 14 + (i >> 1) * 52, 34, 44); } return c; })());
     const cd = mesh(BX(.15, .2, .006), std(0xffffff, .8, 0, { map: card }), -.05, top + .1, -.2, desk2); cd.rotation.x = -.14; mesh(BX(.012, .17, .012), M.oak, -.05, top + .08, -.24, desk2).rotation.x = .3; }
   { mesh(CY(.045, .036, .075, 24), std(0xf3f1ec, .45), .42, top + .038, -.17, desk2);
@@ -2211,7 +2215,7 @@ const desk2 = piece('책상', 1.66, 1.88, Math.PI / 2);
       x.strokeStyle = '#4a3a33'; x.lineWidth = 1.4; x.beginPath(); x.moveTo(164, 196); x.lineTo(170, 202); x.lineTo(176, 196); x.moveTo(170, 202); x.lineTo(170, 210); x.stroke();
       x.lineWidth = .8; x.strokeStyle = 'rgba(40,32,30,.85)'; for (const s of [-1, 1]) for (let i = 0; i < 4; i++) { x.beginPath(); x.moveTo(170 + s * 8, 203 + i * 2); x.quadraticCurveTo(170 + s * 45, 192 + i * 9, 170 + s * (78 + i * 4), 200 + i * 16); x.stroke(); }
       return c; })());
-    pbox(2.08, 2.72, .98, 1.88, 2.65, 2.68, M.oak, g); pbox(2.11, 2.69, 1.01, 1.85, 2.646, 2.65, std(0xffffff, .9, 0, { map: art }), g, { cast: false }); }
+    pbox(1.98, 2.78, .9, 2.0, 2.65, 2.68, M.oak, g); pbox(2.01, 2.75, .93, 1.97, 2.646, 2.65, std(0xffffff, .9, 0, { map: art }), g, { cast: false }); } /* VR: 큰 원목 액자(약 0.8 × 1.1m) */
 }
 await yieldUI();
 // 알파룸(사진): 짙은 회색 D자 책상(창 쪽은 판재 다리, 둥근 쪽은 원기둥 다리) + 노트북 + 흰 바탕 검정 마름모 러그
