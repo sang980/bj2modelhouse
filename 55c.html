@@ -934,7 +934,7 @@ wall(3.4, 3.72, 4.74, 3.72, TI, [], 'storage');
 // 물품옵션 1: 팬트리가 주방 쪽으로 확장(동쪽 벽 x=5.0) · 팬트리 도어는 복도(남쪽) 방향
 wall(5.0, 2.29, 5.0, 3.72, TI, [], 'o1wall');
 wall(3.4, 3.72, 3.96, 3.72, TI, [], 'o1wall');
-wall(3.4, 2.29, 5.4, 2.29, .24, []); /* 평면도: 발코니 남쪽 내력벽 z 2.29(두께 0.24, 면 2.17·2.41) — 예전 2.6은 식당 쪽 벽을 25cm 짧게 만들었음 */
+wall(3.4, 2.29, 5.34, 2.29, .24, []); /* 동쪽 끝 면을 다용도실 벽 면(x 5.46)과 맞춰 단차 없앰 */ /* 평면도: 발코니 남쪽 내력벽 z 2.29(두께 0.24, 면 2.17·2.41) — 예전 2.6은 식당 쪽 벽을 25cm 짧게 만들었음 */
 wall(5.4, 0, 5.4, 2.29, TI, [{ from: .47, to: 1.9, y1: 2.1, kind: 'open' }]); /* 평면도·VR: 세탁실 문 남쪽 끝 z 1.9(문틀~모서리 흰 벽 약 51cm), 북쪽은 주방 상부장 옆면(z 0.46)에 바로 붙임 */
 // 주방 ↔ 다용도실(세탁실): 사진처럼 2짝 슬라이딩 도어 — 흰 알루미늄 프레임 + 민트빛 반투명(샌드블라스트) 유리
 // 주방 상판 쪽(북쪽) 짝은 고정, 남쪽 짝이 고정 짝 뒤로 미끄러져 열림
@@ -2709,8 +2709,7 @@ function peninsula(k, name, x0, x1, z0, z1) {
   wineGlass(g, WX(x0 + .86), top, WZ(zc + .06));
 }
 // 평면도(옵션 그림) 방향: 4-1·4-3은 주방 왼쪽 앞(복도 쪽), 4-4는 팬트리 동선 때문에 작게 가운데로. 식탁은 아일랜드 남쪽에 붙음
-peninsula('o4island', '아일랜드식탁', 5.09, 6.39, 2.44, 3.04); /* 요청: 왼쪽 벽(현관구조 1 팬트리 벽 면 x 5.06)에 상판을 붙이고 발코니 벽(면 z 2.41) 바로 앞 */
-peninsula('o4islandB', '아일랜드식탁', 4.83, 6.13, 2.44, 3.04); /* 기본(현관창고)일 때: 창고 벽 면 x 4.8에 붙임 */
+peninsula('o4island', '아일랜드식탁', 5.49, 6.79, 1.93, 2.53); /* 요청: 상판 서쪽 끝을 다용도실 흰 벽 면(x 5.46)에 붙이고 북쪽 끝을 세탁실 문틀(z 1.9)에 맞춤 */
 peninsula('o4islandS', '아일랜드식탁(소형)', 6.3, 7.2, 1.65, 2.2);
 // 5 쿡탑 — 서쪽 ㄱ자 코너
 const COOK = { x0: 5.52, x1: 6.0, z0: 1.07, z1: 1.68, y: .9 }; // 폭 61cm, 다리 가운데
@@ -2999,7 +2998,7 @@ function applyOptions() {
   show('o2-1', s['2'] === '2-1');
   show('o3', s['3'] === '3');
   const island = ['4-1', '4-3', '4-4'].includes(s['4']), stone = ['4-2', '4-3', '4-4'].includes(s['4']);
-  { const isl = s['4'] === '4-1' || s['4'] === '4-3' || s['4'] === '4-4'; show('o4island', isl && s['1'] === '1'); show('o4islandB', isl && s['1'] !== '1'); } show('o4islandS', false); /* 4-4(현관구조 1)도 4-1·4-3과 같은 원래 자리에 아일랜드 */
+  show('o4island', s['4'] === '4-1' || s['4'] === '4-3' || s['4'] === '4-4'); show('o4islandS', false); /* 4-4(현관구조 1)도 4-1·4-3과 같은 원래 자리에 아일랜드 */
   const cm = stone ? MAT_OPT.stone : MAT_OPT.mma; M.counter.map = cm.map; M.counter.color.set(cm.color); M.counter.roughness = cm.roughness; M.counter.needsUpdate = true;
   M.splash.map = stone ? MAT_OPT.stone.map : MAT_OPT.tile.map; M.splash.roughness = stone ? .18 : .25; M.splash.needsUpdate = true;
   // 식탁: 아일랜드가 있으면 그 남쪽 면에 붙이고(평탄면이 북쪽), 없으면 주방 가운데에 둠
@@ -3011,12 +3010,12 @@ function applyOptions() {
     if (selected && (selected === diningS || selected === diningL) && !selected.visible) select(null);
     // 북쪽 벽(z 2.66)·아일랜드(z ≤ 2.8)에 의자 등받이가 닿지 않도록 남쪽으로 당김
     if (pantry) { /* 요청(VR처럼 90° 회전): 작은 식탁의 평평한 끝을 아일랜드 남쪽 면(상판 z 3.07, 아일랜드 없으면 발코니 벽 면 z 2.41)에 붙여 남쪽으로 뻗게 — 의자는 동·서 양쪽 */
-      const islOn = ['4-1', '4-3', '4-4'].includes(s['4']), zEnd = islOn ? 3.07 : 2.41, xc = 5.75;
+      const islOn = ['4-1', '4-3', '4-4'].includes(s['4']), zEnd = islOn ? 2.56 : 2.41, xc = 5.8; /* 아일랜드 상판 남쪽 z 2.56 */
       d.position.set(WX(xc), 0, WZ(zEnd)); d.rotation.y = Math.PI / 2;
       d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI / 2 };
       diningPendant.position.set(WX(xc), 0, WZ(zEnd + d.userData.len / 2));
     } else { /* 기본(현관창고): 큰 식탁(1.95m)은 평평한 끝을 창고 벽(면 x 4.8)에 붙여 동쪽으로 — 아일랜드에 의자가 닿지 않게 남쪽으로 */
-      const wallFace = 4.8, dz = 4.0;
+      const wallFace = 4.8, dz = 3.78;
       d.position.set(WX(wallFace), 0, WZ(dz)); d.rotation.y = Math.PI;
       d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI };
       diningPendant.position.set(WX(wallFace + d.userData.len / 2), 0, WZ(dz)); } }
