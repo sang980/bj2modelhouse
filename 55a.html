@@ -3056,7 +3056,7 @@ function applyOptions() {
       d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI / 2 };
       diningPendant.position.set(WX(xc), 0, WZ(zEnd + d.userData.len / 2));
     } else { /* 기본(현관창고): 큰 식탁(1.95m)은 평평한 끝을 창고 벽(면 x 4.8)에 붙여 동쪽으로 — 아일랜드에 의자가 닿지 않게 남쪽으로 */
-      const wallFace = 4.8, dz = 3.78;
+      const wallFace = 4.8, islOn = ['4-1', '4-3'].includes(s['4']), dz = islOn ? 3.415 : 3.305; /* 요청: 북쪽 의자 등받이(식탁 중심에서 0.885)를 아일랜드 문 앞(z 2.53, 등받이 0.8m는 상판 0.86m 밑으로) 또는 아일랜드 없으면 발코니 벽 면(z 2.42)에 딱 붙게 — 복도 침범 줄임 */
       d.position.set(WX(wallFace), 0, WZ(dz)); d.rotation.y = Math.PI;
       d.userData.home = { x: d.position.x, z: d.position.z, r: Math.PI };
       diningPendant.position.set(WX(wallFace + d.userData.len / 2), 0, WZ(dz)); } }
