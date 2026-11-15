@@ -222,7 +222,7 @@ function forestAt(x, z) { const F = GEO.fmask; if (!F) return smooth(-12, 18, -p
   return (a[j * M + i] * (1 - ax) + a[j * M + i + 1] * ax) * (1 - az) + (a[(j + 1) * M + i] * (1 - ax) + a[(j + 1) * M + i + 1] * ax) * az; }
 function heightAt(x, z) {
   if (!GEO.ok) return heightProc(x, z);
-  if (polyDist(SITE, x, z) < 0) return levelAt(x, z) - 1.5; /* 단지 안 지형은 단(데크) 아래로 숨김 */
+  if (polyDist(SITE, x, z) < 0) { let m = levelAt(x, z); for (const [dx, dz] of [[7, 0], [-7, 0], [0, 7], [0, -7], [5, 5], [-5, 5], [5, -5], [-5, -5]]) m = Math.min(m, levelAt(x + dx, z + dz)); return m - 2; } /* 단지 안 지형은 주변 가장 낮은 단보다 아래로 숨김 */
   return groundAt(x, z);
 }
 
@@ -465,14 +465,21 @@ async function build() {
   /* 데크 윗면: 공사계획평면도 단별 해발고(FH) — 1m 격자, 평평한 면은 배치도 그림, 단 사이 급경사면은 옹벽 재질 */
   const wallMat = MAT.concrete.clone(); wallMat.side = THREE.DoubleSide;
   { let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const p of SITE) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); z0 = Math.min(z0, p[1]); z1 = Math.max(z1, p[1]); }
-    const st = LOW ? 1.5 : 1, gx = Math.ceil((x1 - x0) / st) + 1, gz = Math.ceil((z1 - z0) / st) + 1, Y = new Float32Array(gx * gz);
-    for (let j = 0; j < gz; j++) for (let i = 0; i < gx; i++) Y[j * gx + i] = levelAt(x0 + i * st, z0 + j * st);
+    /* 적응형 격자: 평평한 칸은 2m, 단 경계·단지 경계에 걸친 칸만 0.25m로 잘게(옹벽 톱니 줄임) */
+    const st = 2, SUB = LOW ? 4 : 8, gx = Math.ceil((x1 - x0) / st) + 1, gz = Math.ceil((z1 - z0) / st) + 1, Y = new Float32Array(gx * gz), IN = new Uint8Array(gx * gz);
+    for (let j = 0; j < gz; j++) for (let i = 0; i < gx; i++) { const x = x0 + i * st, z = z0 + j * st; Y[j * gx + i] = levelAt(x, z); IN[j * gx + i] = inPoly(SITE, x, z) ? 1 : 0; }
     const fp = [], fu = [], wp = [], wu = [];
     const tri = (ax, az, ay, bx, bz, by, cx, cz, cy) => { const mx = (ax + bx + cx) / 3, mz = (az + bz + cz) / 3; if (!inPoly(SITE, mx, mz)) return;
-      if (Math.max(ay, by, cy) - Math.min(ay, by, cy) < 1.2) { fp.push(ax, ay, az, bx, by, bz, cx, cy, cz); for (const [x, z] of [[ax, az], [bx, bz], [cx, cz]]) { const u = planUV(x, z); fu.push(u[0], u[1]); } }
+      if (Math.max(ay, by, cy) - Math.min(ay, by, cy) < .6) { fp.push(ax, ay, az, bx, by, bz, cx, cy, cz); for (const [x, z] of [[ax, az], [bx, bz], [cx, cz]]) { const u = planUV(x, z); fu.push(u[0], u[1]); } }
       else { wp.push(ax, ay, az, bx, by, bz, cx, cy, cz); wu.push((ax + az) / 6, ay / 3, (bx + bz) / 6, by / 3, (cx + cz) / 6, cy / 3); } };
-    for (let j = 0; j < gz - 1; j++) for (let i = 0; i < gx - 1; i++) { const xa = x0 + i * st, xb = xa + st, za = z0 + j * st, zb = za + st, a = Y[j * gx + i], b = Y[j * gx + i + 1], c = Y[(j + 1) * gx + i], d = Y[(j + 1) * gx + i + 1];
-      tri(xa, za, a, xa, zb, c, xb, za, b); tri(xb, za, b, xa, zb, c, xb, zb, d); }
+    const quadT = (xa, za, xb, zb, a, b, c, d) => { tri(xa, za, a, xa, zb, c, xb, za, b); tri(xb, za, b, xa, zb, c, xb, zb, d); };
+    for (let j = 0; j < gz - 1; j++) for (let i = 0; i < gx - 1; i++) {
+      const k = j * gx + i, xa = x0 + i * st, za = z0 + j * st, a = Y[k], b = Y[k + 1], c = Y[k + gx], d = Y[k + gx + 1], ins = IN[k] + IN[k + 1] + IN[k + gx] + IN[k + gx + 1];
+      if (ins === 0 && !inPoly(SITE, xa + st / 2, za + st / 2)) continue;
+      const mid = levelAt(xa + st / 2, za + st / 2), rng = Math.max(a, b, c, d, mid) - Math.min(a, b, c, d, mid);
+      if (rng < .3 && ins === 4) { quadT(xa, za, xa + st, za + st, a, b, c, d); continue; }
+      const s = st / SUB, L = []; for (let q = 0; q <= SUB; q++) { L.push([]); for (let p = 0; p <= SUB; p++) L[q].push(levelAt(xa + p * s, za + q * s)); }
+      for (let q = 0; q < SUB; q++) for (let p = 0; p < SUB; p++) quadT(xa + p * s, za + q * s, xa + (p + 1) * s, za + (q + 1) * s, L[q][p], L[q][p + 1], L[q + 1][p], L[q + 1][p + 1]); }
     const mk = (p, u, mat) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(u, 2)); g.computeVertexNormals(); const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.castShadow = mat === wallMat; scene.add(m); };
     mk(fp, fu, new THREE.MeshStandardMaterial({ map: planTex, roughness: .95 })); mk(wp, wu, wallMat); }
   /* 단지 둘레 옹벽: 안쪽 단 높이 ↔ 바깥 실제 지면 높이 사이(바깥이 높으면 산을 막는 옹벽) */
