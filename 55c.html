@@ -1918,15 +1918,13 @@ function kitchenProps(k) {
       at(BX(.004, .03, .004), blk, cx - wb / 2 + .01, y, z + .012); at(BX(.004, .03, .004), blk, cx + wb / 2 - .01, y, z + .012);
       const wm = std(0xf6f5f1, .3); for (const dx of [-.024, .024]) { at(CY(.02, .018, .06, 16), wm, cx + dx, cy + .033, cz); const h = at(new THREE.TorusGeometry(.013, .003, 6, 12), wm, cx + dx, cy + .035, cz + .022); h.rotation.y = Math.PI / 2; } }
   }
-  // 끝쪽(다용도실 문 옆): 블랙 원형 받침 위 블랙 보틀·양념병·은색 볼, 화이트 볼 화분
-  { const cx = 8.22, cz = .38;
-    at(CY(.17, .17, .004, 40), felt, cx, T + .002, cz);
-    at(lathe([[0, 0], [.045, 0], [.05, .02], [.05, .2], [.03, .25], [.018, .27], [.018, .33], [0, .33]]), blk, cx - .05, T + .004, cz - .08);
-    const lbl = [0xb8433a, 0x3f7f5a, 0xd9b45a];
-    for (let i = 0; i < 3; i++) { at(CY(.02, .02, .1, 16), blk, cx - .1 + i * .045, T + .054, cz + .02); at(CY(.0205, .0205, .03, 16), std(lbl[i], .6), cx - .1 + i * .045, T + .06, cz + .02); }
-    at(new THREE.SphereGeometry(.035, 24, 16), chrome, cx + .03, T + .039, cz + .1);
-    at(lathe([[0, 0], [.04, 0], [.06, .02], [.09, .07], [.1, .1], [.094, .1], [.085, .075], [.05, .03], [0, .03]], 32), M.whiteGloss, cx + .07, T, cz - .03);
-    const p = tablePlant(k, WX(cx + .07), T - .01, WZ(cz - .03)); p.children[0].visible = false; p.scale.setScalar(1.1); }
+  // 끝쪽(VR 55C): 흰 머그컵 걸이(기둥 + 가지 3, 흰 머그 3) + 작은 흰 접시
+  { const cx = 8.18, cz = .36, wm = std(0xf5f4f0, .3), wp = std(0xf2f1ed, .35, .2);
+    at(CY(.07, .075, .015, 28), wp, cx, T + .0075, cz); at(CY(.008, .008, .32, 10), wp, cx, T + .175, cz); at(new THREE.SphereGeometry(.014, 12, 8), wp, cx, T + .34, cz);
+    for (let i = 0; i < 3; i++) { const a = i / 3 * Math.PI * 2 + .3, y = T + .22 + i * .035, arm = at(CY(.004, .004, .1, 6), wp, cx + Math.cos(a) * .045, y, cz + Math.sin(a) * .045); arm.rotation.order = 'YZX'; arm.rotation.set(0, -a, -(Math.PI / 2 - .35));
+      const mg = new THREE.Group(); mg.position.set(WX(cx + Math.cos(a) * .1), y - .07, WZ(cz + Math.sin(a) * .1)); mg.rotation.y = -a; k.add(mg);
+      mesh(new THREE.CylinderGeometry(.034, .03, .085, 22, 1, true), wm, 0, 0, 0, mg); mesh(CY(.03, .03, .004, 22), wm, 0, -.041, 0, mg); { const h = mesh(new THREE.TorusGeometry(.02, .005, 8, 14, Math.PI * 1.4), wm, -.036, .008, 0, mg); h.rotation.z = Math.PI / 2 + .3; } }
+    at(CY(.09, .075, .015, 30), wm, cx + .02, T + .0075, cz + .22); }
 }
 kitchenProps(k);
 /* 55C VR: 욕실2 선반엔 화분 대신 작은 유리병 3 */
