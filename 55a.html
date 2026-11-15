@@ -3059,7 +3059,7 @@ function goLook(o) {
   // 현관구조 1 선택 시 팬트리는 복도 쪽에서 봐야 보임
   const [x, z, tx, tz, pitch] = (o.id === '2' && sel['1'] === '1') ? [4.4, 4.95, 4.4, 2.9, -.2] : o.view;
   player.x = WX(x); player.z = WZ(z); player.yaw = Math.atan2(-(tx - x), -(tz - z)); player.pitch = pitch;
-  { const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw); for (const d of doors) { if (d.open || !d.box) continue; const cx = (d.box.minX + d.box.maxX) / 2 - player.x, cz = (d.box.minZ + d.box.maxZ) / 2 - player.z, L = Math.hypot(cx, cz); if (L < 2.2 && (cx * fx + cz * fz) / (L || 1) > .8) toggleDoor(d); } } /* 보러 가기: 바로 앞의 닫힌 문(팬트리·창고·수납장)은 열어 안이 보이게 */
+  { const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw); for (const d of doors) { if (d.open || !d.box || !visibleDeep(d.pivot)) continue; const cx = (d.box.minX + d.box.maxX) / 2 - player.x, cz = (d.box.minZ + d.box.maxZ) / 2 - player.z, L = Math.hypot(cx, cz); if (L < 2.2 && (cx * fx + cz * fz) / (L || 1) > .8) toggleDoor(d); } } /* 보러 가기: 바로 앞의 닫힌 문(팬트리·창고·수납장)은 열어 안이 보이게 */
   if (mode !== 'first') setMode('first');
   if (innerWidth <= 760) { optPanel.classList.remove('open'); optToggle.setAttribute('aria-expanded', 'false'); }
 }
