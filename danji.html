@@ -986,8 +986,8 @@ function buildYard() {
     else { tower(-3, 0, 'y'); swing(4, 0); } }
   for (const [k, c] of [['r', '#d9533b'], ['y', '#f0c33c'], ['b', '#3d7fc1'], ['w', '#f1f0ec']]) { const m = new THREE.Mesh(PL[k].build(), new THREE.MeshStandardMaterial({ color: c, roughness: .6 })); m.castShadow = true; scene.add(m); }
   /* 주차1(모형·위성사진 '주차장용지'): 진입광장 옹벽 아래, 공원로와 성남여중 사이 — 짙은 아스팔트 + 흰 주차칸(8m 한 장 = 2.5m 칸 × 5m + 3m 통로) */
-  if (GEO.ok) { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#565a5e'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 2500; i++) { const v = (rand() - .5) * .12; g.fillStyle = v > 0 ? `rgba(255,255,255,${v})` : `rgba(0,0,0,${-v})`; g.fillRect(rand() * 256, rand() * 256, 2, 2); }
-    g.fillStyle = 'rgba(225,225,220,.55)'; for (let x = 0; x < 256; x += 80) g.fillRect(x, 0, 2, 160); g.fillRect(0, 158, 256, 2);
+  if (GEO.ok) { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#45474a'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 2500; i++) { const v = (rand() - .5) * .12; g.fillStyle = v > 0 ? `rgba(255,255,255,${v})` : `rgba(0,0,0,${-v})`; g.fillRect(rand() * 256, rand() * 256, 2, 2); }
+    /* 모형 VE02: 주차1은 주차칸 선 없이 고른 짙은 회색 판 */
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO;
     drapePoly([[-100, 101], [-70, 95], [-56, 101], [-50, 116], [-58, 131], [-80, 139], [-98, 124]], new THREE.MeshLambertMaterial({ map: t, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }), .25); }
 }
