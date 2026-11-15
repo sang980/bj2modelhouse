@@ -485,6 +485,11 @@ function flutedCanvas() {
   for (let i = 0; i < S; i++) { const v = 128 + 127 * Math.cos(i / S * n * Math.PI * 2); x.fillStyle = `rgb(${v | 0},${v | 0},${v | 0})`; x.fillRect(i, 0, 1, 8); }
   return c;
 }
+function flutedShadeCanvas() { /* VR 침실1 헤드보드: 둥근 세로 골마다 밝은 등·어두운 홈 음영(조명 방향과 무관하게 골이 보이게) */
+  const S = 512, c = mkCanvas(S, 8), x = c.getContext('2d'), n = 22, P = S / n;
+  for (let i = 0; i < S; i++) { const t = (i % P) / P, r = Math.pow(Math.sin(Math.PI * t), .55), v = 196 + 52 * r + 7 * Math.cos(Math.PI * t); x.fillStyle = `rgb(${v | 0},${v | 0},${v | 0})`; x.fillRect((i + P / 2) % S, 0, 1, 8); }
+  return c;
+}
 function grooveCanvas(color, every = 4, vertical = true) {
   const S = 512, c = mkCanvas(S, S), x = c.getContext('2d');
   x.fillStyle = color; x.fillRect(0, 0, S, S);
@@ -635,7 +640,7 @@ Object.assign(M, {
   art: std(0xffffff, .7, 0, { map: toTex(artCanvas()) }),
   artWall: std(0xf4f2ee, .7),
   marble: std(0xffffff, .22, 0, { map: toTex(marbleCanvas(), { rep: [1, 1] }) }),
-  fluted: std(0xf3f1ec, .8, 0, { bumpMap: toTex(flutedCanvas(), { srgb: false, rep: [1, 1] }), bumpScale: 6 }),
+  fluted: std(0xf3f1ec, .8, 0, { map: toTex(flutedShadeCanvas()), bumpMap: toTex(flutedCanvas(), { srgb: false, rep: [1, 1] }), bumpScale: 6 }),
   ledStrip: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff1d6, emissiveIntensity: 2.2 }),
   downlight: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff6e8, emissiveIntensity: .6 }),
   globe: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff3dc, emissiveIntensity: 1.2, roughness: .3 }),
@@ -1291,7 +1296,7 @@ await phase('침실을 꾸미는 중', 61);
 // ── 침실1: 루버 헤드보드 + LED, 침대 옆 블랙 펜던트, 평판등, 커튼 ──
 // 평면도 방향: 헤드보드는 서쪽 벽(x=8.88), 침실 문(북서쪽) 바로 남쪽부터
 pbox(8.88, 8.92, 0, 1.15, 5.32, 7.7, M.fluted, fixed).material = M.fluted; /* 문 옆 스위치·온도조절기(z ~5.18)가 벽판에 묻히지 않게 5.32부터 */
-M.fluted.bumpMap.repeat.set(3, 1);
+M.fluted.bumpMap.repeat.set(3, 1); M.fluted.map.repeat.set(3, 1);
 pbox(8.88, 8.94, 1.15, 1.19, 5.32, 7.7, M.black, fixed);
 pbox(8.94, 8.95, 1.12, 1.15, 5.37, 7.65, M.ledStrip, fixed, { cast: false });
 pbox(8.88, 8.9, 1.19, H, 5.32, 7.7, std(0xffffff, .8, 0, { map: toTex(grooveCanvas('#e9e6e0', 3)) }), fixed);

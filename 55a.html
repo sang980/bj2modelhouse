@@ -485,6 +485,11 @@ function flutedCanvas() {
   for (let i = 0; i < S; i++) { const v = 128 + 127 * Math.cos(i / S * n * Math.PI * 2); x.fillStyle = `rgb(${v | 0},${v | 0},${v | 0})`; x.fillRect(i, 0, 1, 8); }
   return c;
 }
+function flutedShadeCanvas() { /* VR 침실1 헤드보드: 둥근 세로 골마다 밝은 등·어두운 홈 음영(조명 방향과 무관하게 골이 보이게) */
+  const S = 512, c = mkCanvas(S, 8), x = c.getContext('2d'), n = 22, P = S / n;
+  for (let i = 0; i < S; i++) { const t = (i % P) / P, r = Math.pow(Math.sin(Math.PI * t), .55), v = 196 + 52 * r + 7 * Math.cos(Math.PI * t); x.fillStyle = `rgb(${v | 0},${v | 0},${v | 0})`; x.fillRect((i + P / 2) % S, 0, 1, 8); }
+  return c;
+}
 function grooveCanvas(color, every = 4, vertical = true) {
   const S = 512, c = mkCanvas(S, S), x = c.getContext('2d');
   x.fillStyle = color; x.fillRect(0, 0, S, S);
@@ -635,7 +640,7 @@ Object.assign(M, {
   art: std(0xffffff, .7, 0, { map: toTex(artCanvas()) }),
   artWall: std(0xf4f2ee, .7),
   marble: std(0xffffff, .22, 0, { map: toTex(marbleCanvas(), { rep: [1, 1] }) }),
-  fluted: std(0xf3f1ec, .8, 0, { bumpMap: toTex(flutedCanvas(), { srgb: false, rep: [1, 1] }), bumpScale: 6 }),
+  fluted: std(0xf3f1ec, .8, 0, { map: toTex(flutedShadeCanvas()), bumpMap: toTex(flutedCanvas(), { srgb: false, rep: [1, 1] }), bumpScale: 6 }),
   ledStrip: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff1d6, emissiveIntensity: 2.2 }),
   downlight: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff6e8, emissiveIntensity: .6 }),
   globe: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff3dc, emissiveIntensity: 1.2, roughness: .3 }),
@@ -1157,9 +1162,9 @@ function artCanvas2(kind) {
     const c2 = mkCanvas(288, 344), y = c2.getContext('2d'), qw = 144, qh = 172;
     const shapes = [[.18, -.25, .95, 1.3], [-.5, .2, .9, 1.05], [.22, .12, .8, 1.15], [-.35, -.4, .95, 1.0]];
     for (let q = 0; q < 4; q++) { const ox = (q % 2) * qw, oy = (q >> 1) * qh; y.save(); y.beginPath(); y.rect(ox, oy, qw, qh); y.clip();
-      const bg = y.createLinearGradient(ox, oy, ox + qw, oy + qh); bg.addColorStop(0, '#173a85'); bg.addColorStop(1, '#2c55b0'); y.fillStyle = bg; y.fillRect(ox, oy, qw, qh);
+      const bg = y.createLinearGradient(ox, oy, ox + qw, oy + qh); bg.addColorStop(0, '#121f4c'); bg.addColorStop(1, '#1e3170'); y.fillStyle = bg; y.fillRect(ox, oy, qw, qh); /* VR: 짙은 남색 */
       const [sx, sy, sw, sh] = shapes[q], X0 = ox + sx * qw, Y0 = oy + sy * qh, W2 = sw * qw, H2 = sh * qh, r = W2 / 2;
-      const wg = y.createLinearGradient(X0, Y0, X0 + W2, Y0 + H2); wg.addColorStop(0, '#ffffff'); wg.addColorStop(.55, '#eef2f8'); wg.addColorStop(1, '#bcc6da'); y.fillStyle = wg;
+      const wg = y.createLinearGradient(X0, Y0, X0 + W2, Y0 + H2); wg.addColorStop(0, '#eceef4'); wg.addColorStop(.45, '#dde0ea'); wg.addColorStop(.8, '#b4b9cc'); wg.addColorStop(1, '#8a90aa'); y.fillStyle = wg; /* VR: 접힌 천처럼 한쪽으로 회색 음영 */
       y.beginPath(); y.moveTo(X0, Y0 + r); y.arc(X0 + r, Y0 + r, r, Math.PI, 0); y.lineTo(X0 + W2, Y0 + H2 - r); y.arc(X0 + r, Y0 + H2 - r, r, 0, Math.PI); y.closePath(); y.fill(); y.restore(); }
     y.fillStyle = '#0a1532'; y.fillRect(142, 0, 4, 344); y.fillRect(0, 170, 288, 4);
     return c2;
@@ -1288,16 +1293,17 @@ ceilingPanel(6.45, 6.93, 5.55, 6.55, 1.4, 3.4); ceilingPanel(6.99, 7.47, 5.55, 6
 curtainSet(5.25, 8.7, 5.54, 8.28);
 
 // ── 현관 끝 백라이트 액자 + 현관 평판등 ──
-pbox(3.0, 3.8, .98, 1.92, 4.92, 4.93, M.ledWarm, fixed, { cast: false });
-pbox(3.04, 3.76, 1.02, 1.88, 4.89, 4.92, std(0xffffff, .5, 0, { map: toTex(artCanvas2('hall')) }), fixed);
-ledRectWall(3.4, 1.45, 4.87, .8, .9, 0, -1, 0xffe4c2, .9, 1.8);
+/* VR: 액자가 크다(약 1.0×1.2m) — 알파룸 문 가까이까지, 문 높이 근처까지 */
+pbox(2.98, 4.08, .8, 2.05, 4.92, 4.93, M.ledWarm, fixed, { cast: false });
+pbox(3.02, 4.04, .84, 2.01, 4.89, 4.92, std(0xffffff, .5, 0, { map: toTex(artCanvas2('hall')) }), fixed);
+ledRectWall(3.53, 1.425, 4.87, 1.1, 1.25, 0, -1, 0xffe4c2, .9, 1.8);
 ceilingPanel(2.4, 2.9, 2.7, 3.2, .9, 2.6);
 
 await phase('침실을 꾸미는 중', 61);
 // ── 침실1: 루버 헤드보드 + LED, 침대 옆 블랙 펜던트, 평판등, 커튼 ──
 // 평면도 방향: 헤드보드는 서쪽 벽(x=8.88), 침실 문(북서쪽) 바로 남쪽부터
 pbox(8.88, 8.92, 0, 1.15, 5.32, 7.7, M.fluted, fixed).material = M.fluted; /* 문 옆 스위치·온도조절기(z ~5.18)가 벽판에 묻히지 않게 5.32부터 */
-M.fluted.bumpMap.repeat.set(3, 1);
+M.fluted.bumpMap.repeat.set(3, 1); M.fluted.map.repeat.set(3, 1);
 pbox(8.88, 8.94, 1.15, 1.19, 5.32, 7.7, M.black, fixed);
 pbox(8.94, 8.95, 1.12, 1.15, 5.37, 7.65, M.ledStrip, fixed, { cast: false });
 pbox(8.88, 8.9, 1.19, H, 5.32, 7.7, std(0xffffff, .8, 0, { map: toTex(grooveCanvas('#e9e6e0', 3)) }), fixed);
@@ -2658,11 +2664,16 @@ function pantryGoods(g, lv, y) {
     const cm = std(0xeee6d8, .4); at(RB(.22, .18, .3, .05, 4), cm, 4.77, y + .09, 3.2); const hd = at(new THREE.TorusGeometry(.06, .011, 8, 20, Math.PI), cm, 4.77, y + .18, 3.2); hd.rotation.y = Math.PI / 2; }
   if (lv === 2) { const p = tablePlant(g, WX(4.15), y, WZ(2.57)); p.scale.setScalar(.8); at(CY(.085, .075, .085, 24), weaveMat(0xb59a6e), 4.15, y + .042, 2.57); /* 황마 화분 커버 + 마늘 2 */
     for (const dx of [.12, .17]) { const b = at(new THREE.SphereGeometry(.026, 14, 10), std(0xf1ece2, .7), 4.15 + dx, y + .022, 2.63); b.scale.set(1, .85, 1); at(new THREE.ConeGeometry(.008, .025, 8), std(0xe0d6c2, .7), 4.15 + dx, y + .055, 2.63); }
-    basket(4.77, 3.48, .26, .14, .28, 0xc49a5c, true, true); }
+    /* VR: 옆 선반 — 바구니 대신 올리브색 뚜껑 수납함 */
+    at(RB(.24, .15, .28, .012, 2), std(0x5d5c3c, .7), 4.77, y + .075, 3.48); at(RB(.25, .028, .29, .01, 2), std(0x4f4e32, .65), 4.77, y + .164, 3.48); }
   if (lv === 3) { const bw = std(0xf3f2ee, .6), br = std(0x6b4a2e, .55); /* 흰 보냉백 + 갈색 가죽 끈·패치 */
     at(RB(.24, .16, .18, .035, 3), bw, 4.15, y + .08, 2.57); const st = at(new THREE.TorusGeometry(.07, .008, 6, 20, Math.PI), br, 4.15, y + .16, 2.57); at(BX(.06, .035, .004), br, 4.15, y + .1, 2.662); at(BX(.22, .004, .004), std(0xbfbfbc, .5), 4.15, y + .16, 2.57);
     const wv = std(0xf6f5f1, .22); lathe(bubble, wv, 4.42, y, 2.55, 1); lathe(bubble, wv, 4.5, y, 2.63, .82); /* 흰 버블 화병 2 */
-    basket(4.77, 3.2, .26, .16, .26, 0xd0aa6a, true, true); }
+    /* VR: 옆 선반 — 청록 금속 캔(은색 뚜껑) + 골진 흰 그릇 2단 + 흰 컵 */
+    at(CY(.045, .045, .13, 24), std(0x2c6f7c, .35, .55), 4.8, y + .065, 3.08); at(CY(.047, .047, .018, 24), std(0xc9cccf, .3, .8), 4.8, y + .139, 3.08);
+    { const rib = mkCanvas(128, 8), rx = rib.getContext('2d'); rx.fillStyle = '#f4f3ef'; rx.fillRect(0, 0, 128, 8); rx.fillStyle = 'rgba(120,118,112,.35)'; for (let i = 0; i < 16; i++) rx.fillRect(i * 8, 0, 2, 8);
+      const rm = std(0xffffff, .5, 0, { map: toTex(rib), side: THREE.DoubleSide }); at(new THREE.CylinderGeometry(.085, .06, .07, 32, 1, true), rm, 4.77, y + .035, 3.25); at(new THREE.CylinderGeometry(.08, .056, .066, 32, 1, true), rm, 4.77, y + .1, 3.25); at(CY(.06, .06, .004, 24), rm, 4.77, y + .002, 3.25); }
+    at(CY(.032, .028, .07, 20), std(0xf2f1ed, .4), 4.78, y + .035, 3.4); }
   if (lv === 4) { /* 늘어지는 아이비 화분(앞으로 흘러내림) */
     at(CY(.06, .05, .1, 20), std(0xf2f0eb, .4), 4.17, y + .05, 2.55); { const P = [], C = [], a = new THREE.Vector3(), tg = new THREE.Vector3(), sd = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), col = new THREE.Color(); /* 동글동글 구 잎 대신 가늘게 휘어 앞으로 늘어지는 풀잎(늘어지는 잎은 선반 앞 모서리 밖에서만 내려감) */
       for (let i = 0; i < 32; i++) { const droop = rnd() < .55, yaw = (rnd() - .5) * (droop ? 1.0 : 3.2), dx = Math.sin(yaw), dz = Math.cos(yaw), hh = .06 + rnd() * .08, out = droop ? .24 + rnd() * .06 : .06 + rnd() * .1, dn = droop ? .06 + rnd() * .2 : -.02 - rnd() * .05;
@@ -2948,12 +2959,32 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
   cab(item('b2unit', '침실2 하늘색 벽판', false), .11, .126, .1, .95, 5.9, 8.1, std(0xa9c0d2, .6)); // 충돌 없음(붙박이장 충돌 상자가 침대 쪽으로 늘어나지 않게)
 /* VR: 알파룸 서쪽 벽 큰 파란 추상화(흰 액자) — 통합형(1-1)이면 벽이 없어 숨김 */
 { const g = item('a-alphaart', '파란 추상화', false);
-  const art = toTex((() => { const c = mkCanvas(256, 340), x = c.getContext('2d'); x.fillStyle = '#f3f2ee'; x.fillRect(0, 0, 256, 340);
-    x.fillStyle = 'rgba(150,150,155,.25)'; x.beginPath(); x.moveTo(70, 300); x.quadraticCurveTo(40, 190, 90, 120); x.lineTo(110, 130); x.quadraticCurveTo(70, 200, 100, 300); x.fill();
-    x.fillStyle = '#1f4fa8'; x.beginPath(); x.moveTo(150, 40); x.bezierCurveTo(205, 60, 190, 120, 160, 140); x.bezierCurveTo(200, 160, 175, 200, 140, 205); x.bezierCurveTo(175, 225, 160, 280, 110, 300); x.bezierCurveTo(85, 250, 120, 225, 100, 195); x.bezierCurveTo(70, 165, 120, 140, 105, 110); x.bezierCurveTo(95, 75, 120, 45, 150, 40); x.fill();
-    x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 1.2; for (let i = 0; i < 60; i++) { const yy = 50 + i * 4; x.beginPath(); x.moveTo(95 + rnd() * 20, yy); x.lineTo(150 + rnd() * 40, yy + 2); x.stroke(); }
-    return c; })());
-  pbox(2.82, 2.838, 1.0, 2.0, 5.75, 6.5, std(0xf4f3ef, .5), g, { cast: false }); pbox(2.837, 2.842, 1.03, 1.97, 5.78, 6.47, std(0xffffff, .85, 0, { map: art }), g, { cast: false }); }
+  /* VR: 파란 그림 — 가로 붓질이 층층이 쌓인 세로 덩어리 */
+  const art = toTex((() => { const c = mkCanvas(256, 420), x = c.getContext('2d'); x.fillStyle = '#f2f1ed'; x.fillRect(0, 0, 256, 420);
+    const cols = ['#1d4ea6', '#2459b5', '#173f8c', '#2b62bd'];
+    for (let i = 0; i < 25; i++) { const y = 34 + i * 13.5 + rnd() * 3, w = 158 + 42 * Math.cos(i * .5) + rnd() * 24, cx = 128 + 16 * Math.sin(i * .9) + rnd() * 8 - 4;
+      x.globalAlpha = .8 + rnd() * .2; x.fillStyle = cols[i % 4]; x.beginPath(); x.roundRect(cx - w / 2, y, w, 18 + rnd() * 7, 8); x.fill(); }
+    x.globalAlpha = .35; x.strokeStyle = '#ffffff'; x.lineWidth = 1; for (let i = 0; i < 80; i++) { const y = 40 + rnd() * 340; x.beginPath(); x.moveTo(70 + rnd() * 30, y); x.lineTo(150 + rnd() * 50, y + rnd() * 3 - 1.5); x.stroke(); }
+    x.globalAlpha = 1; return c; })());
+  /* VR: 그 옆(문 쪽) 더 큰 노란 그림 — 연두빛 노랑 굵은 붓질, 아래쪽 옅은 하늘색 번짐과 파란 선 */
+  const yel = toTex((() => { const c = mkCanvas(320, 400), x = c.getContext('2d'); x.fillStyle = '#f3f2ee'; x.fillRect(0, 0, 320, 400); x.lineCap = 'round'; x.lineJoin = 'round';
+    const st = (p, w, col, a) => { x.strokeStyle = col; x.globalAlpha = a; x.lineWidth = w; x.beginPath(); x.moveTo(p[0], p[1]); for (let i = 2; i < p.length; i += 2) x.lineTo(p[i], p[i + 1]); x.stroke(); };
+    x.globalAlpha = .78; x.fillStyle = '#ddd136'; x.beginPath(); x.roundRect(34, 30, 252, 318, 18); x.fill();
+    st([60, 56, 266, 46], 64, '#d3c51f', .85); st([82, 70, 92, 326], 78, '#cdbf1c', .8); st([156, 76, 174, 246, 128, 326], 60, '#e4d84a', .75);
+    st([238, 66, 246, 290], 66, '#c9bb18', .8); st([56, 204, 276, 190], 44, '#e8de63', .55); st([196, 116, 214, 168], 40, '#b8ab14', .6);
+    st([120, 150, 132, 210], 26, '#f3f2ee', .7); st([200, 236, 214, 300], 22, '#f3f2ee', .6); st([46, 300, 70, 340], 18, '#f3f2ee', .6);
+    x.globalAlpha = .5; x.fillStyle = '#a9bccb'; x.beginPath(); x.moveTo(112, 372); x.quadraticCurveTo(172, 242, 252, 202); x.lineTo(262, 372); x.fill();
+    x.globalAlpha = .9; x.fillStyle = '#2f62b0'; x.fillRect(72, 370, 188, 4);
+    x.globalAlpha = .28; x.strokeStyle = '#ffffff'; x.lineWidth = 1; for (let i = 0; i < 140; i++) { const sx = 40 + rnd() * 240, sy = 30 + rnd() * 320; x.beginPath(); x.moveTo(sx, sy); x.lineTo(sx + rnd() * 6 - 3, sy + 10 + rnd() * 20); x.stroke(); }
+    x.globalAlpha = 1; return c; })());
+  /* 얇은 흰 액자(벽에서 4cm) + 한 단 들어간 흰 매트 + 그림 */
+  const frameM = std(0xf7f6f2, .45), matM = std(0xfbfaf7, .75);
+  const framed = (y0, y1, z0, z1, tex, aw, ah) => { const X = 2.82, b = .022, yc = (y0 + y1) / 2, zc = (z0 + z1) / 2;
+    pbox(X, X + .04, y1 - b, y1, z0, z1, frameM, g, { cast: false }); pbox(X, X + .04, y0, y0 + b, z0, z1, frameM, g, { cast: false });
+    pbox(X, X + .04, y0 + b, y1 - b, z0, z0 + b, frameM, g, { cast: false }); pbox(X, X + .04, y0 + b, y1 - b, z1 - b, z1, frameM, g, { cast: false });
+    pbox(X, X + .026, y0 + b + .001, y1 - b - .001, z0 + b + .001, z1 - b - .001, matM, g, { cast: false });
+    pbox(X + .027, X + .029, yc - ah / 2, yc + ah / 2, zc - aw / 2, zc + aw / 2, std(0xffffff, .85, 0, { map: tex }), g, { cast: false }); };
+  framed(.98, 1.98, 5.3, 6.08, yel, .6, .75); framed(1.05, 1.88, 6.16, 6.66, art, .36, .59); }
 /* VR: 동쪽 벽 로켓 포스터(남색 바탕·별·흰 로켓) — 침실2 장(11)·통합형(1-1)이면 숨김 */
 { const g = item('a-rocket', '로켓 포스터', false);
   const art = toTex((() => { const c = mkCanvas(256, 360), x = c.getContext('2d'); x.fillStyle = '#1f2d55'; x.fillRect(0, 0, 256, 360);
@@ -2966,7 +2997,14 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
     x.fillStyle = '#f0a640'; x.beginPath(); x.moveTo(108, 212); x.quadraticCurveTo(128, 280, 148, 212); x.fill();
     x.fillStyle = '#ffffff'; for (const [cx, cy, r] of [[60, 330, 50], [128, 345, 60], [200, 330, 50], [100, 300, 34], [160, 300, 36]]) { x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill(); }
     return c; })());
-  pbox(2.685, 2.70, 1.1, 2.0, 6.75, 7.35, std(0xf4f3ef, .5), g, { cast: false }); pbox(2.681, 2.686, 1.13, 1.97, 6.78, 7.32, std(0xffffff, .85, 0, { map: art }), g, { cast: false }); /* VR: 로켓은 창 쪽 */
+  /* VR: 두툼한 흰 액자(벽에서 4.5cm) + 한 단 들어간 흰 매트 + 그 안에 그림 */
+  const frameM = std(0xf7f6f2, .45), matM = std(0xfbfaf7, .75);
+  const framed = (z0, z1, tex) => { const y0 = 1.1, y1 = 2.0, b = .025, yc = (y0 + y1) / 2, zc = (z0 + z1) / 2;
+    pbox(2.655, 2.70, y1 - b, y1, z0, z1, frameM, g, { cast: false }); pbox(2.655, 2.70, y0, y0 + b, z0, z1, frameM, g, { cast: false });
+    pbox(2.655, 2.70, y0 + b, y1 - b, z0, z0 + b, frameM, g, { cast: false }); pbox(2.655, 2.70, y0 + b, y1 - b, z1 - b, z1, frameM, g, { cast: false });
+    pbox(2.672, 2.70, y0 + b + .001, y1 - b - .001, z0 + b + .001, z1 - b - .001, matM, g, { cast: false });
+    pbox(2.669, 2.671, yc - .335, yc + .335, zc - .237, zc + .237, std(0xffffff, .85, 0, { map: tex }), g, { cast: false }); };
+  framed(6.75, 7.35, art); /* VR: 로켓은 창 쪽 */
   const astro = toTex((() => { const c = mkCanvas(256, 360), x = c.getContext('2d'); x.fillStyle = '#26324f'; x.fillRect(0, 0, 256, 360); /* VR: 문 쪽 두 번째 포스터 — 남색 바탕 우주인 */
     x.fillStyle = '#ffffff'; for (let i = 0; i < 9; i++) { const sx = 20 + rnd() * 216, sy = 16 + rnd() * 320, r = 3 + rnd() * 4; x.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * .45 : r; x.lineTo(sx + Math.cos(a) * rr, sy + Math.sin(a) * rr); } x.fill(); }
     x.fillStyle = '#f3f3f1'; x.beginPath(); x.roundRect(58, 196, 140, 150, 26); x.fill(); x.beginPath(); x.arc(128, 128, 78, 0, 7); x.fill();
@@ -2974,7 +3012,7 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
     x.fillStyle = '#c9ccd2'; for (const sx of [44, 194]) x.fillRect(sx, 112, 18, 34); x.strokeStyle = '#2f5fa8'; x.lineWidth = 12; x.lineCap = 'round'; x.beginPath(); x.moveTo(84, 236); x.quadraticCurveTo(70, 270, 100, 280); x.moveTo(172, 236); x.quadraticCurveTo(186, 270, 156, 280); x.stroke();
     x.fillStyle = '#d9dce2'; x.fillRect(96, 250, 64, 44); x.fillStyle = '#2f5fa8'; x.fillRect(104, 258, 20, 10); x.fillStyle = '#e04a3a'; x.beginPath(); x.arc(144, 263, 5, 0, 7); x.fill(); x.fillStyle = '#56606e'; for (let i = 0; i < 4; i++) x.fillRect(104 + i * 12, 276, 8, 8);
     return c; })());
-  pbox(2.685, 2.70, 1.1, 2.0, 5.95, 6.55, std(0xf4f3ef, .5), g, { cast: false }); pbox(2.681, 2.686, 1.13, 1.97, 5.98, 6.52, std(0xffffff, .85, 0, { map: astro }), g, { cast: false }); }
+  framed(5.95, 6.55, astro); }
 /* VR(55A 침실2): 침대 위 서쪽 벽 흰 플로팅 선반 + 파란 도자기 곰 2, 그 아래 달 무드등 — 통합형 붙박이장(12)이면 숨김 */
 { const g = item('b2unit', '침실2 벽선반', false), wt = std(0xf6f5f2, .4), blu = std(0x8fb6de, .25, .05);
   pbox(.11, .31, 1.52, 1.545, 6.62, 7.22, wt, g);
