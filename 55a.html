@@ -2905,7 +2905,24 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
     x.fillStyle = '#f0a640'; x.beginPath(); x.moveTo(108, 212); x.quadraticCurveTo(128, 280, 148, 212); x.fill();
     x.fillStyle = '#ffffff'; for (const [cx, cy, r] of [[60, 330, 50], [128, 345, 60], [200, 330, 50], [100, 300, 34], [160, 300, 36]]) { x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill(); }
     return c; })());
-  pbox(2.685, 2.70, 1.1, 2.0, 5.95, 6.55, std(0xf4f3ef, .5), g, { cast: false }); pbox(2.681, 2.686, 1.13, 1.97, 5.98, 6.52, std(0xffffff, .85, 0, { map: art }), g, { cast: false }); }
+  pbox(2.685, 2.70, 1.1, 2.0, 6.75, 7.35, std(0xf4f3ef, .5), g, { cast: false }); pbox(2.681, 2.686, 1.13, 1.97, 6.78, 7.32, std(0xffffff, .85, 0, { map: art }), g, { cast: false }); /* VR: 로켓은 창 쪽 */
+  const astro = toTex((() => { const c = mkCanvas(256, 360), x = c.getContext('2d'); x.fillStyle = '#26324f'; x.fillRect(0, 0, 256, 360); /* VR: 문 쪽 두 번째 포스터 — 남색 바탕 우주인 */
+    x.fillStyle = '#ffffff'; for (let i = 0; i < 9; i++) { const sx = 20 + rnd() * 216, sy = 16 + rnd() * 320, r = 3 + rnd() * 4; x.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * .45 : r; x.lineTo(sx + Math.cos(a) * rr, sy + Math.sin(a) * rr); } x.fill(); }
+    x.fillStyle = '#f3f3f1'; x.beginPath(); x.roundRect(58, 196, 140, 150, 26); x.fill(); x.beginPath(); x.arc(128, 128, 78, 0, 7); x.fill();
+    x.fillStyle = '#2d3a5c'; x.beginPath(); x.roundRect(78, 92, 100, 70, 30); x.fill(); x.fillStyle = 'rgba(255,255,255,.35)'; x.beginPath(); x.ellipse(100, 108, 14, 8, -.5, 0, 7); x.fill();
+    x.fillStyle = '#c9ccd2'; for (const sx of [44, 194]) x.fillRect(sx, 112, 18, 34); x.strokeStyle = '#2f5fa8'; x.lineWidth = 12; x.lineCap = 'round'; x.beginPath(); x.moveTo(84, 236); x.quadraticCurveTo(70, 270, 100, 280); x.moveTo(172, 236); x.quadraticCurveTo(186, 270, 156, 280); x.stroke();
+    x.fillStyle = '#d9dce2'; x.fillRect(96, 250, 64, 44); x.fillStyle = '#2f5fa8'; x.fillRect(104, 258, 20, 10); x.fillStyle = '#e04a3a'; x.beginPath(); x.arc(144, 263, 5, 0, 7); x.fill(); x.fillStyle = '#56606e'; for (let i = 0; i < 4; i++) x.fillRect(104 + i * 12, 276, 8, 8);
+    return c; })());
+  pbox(2.685, 2.70, 1.1, 2.0, 5.95, 6.55, std(0xf4f3ef, .5), g, { cast: false }); pbox(2.681, 2.686, 1.13, 1.97, 5.98, 6.52, std(0xffffff, .85, 0, { map: astro }), g, { cast: false }); }
+/* VR(55A 침실2): 침대 위 서쪽 벽 흰 플로팅 선반 + 파란 도자기 곰 2, 그 아래 달 무드등 — 통합형 붙박이장(12)이면 숨김 */
+{ const g = item('b2unit', '침실2 벽선반', false), wt = std(0xf6f5f2, .4), blu = std(0x8fb6de, .25, .05);
+  pbox(.11, .31, 1.52, 1.545, 6.62, 7.22, wt, g);
+  for (const [z, s, ry] of [[6.84, 1, .5], [6.97, .85, -.3]]) { const b = new THREE.Group(); b.position.set(WX(.21), 1.545, WZ(z)); b.rotation.y = Math.PI / 2 + ry; b.scale.setScalar(s); g.add(b);
+    mesh(new THREE.SphereGeometry(.034, 18, 12), blu, 0, .036, 0, b).scale.set(1, 1.05, .9); mesh(new THREE.SphereGeometry(.027, 18, 12), blu, 0, .092, .004, b);
+    for (const sx of [-1, 1]) { mesh(new THREE.SphereGeometry(.01, 10, 8), blu, sx * .018, .116, 0, b); mesh(new THREE.SphereGeometry(.011, 10, 8), blu, sx * .02, .012, .022, b); }
+    mesh(new THREE.SphereGeometry(.009, 10, 8), std(0xbcd5ee, .3), 0, .088, .029, b); }
+  const moon = toTex((() => { const c = mkCanvas(192, 64), x = c.getContext('2d'); x.fillStyle = '#eef1f4'; x.fillRect(0, 0, 192, 64); x.fillStyle = '#fff6d8'; x.beginPath(); x.arc(150, 32, 16, 0, 7); x.fill(); x.fillStyle = '#eef1f4'; x.beginPath(); x.arc(158, 27, 14, 0, 7); x.fill(); return c; })());
+  pbox(.11, .125, 1.26, 1.36, 6.77, 7.07, std(0xeef1f4, .4), g); pbox(.125, .127, 1.27, 1.35, 6.78, 7.06, std(0xffffff, .5, 0, { map: moon, emissive: 0xfff3d0, emissiveMap: moon, emissiveIntensity: .45 }), g, { cast: false }); }
 }
 // 13 알파룸 특화형 붙박이장 (닫힌장 + 오픈 선반)
 // 분양 자료 13: 꺾음 시공(1-2)으로 생긴 알파룸 쪽 오목한 자리(창 쪽)에 큰 문 2짝 붙박이장, 문은 알파룸(동쪽)을 향함
