@@ -819,8 +819,8 @@ function buildDong(D, G, MAT) {
     const panel = (k0, k1, y0, y1, gb, s0f = 0, s1f = 1) => { const ox = DEP / 2 + .03, a = -L / 2 + tw * (k0 + s0f), b = -L / 2 + tw * (k1 - 1 + s1f), sm = (a + b) / 2;
       obox(cx + ux * sm + fx * ox, cz + uz * sm + fz * ox, ux, uz, b - a, .02, y0, y1, { front: { gb, uv: (w, p, q) => [k0 + s0f, p / FH, k1 - 1 + s1f, p / FH, k1 - 1 + s1f, q / FH, k0 + s0f, q / FH] } }); };
     const nb = base / FH;
-    if (D.d === 104) { panel(0, 2, base, base + 3 * FH, G.frontDk, .02, .98); panel(2, 4, base, base + 4 * FH, G.frontLt, .02, .98); } /* 모형 사진: 104동 4·3호 4~6층 차콜, 2·1호 4~7층 밝은 회색 */
-    else if (D.d === 105) panel(2, 4, base, base + 4 * FH, G.frontDk, .02, .98); /* 105동 2·1호 4~7층 차콜 */
+    if (D.d === 104) { const y0 = yT + .02; panel(0, 2, y0, base, G.frontDk, .65, .54); panel(2, 4, y0, base, G.frontLt, .61, .995); } /* 모형 사진(정면 확대): 104동 1~3층 — 4호 서쪽 갈색, 4호 동쪽~3호 짙은 차콜, 3호~2호 갈색, 2호 동쪽~1호 밝은 회색. 4층 위는 고른 토프 */
+    else if (D.d === 105) { const y0 = yT + .02; panel(0, 2, y0, base, G.frontLt, .005, .55); panel(2, 4, y0, base, G.frontDk, .6, .45); } /* 105동 1~3층 — 4호~3호 서쪽 밝은 회색, 3호~2호 갈색, 2호 동쪽~1호 짙은 차콜, 1호 동쪽 갈색 */
     else if (D.d === 101) panel(0, 1, base, (t + 9) * FH, G.frontDk, .02, .98); /* 모형 사진: 101동 서쪽 끝 4호 4~9층 짙은 차콜 */
     else if (D.d === 103) panel(1, 2, base, H, G.frontDk, .02, .98); /* 모형 사진: 103동 동쪽 끝 1호 4층~꼭대기 짙은 차콜 */
     else if ([107, 108, 116, 117, 118].includes(D.d)) { } /* 모형 사진: 107·108·116·117·118동 정면은 차콜 판넬 없이 고른 토프 */
