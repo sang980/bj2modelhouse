@@ -2928,8 +2928,8 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
     const sg = new THREE.Group(); g.add(sg); arr.push(sg);
     const bay = (7.9 - z0) / 4, zv = z0 + bay, x0 = 11.65, x1 = 12.21, body = std(0xebe9e4, .5), inner = std(0xe2dfd9, .55);
     wardrobe(sg, x0, x1, zv, 7.9, 'x-', 3);
-    cab(sg, x0, x1, 0, 2.3, z0, z0 + .02, body); cab(sg, x0, x1, 0, 2.3, zv - .02, zv, body);   // 양옆판(바닥까지, 검정 턱 없음)
-    cab(sg, x0, x1, 2.05, 2.3, z0 + .02, zv - .02, body);                                         // 위 막음
+    cab(sg, x0, x1, 0, 2.25, z0, z0 + .02, body); cab(sg, x0, x1, 0, 2.25, zv - .02, zv, body); /* 윗단을 슬라이딩장(2.25)과 맞춤 */   // 양옆판(바닥까지, 검정 턱 없음)
+    cab(sg, x0, x1, 2.05, 2.25, z0 + .02, zv - .02, body);                                         // 위 막음
     cab(sg, x1 - .02, x1, 0, 2.05, z0 + .02, zv - .02, inner);                                    // 뒤판
     // 거울장(파우더룸 화장대처럼): 안에 수납이 있는 장이라 앞으로 튀어나옴(깊이 약 28cm), 블랙 테 거울 문 2짝(고정, 여닫기 없음)
     { const my0 = 1.08, my1 = 1.98, mf = x1 - .3, a = z0 + .04, b = zv - .04, zm = (a + b) / 2;
