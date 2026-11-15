@@ -69,6 +69,9 @@ body.unit #top,body.unit #bar,body.unit #help,body.unit #note,body.unit #card{di
 #loading p{margin:0;font-size:14px;color:var(--muted)}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (max-width:900px){#help,#note{display:none}}
+#attr{position:fixed;right:8px;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 60px);font-size:10px;color:var(--muted);background:var(--panel);padding:2px 7px;border-radius:6px;pointer-events:none}
+@media (min-width:901px){#attr{display:none}}
+body.unit #attr{display:none}
 @media (max-width:520px){.title span{display:none}#card{top:auto;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 62px)}}
 </style>
 </head>
@@ -106,7 +109,8 @@ body.unit #top,body.unit #bar,body.unit #help,body.unit #note,body.unit #card{di
   <p class="uvnote panel">드래그해서 둘러보기 · 주변 건물은 개략 표현이라 실제 전망과 다를 수 있습니다</p>
 </div>
 <div id="help" class="panel">드래그 회전 · 휠 확대 · 우클릭 드래그 이동<br><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 비행 · <kbd>Q</kbd><kbd>E</kbd> 높이 · <kbd>Shift</kbd> 빠르게 · 건물 클릭 정보</div>
-<div id="note" class="panel">단지는 배치도 기준이며, 단지 밖 주변 건물·지형은 위치와 규모를 가늠할 수 있는 개략 표현입니다.</div>
+<div id="note" class="panel">단지는 배치도 기준 · 주변 건물·도로 © OpenStreetMap 기여자(ODbL) · 지형 고도 AWS Terrain Tiles(SRTM) · 외벽 재질은 참고 표현입니다.</div>
+<div id="attr">© OpenStreetMap 기여자 · 고도 AWS Terrain Tiles</div>
 <div id="loading"><div class="box"><div class="spin"></div><p>조감도를 불러오는 중… <span id="lp">0%</span></p></div></div>
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
@@ -172,8 +176,33 @@ const ROADS = [
 const RIVER = [[-2330,-3600],[-2260,-1500],[-2400,0],[-2560,1500],[-2740,3600]];
 const nearRoad = (x, z, m) => { for (const r of ROADS) if (lineDist(r.pts, x, z) < r.w / 2 + m) return true; return false; };
 
-/* ---------- 지형 높이 ---------- */
+/* ---------- 실제 지리 데이터(OpenStreetMap 건물·도로·녹지, AWS Terrain Tiles 고도) ----------
+   좌표: 배치도 기준 월드 m — OSM 위치는 도로·주택가·학교 윤곽을 겹쳐 맞춤(동쪽 25m·남쪽 12m 이동, 축척 1·회전 0) */
+const GEO = { ok: false };
+async function loadGeo() {
+  try {
+    const [b, e, d] = await Promise.all(['danji/bld.bin', 'danji/env.json', 'danji/dem.bin'].map(u => fetch(u)));
+    if (!d.ok) return;
+    const dm = new Uint16Array(await d.arrayBuffer()); GEO.N = 512; GEO.E = 5000; GEO.dem = new Float32Array(dm.length); for (let i = 0; i < dm.length; i++) GEO.dem[i] = dm[i] / 10 - 100;
+    GEO.B = demRaw(-150, 60) + 4; /* 데크(0) 기준: 서측 대로가 -4m */
+    if (b.ok) GEO.bld = new Int16Array(await b.arrayBuffer());
+    if (e.ok) GEO.env = await e.json();
+    GEO.ok = true;
+  } catch (err) { console.warn('geo', err); }
+}
+function demRaw(x, z) { const N = GEO.N, E = GEO.E, D = GEO.dem; let fx = (x + E) / (2 * E) * N - .5, fz = (z + E) / (2 * E) * N - .5; fx = Math.max(0, Math.min(N - 1.001, fx)); fz = Math.max(0, Math.min(N - 1.001, fz));
+  const i = fx | 0, j = fz | 0, ax = fx - i, az = fz - j, a = D[j * N + i], b = D[j * N + i + 1], c = D[(j + 1) * N + i], d = D[(j + 1) * N + i + 1]; return (a * (1 - ax) + b * ax) * (1 - az) + (c * (1 - ax) + d * ax) * az; }
+const groundAt = (x, z) => GEO.ok ? demRaw(x, z) - GEO.B : -4;
 function heightAt(x, z) {
+  if (!GEO.ok) return heightProc(x, z);
+  let h = demRaw(x, z) - GEO.B; const dS = polyDist(SITE, x, z);
+  if (dS < 0) return Math.min(h, -1.2) - (dS < -3 ? 0 : 0); /* 단지 안: 데크(0) 아래로 숨김 */
+  if (dS < 16) { const t = smooth(0, 16, dS); h = Math.min(h, -.2) * (1 - t) + h * t; } /* 단지 경계 밖 16m: 데크 높이에서 실제 지형으로 */
+  return h;
+}
+
+/* ---------- 지형 높이(데이터가 없을 때의 개략형) ---------- */
+function heightProc(x, z) {
   const dS = Math.max(0, polyDist(SITE, x, z));
   const near = smooth(160, 520, dS);
   let h = -4 + near * (14 * (fbm(x / 900 + 3.1, z / 900 - 7.7) - .5));
@@ -301,6 +330,8 @@ class GB {
     for (let q = 0; q < 4; q++) { this.n.push(n[0], n[1], n[2]); if (col) this.c.push(col[0], col[1], col[2]); }
     if (uv) this.u.push(uv[0], uv[1], uv[2], uv[3], uv[4], uv[5], uv[6], uv[7]); else this.u.push(0, 0, 0, 0, 0, 0, 0, 0);
     this.i.push(k, k + 1, k + 2, k, k + 2, k + 3); }
+  tri(a, b, c, n, col) { const k = this.p.length / 3; this.p.push(a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]);
+    for (let q = 0; q < 3; q++) { this.n.push(n[0], n[1], n[2]); this.u.push(0, 0); if (col) this.c.push(col[0], col[1], col[2]); } this.i.push(k, k + 1, k + 2); }
   build() { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(this.p, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(this.n, 3));
     g.setAttribute('uv', new THREE.Float32BufferAttribute(this.u, 2)); if (this.c.length) g.setAttribute('color', new THREE.Float32BufferAttribute(this.c, 3));
     g.setIndex(this.i); g.computeBoundingSphere(); return g; }
@@ -330,7 +361,7 @@ const BLD = {}; /* dong → { pieces, center, top, info } */
 
 async function build() {
   prog(3);
-  const planImg = await loadImg('danji/plan.jpg');
+  const [planImg] = await Promise.all([loadImg('danji/plan.jpg'), loadGeo()]);
   const PW = planImg.width, PH = planImg.height, PK = 2655 / PW;
   prog(10); await tick();
 
@@ -397,7 +428,7 @@ async function build() {
       let nx2 = ez / L, nz2 = -ex / L; /* 바깥쪽 법선 */
       if (polyDist(SITE, (a[0] + b[0]) / 2 + nx2 * .5, (a[1] + b[1]) / 2 + nz2 * .5) < 0) { nx2 = -nx2; nz2 = -nz2; }
       const [P, Q] = (-ez * nx2 + ex * nz2) > 0 ? [a, b] : [b, a]; /* P→Q 방향의 왼쪽 90°가 바깥이 되게 */
-      gb.quad([P[0], -9, P[1]], [Q[0], -9, Q[1]], [Q[0], .02, Q[1]], [P[0], .02, P[1]], [nx2, 0, nz2], [s / 6, -3, (s + L) / 6, -3, (s + L) / 6, .007, s / 6, .007]); s += L; }
+      gb.quad([P[0], -24, P[1]], [Q[0], -24, Q[1]], [Q[0], .02, Q[1]], [P[0], .02, P[1]], [nx2, 0, nz2], [s / 6, -8, (s + L) / 6, -8, (s + L) / 6, .007, s / 6, .007]); s += L; }
     const m = new THREE.Mesh(gb.build(), MAT.concrete); m.receiveShadow = true; m.castShadow = true; scene.add(m); }
   prog(50); await tick();
 
@@ -408,8 +439,8 @@ async function build() {
   buildAmenities(MAT);
   prog(62); await tick();
 
-  /* ===== 주변 건물 ===== */
-  buildSurroundings(T);
+  /* ===== 주변 건물: 실제 데이터(OSM 윤곽·층수)가 있으면 그것으로, 없으면 개략 생성 ===== */
+  if (GEO.ok && GEO.bld) buildOSM(); else buildSurroundings(T);
   prog(80); await tick();
 
   /* ===== 나무 ===== */
@@ -418,6 +449,27 @@ async function build() {
 
   makeSiteLabel();
   renderer.shadowMap.needsUpdate = true;
+}
+
+/* ---------- 실제 도로·토지이용·하천을 지면에 그림(OSM) ---------- */
+function paintEnv(g, env, P, px) {
+  const path = p => { g.beginPath(); p.forEach((q, i) => { const r = P(q[0], q[1]); i ? g.lineTo(r[0], r[1]) : g.moveTo(r[0], r[1]); }); };
+  const fill = (p, col) => { path(p); g.closePath(); g.fillStyle = col; g.fill(); };
+  const line = (p, w, col, dash) => { path(p); g.lineWidth = Math.max(.8, w * px); g.strokeStyle = col; g.setLineDash(dash ? dash.map(d => Math.max(1, d * px)) : []); g.stroke(); g.setLineDash([]); };
+  g.lineJoin = 'round'; g.lineCap = 'round';
+  const LAND = { residential: 'rgba(170,166,158,.45)', commercial: 'rgba(160,158,154,.55)', retail: 'rgba(160,158,154,.55)', industrial: 'rgba(150,152,150,.6)', construction: 'rgba(166,148,120,.75)',
+    school: '#c9b99b', education: '#c9b99b', university: '#cbbfa6', college: '#cbbfa6', parking: '#8c8e91', pitch: '#86a066', military: 'rgba(130,150,110,.5)', railway: 'rgba(150,146,138,.6)' };
+  for (const l of env.land || []) if (LAND[l.k]) fill(l.p, LAND[l.k]);
+  for (const gr of env.green || []) if (gr.k === 'park') fill(gr.p, 'rgba(118,150,90,.85)');
+  for (const w of env.water || []) if (!w.line) fill(w.p, '#5b7c88');
+  for (const w of env.water || []) if (w.line) { line(w.p, w.w + 14, 'rgba(120,150,96,.8)'); line(w.p, w.w, '#5b7c88'); }
+  for (const r of env.rail || []) { line(r, 9, '#8e8a84'); line(r, 3.2, '#5e5a55'); }
+  const roads = (env.roads || []).filter(r => r.t !== 1).sort((a, b) => a.w - b.w);
+  const isPath = k => /^(footway|path|steps|cycleway|pedestrian|track)$/.test(k);
+  for (const r of roads) if (isPath(r.k)) line(r.p, r.w, '#c9c2b2');
+  for (const r of roads) if (!isPath(r.k)) line(r.p, r.w + (r.w >= 12 ? 7 : 3), '#bdb8ae'); /* 보도 */
+  for (const r of roads) if (!isPath(r.k)) line(r.p, r.w, r.w >= 12 ? '#5a5d62' : '#6c6e72');
+  for (const r of roads) if (!isPath(r.k) && r.w >= 14) { line(r.p, r.w * .5 + .6, 'rgba(235,235,228,.6)', [5, 7]); line(r.p, r.w * .5 - .6, '#5a5d62'); line(r.p, .6, '#e4c24f'); } /* 차선(점선)·중앙선 */
 }
 
 /* ---------- 지형 텍스처 ---------- */
@@ -450,6 +502,8 @@ function paintTerrain(N, E) {
     for (let i = 0; i < 520; i++) { const v = 120 + rand() * 90 | 0, gr = rand() < .18; tg.fillStyle = gr ? `rgb(${80 + rand() * 30 | 0},${118 + rand() * 30 | 0},${84 + rand() * 20 | 0})` : `rgb(${v},${v - 4},${v - 10})`; tg.fillRect(rand() * 256, rand() * 256, 2 + rand() * 5, 2 + rand() * 5); }
     overlay(t, um, .55); }
   const P = (x, z) => [(x + E) / (2 * E) * N, (z + E) / (2 * E) * N], px = N / (2 * E);
+  const ENV = GEO.env && GEO.env.roads && GEO.env.roads.length ? GEO.env : null;
+  if (ENV) { paintEnv(g, ENV, P, px); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; }
   /* 시가지 골목: 주변 건물 격자와 같은 방향(0.21rad)·간격(56m) */
   { const L = cnv(N, N), lg = L.getContext('2d'), o = P(0, 0), BL = 56 * px, R = 3300 * px; lg.translate(o[0], o[1]); lg.rotate(.21); lg.strokeStyle = '#7b7c7e'; lg.lineWidth = Math.max(1, 8 * px);
     lg.beginPath(); for (let k = -62; k <= 62; k++) { const v = (k + .5) * BL; lg.moveTo(v, -R); lg.lineTo(v, R); lg.moveTo(-R, v); lg.lineTo(R, v); } lg.stroke(); lg.setTransform(1, 0, 0, 1, 0, 0);
@@ -519,7 +573,8 @@ function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcT
 function buildAmenities(MAT) {
   const G = { brick: new GB(), white: new GB(), glass: new GB(), roof: new GB() };
   const ru = [.484, .875], rl = Math.hypot(...ru), ux = ru[0] / rl, uz = ru[1] / rl; /* 서측 대로와 나란한 방향 */
-  const blk = (c, L, D, y0, h1, h2) => { if (h1 > y0) obox(c[0], c[1], ux, uz, L, D, y0, h1, { front: { gb: G.brick }, back: { gb: G.brick }, left: { gb: G.brick }, right: { gb: G.brick } });
+  const blk = (c, L, D, y0, h1, h2) => { if (GEO.ok && y0 === -4) { const d = groundAt(c[0], c[1]) - .5 - y0; y0 += d; h1 += d; h2 += d; } /* 실제 지형: 도로 높이 기준 */
+    if (h1 > y0) obox(c[0], c[1], ux, uz, L, D, y0, h1, { front: { gb: G.brick }, back: { gb: G.brick }, left: { gb: G.brick }, right: { gb: G.brick } });
     obox(c[0], c[1], ux, uz, L, D, h1, h2, { front: { gb: G.white }, back: { gb: G.glass }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.roof } }); };
   /* 위치는 배치도를 정사영으로 겹쳐 잰 값(월드 m) */
   blk([-132.5, 10.8], 42, 13, -4, 4.6, 11.2);          /* 주민공동시설-3(다함께돌봄센터·주민카페·실내놀이터) */
@@ -530,7 +585,7 @@ function buildAmenities(MAT) {
   const m = (gb, mat) => { const x = new THREE.Mesh(gb.build(), mat); x.castShadow = x.receiveShadow = true; scene.add(x); };
   m(G.brick, MAT.brick); m(G.white, MAT.white); m(G.glass, MAT.glassBox); m(G.roof, MAT.white);
   /* 영장산터널 남측 갱구: 콘크리트 면벽 + 상·하행 2개 터널 */
-  { const C = new GB(), K = new GB(), dx = .443, dz = .896, px = dz, pz = -dx, cx = -186 - dx * 2, cz = -37 - dz * 2, y0 = heightAt(cx, cz) - 2;
+  { const C = new GB(), K = new GB(), dx = .443, dz = .896, px = dz, pz = -dx, cx = -186 - dx * 2, cz = -37 - dz * 2, y0 = GEO.ok ? groundAt(-172, 2) - 1.5 : heightAt(cx, cz) - 2;
     obox(cx, cz, px, pz, 46, 3, y0, y0 + 11, { front: { gb: C, uv: uvTile(6, 3) }, left: { gb: C, uv: uvTile(3, 3) }, right: { gb: C, uv: uvTile(3, 3) }, top: { gb: C, uv: true, uvTop: uvPlanar(6) } });
     for (const s of [-9.5, 9.5]) obox(cx + px * s + dx * 1.52, cz + pz * s + dz * 1.52, px, pz, 15, .05, y0, y0 + 7.5, { front: { gb: K } });
     for (const s of [-1, 1]) obox(cx + px * s * 24 + dx * 6, cz + pz * s * 24 + dz * 6, dx, dz, 12, 1.2, y0, y0 + 6, { front: { gb: C, uv: uvTile(6, 3) }, back: { gb: C, uv: uvTile(6, 3) }, top: { gb: C } });
@@ -538,8 +593,9 @@ function buildAmenities(MAT) {
   /* 학교·구청(단지 남측) */
   const S2 = new GB(), R2 = new GB(); const su = [Math.cos(-.52), Math.sin(-.52)];
   /* 배치도 남측의 밝은 회색 지붕(학교 건물) 윤곽을 잰 값 + 체육관 + 수정구청 */
-  for (const s of [[[36, 106], 34, 16, 4], [[62, 129], 45, 18, 5], [[138, 121], 50, 26, 5], [[-22, 152], 75, 16, 4], [[34, 150], 40, 16, 4], [[96, 196], 30, 22, 2], [[40, 372], 46, 22, 7]]) {
+  for (const s of GEO.bld ? [] : [[[36, 106], 34, 16, 4], [[62, 129], 45, 18, 5], [[138, 121], 50, 26, 5], [[-22, 152], 75, 16, 4], [[34, 150], 40, 16, 4], [[96, 196], 30, 22, 2], [[40, 372], 46, 22, 7]]) { /* 실제 데이터가 있으면 OSM 윤곽 사용 */
     const y0 = heightAt(s[0][0], s[0][1]) - 1; obox(s[0][0], s[0][1], su[0], su[1], s[1], s[2], y0, y0 + 1 + s[3] * 3.4, { front: { gb: S2, uv: uvTile(3.4, 3.4) }, back: { gb: S2, uv: uvTile(3.4, 3.4) }, left: { gb: S2, uv: uvTile(3.4, 3.4) }, right: { gb: S2, uv: uvTile(3.4, 3.4) }, top: { gb: R2 } }); }
+  if (!S2.i.length) return;
   const sm = new THREE.Mesh(S2.build(), new THREE.MeshLambertMaterial({ map: (() => { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill(g, 256, 256, '#d9cdb8', .05, 500); g.fillStyle = '#cbbda6'; g.fillRect(0, 0, 256, 12); win(g, 30, 60, 196, 120, 4, 6, '#f2efe9'); return tex(c); })() }));
   const rm = new THREE.Mesh(R2.build(), new THREE.MeshLambertMaterial({ color: '#8e9a8f' }));
   for (const x of [sm, rm]) { x.castShadow = x.receiveShadow = true; scene.add(x); }
@@ -603,7 +659,90 @@ function buildTrees(planData, PW, PH, PK) {
     canopy.castShadow = canopy.receiveShadow = true; scene.add(canopy); if (trunk) { trunk.castShadow = true; scene.add(trunk); } }
 }
 
-/* ---------- 주변 건물(1km 상세 · 2km 단순 · 3km 개략) ---------- */
+/* ---------- 실제 주변 건물(OSM 윤곽·층수) ----------
+   한 층 한 줄 창 무늬(층고 = 높이/층수), 용도별 외벽, 큰길가 1층 상가, 옥상 계단실·기계실. 색은 정점 색으로 건물마다 다르게 */
+function facadeTex(w, h, draw, clampT) { const c = cnv(w, h), g = c.getContext('2d'); draw(g, w, h); const t = tex(c); if (clampT) t.wrapT = THREE.ClampToEdgeWrapping; return t; }
+const OSMTX = {
+  villa: () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#f1f0ec', .07, 1800); const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(60,50,40,.12)'); g.fillStyle = gr; g.fillRect(0, 0, 512, 256);
+    g.fillStyle = 'rgba(0,0,0,.15)'; g.fillRect(0, 0, 512, 9);
+    win(g, 58, 72, 150, 116, 2, 7, '#e7e7e3', 1); g.strokeStyle = 'rgba(35,35,35,.6)'; g.lineWidth = 2; for (let x = 64; x < 210; x += 12) { g.beginPath(); g.moveTo(x, 68); g.lineTo(x, 192); g.stroke(); }
+    win(g, 300, 58, 164, 152, 3, 7, '#ececea', 1); g.fillStyle = 'rgba(30,30,30,.65)'; g.fillRect(292, 150, 180, 4); for (let x = 296; x < 472; x += 9) g.fillRect(x, 150, 2, 64);
+    g.fillStyle = '#dadad7'; g.fillRect(222, 162, 46, 34); g.fillStyle = '#9a9a98'; for (let y = 166; y < 194; y += 5) g.fillRect(226, y, 38, 2);
+    g.fillStyle = 'rgba(80,80,80,.35)'; g.fillRect(500, 0, 5, 256); }),
+  apt: () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#f4f4f1', .05, 1200); g.fillStyle = '#d9d9d5'; g.fillRect(0, 0, 512, 12);
+    win(g, 22, 40, 214, 192, 3, 6, '#fbfbfa'); rail(g, 22, 150, 214, 82); win(g, 276, 40, 214, 192, 3, 6, '#fbfbfa'); rail(g, 276, 150, 214, 82);
+    g.fillStyle = 'rgba(90,98,106,.55)'; g.fillRect(248, 0, 16, 256); }),
+  shop: () => facadeTex(1024, 256, g => { g.fillStyle = '#cfccc5'; g.fillRect(0, 0, 1024, 256); const pal = ['#c0392b', '#1f5aa6', '#e2b623', '#16a085', '#8e44ad', '#e67e22', '#2c3e50', '#d35400', '#27ae60', '#b03a6e'];
+    for (let k = 0; k < 3; k++) { const x0 = k * 341 + 6, w = 329; g.fillStyle = pal[(rand() * pal.length) | 0]; g.fillRect(x0, 10, w, 58); g.fillStyle = 'rgba(255,255,255,.92)';
+      let tx = x0 + 18 + rand() * 30; const tw = 26 + rand() * 6; for (let q = 0; q < 3 + (rand() * 3 | 0); q++) { g.fillRect(tx, 24, tw, 30); tx += tw + 8; }
+      const gr = g.createLinearGradient(0, 78, 0, 250); gr.addColorStop(0, '#3c3a36'); gr.addColorStop(.5, '#7a6a52'); gr.addColorStop(1, '#2f2d2a'); g.fillStyle = gr; g.fillRect(x0, 78, w, 172);
+      g.fillStyle = 'rgba(255,236,200,.18)'; g.fillRect(x0 + 10, 100, w - 20, 60); g.fillStyle = '#d8d8d4'; for (let q = 1; q < 4; q++) g.fillRect(x0 + w * q / 4 - 3, 78, 6, 172); g.fillRect(x0, 74, w, 6); } }, true),
+  office: () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#c7ccd1', .05, 900); g.fillStyle = '#b4bac0'; g.fillRect(0, 0, 512, 40); glass(g, 0, 46, 512, 180, 1); g.fillStyle = '#d5d9dc'; for (let x = 0; x <= 512; x += 64) g.fillRect(x - 3, 46, 6, 180); g.fillRect(0, 226, 512, 30); }),
+  pub: () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#e5ddcd', .05, 1200); g.fillStyle = '#cfc2a8'; g.fillRect(0, 0, 512, 14); for (let k = 0; k < 3; k++) win(g, 26 + k * 166, 64, 128, 130, 3, 6, '#f4f1ea'); }),
+  ind: () => facadeTex(512, 256, g => { g.fillStyle = '#b9bcbe'; g.fillRect(0, 0, 512, 256); g.fillStyle = 'rgba(0,0,0,.09)'; for (let x = 0; x < 512; x += 12) g.fillRect(x, 0, 5, 256); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, 0, 512, 6); }),
+};
+const OSM_TILE = { villa: 7, apt: 7, shop: 12, office: 7, pub: 8, ind: 8 };
+function buildOSM() {
+  const B = GEO.bld, n = B.length, G = {}, M = {};
+  for (const k in OSMTX) { G[k] = new GB(); M[k] = new THREE.MeshLambertMaterial({ map: OSMTX[k](), vertexColors: true }); }
+  const R = new GB(), vc = h => { const c = new THREE.Color(h); return [c.r, c.g, c.b]; };
+  const WALL = { villa: ['#efe9df', '#e4d6bd', '#c58a6c', '#ad6f57', '#f3f1ec', '#d6cfc3', '#cdb89f', '#a99785', '#e8d9c9', '#bfc3c4'].map(vc), apt: ['#f4f3ee', '#efe9dd', '#e7e9eb', '#f1ebe0', '#e3e6e2'].map(vc),
+    shop: ['#ffffff'].map(vc), office: ['#e0e3e6', '#d3d8dd', '#ebe7df', '#c4ccd4'].map(vc), pub: ['#ffffff', '#efe2cf', '#e5d2bd'].map(vc), ind: ['#ffffff', '#e8e6df', '#d7dde2'].map(vc) };
+  const ROOF = { villa: ['#6e9a68', '#7aa274', '#8d9194', '#a4a7a8', '#c9c7c0', '#9b6b56', '#6d8296', '#b5b0a5'].map(vc), apt: ['#9aa0a5', '#a8acaf', '#8f979e'].map(vc), shop: ['#a2a4a5', '#8f9396'].map(vc), office: ['#a2a6aa'].map(vc), pub: ['#8f9a90', '#a1a49b'].map(vc), ind: ['#7f8a94', '#a3a9ad', '#8c8f8a'].map(vc) };
+  /* 큰길(간선·보조간선) 가까운지: 60m 격자에 도로 선분 */
+  const CS = 60, hash = new Map(), key = (i, j) => i * 100003 + j;
+  for (const r of (GEO.env && GEO.env.roads) || []) { if (r.t || !/^(trunk|primary|secondary|tertiary)$/.test(r.k)) continue;
+    for (let k = 0; k < r.p.length - 1; k++) { const [x0, z0] = r.p[k], [x1, z1] = r.p[k + 1];
+      for (let i = Math.floor(Math.min(x0, x1) / CS) - 1; i <= Math.floor(Math.max(x0, x1) / CS) + 1; i++) for (let j = Math.floor(Math.min(z0, z1) / CS) - 1; j <= Math.floor(Math.max(z0, z1) / CS) + 1; j++) { const kk = key(i, j); if (!hash.has(kk)) hash.set(kk, []); hash.get(kk).push([x0, z0, x1, z1, r.w]); } } }
+  const roadDist = (x, z) => { const l = hash.get(key(Math.floor(x / CS), Math.floor(z / CS))); if (!l) return 1e9; let best = 1e9;
+    for (const [x0, z0, x1, z1, w] of l) { const ex = x1 - x0, ez = z1 - z0, t = Math.max(0, Math.min(1, ((x - x0) * ex + (z - z0) * ez) / (ex * ex + ez * ez || 1))), d = Math.hypot(x - x0 - ex * t, z - z0 - ez * t) - w / 2; if (d < best) best = d; } return best; };
+  const V2 = THREE.Vector2; let i = 0, cnt = 0;
+  while (i < n) {
+    const kind = B[i], lv = Math.max(1, B[i + 1]), h = B[i + 2] / 10, mh = B[i + 3] / 10, np = B[i + 4]; i += 5;
+    const P = new Array(np); for (let k = 0; k < np; k++) { P[k] = [B[i] * .2, B[i + 1] * .2]; i += 2; }
+    let cx = 0, cz = 0; for (const p of P) { cx += p[0]; cz += p[1]; } cx /= np; cz /= np;
+    const dist = Math.hypot(cx, cz - 15); if (LOW && dist > 1800) continue;
+    let gmin = Infinity, gs = 0; for (const p of P) { const gy = heightAt(p[0], p[1]); gmin = Math.min(gmin, gy); gs += gy; }
+    const gavg = gs / np, top = gavg + h, base = gmin - .6 + mh, fh = h / lv;
+    let tk = kind === 1 || lv >= 6 ? 'apt' : kind === 2 ? (lv <= 3 ? 'shop' : 'office') : kind === 3 ? 'pub' : kind === 5 ? 'ind' : 'villa';
+    if (tk === 'apt' && kind === 2) tk = 'office';
+    const rd = (tk === 'villa' || tk === 'office' || (tk === 'apt' && lv <= 9)) && dist < 2600 ? roadDist(cx, cz) : 1e9, shopG = rd < 16 && lv >= 2 && tk !== 'shop';
+    const wc = WALL[tk][(rand() * WALL[tk].length) | 0], rc = ROOF[tk][(rand() * ROOF[tk].length) | 0], tw = OSM_TILE[tk];
+    let A = 0; for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np]; A += a[0] * b[1] - b[0] * a[1]; }
+    const sg = A > 0 ? 1 : -1; let s = 0;
+    const yShop = gavg + Math.min(4.2, fh * 1.3);
+    for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz); if (L < .05) continue;
+      const nx = dz / L * sg, nz = -dx / L * sg, [p, q, sp, sq] = sg < 0 ? [a, b, s, s + L] : [b, a, s + L, s];
+      const quad = (gb, y0, y1, u0, u1, v0, v1, col) => gb.quad([p[0], y0, p[1]], [q[0], y0, q[1]], [q[0], y1, q[1]], [p[0], y1, p[1]], [nx, 0, nz], [u0, v0, u1, v0, u1, v1, u0, v1], col);
+      const vb = y => (y - top) / fh + lv;
+      if (shopG || tk === 'shop') { const ys = tk === 'shop' ? top : yShop; quad(G.shop, base, Math.min(ys, top), sp / 12, sq / 12, (base - gavg) / 4.2, (Math.min(ys, top) - gavg) / 4.2, WALL.shop[0]);
+        if (ys < top) quad(G[tk], ys, top, sp / tw, sq / tw, vb(ys), lv, wc); }
+      else quad(G[tk], base, top, sp / tw, sq / tw, vb(base), lv, wc);
+      s += L; }
+    /* 지붕 */
+    const tris = THREE.ShapeUtils.triangulateShape(P.map(p => new V2(p[0], p[1])), []);
+    for (const [a, b, c] of tris) { const A3 = [P[a][0], top, P[a][1]], B3 = [P[b][0], top, P[b][1]], C3 = [P[c][0], top, P[c][1]], cr = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]);
+      if (cr >= 0) R.tri(A3, B3, C3, [0, 1, 0], rc); else R.tri(A3, C3, B3, [0, 1, 0], rc); }
+    /* 옥상 구조물: 아파트 기계실(1.8km 안), 빌라 계단실(1.1km 안) */
+    if ((tk === 'apt' && lv >= 8 && dist < 1800) || (tk === 'villa' && dist < 1100 && rand() < .6)) {
+      let bl = 0, ux = 1, uz = 0; for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L > bl) { bl = L; ux = (b[0] - a[0]) / L; uz = (b[1] - a[1]) / L; } }
+      const col = { gb: R, col: vc('#e4e4e0') }, colT = { gb: R, col: vc('#cfcfca') }, F = { front: col, back: col, left: col, right: col, top: colT };
+      if (tk === 'apt') { for (const o of bl > 30 ? [-.25, .25] : [0]) obox(cx + ux * bl * o, cz + uz * bl * o, ux, uz, 6, 4.2, top, top + 3.4, F); }
+      else { const o = (rand() - .5) * .3 * bl; obox(cx + ux * o, cz + uz * o, ux, uz, 3, 2.8, top, top + 2.5, F); }
+    }
+    cnt++;
+  }
+  const add = (gb, mat, near) => { if (!gb.i.length) return; const m = new THREE.Mesh(gb.build(), mat); m.castShadow = true; m.receiveShadow = true; scene.add(m); envMeshes.push(m); };
+  for (const k in G) add(G[k], M[k]); add(R, new THREE.MeshLambertMaterial({ vertexColors: true }));
+  /* 가로수: 큰길 양쪽 1.1km 안 */
+  for (const r of (GEO.env && GEO.env.roads) || []) { if (r.t || !/^(primary|secondary|tertiary)$/.test(r.k)) continue;
+    for (let k = 0; k < r.p.length - 1; k++) { const [x0, z0] = r.p[k], [x1, z1] = r.p[k + 1], L = Math.hypot(x1 - x0, z1 - z0); if (L < 1) continue; const ux = (x1 - x0) / L, uz = (z1 - z0) / L;
+      for (let s = 4; s < L; s += 10) for (const sd of [-1, 1]) { const x = x0 + ux * s - uz * sd * (r.w / 2 + 2.3), z = z0 + uz * s + ux * sd * (r.w / 2 + 2.3);
+        if (Math.hypot(x, z - 15) > 1100 || polyDist(SITE, x, z) < 4) continue; extraTrees.push([x, heightAt(x, z) - .3, z, 1.6 + rand() * .8, 3]); } } }
+  console.log('OSM buildings', cnt);
+}
+
+/* ---------- 주변 건물(1km 상세 · 2km 단순 · 3km 개략) — 실제 데이터가 없을 때 ---------- */
 function buildSurroundings(T) {
   const CTR = [0, 15];
   const CL = [
