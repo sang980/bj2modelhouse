@@ -1343,12 +1343,46 @@ const alphaTable = piece('원형 테이블', 3.75, 7.15, 0);
   mesh(CY(.38, .38, .025, 40), M.white, 0, .72, 0, t); mesh(CY(.03, .03, .7), M.chrome, 0, .36, 0, t);
   for (const a of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) { const f = mesh(BX(.3, .015, .03), M.chrome, Math.cos(a) * .15, .01, Math.sin(a) * .15, t); f.rotation.y = -a; }
 }
+/* 고품질 노트북(공용): 둥근 모서리·베벨 몸체 + 낱개 키캡(인스턴스 1회 그리기) + 유리 트랙패드 + 스피커 그릴 + 힌지 + 얇은 상판(검은 유리 베젤·바탕화면 창·카메라). 뒤(-z)가 힌지, 앞(+z)이 사용자 */
+function laptopHQ(parent, { x = 0, y = 0, z = 0, ry = 0, body = 0xc9ccd0, metal = .75, rough = .3, keyCol = 0x1c1d20, pad = null, open = -.3, wall = 0 } = {}) {
+  const W = .304, D = .214, T = .0135, LT = .0055, LH = .206, C = laptopHQ._c || (laptopHQ._c = {});
+  const lp = new THREE.Group(); lp.position.set(x, y, z); lp.rotation.y = ry; parent.add(lp);
+  const rr = (w, h, r) => { const s = new THREE.Shape(); s.moveTo(-w / 2 + r, -h / 2); s.lineTo(w / 2 - r, -h / 2); s.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r); s.lineTo(w / 2, h / 2 - r); s.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2); s.lineTo(-w / 2 + r, h / 2); s.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r); s.lineTo(-w / 2, -h / 2 + r); s.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2); return s; };
+  const slab = (w, h, t, r, bv) => { const g = new THREE.ExtrudeGeometry(rr(w - 2 * bv, h - 2 * bv, Math.max(.002, r - bv)), { depth: t - 2 * bv, bevelEnabled: true, bevelThickness: bv, bevelSize: bv, bevelSegments: 3, curveSegments: 6 }); g.translate(0, 0, bv); return g; };
+  if (!C.base) { C.base = slab(W, D, T, .012, .003); C.base.rotateX(-Math.PI / 2); C.base.translate(0, 0, 0); C.lid = slab(W, LH, LT, .012, .002); C.lid.translate(0, LH / 2, -LT);
+    C.keyGeo = new THREE.BoxGeometry(1, 1, 1); C.keyGeo.translate(0, .5, 0);
+    const grill = mkCanvas(16, 128), gx = grill.getContext('2d'); gx.fillStyle = '#9a9da2'; gx.fillRect(0, 0, 16, 128); gx.fillStyle = '#2a2c30'; for (let j = 0; j < 32; j++) for (let i = 0; i < 4; i++) { gx.beginPath(); gx.arc(2 + i * 4 + (j % 2) * 2, 2 + j * 4, 1, 0, 7); gx.fill(); } C.grill = toTex(grill);
+    C.walls = [0, 1].map(k => toTex((() => { const c = mkCanvas(384, 240), q = c.getContext('2d'), gr = q.createLinearGradient(0, 0, 384, 240);
+      if (k) { gr.addColorStop(0, '#1d2740'); gr.addColorStop(.55, '#3b3f6e'); gr.addColorStop(1, '#a35d6a'); } else { gr.addColorStop(0, '#6f9cc4'); gr.addColorStop(.55, '#c8b6a6'); gr.addColorStop(1, '#e9c7a2'); }
+      q.fillStyle = gr; q.fillRect(0, 0, 384, 240); q.fillStyle = 'rgba(255,255,255,.18)'; q.beginPath(); q.ellipse(300, 60, 120, 40, -.4, 0, 7); q.fill();
+      q.fillStyle = 'rgba(20,22,26,.35)'; q.fillRect(0, 0, 384, 9); /* 위 메뉴 막대 */
+      q.fillStyle = 'rgba(255,255,255,.93)'; q.fillRect(56, 36, 210, 140); q.fillStyle = '#e3e6ea'; q.fillRect(56, 36, 210, 14); for (const [cx, cl] of [[64, '#ff5f57'], [74, '#febc2e'], [84, '#28c840']]) { q.fillStyle = cl; q.beginPath(); q.arc(cx, 43, 3, 0, 7); q.fill(); }
+      q.fillStyle = '#c9d6e6'; q.fillRect(66, 60, 76, 52); q.fillStyle = 'rgba(70,80,95,.55)'; for (let i = 0; i < 7; i++) q.fillRect(152, 62 + i * 9, 96 - (i * 19 % 34), 4); for (let i = 0; i < 4; i++) q.fillRect(66, 124 + i * 10, 180 - (i * 29 % 60), 4);
+      q.fillStyle = 'rgba(255,255,255,.35)'; q.fillRect(116, 214, 152, 20); const dc = ['#4f8fe8', '#f2b33d', '#5fc46a', '#e8665a', '#9a7ae0', '#58c2d6']; dc.forEach((cl, i) => { q.fillStyle = cl; q.fillRect(124 + i * 24, 217, 15, 14); }); /* 아래 독 */
+      return c; })())); }
+  const bk = body + '_' + metal + '_' + rough, bm = C[bk] || (C[bk] = std(body, rough, metal)), km = C['k' + keyCol] || (C['k' + keyCol] = std(keyCol, .55, .1));
+  mesh(C.base, bm, 0, 0, 0, lp);
+  /* 키보드: 6줄(맨 뒤 기능키 줄은 낮게) — 낱개 키캡을 인스턴스로 */
+  const rows = [[.0085, Array(14).fill(.0155)], [.0155, Array(14).fill(.0155)], [.0155, [.024, ...Array(12).fill(.0155), .0155]], [.0155, [.029, ...Array(11).fill(.0155), .029]], [.0155, [.037, ...Array(10).fill(.0155), .037]], [.0155, [.0155, .0155, .0155, .019, .1, .019, .0155, .0155, .0155]]];
+  const mats = []; let zz = -.081;
+  for (const [h, ws] of rows) { const tot = ws.reduce((a, b) => a + b, 0) + (ws.length - 1) * .0035; let xx = -tot / 2; for (const w of ws) { mats.push([xx + w / 2, zz + h / 2, w, h]); xx += w + .0035; } zz += h + .0035; }
+  const im = new THREE.InstancedMesh(C.keyGeo, km, mats.length), m4 = new THREE.Matrix4(), q0 = new THREE.Quaternion(), sv = new THREE.Vector3(), pv = new THREE.Vector3();
+  mats.forEach(([kx, kz, w, h], i) => { m4.compose(pv.set(kx, T - .0002, kz), q0, sv.set(w, .0013, h)); im.setMatrixAt(i, m4); }); im.instanceMatrix.needsUpdate = true; lp.add(im);
+  mesh(BX(.274, .0004, zz + .081 + .002), C['kw' + keyCol] || (C['kw' + keyCol] = std(new THREE.Color(keyCol).lerp(new THREE.Color(body), .45).getHex(), .6, .2)), 0, T - .0001, (zz - .081) / 2 - .0005, lp, { cast: false }); /* 키 사이 바닥(살짝 어둡게) */
+  for (const sx of [-1, 1]) mesh(BX(.011, .0004, .1), C.grillM || (C.grillM = std(0xffffff, .5, .4, { map: C.grill })), sx * .1445, T - .0001, -.033, lp, { cast: false }); /* 스피커 그릴 */
+  mesh(RB(.118, .0006, .072, .005, 2), C['p' + body] || (C['p' + body] = std(pad ?? new THREE.Color(body).multiplyScalar(.92).getHex(), .16, metal * .8)), 0, T - .0001, .066, lp, { cast: false }); /* 유리 트랙패드 */
+  { const h = mesh(CY(.0045, .0045, .26, 14), C.hinge || (C.hinge = std(0x2a2b2e, .4, .5)), 0, T * .55, -D / 2 + .006, lp, { cast: false }); h.rotation.z = Math.PI / 2; }
+  const sc = new THREE.Group(); sc.position.set(0, T - .001, -D / 2 + .007); sc.rotation.x = open; lp.add(sc);
+  mesh(C.lid, bm, 0, 0, 0, sc);
+  mesh(BX(W - .005, LH - .005, .0008), C.glass || (C.glass = std(0x0a0b0d, .06, .3)), 0, LH / 2, .0004, sc, { cast: false }); /* 검은 유리 베젤 */
+  const dm = C['w' + wall] || (C['w' + wall] = new THREE.MeshStandardMaterial({ map: C.walls[wall], emissive: 0xffffff, emissiveMap: C.walls[wall], emissiveIntensity: .5, roughness: .15 }));
+  mesh(new THREE.PlaneGeometry(.286, .179), dm, 0, LH / 2 + .002, .0009, sc, { cast: false });
+  mesh(CY(.0018, .0018, .0005, 10), C.cam || (C.cam = std(0x1b2a3a, .1, .4)), 0, LH - .006, .0009, sc, { cast: false }).rotation.x = Math.PI / 2; /* 카메라 */
+  return lp;
+}
 // 사진(알파룸): 원형 테이블 위 펼친 노트북 — 은색 몸체·검은 자판·화면이 스툴 쪽을 향함(테이블과 함께 움직임)
 { const lp = new THREE.Group(); lp.position.set(.05, .739, -.04); lp.rotation.y = Math.atan2(-.48, .25); alphaTable.add(lp); mesh(RB(.5, .004, .34, .002, 1), std(0x18191b, .7), 0, -.002, 0, lp, { cast: false }); /* VR: 검정 데스크 매트 */
-  const silver = std(0x1e1f22, .35, .3); /* VR: 검정 노트북 */
-  mesh(RB(.32, .016, .22, .006, 2), silver, 0, .008, 0, lp); mesh(BX(.27, .002, .1), std(0x2a2c30, .6), 0, .0165, -.02, lp); mesh(BX(.09, .001, .06), std(0xa9acb0, .3, .5), 0, .0162, .07, lp);
-  const sc = new THREE.Group(); sc.position.set(0, .016, -.108); sc.rotation.x = -.3; lp.add(sc);
-  mesh(RB(.32, .21, .007, .005, 2), silver, 0, .105, -.0035, sc); mesh(BX(.3, .19, .001), new THREE.MeshStandardMaterial({ color: 0x10141a, roughness: .12, emissive: 0x24384f, emissiveIntensity: .35 }), 0, .107, .0005, sc); }
+  laptopHQ(lp, { body: 0x1e1f22, metal: .3, rough: .35, keyCol: 0x0e0f11, pad: 0x26282c, wall: 1 }); } /* VR: 검정 노트북 — 공용 고품질 노트북 */
 for (let i = 0; i < 2; i++) { const b = mesh(BX(.2 - i * .02, .03, .26 - i * .02), [std(0xf2efe8, .7), std(0x26282c, .5)][i], -.2, .747 + i * .03, .16, alphaTable); b.rotation.y = .4 - i * .2; } /* 책 2권 */
 const alphaRug = piece('알파벳 러그', 3.8, 7.2, 0, { solid: false });
 { const r = alphaRug; mesh(CY(.85, .85, .01, 64), std(0xffffff, 1, 0, { map: toTex(rugAlphabet()) }), 0, .006, 0, r, { cast: false }); }
@@ -2144,8 +2178,7 @@ for (const [sx, sz] of [[-.5, .27], [.44, -.32]]) { const c = diningChair(alphaT
 const desk2 = piece('책상', 1.8, 7.78, Math.PI);
 { const d = desk2, wt = std(0xf6f5f2, .4), yel = std(0xe3b13a, .45), al = std(0xc9ccd0, .35, .6);
   mesh(RB(1.0, .03, .55, .008), wt, 0, .735, 0, d); for (const sx of [-1, 1]) mesh(BX(.025, .72, .5), wt, sx * .485, .36, 0, d); mesh(BX(.945, .22, .015), wt, 0, .61, -.24, d);
-  const lap = new THREE.Group(); lap.position.set(.1, .75, -.04); lap.rotation.y = -.1; d.add(lap); mesh(BX(.32, .012, .22), al, 0, .006, 0, lap);
-  const scr = new THREE.Group(); scr.position.set(0, .012, -.11); scr.rotation.x = -.28; lap.add(scr); mesh(BX(.32, .21, .008), al, 0, .105, 0, scr); mesh(BX(.29, .18, .002), new THREE.MeshStandardMaterial({ color: 0x24344e, roughness: .2, emissive: 0x31507a, emissiveIntensity: .35 }), 0, .105, .0055, scr, { cast: false });
+  laptopHQ(d, { x: .1, y: .75, z: -.04, ry: -.1 }); /* 노트북 퀄리티업: 공용 고품질 노트북 */
   mesh(CY(.012, .045, .12, 20), yel, .42, .81, -.17, d); mesh(new THREE.SphereGeometry(.04, 16, 12), std(0x3d6fb8, .4), .3, .79, -.2, d);
   { const fr = mesh(BX(.16, .2, .012), std(0xf0e6d0, .7), -.33, .85, -.18, d); fr.rotation.x = -.15; mesh(BX(.2, .012, .1), M.oak, -.33, .756, -.16, d); }
   { const ck = mesh(CY(.04, .04, .025, 24), std(0xf2f2f0, .5), -.12, .79, -.15, d); ck.rotation.x = Math.PI / 2 - .2; mesh(CY(.034, .034, .002, 24), std(0xffffff, .9), -.12, .792, -.137, d).rotation.x = Math.PI / 2 - .2; }
