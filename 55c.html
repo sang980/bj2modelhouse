@@ -2690,18 +2690,12 @@ function pantryGoods(g, lv, y) {
   const panel = (x0, z) => { cab(g, x0, x0 + .47, .02, 2.06, z - .006, z + .006, M.glass, { cast: false }); for (const [a, b, c, d] of [[x0, x0 + .03, .02, 2.06], [x0 + .44, x0 + .47, .02, 2.06], [x0, x0 + .47, .02, .07], [x0, x0 + .47, 2.0, 2.06]]) cab(g, a, b, c, d, z - .015, z + .015, M.rail); };
   panel(1.79, 3.635); panel(2.235, 3.66); panel(2.27, 3.685); } /* 문틀 옆면이 같은 평면에 겹치지 않게 5mm씩 어긋나게 */
 // 4 아일랜드식탁 (사진): 동쪽 벽에 붙은 페닌슐라, 남쪽(식탁 쪽)으로 도어, 식탁이 그 앞에 붙음
-/* 전기밥솥(요청·VR): 흰 유광 몸통 + 연회색 뚜껑 + 은색 손잡이 + 앞면 검은 조작부(파란 표시창) — 앞면이 북쪽(주방) */
+/* 전기밥솥(요청·VR): 아일랜드 주방 쪽 오픈 칸 속 둥근 흰 밥솥 1대 */
 function riceCooker(g, cx, y, cz) {
-  const p = new THREE.Group(); p.position.set(WX(cx), y, WZ(cz)); g.add(p);
-  const wb = std(0xf8f7f4, .18), lid = std(0xe6e5e1, .22), dk = std(0x15171a, .15, .2);
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(CY(.012, .012, .008, 12), M.black, sx * .09, .004, sz * .11, p, { cast: false });
-  mesh(RB(.25, .17, .31, .06, 4), wb, 0, .093, 0, p);
-  mesh(RB(.24, .07, .3, .05, 4), lid, 0, .2, .005, p);
-  mesh(RB(.13, .03, .05, .012, 2), std(0xa4a9ae, .3, .6), 0, .245, -.09, p); /* 손잡이(앞쪽) */
-  mesh(CY(.016, .016, .012, 16), std(0x5a5e63, .4, .5), 0, .24, .08, p); /* 증기 배출구 */
-  mesh(RB(.16, .075, .012, .005, 1), dk, 0, .115, -.152, p); /* 조작부 */
-  mesh(BX(.05, .02, .002), std(0x0d1a2a, .2, 0, { emissive: 0x3aa0ff, emissiveIntensity: .8 }), 0, .13, -.159, p, { cast: false });
-  for (const dx of [-.05, .05]) mesh(BX(.022, .01, .002), std(0xd8dadc, .4), dx, .1, -.159, p, { cast: false });
+  const p = new THREE.Group(); p.position.set(WX(cx), y, WZ(cz)); g.add(p); const wm = std(0xf4f3ef, .25); /* 55B·56T와 같은 둥근 흰 밥솥, 앞면이 북쪽(주방) */
+  mesh(CY(.1, .104, .012, 32), std(0x8d8f92, .5), 0, .006, 0, p); mesh(CY(.108, .1, .15, 40), wm, 0, .087, 0, p);
+  const lid = mesh(new THREE.SphereGeometry(.106, 40, 10, 0, Math.PI * 2, 0, Math.PI / 2), wm, 0, .16, 0, p); lid.scale.y = .42;
+  mesh(RB(.09, .045, .012, .006, 2), std(0x2c2f33, .2, .1), 0, .1, -.1, p).rotation.x = .18; mesh(BX(.05, .012, .02), std(0xc9cbcd, .4, .5), 0, .19, -.07, p);
 }
 function peninsula(k, name, x0, x1, z0, z1, niche = false) {
   const g = item(k, name);
