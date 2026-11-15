@@ -473,7 +473,7 @@ function texCore() { const c = cnv(512, 256), g = c.getContext('2d'); noiseFill(
 function texRoof() { const c = cnv(512, 512), g = c.getContext('2d'); noiseFill(g, 512, 512, '#4f565e', .04, 1500); /* 모형: 태양광 판은 고른 짙은 슬레이트 */
   for (let y = 20; y < 500; y += 70) for (let x = 16; x < 500; x += 60) { g.fillStyle = '#3f464f'; g.fillRect(x, y, 58, 68); g.fillStyle = 'rgba(150,160,175,.12)'; for (let k = 1; k < 4; k++) g.fillRect(x, y + k * 15.5, 54, 1.5); g.fillRect(x + 27, y, 1.5, 62); }
   return tex(c); }
-function texGreen() { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill(g, 256, 256, '#6b8a4e', .12, 1800);
+function texGreen() { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill(g, 256, 256, '#52703a', .12, 1800);
   for (let i = 0; i < 70; i++) { g.fillStyle = `rgba(${40 + rand() * 30 | 0},${80 + rand() * 40 | 0},${35 + rand() * 20 | 0},.8)`; g.beginPath(); g.arc(rand() * 256, rand() * 256, 4 + rand() * 9, 0, 7); g.fill(); }
   return tex(c); }
 /* 옹벽(모형 사진): 중간 회색 도장 + 굵은 짙은 회색 테트리스 무늬(세로 막대·ㄱ·ㄴ·T자) — 한 장 = 20m × 10m */
@@ -676,7 +676,7 @@ async function build() {
     if (gt.i.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#b0ada7', .03, 700); g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(0, 0, 2, 128); g.fillRect(128, 0, 2, 128); g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(0, 0, 256, 4);
       const mt = new THREE.Mesh(gt.build(), new THREE.MeshStandardMaterial({ map: tex(c), roughness: .95, side: THREE.DoubleSide })); mt.receiveShadow = mt.castShadow = true; scene.add(mt);
       const mp2 = new THREE.Mesh(gpl.build(), new THREE.MeshLambertMaterial({ map: T.green, side: THREE.DoubleSide })); mp2.receiveShadow = true; scene.add(mp2); }
-    if (gp.i.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#6e6d6a', .03, 700); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, 0, 2, 128); g.fillRect(128, 0, 2, 128); const t = tex(c); const mp = new THREE.Mesh(gp.build(), new THREE.MeshStandardMaterial({ map: t, roughness: .95, side: THREE.DoubleSide })); mp.receiveShadow = mp.castShadow = true; scene.add(mp); } }
+    if (gp.i.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#8e8c87', .03, 700); g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(0, 0, 2, 128); g.fillRect(128, 0, 2, 128); const t = tex(c); const mp = new THREE.Mesh(gp.build(), new THREE.MeshStandardMaterial({ map: t, roughness: .95, side: THREE.DoubleSide })); mp.receiveShadow = mp.castShadow = true; scene.add(mp); } }
   /* 데크 가장자리 화단(모형): 옹벽 위를 따라 낮은 관목 띠 + 난간 — 각 단 높이에 */
   { const H2 = new GB(), Rl = new GB(), hedge = { gb: H2, uv: uvTile(4, 1) }, top = { gb: H2, uv: true, uvTop: uvPlanar(4) };
     for (let i = 0; i < SITE.length; i++) { const a = SITE[i], b = SITE[(i + 1) % SITE.length], ex = b[0] - a[0], ez = b[1] - a[1], L0 = Math.hypot(ex, ez); if (L0 < 2) continue;
@@ -913,7 +913,7 @@ function detailDeck(mat, maskTex) {
         float asph = (1. - smoothstep(.16, .26, lum)) * (1. - smoothstep(.06, .12, sat)); /* 어두운 무채색 = 차로 */
         float gr = 1. - pv; /* 단지 안에는 지상 차로가 없음(모형): 길 아닌 곳은 모두 잔디 */ /* 나머지는 모형처럼 고른 잔디 */
         float P = texture2D(tPav, vWP.xz * .5).r, G = texture2D(tGrs, vWP.xz / 3.).r;
-        vec3 pathC = vec3(.5, .48, .44) * (.86 + .2 * P), grassC = vec3(.12, .25, .06) * (.82 + .3 * G);
+        vec3 pathC = vec3(.5, .48, .44) * (.86 + .2 * P), grassC = vec3(.075, .14, .04) * (.82 + .3 * G); /* 모형: 짙은 올리브 잔디 */
         diffuseColor.rgb = mix(mix(c, grassC, gr), pathC, pv); }`); };
 }
 
