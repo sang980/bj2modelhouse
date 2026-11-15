@@ -895,9 +895,13 @@ const YA = -.231, YU = [Math.cos(YA), Math.sin(YA)]; /* 104·105동과 나란한
 const YRECT = (cx, cz, L, D) => { const fx = -YU[1], fz = YU[0]; return [[cx - YU[0] * L / 2 - fx * D / 2, cz - YU[1] * L / 2 - fz * D / 2], [cx + YU[0] * L / 2 - fx * D / 2, cz + YU[1] * L / 2 - fz * D / 2], [cx + YU[0] * L / 2 + fx * D / 2, cz + YU[1] * L / 2 + fz * D / 2], [cx - YU[0] * L / 2 + fx * D / 2, cz - YU[1] * L / 2 + fz * D / 2]]; };
 const YARD = { court: YRECT(-7.1, 90.2, 14.5, 11.5), teal: YRECT(-29.5, 102, 19, 12), sand: [[27.8, 62.5], [56.5, 50.8], [65.6, 62.5], [38.2, 76.8]],
   sandN: [[-16.7, -50.3], [19, -81.4], [29.9, -64.3], [-5.9, -45.7]], sandW: [[-100.5, 4], [-82.8, 1.5], [-81.9, 10.2], [-99.5, 11.7]] }; /* 배치도 모래 놀이터: 115·120·121동 사이(큰), 122동 옆(작은) */
+/* 남쪽 마당 산책로(모형 사진: 104·105동 앞 숲 사이를 구불구불 지나는 회색 보도블록 길 + 테니스장·놀이터로 가지길) */
+YARD.path = (() => { const c = [-15, 65], n = [.502, .865], u = [.865, -.502], P = []; for (let s = -34; s <= 86; s += 3) { const off = 16 + Math.sin(s / 9) * 2.2; P.push([c[0] + n[0] * off + u[0] * s, c[1] + n[1] * off + u[1] * s]); } return P; })();
+YARD.branches = (() => { const c = [-15, 65], n = [.502, .865], u = [.865, -.502], at = (s, o) => [c[0] + n[0] * o + u[0] * s, c[1] + n[1] * o + u[1] * s]; return [[at(-6, 16), at(-6, 20.5)], [at(54, 16.5), at(54, 22.5)], [at(-26, 15.5), at(-24, 19.5)]]; })();
+function pathDist(L, x, z) { let d = 1e9; for (let i = 0; i < L.length - 1; i++) { const a = L[i], b = L[i + 1], dx = b[0] - a[0], dz = b[1] - a[1], t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz))); d = Math.min(d, Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t)); } return d; }
 function buildYard() {
-  const flat = (P, mat, lift, uvFn) => { const sh = new THREE.Shape(P.map(p => new THREE.Vector2(p[0], -p[1]))), g = new THREE.ShapeGeometry(sh, 6).rotateX(-Math.PI / 2), pos = g.attributes.position;
-    let y = 0; for (const p of P) y += levelAt(p[0], p[1]); y /= P.length; for (let i = 0; i < pos.count; i++) pos.setY(i, y + lift);
+  const flat = (P, mat, lift, uvFn, yFix) => { const sh = new THREE.Shape(P.map(p => new THREE.Vector2(p[0], -p[1]))), g = new THREE.ShapeGeometry(sh, 6).rotateX(-Math.PI / 2), pos = g.attributes.position;
+    let y = 0; for (const p of P) y += levelAt(p[0], p[1]); y /= P.length; if (yFix !== undefined) y = yFix; for (let i = 0; i < pos.count; i++) pos.setY(i, y + lift);
     if (uvFn) { const uv = g.attributes.uv; for (let i = 0; i < pos.count; i++) { const r = uvFn(pos.getX(i), pos.getZ(i)); uv.setXY(i, r[0], r[1]); } }
     g.computeVertexNormals(); const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.renderOrder = 3; scene.add(m); return y; };
   const off = { polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 };
@@ -929,6 +933,12 @@ function buildYard() {
   { const [x, z] = at(3, -1); for (const s of [-1.6, 1.6]) { const [px, pz] = at(3 + s, -1); obox(px, pz, ux, uz, .12, 1.6, ys, ys + 2.3, all(PL.b)); } obox(x, z, ux, uz, 3.4, .14, ys + 2.3, ys + 2.42, all(PL.b)); for (const s of [-.7, .7]) { const [px, pz] = at(3 + s, -1); obox(px, pz, ux, uz, .5, .25, ys + .5, ys + .58, all(PL.y)); } } /* 그네 */
   { for (const [a, b] of [[8.5, -1.2], [8.5, 1.2], [12.5, -1.2], [12.5, 1.2]]) { const [px, pz] = at(a, b); obox(px, pz, ux, uz, .22, .22, ys, ys + 2.8, all(PL.w)); }
     for (let k = 0; k < 7; k++) { const [px, pz] = at(8.2 + k * .7, 0); obox(px, pz, ux, uz, .14, 3.2, ys + 2.8, ys + 2.98, all(PL.w)); } const [rx, rz] = at(10.5, 0); obox(rx, rz, ux, uz, 4.6, .2, ys + 2.98, ys + 3.1, all(PL.w)); } /* 흰 퍼걸러(모형: 놀이터 동쪽 끝) */
+  { const pc = cnv(256, 256), pg = pc.getContext('2d'); pg.fillStyle = '#9a9a96'; pg.fillRect(0, 0, 256, 256); for (let y = 0; y < 256; y += 32) for (let x = (y / 32 & 1) * 16; x < 256; x += 32) { const v = 188 + (rand() - .5) * 26 | 0; pg.fillStyle = `rgb(${v},${v},${v - 4})`; pg.fillRect(x + 1, y + 1, 30, 30); }
+    const pt = new THREE.CanvasTexture(pc); pt.wrapS = pt.wrapT = THREE.RepeatWrapping; pt.colorSpace = THREE.SRGBColorSpace; pt.anisotropy = ANISO;
+    const pm = new THREE.MeshStandardMaterial({ map: pt, roughness: .95, polygonOffset: true, polygonOffsetFactor: -5, polygonOffsetUnits: -10 });
+    const strip = (L, w) => { const A = [], B = []; for (let i = 0; i < L.length; i++) { const a = L[Math.max(0, i - 1)], b = L[Math.min(L.length - 1, i + 1)], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz), nx = -dz / l * w / 2, nz = dx / l * w / 2; A.push([L[i][0] + nx, L[i][1] + nz]); B.push([L[i][0] - nx, L[i][1] - nz]); } return A.concat(B.reverse()); };
+    const uvP = (x, z) => [x / 4, -z / 4];
+    flat(strip(YARD.path, 2.6), pm, .13, uvP, 112 - Y0); for (const br of YARD.branches) flat(strip(br, 2), pm, .135, uvP, 112 - Y0); } /* 마당 높이(FH 112)에 딱 붙게 */
   /* 북쪽 큰 놀이터(모형 VN18: 모래 마당) + 122동 옆 작은 놀이터 — 같은 모래 바닥, 놀이기구 */
   for (const [Q, big] of [[YARD.sandN, true], [YARD.sandW, false]]) { const y2 = flat(Q, new THREE.MeshStandardMaterial({ color: '#e2cf9c', roughness: 1, ...off }), .1);
     const qx = Q.reduce((s, p) => s + p[0], 0) / 4, qz = Q.reduce((s, p) => s + p[1], 0) / 4, du = [Q[1][0] - Q[0][0], Q[1][1] - Q[0][1]], dl = Math.hypot(...du), vx = du[0] / dl, vz = du[1] / dl, wx = -vz, wz = vx, at2 = (a, b) => [qx + vx * a + wx * b, qz + vz * a + wz * b];
@@ -1264,7 +1274,7 @@ function buildTrees(planData, PW, PH, PK) {
     const px = Math.round((jx / S + OX) / PK), py = Math.round((jz / S + OY) / PK); if (px < 0 || py < 0 || px >= PW || py >= PH) continue;
     const k = (py * PW + px) * 4, r = planData[k], g = planData[k + 1], b = planData[k + 2];
     if (!(g > r + 10 && g > b + 4 && g < 170 && r < 140)) continue; /* 잔디(옅은 초록)에도 나무 */
-    if (inBld(jx, jz) || AMEN_POLYS.some(P => polyDist(P, jx, jz) < 2) || polyDist(YARD.court, jx, jz) < 2 || polyDist(YARD.teal, jx, jz) < 1 || polyDist(YARD.sand, jx, jz) < 1.5 || polyDist(YARD.sandN, jx, jz) < 1.5 || polyDist(YARD.sandW, jx, jz) < 1.5 || inPoly(ENT.PZ, jx, jz)) continue; /* 마당 시설은 비워 둠 */
+    if (inBld(jx, jz) || AMEN_POLYS.some(P => polyDist(P, jx, jz) < 2) || polyDist(YARD.court, jx, jz) < 2 || polyDist(YARD.teal, jx, jz) < 1 || polyDist(YARD.sand, jx, jz) < 1.5 || polyDist(YARD.sandN, jx, jz) < 1.5 || polyDist(YARD.sandW, jx, jz) < 1.5 || inPoly(ENT.PZ, jx, jz) || pathDist(YARD.path, jx, jz) < 2.2 || YARD.branches.some(b => pathDist(b, jx, jz) < 1.8)) continue; /* 마당 시설은 비워 둠 */
     if (rand() < .18) pts.push([jx, levelAt(jx, jz), jz, .9 + rand() * .7, 2]); else pts.push([jx, levelAt(jx, jz), jz, 1.15 + rand() * 1.05, 0]); /* 모형: 작고 짙은 조경수 + 원뿔형 침엽수 섞임 */
   }
   /* 숲: 단지 주변 1.2km */
