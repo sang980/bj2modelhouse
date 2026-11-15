@@ -2059,6 +2059,9 @@ const bed1B = bed(6.81, 9.6, Math.PI / 2, 1.6, 2.1, '침대');
 function recolorBed(b, throwC, pillowC, pillow2C) { const t = std(throwC, .98, 0, { map: M.throwBlue.map }), p1 = std(pillowC, .95, 0, { map: M.charcoal.map }), p2 = std(pillow2C, .95, 0, { map: M.charcoal.map });
   b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = t; else if (o.material === M.charcoal) o.material = p1; else if (o.material === M.check) o.material = p2; }); }
 recolorBed(bed1B, 0x6e7173, 0x1f5446, 0x23604f);
+{ const w = 1.6, l = 2.1, hx = w / 2 + .04, parts = []; /* VR: 러너 양옆 끝단 흰 술 장식(침대 로컬: 러너 z l/2-.75 ~ l/2-.14, 끝단 높이 .23) */
+  for (const s of [-1, 1]) for (let zz = l / 2 - .74; zz <= l / 2 - .15; zz += .02) { const t = new THREE.CylinderGeometry(.0028, .002, .06, 5); t.translate(s * (hx + .006), .2, zz); t.rotateZ(0); parts.push(t); }
+  mesh(mergeGeometries(parts, false), std(0xf2efe8, .9), 0, 0, 0, bed1B, { cast: false }); }
 function flutedPedestal(x, z, withLamp) { const g = piece('사이드 테이블', x, z, 0), w = std(0xf6f5f2, .45);
   const geo = new THREE.CylinderGeometry(.19, .21, .52, 48, 1); const p = geo.attributes.position; for (let i = 0; i < p.count; i++) { const a = Math.atan2(p.getZ(i), p.getX(i)), r = Math.hypot(p.getX(i), p.getZ(i)); if (r > .05) { const k = 1 + .045 * Math.cos(a * 16); p.setX(i, p.getX(i) * k); p.setZ(i, p.getZ(i) * k); } } geo.computeVertexNormals();
   mesh(geo, w, 0, .26, 0, g); mesh(CY(.22, .22, .03, 40), w, 0, .535, 0, g);
