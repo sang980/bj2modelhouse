@@ -455,7 +455,7 @@ function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (
   /* 모형: 측벽 가운데 짙은 남색 유리 세로 띠(지붕까지) */
   if (brick) { g.fillStyle = '#4a2e25'; g.fillRect(180, 0, 664, 256); for (const x of [240, 420, 600, 760]) win(g, x, 70, 64, 110, 1, 6, '#b8b4ad', 3); }
   else { g.fillStyle = '#1f2f3c'; g.fillRect(180, 0, 664, 256); g.fillStyle = 'rgba(255,255,255,.04)'; g.fillRect(180, 0, 664, 128); /* 모형 VE08·VE26: 측벽 폭의 약 65% 청록·남색 유리 판넬 + 층마다 밝은 창 */
-    for (let x = 214; x < 820; x += 66) { g.fillStyle = (x / 66 | 0) % 3 === 1 ? '#d9cfb8' : '#3a4a57'; g.fillRect(x, 92, 26, 62); g.fillStyle = 'rgba(40,70,85,.5)'; g.fillRect(x, 120, 26, 3); } g.fillStyle = '#17242e'; g.fillRect(180, 248, 664, 8); }
+    for (let x = 214; x < 820; x += 66) { g.fillStyle = '#2b3946'; g.fillRect(x, 92, 26, 62); g.fillStyle = 'rgba(40,70,85,.5)'; g.fillRect(x, 120, 26, 3); } g.fillStyle = '#17242e'; g.fillRect(180, 248, 664, 8); }
   return tex(c); }
 /* 유리는 매끈하게(하늘이 비침), 벽은 거칠게: 색 텍스처에서 거칠기 지도를 만듦 */
 function roughFrom(t) { const src = t.image, w = src.width, h = src.height, c = cnv(w, h), g = c.getContext('2d'); g.drawImage(src, 0, 0); const d = g.getImageData(0, 0, w, h), a = d.data;
@@ -802,7 +802,9 @@ function buildDong(D, G, MAT) {
     if (!D.pit && yLowR < -.05) obox(cx, cz, ux, uz, L, DEP, yLowR, 0, { front: { gb: G.podium, uv: uvTile(20, 10) }, back: { gb: G.podium, uv: uvTile(20, 10) }, left: { gb: G.podium, uv: uvTile(20, 10) }, right: { gb: G.podium, uv: uvTile(20, 10) } }); /* 옹벽에 묻힌 부분 */
     if (t) obox(cx, cz, ux, uz, L, DEP, 0, yT, { front: { gb: G.terr, uv: uvTile(tw, FH) }, back: { gb: G.bback, uv: uvTile(tw, FH) }, left: { gb: G.bside, uv: uvTile(DEP, FH) }, right: { gb: G.bside, uv: uvTile(DEP, FH) } });
     obox(cx, cz, ux, uz, L, DEP, D.pit ? pitH : (t ? yT : 0), base, { front: { gb: G.bfront, uv: uvTile(tw, FH) }, back: { gb: G.bback, uv: uvTile(tw, FH) }, left: { gb: G.bside, uv: uvTile(DEP, FH) }, right: { gb: G.bside, uv: uvTile(DEP, FH) } });
-    obox(cx, cz, ux, uz, L, DEP, base, H, { front: { gb: G.front, uv: uvTile(tw, FH) }, back: { gb: G.back, uv: uvTile(tw, FH) }, left: { gb: SIDEP.has(D.d) ? G.sideP : G.side, uv: uvTile(DEP, FH) }, right: { gb: SIDEP.has(D.d) ? G.sideP : G.side, uv: uvTile(DEP, FH) }, top: { gb: G.roof, uv: true, uvTop: uvPlanar(8) } });
+    obox(cx, cz, ux, uz, L, DEP, base, H, { front: { gb: G.front, uv: uvTile(tw, FH) }, back: { gb: G.back, uv: uvTile(tw, FH) }, top: { gb: G.roof, uv: true, uvTop: uvPlanar(8) } });
+    { const yb2 = SIDEP.has(D.d) ? H : Math.min(H, base + 2 * FH), SP = { gb: G.sideP, uv: uvTile(DEP, FH) }, SN = { gb: G.side, uv: uvTile(DEP, FH) }; /* 모형 VE08: 측벽 남색 판넬은 갈색 저층 위 2개 층 회색 띠 위부터 꼭대기까지 */
+      obox(cx, cz, ux, uz, L, DEP, base, yb2, { left: SP, right: SP }); if (yb2 < H) obox(cx, cz, ux, uz, L, DEP, yb2, H, { left: SN, right: SN }); }
     /* 옥상 난간 */
     const pr = (px2, pz2, l, d, uxx, uzz) => { obox(px2, pz2, uxx, uzz, l, d, H, H + .35, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } });
       obox(px2, pz2, uxx, uzz, l, d * .4, H + .35, H + 1.7, { front: { gb: G.grille, uv: uvTile(3, 1.35) }, back: { gb: G.grille, uv: uvTile(3, 1.35) } }); obox(px2, pz2, uxx, uzz, l, d * .6, H + 1.7, H + 1.82, { top: { gb: G.white }, front: { gb: G.white }, back: { gb: G.white } }); }; /* 모형: 옥상 가장자리 밝은 회색 살대 난간 */
