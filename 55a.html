@@ -998,7 +998,12 @@ floorRect(3.4, 12.32, 0, 2.2, 0, M.floor);
 const OV = .004;
 floorRect(.11, 1.84, 2.31, 5.04, OV, M.bathFloor, 1.2);
 floorRect(8.56, 10.69, 2.56, 3.94, OV, M.bathFloor, 1.2);
-floorRect(1.96, 3.34, 2.31, 3.45, OV, M.stone, 1.2);
+/* VR 55A: 현관 바닥 흰 테라조(작은 회색·검정·베이지 알갱이) 타일 + 바깥 끝 검정 문턱 띠 */
+{ const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = '#ecebe7'; x.fillRect(0, 0, 256, 256); const cl = ['#9a9893', '#56544f', '#c9bfae', '#2c2b29', '#b4b1aa'];
+  for (let i = 0; i < 4200; i++) { x.fillStyle = cl[(rnd() * cl.length) | 0]; x.globalAlpha = .3 + rnd() * .4; const r = .35 + rnd() * .8; x.beginPath(); x.ellipse(rnd() * 256, rnd() * 256, r, r * (.6 + rnd() * .4), rnd() * 3, 0, 7); x.fill(); } x.globalAlpha = 1;
+  x.fillStyle = 'rgba(120,118,112,.5)'; x.fillRect(0, 127, 256, 2); x.fillRect(127, 0, 2, 256);
+  floorRect(1.96, 3.34, 2.31, 3.45, OV, std(0xffffff, .4, 0, { map: toTex(c) }), 1.2);
+  pbox(1.96, 3.34, OV, OV + .006, 3.42, 3.46, std(0x18191b, .45), fixed, { cast: false }); }
 floorRect(3.46, 4.44, 2.66, 4.14, OV, M.stone, 1.2, tagGroup('storage'));
 floorRect(3.51, 5.34, .11, 2.54, OV, M.balc, 1.2);
 floorRect(9.06, 10.69, .11, 1.44, OV, M.balc, 1.2);
