@@ -2138,7 +2138,7 @@ const b2art = new THREE.Group(); fixed.add(b2art);
   const dots = toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = '#f4f4f2'; x.fillRect(0, 0, 96, 128); x.fillStyle = '#7fcfc6'; x.fillRect(14, 16, 68, 92); x.fillStyle = '#e8b04a'; for (let i = 0; i < 9; i++) for (let j = 0; j < 12; j++) if ((i + j) % 2) { x.beginPath(); x.arc(20 + i * 7, 22 + j * 7, 2, 0, 7); x.fill(); } return c; })());
   pbox(2.77, 2.8, 1.05, 1.75, 5.55, 6.1, std(0xdedcd7, .5), b2art); pbox(2.765, 2.77, 1.09, 1.71, 5.59, 6.06, std(0xffffff, .9, 0, { map: dots }), b2art, { cast: false }); }
 /* VR(56T 침실2): 침대 머리 쪽 벽 옆 흰 파슨스 책상 + 흑백 사진 액자 2 + 작은 책, 흰 셸 의자, 위 흰 벽선반 2단(장식 공 2 / 작은 화분 2) — 책상과 함께 움직임 */
-const desk2T = piece('책상', .42, 6.35, Math.PI / 2);
+const desk2T = piece('책상', .42, 6.4, Math.PI / 2); /* 북쪽 벽 붙박이장(옵션 8) 자리와 겹치지 않게 */
 { const d = desk2T, wt = std(0xf6f5f2, .4);
   mesh(BX(.9, .04, .55), wt, 0, .73, 0, d); for (const s of [-1, 1]) mesh(BX(.04, .71, .55), wt, s * .43, .355, 0, d); mesh(BX(.82, .08, .02), wt, 0, .67, -.26, d);
   const ph = k => toTex((() => { const c = mkCanvas(64, 80), x = c.getContext('2d'); x.fillStyle = '#f2f1ee'; x.fillRect(0, 0, 64, 80); const gr = x.createLinearGradient(0, 8, 0, 72); gr.addColorStop(0, k ? '#9a9c9f' : '#cfd0d2'); gr.addColorStop(1, k ? '#2c2d30' : '#5a5c60'); x.fillStyle = gr; x.fillRect(8, 8, 48, 64); x.fillStyle = k ? '#e8e8e6' : '#1e1f22'; x.beginPath(); x.ellipse(32, 44, 9, 16, 0, 0, 7); x.fill(); return c; })());
