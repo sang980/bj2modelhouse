@@ -568,7 +568,7 @@ async function build() {
       for (let x = x0 - 1; x <= x1 + 1; x++) { add((y0 - 1) * PW + x); add((y1 + 1) * PW + x); } for (let y = y0; y <= y1; y++) { add(y * PW + x0 - 1); add(y * PW + x1 + 1); }
       if (!n) continue; R /= n; G /= n; B /= n; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const j = (y * PW + x) * 4; d[j] = R; d[j + 1] = G; d[j + 2] = B; } }
     /* 언샤프 마스크(반경 5px 상자 흐림 기준, 1.1배): 흐린 배치도 그림의 길·잔디 경계를 또렷하게 */
-    if (!LOW) { const W2 = PW, H2 = PH, R = 5, tmp = new Float32Array(N), bl = new Float32Array(N); /* 저사양 기기는 생략(로딩 시간) */
+    if (false) { const W2 = PW, H2 = PH, R = 5, tmp = new Float32Array(N), bl = new Float32Array(N); /* 선명화는 끔: 바닥 셰이더가 길·잔디를 나누므로 얼룩만 키움 */
       for (let ch = 0; ch < 3; ch++) {
         for (let y = 0; y < H2; y++) { let acc = 0; const o = y * W2; for (let x = -R; x <= R; x++) acc += d[(o + Math.min(W2 - 1, Math.max(0, x))) * 4 + ch]; for (let x = 0; x < W2; x++) { tmp[o + x] = acc / (2 * R + 1); acc += d[(o + Math.min(W2 - 1, x + R + 1)) * 4 + ch] - d[(o + Math.max(0, x - R)) * 4 + ch]; } }
         for (let x = 0; x < W2; x++) { let acc = 0; for (let y = -R; y <= R; y++) acc += tmp[Math.min(H2 - 1, Math.max(0, y)) * W2 + x]; for (let y = 0; y < H2; y++) { bl[y * W2 + x] = acc / (2 * R + 1); acc += tmp[Math.min(H2 - 1, y + R + 1) * W2 + x] - tmp[Math.max(0, y - R) * W2 + x]; } }
@@ -842,11 +842,11 @@ function detailDeck(mat) {
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; uniform sampler2D tPav; uniform sampler2D tGrs;').replace('#include <map_fragment>', `#include <map_fragment>
       { vec3 c = diffuseColor.rgb; float gn = c.g - max(c.r, c.b), mx = max(c.r, max(c.g, c.b)), sat = mx - min(c.r, min(c.g, c.b)), lum = dot(c, vec3(.299, .587, .114));
-        float pv = smoothstep(.33, .43, lum) * (1. - smoothstep(.06, .12, sat)) * (1. - smoothstep(.03, .06, gn)); /* 밝은 무채색 = 보도블록 길 */
+        float pv = smoothstep(.38, .47, lum) * (1. - smoothstep(.06, .12, sat)) * (1. - smoothstep(.02, .05, gn)); /* 밝은 무채색 = 보도블록 길 */
         float asph = (1. - smoothstep(.16, .26, lum)) * (1. - smoothstep(.06, .12, sat)); /* 어두운 무채색 = 차로 */
         float gr = (1. - pv) * (1. - asph); /* 나머지는 모형처럼 고른 잔디 */
         float P = texture2D(tPav, vWP.xz * .5).r, G = texture2D(tGrs, vWP.xz / 3.).r;
-        vec3 pathC = vec3(.66, .64, .6) * (.86 + .2 * P), grassC = vec3(.12, .25, .06) * (.82 + .3 * G);
+        vec3 pathC = vec3(.58, .55, .5) * (.86 + .2 * P), grassC = vec3(.12, .25, .06) * (.82 + .3 * G);
         diffuseColor.rgb = mix(mix(c, grassC, gr), pathC, pv); }`); };
 }
 
