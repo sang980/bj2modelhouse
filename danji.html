@@ -562,7 +562,11 @@ function buildDong(D, G, MAT) {
     const cores = D.w.length > 1 ? (wi === 0 ? [.5] : []) : (n === 4 ? [.25, .75] : [.5]);
     for (const t of cores) { const s = t * L - L / 2, ccx = cx + ux * s - fx * (DEP / 2 + CORE_D / 2 - .4), ccz = cz + uz * s - fz * (DEP / 2 + CORE_D / 2 - .4), ch = H + 3.9;
       obox(ccx, ccz, ux, uz, CORE_W, CORE_D, 0, ch, { front: { gb: G.core, uv: uvTile(CORE_W, FH) }, back: { gb: G.core, uv: uvTile(CORE_W, FH) }, left: { gb: G.core, uv: uvTile(CORE_D, FH) }, right: { gb: G.core, uv: uvTile(CORE_D, FH) }, top: { gb: G.white } });
-      obox(ccx + fx * 1.2, ccz + fz * 1.2, ux, uz, CORE_W - 2.4, 3, ch, ch + 1.6, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } }); }
+      obox(ccx + fx * 1.2, ccz + fz * 1.2, ux, uz, CORE_W - 2.4, 3, ch, ch + 1.6, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } });
+      /* 공동현관: 코어 뒤쪽 캐노피 + 유리문 */
+      const ex = ccx - fx * (CORE_D / 2 + 1.1), ez = ccz - fz * (CORE_D / 2 + 1.1);
+      obox(ex, ez, ux, uz, 4.2, 2.2, 3.0, 3.25, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.fin } });
+      obox(ccx - fx * (CORE_D / 2 + .02), ccz - fz * (CORE_D / 2 + .02), ux, uz, 2.4, .04, 0, 2.6, { back: { gb: G.fin } }); }
     /* 테라스(56T): 앞쪽 저층 벽돌 매스 + 옥상정원 */
     if (D.t && (D.w.length === 1 || wi === 1)) { const th = D.t * FH + .9, ox = DEP / 2 + 1.9;
       obox(cx + fx * ox, cz + fz * ox, ux, uz, L - .4, 3.8, 0, th, { front: { gb: G.bfront, uv: uvTile(tw, FH) }, left: { gb: G.brick }, right: { gb: G.brick }, top: { gb: G.green, uv: true, uvTop: uvPlanar(6) } });
@@ -747,7 +751,7 @@ function buildOSM() {
     const gavg = gs / np, top = gavg + h, base = gmin - .6 + mh, fh = h / lv;
     let tk = kind === 1 || lv >= 6 ? 'apt' : kind === 2 ? (lv <= 3 ? 'shop' : 'office') : kind === 3 ? 'pub' : kind === 5 ? 'ind' : 'villa';
     if (tk === 'apt' && kind === 2) tk = 'stone';
-    { const r = rand(); if (tk === 'villa') tk = r < .4 ? 'villaBrick' : r < .68 ? 'villaTile' : 'villa'; else if (tk === 'apt' && lv >= 13 && r < .7) tk = 'aptModern'; else if (tk === 'office' && r < .55) tk = 'stone'; }
+    { const r = rand(); if (tk === 'villa') tk = r < .4 ? 'villaBrick' : r < .68 ? 'villaTile' : 'villa'; else if (tk === 'apt' && (lv >= 13 || r < .5)) tk = 'aptModern'; else if (tk === 'office' && r < .55) tk = 'stone'; }
     const rd = !/^(shop|pub|ind)$/.test(tk) && lv <= 9 && dist < 2600 ? roadDist(cx, cz) : 1e9, shopG = rd < 16 && lv >= 2;
     const wc = WALL[tk][(rand() * WALL[tk].length) | 0], rc = ROOF[tk][(rand() * ROOF[tk].length) | 0], tw = OSM_TILE[tk];
     let A = 0; for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np]; A += a[0] * b[1] - b[0] * a[1]; }
@@ -761,6 +765,10 @@ function buildOSM() {
         if (ys < top) quad(G[tk], ys, top, sp / tw, sq / tw, vb(ys), lv, wc); }
       else quad(G[tk], base, top, sp / tw, sq / tw, vb(base), lv, wc);
       s += L; }
+    /* 고층 아파트 옥상 크라운(옥탑 띠): 외곽선을 따라 1.8m 높이 흰 띠 */
+    if ((tk === 'apt' || tk === 'aptModern') && lv >= 12 && dist < 2400) { const cc = vc(rand() < .5 ? '#f4f4f1' : '#dfe2e4');
+      for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz); if (L < .05) continue;
+        const nx = dz / L * sg, nz = -dx / L * sg, [p, q] = sg < 0 ? [a, b] : [b, a]; R.quad([p[0], top, p[1]], [q[0], top, q[1]], [q[0], top + 1.8, q[1]], [p[0], top + 1.8, p[1]], [nx, 0, nz], null, cc); } }
     /* 지붕 */
     const tris = THREE.ShapeUtils.triangulateShape(P.map(p => new V2(p[0], p[1])), []);
     for (const [a, b, c] of tris) { const A3 = [P[a][0], top, P[a][1]], B3 = [P[b][0], top, P[b][1]], C3 = [P[c][0], top, P[c][1]], cr = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]);
