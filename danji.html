@@ -447,7 +447,7 @@ function texCore() { const c = cnv(512, 256), g = c.getContext('2d'); noiseFill(
   g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(0, 250, 512, 6); g.fillStyle = '#e2e0da'; g.fillRect(226, 80, 60, 96); glass(g, 232, 86, 48, 84, 1);
   return tex(c); }
 function texRoof() { const c = cnv(512, 512), g = c.getContext('2d'); noiseFill(g, 512, 512, '#77818b', .06, 1500);
-  for (let y = 20; y < 500; y += 70) for (let x = 16; x < 500; x += 60) { g.fillStyle = '#3c5678'; g.fillRect(x, y, 54, 62); g.fillStyle = 'rgba(160,185,215,.35)'; for (let k = 1; k < 4; k++) g.fillRect(x, y + k * 15.5, 54, 1.5); g.fillRect(x + 27, y, 1.5, 62); }
+  for (let y = 20; y < 500; y += 70) for (let x = 16; x < 500; x += 60) { g.fillStyle = '#464d57'; g.fillRect(x, y, 54, 62); g.fillStyle = 'rgba(170,180,195,.28)'; for (let k = 1; k < 4; k++) g.fillRect(x, y + k * 15.5, 54, 1.5); g.fillRect(x + 27, y, 1.5, 62); }
   return tex(c); }
 function texGreen() { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill(g, 256, 256, '#6b8a4e', .12, 1800);
   for (let i = 0; i < 70; i++) { g.fillStyle = `rgba(${40 + rand() * 30 | 0},${80 + rand() * 40 | 0},${35 + rand() * 20 | 0},.8)`; g.beginPath(); g.arc(rand() * 256, rand() * 256, 4 + rand() * 9, 0, 7); g.fill(); }
