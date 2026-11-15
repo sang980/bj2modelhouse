@@ -839,10 +839,11 @@ function detailDeck(mat) {
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; uniform sampler2D tPav; uniform sampler2D tGrs;').replace('#include <map_fragment>', `#include <map_fragment>
       { vec3 c = diffuseColor.rgb; float gn = c.g - max(c.r, c.b), mx = max(c.r, max(c.g, c.b)), sat = mx - min(c.r, min(c.g, c.b)), lum = dot(c, vec3(.299, .587, .114));
-        float gr = smoothstep(.03, .05, gn); /* 잔디: 경계를 또렷하게(텍스처 보간값에 문턱) */
-        float pv = (1. - gr) * smoothstep(.36, .46, lum) * (1. - smoothstep(.07, .13, sat)); /* 밝은 무채색 = 보도블록 길 */
+        float pv = smoothstep(.33, .43, lum) * (1. - smoothstep(.06, .12, sat)) * (1. - smoothstep(.03, .06, gn)); /* 밝은 무채색 = 보도블록 길 */
+        float asph = (1. - smoothstep(.16, .26, lum)) * (1. - smoothstep(.06, .12, sat)); /* 어두운 무채색 = 차로 */
+        float gr = (1. - pv) * (1. - asph); /* 나머지는 모형처럼 고른 잔디 */
         float P = texture2D(tPav, vWP.xz * .5).r, G = texture2D(tGrs, vWP.xz / 3.).r;
-        vec3 pathC = vec3(.6, .6, .58) * (.84 + .22 * P), grassC = mix(c, vec3(.12, .24, .07), .45) * (.78 + .36 * G);
+        vec3 pathC = vec3(.66, .64, .6) * (.86 + .2 * P), grassC = vec3(.12, .25, .06) * (.82 + .3 * G);
         diffuseColor.rgb = mix(mix(c, grassC, gr), pathC, pv); }`); };
 }
 
