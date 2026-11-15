@@ -198,7 +198,8 @@ function demRaw(x, z) { const N = GEO.N, E = GEO.E, D = GEO.dem; let fx = (x + E
 /* ---------- 해발고 기준: 월드 y = 해발(m) − 121 (가운데 단 FH 121.0 = 0) ----------
    단지 안: 공사계획평면도의 FH(계획고)·FL(1층 바닥) 그대로. 단지 밖: 공공 고도(SRTM 30m)를 도면 GL(지반고) 점으로 보정 */
 const Y0 = 121;
-const SIDEP = new Set([107, 108, 109, 110]); /* 모형: 측벽에 남색 유리 판넬이 없는 동 */
+const SIDEP = new Set([107, 108, 109, 110]);
+const NOSOLAR = new Set([109, 110, 111, 112]); /* 모형 VE30·VE32·VN18: 옥상 태양광 없이 밝은 평지붕 */ /* 모형: 측벽에 남색 유리 판넬이 없는 동 */
 const FLV = { 101: 121, 102: 121, 103: 121, 104: 121, 105: 121, 106: 121, 107: 121, 108: 121, 109: 121, 110: 121, 111: 121,
   112: 130, 113: 130, 114: 130, 115: 130, 116: 135.7, 117: 130, 118: 130, 119: 130, 120: 130, 121: 130, 122: 130 }; /* 도면 FL */
 const T_WN = [[-140, 66], [-116.4, 52.7], [-68.8, 22], [19.8, -31.7], [26.9, -36], [47.4, -48], [73, -52], [85.9, -60.2], [97.5, -80.3], [110, -100]]; /* 130/121 경계(옹벽) */
@@ -809,7 +810,7 @@ function buildDong(D, G, MAT) {
     if (!D.pit && yLowR < -.05) obox(cx, cz, ux, uz, L, DEP, yLowR, 0, { front: { gb: G.podium, uv: uvTile(20, 10) }, back: { gb: G.podium, uv: uvTile(20, 10) }, left: { gb: G.podium, uv: uvTile(20, 10) }, right: { gb: G.podium, uv: uvTile(20, 10) } }); /* 옹벽에 묻힌 부분 */
     if (t) obox(cx, cz, ux, uz, L, DEP, 0, yT, { front: { gb: G.terr, uv: uvTile(tw, FH) }, back: { gb: G.bback, uv: uvTile(tw, FH) }, left: { gb: G.bside, uv: uvTile(DEP, FH) }, right: { gb: G.bside, uv: uvTile(DEP, FH) } });
     obox(cx, cz, ux, uz, L, DEP, D.pit ? pitH : (t ? yT : 0), base, { front: { gb: G.bfront, uv: uvTile(tw, FH) }, back: { gb: G.bback, uv: uvTile(tw, FH) }, left: { gb: G.bside, uv: uvTile(DEP, FH) }, right: { gb: G.bside, uv: uvTile(DEP, FH) } });
-    obox(cx, cz, ux, uz, L, DEP, base, H, { front: { gb: G.front, uv: uvTile(tw, FH) }, back: { gb: G.back, uv: uvTile(tw, FH) }, top: { gb: G.roof, uv: true, uvTop: uvPlanar(8) } });
+    obox(cx, cz, ux, uz, L, DEP, base, H, { front: { gb: G.front, uv: uvTile(tw, FH) }, back: { gb: G.back, uv: uvTile(tw, FH) }, top: { gb: NOSOLAR.has(D.d) ? G.white : G.roof, uv: true, uvTop: uvPlanar(8) } });
     { const yb2 = SIDEP.has(D.d) ? H : Math.min(H, base + 2 * FH), SP = { gb: G.sideP, uv: uvTile(DEP, FH) }, SN = { gb: G.side, uv: uvTile(DEP, FH) }; /* 모형 VE08: 측벽 남색 판넬은 갈색 저층 위 2개 층 회색 띠 위부터 꼭대기까지 */
       obox(cx, cz, ux, uz, L, DEP, base, yb2, { left: SP, right: SP }); if (yb2 < H) obox(cx, cz, ux, uz, L, DEP, yb2, H, { left: SN, right: SN }); }
     /* 옥상 난간 */
@@ -818,7 +819,7 @@ function buildDong(D, G, MAT) {
     pr(cx + fx * (DEP / 2 - .15), cz + fz * (DEP / 2 - .15), L, .3, ux, uz); pr(cx - fx * (DEP / 2 - .15), cz - fz * (DEP / 2 - .15), L, .3, ux, uz);
     pr(cx + ux * (L / 2 - .15), cz + uz * (L / 2 - .15), DEP - .6, .3, fx, fz); pr(cx - ux * (L / 2 - .15), cz - uz * (L / 2 - .15), DEP - .6, .3, fx, fz);
     /* 옥상 태양광(모형 사진): 뒤로 올라가는 경사 패널 판 + 흰 지지대 */
-    { const hl = (L - 1.2) / 2, d0 = (DEP - 2.4) / 2, y0 = H + 2.0 + YOFF, y1 = H + 3.0 + YOFF, /* 모형: 난간 위로 건물 길이 거의 전체를 덮는 태양광 캐노피 */ dh = y1 - y0, nl = Math.hypot(dh, 2 * d0), n = [fx * dh / nl, 2 * d0 / nl, fz * dh / nl];
+    if (!NOSOLAR.has(D.d)) { const hl = (L - 1.2) / 2, d0 = (DEP - 2.4) / 2, y0 = H + 2.0 + YOFF, y1 = H + 3.0 + YOFF, /* 모형: 난간 위로 건물 길이 거의 전체를 덮는 태양광 캐노피 */ dh = y1 - y0, nl = Math.hypot(dh, 2 * d0), n = [fx * dh / nl, 2 * d0 / nl, fz * dh / nl];
       G.roof.quad([cx - ux * hl + fx * d0, y0, cz - uz * hl + fz * d0], [cx + ux * hl + fx * d0, y0, cz + uz * hl + fz * d0], [cx + ux * hl - fx * d0, y1, cz + uz * hl - fz * d0], [cx - ux * hl - fx * d0, y1, cz - uz * hl - fz * d0], n, [0, 0, 2 * hl / 8, 0, 2 * hl / 8, 2 * d0 / 8, 0, 2 * d0 / 8]);
       for (let k = 0; k <= Math.max(2, Math.round(hl / 6)); k++) { const s2 = -hl + 2 * hl * k / Math.max(2, Math.round(hl / 6)); obox(cx + ux * s2 - fx * (d0 - .1), cz + uz * s2 - fz * (d0 - .1), ux, uz, .18, .18, H, H + 3.0, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white } }); }
       obox(cx - fx * d0, cz - fz * d0, ux, uz, 2 * hl, .12, H + 2.85, H + 3.05, { front: { gb: G.white }, back: { gb: G.white }, top: { gb: G.white } }); }
