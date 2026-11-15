@@ -198,8 +198,9 @@ function demRaw(x, z) { const N = GEO.N, E = GEO.E, D = GEO.dem; let fx = (x + E
 /* ---------- 해발고 기준: 월드 y = 해발(m) − 121 (가운데 단 FH 121.0 = 0) ----------
    단지 안: 공사계획평면도의 FH(계획고)·FL(1층 바닥) 그대로. 단지 밖: 공공 고도(SRTM 30m)를 도면 GL(지반고) 점으로 보정 */
 const Y0 = 121;
+const WALKS = []; /* 동 뒤 보행로 구간(나무가 길 위에 서지 않게) */
 const SIDEP = new Set([107, 108, 109, 110, 116]);
-const NOSOLAR = new Set([109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 120, 121]); /* 모형 VE30·VE32·VN18: 옥상 태양광 없이 밝은 평지붕 */ /* 모형: 측벽에 남색 유리 판넬이 없는 동 */
+const NOSOLAR = new Set([109, 110, 111, 112, 113, 114, 115, 116, 120, 121]); /* 117·118은 모형 VN10에서 태양광 캐노피 있음 */ /* 모형 VE30·VE32·VN18: 옥상 태양광 없이 밝은 평지붕 */ /* 모형: 측벽에 남색 유리 판넬이 없는 동 */
 const FLV = { 101: 121, 102: 121, 103: 121, 104: 121, 105: 121, 106: 121, 107: 121, 108: 121, 109: 121, 110: 121, 111: 121,
   112: 130, 113: 130, 114: 130, 115: 130, 116: 135.7, 117: 130, 118: 130, 119: 130, 120: 130, 121: 130, 122: 130 }; /* 도면 FL */
 const T_WN = [[-140, 66], [-116.4, 52.7], [-68.8, 22], [19.8, -31.7], [26.9, -36], [47.4, -48], [73, -52], [85.9, -60.2], [97.5, -80.3], [110, -100]]; /* 130/121 경계(옹벽) */
@@ -877,7 +878,7 @@ function buildDong(D, G, MAT) {
     /* 동 뒤(공동현관 쪽) 보행로(모형 VE08: 동을 따라 곧게 뻗은 회색 보도블록 길) — 단 높이가 같은 구간만 */
     { const off = DEP / 2 + CORE_D + 3.6, pcx = cx - fx * off, pcz = cz - fz * off, y0 = levelAt(pcx, pcz), hl = L / 2 + ([118, 119].includes(D.d) ? 14 : 4), w = [118, 119].includes(D.d) ? 3 : 2, ns = Math.ceil(hl * 2 / 3);
       if (polyDist(SITE, pcx, pcz) < -3) for (let k = 0; k < ns; k++) { const a = -hl + k * hl * 2 / ns, b = a + hl * 2 / ns, mx = pcx + ux * (a + b) / 2, mz = pcz + uz * (a + b) / 2;
-        if (Math.abs(levelAt(mx, mz) - y0) > .4 || polyDist(SITE, mx, mz) > -2) continue; const P = [pcx + ux * a, pcz + uz * a], Q = [pcx + ux * b, pcz + uz * b], y = y0 + .16;
+        if (Math.abs(levelAt(mx, mz) - y0) > .4 || polyDist(SITE, mx, mz) > -2) continue; const P = [pcx + ux * a, pcz + uz * a], Q = [pcx + ux * b, pcz + uz * b], y = y0 + .16; WALKS.push([P, Q, w]);
         G.path.quad([P[0] + fx * w, y, P[1] + fz * w], [Q[0] + fx * w, y, Q[1] + fz * w], [Q[0] - fx * w, y, Q[1] - fz * w], [P[0] - fx * w, y, P[1] - fz * w], [0, 1, 0], [(P[0]) / 4, -P[1] / 4, Q[0] / 4, -Q[1] / 4, (Q[0] - fx * 2 * w) / 4, -(Q[1] - fz * 2 * w) / 4, (P[0] - fx * 2 * w) / 4, -(P[1] - fz * 2 * w) / 4]); } }
     { const off = DEP / 2 + CORE_D + 6.6, y0 = levelAt(cx - fx * off, cz - fz * off); if (polyDist(SITE, cx - fx * off, cz - fz * off) < -3) for (const sgn of [-1, 1]) { const s2 = sgn * (L / 2 - 3), bx = cx + ux * s2 - fx * off, bz = cz + uz * s2 - fz * off; if (Math.abs(levelAt(bx, bz) - y0) > .3) continue;
       obox(bx, bz, ux, uz, 2.2, 1.6, y0 - YOFF, y0 - YOFF + 1.3, { front: { gb: G.vent }, back: { gb: G.vent }, left: { gb: G.vent }, right: { gb: G.vent }, top: { gb: G.vent } }); } } /* 모형 VE08: 길가 짙은 회색 환기구 */
@@ -982,6 +983,10 @@ function buildYard() {
           const uvs = v.flatMap(t => [t[0] / 4, -t[2] / 4]); cr >= 0 ? rg.quad(v[0], v[1], v[2], v[3], [0, 1, 0], uvs) : rg.quad(v[0], v[3], v[2], v[1], [0, 1, 0], [uvs[0], uvs[1], uvs[6], uvs[7], uvs[4], uvs[5], uvs[2], uvs[3]]); } }
       const rm = new THREE.Mesh(rg.build(), pm); rm.receiveShadow = true; scene.add(rm); }
     flat(strip(YARD.path, 2.6), pm, .13, uvP, 112 - Y0); for (const br of YARD.branches) flat(strip(br, 2), pm, .135, uvP, 112 - Y0); } /* 마당 높이(FH 112)에 딱 붙게 */
+  /* 117·118동 사이 산책로 가운데 짙은 회색 정자(모형 VN10·VE16) */
+  if (BLD[118]) { const p = BLD[118].pieces[0], fx = -p.uz, fz = p.ux, off = DEP / 2 + CORE_D + 3.6, c = [p.cx - fx * off - p.ux * (p.L / 2 + 6), p.cz - fz * off - p.uz * (p.L / 2 + 6)], y0 = levelAt(c[0], c[1]), pg = new GB(), F = { front: { gb: pg }, back: { gb: pg }, left: { gb: pg }, right: { gb: pg }, top: { gb: pg } };
+    for (const [a2, b2] of [[-1.6, -1.2], [1.6, -1.2], [1.6, 1.2], [-1.6, 1.2]]) obox(c[0] + p.ux * a2 + fx * b2, c[1] + p.uz * a2 + fz * b2, p.ux, p.uz, .18, .18, y0, y0 + 2.6, F);
+    obox(c[0], c[1], p.ux, p.uz, 3.8, 3, y0 + 2.6, y0 + 2.9, F); const m2 = new THREE.Mesh(pg.build(), new THREE.MeshStandardMaterial({ color: '#2f3134', roughness: .6 })); m2.castShadow = true; scene.add(m2); }
   /* 북쪽 큰 놀이터(모형 VN18: 모래 마당) + 122동 옆 작은 놀이터 — 같은 모래 바닥, 놀이기구 */
   for (const [Q, big] of [[YARD.sandN, true], [YARD.sandW, false]]) { const y2 = flat(Q, new THREE.MeshStandardMaterial({ color: '#e2cf9c', roughness: 1, ...off }), .1);
     const qx = Q.reduce((s, p) => s + p[0], 0) / 4, qz = Q.reduce((s, p) => s + p[1], 0) / 4, du = [Q[1][0] - Q[0][0], Q[1][1] - Q[0][1]], dl = Math.hypot(...du), vx = du[0] / dl, vz = du[1] / dl, wx = -vz, wz = vx, at2 = (a, b) => [qx + vx * a + wx * b, qz + vz * a + wz * b];
@@ -1342,7 +1347,7 @@ function buildTrees(planData, PW, PH, PK) {
     const px = Math.round((jx / S + OX) / PK), py = Math.round((jz / S + OY) / PK); if (px < 0 || py < 0 || px >= PW || py >= PH) continue;
     const k = (py * PW + px) * 4, r = planData[k], g = planData[k + 1], b = planData[k + 2];
     if (!(g > r + 10 && g > b + 4 && g < 170 && r < 140)) continue; /* 잔디(옅은 초록)에도 나무 */
-    if (inBld(jx, jz) || AMEN_POLYS.some(P => polyDist(P, jx, jz) < 2) || polyDist(YARD.court, jx, jz) < 2 || polyDist(YARD.teal, jx, jz) < 1 || polyDist(YARD.sand, jx, jz) < 1.5 || polyDist(YARD.sandN, jx, jz) < 1.5 || polyDist(YARD.sandW, jx, jz) < 1.5 || inPoly(ENT.PZ, jx, jz) || pathDist(YARD.path, jx, jz) < 2.2 || pathDist(YARD.ring, jx, jz) < 2.4 || YARD.branches.some(b => pathDist(b, jx, jz) < 1.8)) continue; /* 마당 시설은 비워 둠 */
+    if (inBld(jx, jz) || AMEN_POLYS.some(P => polyDist(P, jx, jz) < 2) || polyDist(YARD.court, jx, jz) < 2 || polyDist(YARD.teal, jx, jz) < 1 || polyDist(YARD.sand, jx, jz) < 1.5 || polyDist(YARD.sandN, jx, jz) < 1.5 || polyDist(YARD.sandW, jx, jz) < 1.5 || inPoly(ENT.PZ, jx, jz) || pathDist(YARD.path, jx, jz) < 2.2 || WALKS.some(([P, Q, w]) => pathDist([P, Q], jx, jz) < w + 1) || pathDist(YARD.ring, jx, jz) < 2.4 || YARD.branches.some(b => pathDist(b, jx, jz) < 1.8)) continue; /* 마당 시설은 비워 둠 */
     if (rand() < .18) pts.push([jx, levelAt(jx, jz), jz, .9 + rand() * .7, 2]); else pts.push([jx, levelAt(jx, jz), jz, 1.15 + rand() * 1.05, 0]); /* 모형: 작고 짙은 조경수 + 원뿔형 침엽수 섞임 */
   }
   /* 숲: 단지 주변 1.2km */
