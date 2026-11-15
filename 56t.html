@@ -1636,7 +1636,12 @@ await phase('침실을 꾸미는 중', 66);
 }
 // 침실2·알파룸 창 블라인드(남쪽, 테라스 쪽)
 { const wb = std(0xf4f3f0, .7), gr = std(0x9ccc3a, .8); // VR: 침실2 흰 블라인드 · 알파룸 연두·흰 줄무늬
-  for (const [x0, x1, kid] of [[.73, 2.22, false], [3.5, 4.69, true]]) for (let i = 0; i < 8; i++) pbox(x0, x1, 1.82 + i * .045, 1.85 + i * .045, 8.0, 8.03, kid && i % 2 ? gr : wb, fixed, { cast: false }); }
+  for (const [x0, x1] of [[.73, 2.22]]) for (let i = 0; i < 8; i++) pbox(x0, x1, 1.82 + i * .045, 1.85 + i * .045, 8.0, 8.03, wb, fixed, { cast: false });
+  { const c = mkCanvas(256, 96), x = c.getContext('2d'); x.fillStyle = '#f6f5f1'; x.fillRect(0, 0, 256, 96); /* VR(알파룸): 흰 로만셰이드 — 양쪽 가장자리에 연두·노랑 세로 줄 + 가로 접힘 그늘 */
+    for (const s of [0, 1]) for (const [o, w, col] of [[10, 14, '#9ccc3a'], [28, 4, '#e8d84a'], [36, 6, '#9ccc3a'], [46, 3, '#e8d84a']]) x.fillStyle = col, x.fillRect(s ? 256 - o - w : o, 0, w, 96);
+    for (const y of [30, 62]) { const gg = x.createLinearGradient(0, y - 8, 0, y + 6); gg.addColorStop(0, 'rgba(0,0,0,0)'); gg.addColorStop(.7, 'rgba(0,0,0,.14)'); gg.addColorStop(1, 'rgba(255,255,255,.25)'); x.fillStyle = gg; x.fillRect(0, y - 8, 256, 14); }
+    const gd = x.createLinearGradient(0, 84, 0, 96); gd.addColorStop(0, 'rgba(0,0,0,0)'); gd.addColorStop(1, 'rgba(0,0,0,.18)'); x.fillStyle = gd; x.fillRect(0, 84, 256, 12);
+    pbox(3.5, 4.69, 1.78, 2.2, 8.0, 8.03, std(0xffffff, .9, 0, { map: toTex(c) }), fixed, { cast: false }); } }
 // ── 침실1(VR): 박공(집 모양) 흰 헤드보드(원목 테두리) + 위 흑백 추상 액자 2개, 맞은편 동쪽 벽 액자 1개, 흰 속커튼 ──
 { const g = fixed, x = 8.91;
   const sh = new THREE.Shape(); sh.moveTo(-.85, 0); sh.lineTo(.85, 0); sh.lineTo(.85, .85); sh.lineTo(0, 1.25); sh.lineTo(-.85, .85); sh.lineTo(-.85, 0);
@@ -2207,13 +2212,35 @@ const kidBed = piece('원목 아이 침대', 4.0, 7.48, Math.PI / 2); // 창 쪽
   { const p = mesh(pillowG(.42, .32, .14), std(0xa6d23f, .95), .26, .7, -L / 2 + .16, g); p.rotation.set(-.25, -.15, 0); } }
 const dartG = new THREE.Group(); fixed.add(dartG); // 다트판: 기본(분리)일 때만 — 1-1 통합·1-2 꺾음이면 뺌
 const alphaPosters = {};
-{ const poster = (bg, draw) => toTex((() => { const c = mkCanvas(96, 128), x = c.getContext('2d'); x.fillStyle = bg; x.fillRect(0, 0, 96, 128); draw(x); return c; })());
-  const monkey = poster('#8fc34a', x => { x.fillStyle = '#7a5230'; x.beginPath(); x.arc(48, 78, 30, 0, 7); x.fill(); x.fillStyle = '#e9d1a8'; x.beginPath(); x.arc(48, 86, 18, 0, 7); x.fill(); x.fillStyle = '#f2d23c'; x.fillRect(30, 20, 36, 10); });
-  const rhino = poster('#f2d23c', x => { x.fillStyle = '#c9c9c9'; x.beginPath(); x.arc(50, 80, 28, 0, 7); x.fill(); x.fillStyle = '#e46d5a'; x.beginPath(); x.moveTo(40, 40); x.lineTo(58, 40); x.lineTo(49, 14); x.fill(); });
+{ const poster = (bg, draw) => toTex((() => { const c = mkCanvas(192, 256), x = c.getContext('2d'); x.fillStyle = bg; x.fillRect(0, 0, 192, 256); draw(x); return c; })());
+  const ell = (x, cx, cy, rx, ry, col) => { x.fillStyle = col; x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 7); x.fill(); };
+  const monkey = poster('#86b83e', x => { /* VR: 초록 바탕 — 줄에 매달린 바나나 아래 원숭이 얼굴 */
+    x.strokeStyle = '#f4f1e6'; x.lineWidth = 2; x.beginPath(); x.moveTo(96, 0); x.lineTo(96, 40); x.stroke();
+    x.fillStyle = '#f2cf2e'; x.beginPath(); x.moveTo(60, 52); x.quadraticCurveTo(96, 90, 134, 46); x.quadraticCurveTo(98, 70, 60, 52); x.fill(); x.fillStyle = '#6b4b25'; x.fillRect(132, 42, 6, 6);
+    for (const s of [-1, 1]) { ell(x, 96 + s * 62, 168, 22, 26, '#6e4527'); ell(x, 96 + s * 62, 168, 12, 15, '#e7c9a0'); }
+    ell(x, 96, 160, 62, 64, '#6e4527'); ell(x, 96, 186, 50, 40, '#efd9b4'); for (const s of [-1, 1]) { ell(x, 96 + s * 22, 150, 18, 20, '#efd9b4'); ell(x, 96 + s * 20, 152, 5, 6, '#1d1612'); }
+    x.strokeStyle = '#5a3a20'; x.lineWidth = 2; x.beginPath(); x.moveTo(90, 180); x.lineTo(90, 184); x.moveTo(102, 180); x.lineTo(102, 184); x.moveTo(82, 200); x.quadraticCurveTo(96, 208, 110, 200); x.stroke();
+    x.fillStyle = '#f3efe4'; x.fillRect(0, 222, 192, 34); });
+  const rhino = poster('#f0d23a', x => { /* VR: 노란 바탕 — 고깔모자 쓴 회색 하마 */
+    for (const s of [-1, 1]) ell(x, 96 + s * 40, 112, 14, 12, '#a9abad');
+    ell(x, 96, 150, 58, 46, '#bfc1c3'); ell(x, 96, 196, 66, 40, '#c9cbcd'); for (const s of [-1, 1]) { ell(x, 96 + s * 26, 140, 6, 7, '#2a2a2a'); ell(x, 96 + s * 22, 196, 7, 5, '#8c8e90'); }
+    x.save(); x.beginPath(); x.moveTo(78, 106); x.lineTo(114, 106); x.lineTo(98, 34); x.closePath(); x.clip(); for (let i = 0; i < 9; i++) { x.fillStyle = i % 2 ? '#e8f0f2' : '#e2483a'; x.fillRect(70, 34 + i * 9, 50, 9); } x.restore();
+    x.fillStyle = '#f4c23a'; x.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, r = k % 2 ? 4 : 9; x.lineTo(98 + Math.cos(a) * r, 30 + Math.sin(a) * r); } x.fill();
+    x.fillStyle = '#f3efe4'; x.fillRect(0, 236, 192, 20); });
   // 포스터: 문틀(x 4.3)에 겹치지 않게 조금 왼쪽으로. 1-2 꺾음이면 문 쪽 벽이 x 3.48까지 오므로 원숭이 포스터만 오른쪽으로 옮기고 코뿔소는 뺌(applyOptions)
-  for (const [x0, tex, key] of [[3.15, monkey, 'm'], [3.78, rhino, 'r']]) { const pg = new THREE.Group(); fixed.add(pg); alphaPosters[key] = pg; pbox(x0, x0 + .5, 1.15, 1.8, 5.38, 5.41, std(0xf2f2f0, .5), pg); pbox(x0 + .03, x0 + .47, 1.18, 1.77, 5.41, 5.415, std(0xffffff, .9, 0, { map: tex }), pg, { cast: false }); }
-  const dart = toTex((() => { const c = mkCanvas(128, 128), x = c.getContext('2d'); for (let k = 0, r = 60; r > 0; r -= 8, k++) { x.fillStyle = k % 2 ? '#efe6c8' : '#1d1d1d'; x.beginPath(); x.arc(64, 64, r, 0, 7); x.fill(); } x.fillStyle = '#d23b2f'; x.beginPath(); x.arc(64, 64, 6, 0, 7); x.fill(); return c; })());
-  const d = mesh(CY(.22, .22, .03, 40), std(0xffffff, .8, 0, { map: dart }), WX(2.94), 1.65, WZ(6.15), dartG); d.rotation.z = Math.PI / 2; }
+  for (const [x0, tex, key] of [[3.15, monkey, 'm'], [3.78, rhino, 'r']]) { const pg = new THREE.Group(); fixed.add(pg); alphaPosters[key] = pg; pbox(x0, x0 + .5, 1.15, 1.8, 5.38, 5.405, std(0x2b2b2d, .45), pg); pbox(x0 + .012, x0 + .488, 1.162, 1.788, 5.405, 5.41, std(0xffffff, .9, 0, { map: tex }), pg, { cast: false }); } /* VR: 얇은 검정 액자 */
+  /* VR: 전자 다트기 — 크림색 몸통(위 둥근 아치) + 노랑·검정 판 + 아래 파란 점수 화면·버튼 */
+  const dart = toTex((() => { const c = mkCanvas(256, 256), x = c.getContext('2d'), C = 128; x.fillStyle = '#efe7cf'; x.fillRect(0, 0, 256, 256);
+    x.fillStyle = '#2a2a2a'; x.beginPath(); x.arc(C, C, 112, 0, 7); x.fill();
+    for (let k = 0; k < 20; k++) { const a0 = (k - .5) * Math.PI / 10 - Math.PI / 2, a1 = a0 + Math.PI / 10; for (const [r0, r1, cA, cB] of [[14, 56, '#f1e3a2', '#1f1f1f'], [56, 62, '#d23b2f', '#2f62b5'], [62, 90, '#f1e3a2', '#1f1f1f'], [90, 96, '#d23b2f', '#2f62b5']]) { x.fillStyle = k % 2 ? cB : cA; x.beginPath(); x.arc(C, C, r1, a0, a1); x.arc(C, C, r0, a1, a0, true); x.closePath(); x.fill(); } }
+    x.fillStyle = '#2f62b5'; x.beginPath(); x.arc(C, C, 14, 0, 7); x.fill(); x.fillStyle = '#d23b2f'; x.beginPath(); x.arc(C, C, 6, 0, 7); x.fill();
+    x.fillStyle = '#f2f2f2'; x.font = 'bold 11px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5].forEach((n, k) => { const a = k * Math.PI / 10 - Math.PI / 2; x.fillText(n, C + Math.cos(a) * 104, C + Math.sin(a) * 104); }); return c; })());
+  const panel = toTex((() => { const c = mkCanvas(256, 96), x = c.getContext('2d'); x.fillStyle = '#f4f0e2'; x.fillRect(0, 0, 256, 96); x.fillStyle = '#1f4f9a'; x.fillRect(28, 10, 200, 24); x.fillStyle = '#9fd0ff'; for (let i = 0; i < 8; i++) x.fillRect(36 + i * 24, 16, 14, 12);
+    const cl = ['#e24a3a', '#f2c230', '#3aa0e2', '#5fbf4a']; for (let r = 0; r < 3; r++) for (let i = 0; i < 12; i++) { x.fillStyle = r === 2 ? cl[i % 4] : '#c9c3b0'; x.beginPath(); x.arc(30 + i * 18, 48 + r * 15, 4, 0, 7); x.fill(); } return c; })());
+  const cream = std(0xefe7cf, .45), xw = 2.925;
+  mesh(RB(.04, .5, .5, .02, 3), cream, WX(xw + .02), 1.47, WZ(6.15), dartG); { const arch = mesh(new THREE.CylinderGeometry(.25, .25, .04, 40, 1, false, 0, Math.PI), cream, WX(xw + .02), 1.72, WZ(6.15), dartG); arch.rotation.z = Math.PI / 2; }
+  const d = mesh(CY(.2, .2, .02, 48), std(0xffffff, .6, 0, { map: dart }), WX(xw + .05), 1.66, WZ(6.15), dartG); d.rotation.z = -Math.PI / 2;
+  const pn = mesh(BX(.006, .16, .42), std(0xffffff, .6, 0, { map: panel }), WX(xw + .043), 1.33, WZ(6.15), dartG, { cast: false }); }
 /* ───────── avatar ───────── */
 const avatar = new THREE.Group(); scene.add(avatar);
 const hip = new THREE.Group(); hip.position.y = .9; avatar.add(hip);
