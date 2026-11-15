@@ -565,7 +565,15 @@ function buildDong(D, G, MAT) {
       obox(ccx + fx * 1.2, ccz + fz * 1.2, ux, uz, CORE_W - 2.4, 3, ch, ch + 1.6, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } }); }
     /* 테라스(56T): 앞쪽 저층 벽돌 매스 + 옥상정원 */
     if (D.t && (D.w.length === 1 || wi === 1)) { const th = D.t * FH + .9, ox = DEP / 2 + 1.9;
-      obox(cx + fx * ox, cz + fz * ox, ux, uz, L - .4, 3.8, 0, th, { front: { gb: G.bfront, uv: uvTile(tw, FH) }, left: { gb: G.brick }, right: { gb: G.brick }, top: { gb: G.green, uv: true, uvTop: uvPlanar(6) } }); }
+      obox(cx + fx * ox, cz + fz * ox, ux, uz, L - .4, 3.8, 0, th, { front: { gb: G.bfront, uv: uvTile(tw, FH) }, left: { gb: G.brick }, right: { gb: G.brick }, top: { gb: G.green, uv: true, uvTop: uvPlanar(6) } });
+      /* 단지조감도처럼 테라스 위 회색 지붕판 + 퍼걸러(세대마다) */
+      for (let k = 0; k < n; k++) { const s = -L / 2 + tw * (k + .5), px2 = cx + ux * s + fx * (ox + .2), pz2 = cz + uz * s + fz * (ox + .2), F = { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } };
+        obox(px2 - ux * tw * .22, pz2 - uz * tw * .22, ux, uz, tw * .42, 3.2, th, th + .22, { front: { gb: G.fin }, back: { gb: G.fin }, left: { gb: G.fin }, right: { gb: G.fin }, top: { gb: G.fin } });
+        for (let q = 0; q < 6; q++) obox(px2 + ux * (tw * .06 + q * tw * .065), pz2 + uz * (tw * .06 + q * tw * .065), ux, uz, .12, 3.2, th + 2.1, th + 2.3, F);
+        for (const e of [-1, 1]) obox(px2 + ux * (tw * .22 + e * tw * .2), pz2 + uz * (tw * .22 + e * tw * .2) + 0, ux, uz, .16, .16, th, th + 2.1, F); } }
+    /* 측벽 동 번호 사인(맨 위층 아래) */
+    if (wi === 0 || D.w.length > 1) for (const e of (D.w.length > 1 ? (wi === 0 ? [-1] : [1]) : [-1, 1])) { const sx = cx + ux * e * (L / 2 + .06) + fx * DEP * .27, sz = cz + uz * e * (L / 2 + .06) + fz * DEP * .27, m = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8), signMat(D.d)); /* 측벽 가운데 짙은 띠를 피해 앞쪽 */
+      m.position.set(sx, H - 3.2, sz); m.lookAt(sx + ux * e, H - 3.2, sz + uz * e); scene.add(m); }
     pieces.push({ cx, cz, ux, uz, L, H, f, n, ln: w.ln || Array.from({ length: n }, (_, k) => n - k) });
     topY = Math.max(topY, H); cxs += cx * L; czs += cz * L; wsum += L;
   });
@@ -584,6 +592,9 @@ function buildDong(D, G, MAT) {
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: lt, depthWrite: false, fog: false })); const p0 = pieces[0];
   sp.position.set(p0.cx, p0.H + 9, p0.cz); sp.userData.dong = D.d; sp.renderOrder = 5; scene.add(sp); labels.push(sp);
 }
+const SIGNS = {};
+function signMat(d) { if (SIGNS[d]) return SIGNS[d]; const c = cnv(256, 128), g = c.getContext('2d'); g.clearRect(0, 0, 256, 128); g.fillStyle = '#3d4a5a'; g.font = '800 92px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(d), 128, 70);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return SIGNS[d] = new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: .6, polygonOffset: true, polygonOffsetFactor: -2 }); }
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 
 /* ---------- 부대시설(주민공동시설·근린생활시설·경비실) ---------- */
