@@ -424,11 +424,13 @@ function texFront(brick, dark, light) { const c = cnv(1024, 256), g = c.getConte
   for (const x0 of [28, 740, 880]) { win(g, x0, 56, 104, 150, 2, 7, fr, 1); g.fillStyle = 'rgba(245,245,243,.92)'; for (let x = x0 + 3; x < x0 + 104; x += 12) g.fillRect(x, 160, 3, 46); g.fillRect(x0, 158, 104, 4); }
   g.fillStyle = brick ? 'rgba(40,20,12,.35)' : 'rgba(0,0,0,.16)'; g.fillRect(0, 250, 1024, 6); g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(0, 244, 1024, 6); /* 층 줄눈 */
   return tex(c, true); }
-function texBack(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, '#b9b2a9', .04, 1500);
-  win(g, 90, 74, 200, 104, 2, 6, '#f1f1ee'); win(g, 440, 76, 70, 62, 1, 6, '#f1f1ee'); win(g, 650, 64, 250, 130, 2, 6, '#f1f1ee');
-  g.fillStyle = '#c3c6c8'; g.fillRect(312, 118, 96, 94); g.fillStyle = '#9ea4a9'; for (let y = 122; y < 208; y += 7) g.fillRect(316, y, 88, 3);
-  g.fillStyle = brick ? '#7f412f' : '#f2f2ef'; g.fillRect(0, 0, 26, 256); g.fillRect(998, 0, 26, 256); g.fillRect(560, 0, 22, 256);
-  g.fillStyle = brick ? '#6f3829' : '#f5f5f2'; g.fillRect(0, 0, 1024, 18); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, 18, 1024, 4);
+/* 뒷면(모형 동영상 북쪽): 밝은 회색 + 짙은 차콜 세로 띠(층마다 작은 창) + 가운데 넓은 차콜 기둥, 사이에 흰 틀 창 — 저층은 갈색 도장 */
+function texBack(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, '#c9c6c0', .035, 1500);
+  const dk = brick ? '#3b2a24' : '#3a3c40';
+  for (const [x0, w0] of [[96, 84], [440, 144], [844, 84]]) { g.fillStyle = dk; g.fillRect(x0, 0, w0, 256); for (let k = 0; k < (w0 > 100 ? 2 : 1); k++) { const wx = x0 + (w0 > 100 ? 18 + k * 64 : 22); g.fillStyle = '#e4e2dc'; g.fillRect(wx, 92, 44, 52); glass(g, wx + 4, 96, 36, 44, 1); } }
+  win(g, 230, 70, 160, 110, 2, 6, '#f1f1ee'); win(g, 640, 70, 150, 110, 2, 6, '#f1f1ee'); /* 사이 창 */
+  g.fillStyle = '#c3c6c8'; g.fillRect(250, 196, 120, 40); g.fillStyle = '#9ea4a9'; for (let y = 200; y < 234; y += 7) g.fillRect(254, y, 112, 3); /* 실외기 루버 */
+  g.fillStyle = brick ? 'rgba(40,20,12,.35)' : 'rgba(0,0,0,.12)'; g.fillRect(0, 250, 1024, 6);
   return tex(c, true); }
 /* 측벽(모형): 밝은 회색 + 짙은 막대무늬(길이 제각각 세로 막대) + 작은 창 */
 function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, '#c6c2bb', .035, 1400);
@@ -442,9 +444,8 @@ function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (
 function roughFrom(t) { const src = t.image, w = src.width, h = src.height, c = cnv(w, h), g = c.getContext('2d'); g.drawImage(src, 0, 0); const d = g.getImageData(0, 0, w, h), a = d.data;
   for (let i = 0; i < a.length; i += 4) { const r = a[i], gg = a[i + 1], b = a[i + 2], l = .3 * r + .59 * gg + .11 * b, gl = b > r + 6 && l < 200; const v = gl ? 22 : 228; a[i] = a[i + 1] = a[i + 2] = v; }
   g.putImageData(d, 0, 0); const rt = new THREE.CanvasTexture(c); rt.wrapS = t.wrapS; rt.wrapT = t.wrapT; rt.anisotropy = ANISO; return rt; }
-function texCore() { const c = cnv(512, 256), g = c.getContext('2d'); noiseFill(g, 512, 256, '#cfcbc4', .05, 900);
-  g.fillStyle = '#d4d8dc'; g.fillRect(0, 0, 512, 12);
-  g.fillStyle = '#56626f'; g.fillRect(188, 0, 136, 256); glass(g, 196, 0, 120, 256, 1); g.fillStyle = '#56626f'; g.fillRect(196, 120, 120, 6); g.fillRect(253, 0, 6, 256);
+function texCore() { const c = cnv(512, 256), g = c.getContext('2d'); noiseFill(g, 512, 256, '#cdcac3', .04, 900); /* 모형: 코어는 밝은 회색 벽 + 계단실 작은 창 */
+  g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(0, 250, 512, 6); g.fillStyle = '#e2e0da'; g.fillRect(226, 80, 60, 96); glass(g, 232, 86, 48, 84, 1);
   return tex(c); }
 function texRoof() { const c = cnv(512, 512), g = c.getContext('2d'); noiseFill(g, 512, 512, '#77818b', .06, 1500);
   for (let y = 20; y < 500; y += 70) for (let x = 16; x < 500; x += 60) { g.fillStyle = '#3c5678'; g.fillRect(x, y, 54, 62); g.fillStyle = 'rgba(160,185,215,.35)'; for (let k = 1; k < 4; k++) g.fillRect(x, y + k * 15.5, 54, 1.5); g.fillRect(x + 27, y, 1.5, 62); }
