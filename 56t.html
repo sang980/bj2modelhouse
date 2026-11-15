@@ -1648,7 +1648,7 @@ await phase('욕실과 발코니를 꾸미는 중', 61);
   paperHolder(1.01, 5.24, 0, -1, .72);
   pbox(.29, .39, 1.25, 1.256, 3.78, 3.98, std(0x8a8d90, .45), g, { cast: false }); /* VR: 디스펜서 받친 회색 트레이 */
   dispenser(.34, 1.256, 3.84, 0xc9b8a0, Math.PI / 2); dispenser(.34, 1.256, 3.92, 0x8f8a83, Math.PI / 2); grassPot(.34, 1.25, 5.06); grassPot(.34, 1.25, 4.93); /* VR: 선반 끝 작은 화분 2 */
-  { const pc = [0xf4f2ee, 0xe9e6df, 0xd9d6cf, 0xf8f7f4]; for (let i = 0; i < 16; i++) { const a = i * 2.39996, r = Math.sqrt(i / 16) * .1, pb = mesh(new THREE.SphereGeometry(.022 + rnd() * .012, 12, 8), std(pc[i % 4], .45), WX(.39 + Math.cos(a) * r * .84), .79 + r * .2, WZ(4.0 + Math.sin(a) * r), g, { cast: false }); pb.scale.set(1, .5, .8); pb.rotation.y = rnd() * 3; } } /* VR: 세면기 안 흰 조약돌 장식 */
+  for (let i = 0; i < 16; i++) { rnd(); rnd(); } /* 세면기 안 흰 조약돌 장식은 뺌(사용자 요청 — 동글동글 얼룩처럼 보임). 다른 소품 배치가 바뀌지 않게 난수 호출 수만 유지 */
   { const bm = std(0xd8b98a, .6, 0, { map: M.oak.map }); for (let i = 0; i < 7; i++) pbox(1.0 + i * .036, 1.028 + i * .036, .555, .57, 2.96, 3.64, bm, g); for (const z of [3.02, 3.58]) pbox(1.0, 1.244, .54, .555, z - .015, z + .015, bm, g); /* VR: 욕조를 가로지른 대나무 욕조 트레이 + 작은 화분·디스펜서·말아 둔 수건 */
     grassPot(1.1, .57, 3.12); dispenser(1.1, .57, 3.4, 0xe9e4da, 0); { const tw = mesh(CY(.04, .04, .18, 18), std(0xf6f5f1, 1, 0, { map: towelTex }), WX(1.19), .61, WZ(3.3), g); tw.rotation.x = Math.PI / 2; } }
   pbox(.55, .85, 1.12, 1.14, 2.91, 3.0, M.whiteGloss, g); amber(.64, 1.14, 2.955); amber(.73, 1.14, 2.955, .15);
@@ -2726,8 +2726,8 @@ let b6door = null;
 // 2 현관중문: 블랙 프레임 3연동 슬라이딩 유리문(현관 단 경계, z≈4.17) — 열면 서쪽(신발장 쪽)으로 겹쳐짐
 { const g = item('b2', '현관중문', false), blk = std(0x151618, .35, .3);
   const smoke = new THREE.MeshStandardMaterial({ color: 0x2a2e33, roughness: .12, metalness: .1, transparent: true, opacity: .38, side: THREE.DoubleSide, depthWrite: false });
-  const x0 = 2.38, x1 = 3.5, top = 2.12, n = 3, pw = (x1 - x0) / n + .03, ph = top - .02;
-  pbox(x0, x1, top, H, 4.1, 4.25, M.white, g); pbox(x0, x1, top - .03, top, 4.12, 4.23, blk, g);
+  const x0 = 1.9, x1 = 3.46, top = 2.12, n = 3, pw = (x1 - x0) / n + .03, ph = top - .02; /* 현관 폭 전체: 욕실1 벽면(1.90) ~ 창고 벽면(3.46) — 예전 2.38부터라 왼쪽(신발장 쪽)이 비어 보였음 */
+  pbox(x0, x1, top, H, 4.125, 4.25, M.white, g); pbox(x0, x1, top - .03, top, 4.125, 4.23, blk, g); /* 상부틀은 신발장 끝면(4.12)보다 뒤에서 시작 */
   const panels = [], parts = [];
   for (let i = 0; i < n; i++) { const p = new THREE.Group(); g.add(p); panels.push(p);
     const add = m => { p.add(m); parts.push(m); return m; };
