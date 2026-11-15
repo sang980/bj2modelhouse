@@ -1277,13 +1277,10 @@ await phase('침실을 꾸미는 중', 61);
 { const tp = std(0xb3a395, .95, 0, { map: M.linen.map }), cols = [[5.15, 5.95], [5.97, 6.93], [6.95, 7.75]];
   for (const [z0, z1] of cols) for (const [y0, y1] of [[.52, 1.12], [1.14, 1.74]]) mesh(RB(.06, y1 - y0 - .004, z1 - z0 - .004, .02, 3), tp, WX(8.91), (y0 + y1) / 2, WZ((z0 + z1) / 2), fixed); }
 ledRectWall(8.97, 1.6, 6.45, 2.5, .8, 1, 0, 0xffdcb0, .5, 1.6);
-for (const z of [5.3, 7.6]) { const x = 9.17, y = 1.15;
-  mesh(CY(.003, .003, H - y - .2), M.black, WX(x), (H + y + .2) / 2, WZ(z), fixed, { cast: false });
-  mesh(CY(.035, .035, .2, 20), M.black, WX(x), y + .1, WZ(z), fixed);
-  mesh(CY(.03, .03, .004, 20), M.ledWarm, WX(x), y - .002, WZ(z), fixed, { cast: false });
-  ledRect(x - .05, x + .05, z - .05, z + .05, y - .01, -1, 0xffd9a8, .6, 1.4); }
+/* VR 55C: 침대 옆 펜던트 없음 */
+
 ceilingPanel(10.25, 10.85, 6.15, 6.75, 1.0, 2.8);
-curtainSet(9.3, 12.0, 9.75, 11.55);
+curtainSet(9.3, 12.0, 9.75, 11.55, (() => { const m = M.curtainGrey.clone(); m.color.set(0xefe8dc); return m; })()); /* VR 55C: 크림색 커튼 */
 
 // ── 알파룸(VR 55C): 동쪽 벽 흰 붙박이 책상 + 위 오픈 선반(책·화분·소품), 흰 일체형 PC·키보드·마우스·펼친 책, 원목 의자 + 주황 방석, 흰 털 러그, 블라인드 ──
 { const g = new THREE.Group(); g.userData = { name: '붙박이 책상·선반', solid: true }; fixed.add(g);
@@ -2067,9 +2064,10 @@ const dining = diningS; // (예전 코드 호환용)
 // 평면도 방향: 침대 헤드는 서쪽 벽, 붙박이장(옵션 10)은 동쪽 벽
 { const b = bed(9.96, 6.45, Math.PI / 2, 1.6, 2.1, '침대'); /* VR(55C): 밝은 원목 프레임 · 베이지 담요 · 베이지/흰 베개 */
   const beige = std(0xcfbea4, .98, 0, { map: M.throwBlue.map }), pb = std(0xcdb79c, .95, 0, { map: M.linen.map }), pw = std(0xf7f6f2, .95, 0, { map: M.linen.map });
-  b.traverse(o => { if (!o.isMesh) return; if (o.material === M.whiteGloss) o.material = M.oak; else if (o.material === M.throwBlue) o.material = beige; else if (o.material === M.charcoal) o.material = pb; else if (o.material === M.check) o.material = pw; }); }
-sideTable(9.14, 7.6, true);
-const sideTableN = sideTable(9.14, 5.3, false);
+  b.traverse(o => { if (!o.isMesh) return; if (o.material === M.whiteGloss) o.material = M.oak; else if (o.material === M.throwBlue) o.material = beige; else if (o.material === M.charcoal) o.material = pb; else if (o.material === M.check) o.material = pw; });
+  { const p = mesh(pillowG(.46, .42, .16), pb, -.3, .76, -2.1 / 2 + .5, b); p.rotation.set(-.38, .12, 0); } } /* VR: 베이지 쿠션 하나 더 */
+rug(10.55, 6.45, Math.PI / 2); /* VR 55C: 침대 아래 흰 털 러그 */
+const sideTableN = new THREE.Group(); /* VR 55C: 침대 옆 사이드테이블 없음 */
 const bed2 = bed(.72, 7.0, Math.PI, 1.1, 2.0, '싱글 침대'); // 사진: 화이트 플로팅 프레임 + 하부 간접등, 머리는 창 쪽
 /* VR(55C 침실2): 베이지 담요 + 흰 쿠션·기하무늬 쿠션 */
 { const beige = std(0xcdbb9c, .98, 0, { map: M.throwBlue.map }); bed2.traverse(o => { if (o.isMesh && o.material === M.throwBlue) o.material = beige; });
