@@ -212,7 +212,8 @@ function levelAbs(x, z) {
 const levelAt = (x, z) => levelAbs(x, z) - Y0;
 /* 도면 GL − SRTM 차이(보정점, 월드 x,z,차이m): 서측 40m 도로·신흥초·북측 산자락 */
 /* 학교 부지(도면 GL·스카이뷰): 신흥초 운동장 GL 106.2~106.4, 성남여중 GL 100.4~100.7 — 평탄한 부지 */
-const SCHOOL_PADS = [{ p: [[22, 92], [130, 84], [142, 162], [62, 174]], h: 106.3, n: '신흥초' }, { p: [[-70, 108], [22, 92], [62, 174], [-36, 214]], h: 100.6, n: '성남여중' }]; const SCHOOL_BLD = [];
+const SCHOOL_PADS = [{ p: [[22, 92], [108, 98], [130, 162], [62, 174]], h: 106.3, n: '신흥초' }, { p: [[-70, 108], [22, 92], [62, 174], [-36, 214]], h: 100.6, n: '성남여중' },
+  { p: [[110, 102], [160, 79], [176, 140], [134, 162]], h: 102, n: '증축' }, { p: [[162, 77], [188, 48], [224, 94], [198, 124], [178, 138]], h: 96, n: '공공' }]; /* 교육시설용지(신흥초 증축 예정) FH≈102, 공공청사용지 FH≈92~98 — 카카오 지도·공사계획평면도 */ const SCHOOL_BLD = [];
 const GLC = [[-152.4, 11.5, -7.5], [-152.2, 16.1, -7.1], [-142.4, 32.2, -6.2], [-133.4, 40, -5.8], [-125, 48.5, -6], [-117.4, 61.4, -4.7], [-118.8, 66, -4.8], [-107.9, 77.8, -5.2], [-108.9, 82.8, -5.7],
   [-98.8, 92.7, -5.1], [-99.1, 98.8, -5.5], [-88.2, 116, -6.5], [-80.9, 130.6, -6.6], [42.3, 104.3, -.5], [31.5, 107, -.2], [31.6, 113.4, .6], [85.4, 112.9, -2.3],
   [-98.2, -70.8, -8.5], [-119.6, -59.9, -4.7], [-128.8, -53.7, -3.5], [-152.7, -39.8, -1.4], [-27.9, -112.7, -2.3], [-49.3, -100, -1.4]];
@@ -399,7 +400,7 @@ const uvPlanar = ts => (A, E, C, B) => [A[0] / ts, -A[1] / ts, E[0] / ts, -E[1] 
 /* ---------- 이미지 로드 ---------- */
 const loadImg = src => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; });
 
-const pickables = [], labels = [], envMeshes = [], extraTrees = [], areaLabels = [];
+const pickables = [], labels = [], envMeshes = [], extraTrees = [], areaLabels = [], planLabels = [];
 let siteLabel = null;
 function makeSiteLabel() { const c = cnv(512, 122), g = c.getContext('2d'); g.fillStyle = '#c0392b'; roundRect(g, 4, 6, 504, 96, 26); g.fill(); g.beginPath(); g.moveTo(236, 100); g.lineTo(256, 120); g.lineTo(276, 100); g.fill();
   g.fillStyle = '#fff'; g.font = '700 46px "Noto Sans KR", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('A-1블록 신혼희망타운', 256, 56);
@@ -760,7 +761,10 @@ function buildSchools() {
     roofG: new THREE.MeshStandardMaterial({ color: '#5f9a78', roughness: .9 }), roofB: new THREE.MeshStandardMaterial({ color: '#6e4636', roughness: .85 }), roofW: new THREE.MeshStandardMaterial({ color: '#d9d9d4', roughness: .9 }),
     stripe: mk(g => { const C = ['#f0f0ee', '#e98a52', '#f0f0ee', '#9db7cf']; for (let x = 0; x < 512; x += 32) { g.fillStyle = C[(x / 32) % 4]; g.fillRect(x, 0, 32, 256); } }),
     solar: new THREE.MeshStandardMaterial({ map: (() => { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#2a3f5f'; g.fillRect(0, 0, 256, 256); g.strokeStyle = '#7e93ad'; g.lineWidth = 2; for (let x = 0; x <= 256; x += 32) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 256); g.stroke(); } for (let y = 0; y <= 256; y += 20) { g.beginPath(); g.moveTo(0, y); g.lineTo(256, y); g.stroke(); } return tex(c); })(), roughness: .3, metalness: .4 }),
-    dirt: new THREE.MeshLambertMaterial({ color: '#c8ad86' }), wallR: mk(g => { const C = ['#e85d5d', '#f39c4a', '#f4d35e', '#7ec27e', '#5aa9e6', '#9b7fd1']; for (let x = 0; x < 512; x += 85) { g.fillStyle = C[(x / 85) % 6]; g.fillRect(x, 0, 85, 256); } }),
+    dirt: new THREE.MeshLambertMaterial({ color: '#c8ad86' }),
+    lib: mk(g => { g.fillStyle = '#d8d3c9'; g.fillRect(0, 0, 512, 256); glass(g, 0, 20, 512, 200, 2); g.fillStyle = '#efece6'; for (let x = 0; x <= 512; x += 64) g.fillRect(x - 3, 20, 6, 200); g.fillRect(0, 120, 512, 5); g.fillStyle = '#b9b2a6'; g.fillRect(0, 220, 512, 36); }),
+    pool: mk(g => { g.fillStyle = '#e4e6e8'; g.fillRect(0, 0, 512, 256); glass(g, 10, 40, 492, 196, 0); g.fillStyle = '#f4f5f6'; for (let x = 10; x <= 502; x += 82) g.fillRect(x - 3, 40, 6, 196); g.fillStyle = '#7fb3c9'; g.fillRect(0, 0, 512, 22); }),
+    poolR: mk(g => { g.fillStyle = '#c9d3d8'; g.fillRect(0, 0, 512, 256); for (let x = 0; x < 512; x += 64) { glass(g, x + 8, 8, 48, 240, 0); } }), wallR: mk(g => { const C = ['#e85d5d', '#f39c4a', '#f4d35e', '#7ec27e', '#5aa9e6', '#9b7fd1']; for (let x = 0; x < 512; x += 85) { g.fillStyle = C[(x / 85) % 6]; g.fillRect(x, 0, 85, 256); } }),
   };
   const G = {}; for (const k in M) G[k] = new GB();
   const a = .52, ux = Math.cos(-a), uz = Math.sin(-a); /* 학교 건물 축: 단지 남쪽 옹벽과 나란 */
@@ -779,9 +783,23 @@ function buildSchools() {
     else ext(b.P, y - .6, y + 4 * 3.6, 'brick', 'roofB'); }
   /* 신흥초: 흙 운동장 + 태양광 지붕 강당(스카이뷰 동쪽) + 무지개 담장 */
   { const y = 106.3 - Y0; pad(106.3, [[56, 122], [96, 114], [104, 156], [64, 164]]);
-    box('gym', [114, 138], 26, 34, y - .6, y + 11, 'gymR'); obox(114, 138, ux, uz, 24, 32, y + 11.05, y + 11.1, { top: { gb: G.solar } });
+    box('gym', [111, 138], 28, 40, y - .6, y + 15.2, 'roofW'); obox(111, 138, ux, uz, 25, 37, y + 15.25, y + 15.3, { top: { gb: G.solar } }); /* 새나리관(체육관, 위성사진: 지붕 전체 태양광) — 높이 신흥초 교사와 비슷하게 */
     for (const [p0, p1] of [[[64, 166], [106, 158]], [[106, 158], [128, 156]]]) { const L = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), vx = (p1[0] - p0[0]) / L, vz = (p1[1] - p0[1]) / L;
       obox((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, vx, vz, L, .3, y - 1, y + 1.6, { front: { gb: G.wallR, uv: uvTile(6, 1.6) }, back: { gb: G.wallR, uv: uvTile(6, 1.6) }, top: { gb: G.roofW } }); } }
+  /* (가상) 신흥초 증축 교사 — 교육시설용지, 부지 FH 102: 신흥초 교사와 같은 외관·4층, ㄱ자 + 작은 마당 */
+  { const y = 102 - Y0; pad(102, [[128, 120], [150, 110], [158, 138], [138, 148]]);
+    box('sh', [140, 98], 46, 13, y - .6, y + 4 * 3.6, 'roofG', 'shEnd');
+    obox(158, 120, -uz, ux, 34, 12, y - .6, y + 4 * 3.6, { front: { gb: G.sh, uv: uvTile(13, 3.6) }, back: { gb: G.sh, uv: uvTile(13, 3.6) }, left: { gb: G.shEnd, uv: uvTile(13, 3.6) }, right: { gb: G.shEnd, uv: uvTile(13, 3.6) }, top: { gb: G.roofG } });
+    box('shEnd', [124, 112], 10, 10, y - .6, y + 4 * 3.6 + 1.2, 'roofW'); /* 계단실 */ }
+  /* (가상) 공공 복합건물: 도서관 + 수영장 — 공공청사용지, 부지 FH 96 */
+  { const y = 96 - Y0, v = [Math.cos(-.9), Math.sin(-.9)];
+    obox(196, 76, v[0], v[1], 40, 22, y - .6, y + 18, { front: { gb: G.lib, uv: uvTile(13, 3.6) }, back: { gb: G.lib, uv: uvTile(13, 3.6) }, left: { gb: G.lib, uv: uvTile(13, 3.6) }, right: { gb: G.lib, uv: uvTile(13, 3.6) }, top: { gb: G.roofW } }); /* 도서관 4층 */
+    obox(196, 76, v[0], v[1], 30, 14, y + 18, y + 18.15, { top: { gb: G.solar } });
+    obox(186, 104, v[0], v[1], 38, 26, y - .6, y + 11, { front: { gb: G.pool, uv: uvTile(13, 3.6) }, back: { gb: G.pool, uv: uvTile(13, 3.6) }, left: { gb: G.pool, uv: uvTile(13, 3.6) }, right: { gb: G.pool, uv: uvTile(13, 3.6) }, top: { gb: G.poolR, uv: true, uvTop: uvPlanar(6) } }); /* 수영장동 */
+    pad(96, [[170, 60], [206, 40], [222, 70], [186, 92]]); }
+  for (const [txt, x, h, z] of [['새나리관', 111, 106.3 + 15.2, 138], ['신흥초 증축(예정·가상)', 141, 102 + 14.4, 108], ['도서관·수영장 복합(예정·가상)', 192, 96 + 18, 88]]) {
+    const c = cnv(512, 96), g = c.getContext('2d'); g.font = '700 38px "Noto Sans KR", sans-serif'; const tw = Math.min(500, g.measureText(txt).width + 36); g.fillStyle = 'rgba(30,38,46,.8)'; roundRect(g, (512 - tw) / 2, 14, tw, 66, 18); g.fill(); g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, 256, 48);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false, fog: false })); sp.position.set(x, h - Y0 + 8, z); sp.renderOrder = 4; scene.add(sp); planLabels.push(sp); }
   /* 성남여중: 흙 운동장 + 남쪽 줄무늬 지붕 부속동 */
   { const y = 100.6 - Y0; pad(100.6, [[-24, 160], [14, 150], [26, 186], [-12, 198]]);
     const v = [Math.cos(-.68), Math.sin(-.68)]; obox(-30, 196, v[0], v[1], 36, 10, y - .6, y + 2 * 3.6, { front: { gb: G.brick, uv: uvTile(13, 3.6) }, back: { gb: G.brick, uv: uvTile(13, 3.6) }, left: { gb: G.brick, uv: uvTile(13, 3.6) }, right: { gb: G.brick, uv: uvTile(13, 3.6) } });
@@ -1188,6 +1206,7 @@ function loop() {
   scene.fog.density = .000205 * (1 - .55 * smooth(350, 1800, camera.position.y)); /* 높이 올라가면 시정이 넓어지게 */
   const far = camera.position.distanceTo(controls.target) > 1600, lOn = $('#lbl').classList.contains('on');
   for (const l of labels) { const d = l.position.distanceTo(camera.position), h = Math.min(30, Math.max(3.5, d * .018)); l.scale.set(h * 2.67, h, 1); l.visible = lOn && !far && !unit; }
+  for (const l of planLabels) { const d = l.position.distanceTo(camera.position), h = Math.min(26, Math.max(4, d * .02)); l.scale.set(h * 5.33, h, 1); l.visible = lOn && !unit && d < 1400; }
   for (const l of areaLabels) { const d = l.position.distanceTo(camera.position), h = Math.min(60, Math.max(6, d * .022)); l.scale.set(h * 5.33, h, 1); l.visible = lOn && !unit && d > 250 && d < 3200 && $('#env').classList.contains('on'); }
   if (siteLabel) { siteLabel.visible = far; const d = siteLabel.position.distanceTo(camera.position) * .03; siteLabel.scale.set(d * 4.2, d, 1); }
   renderer.render(scene, camera);
