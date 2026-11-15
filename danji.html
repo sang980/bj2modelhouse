@@ -1002,6 +1002,9 @@ function buildAmenities(MAT) {
     prism(PW, Y(109.6), Y(130.4), G.brick, G.roof); prism(PW, Y(130.4), Y(131.3), G.para);
     prism(PE, Y(109.6), Y(114), G.brick); prism(PE, Y(114), Y(122.4), G.white); prism(PE, Y(122.4), Y(126), G.brick, G.roof); prism(PE, Y(126), Y(126.9), G.para);
     const QE = shrink(PE, 2.2); prism(QE, Y(126), Y(130.4), G.stone, G.roof); prism(QE, Y(130.4), Y(131.2), G.para); }
+  /* 하부외부계단 1(모형 VE10·사진: 정문 옆 도로 모퉁이의 낮은 밝은 회색 상자, 2개 층) */
+  { const v = [.501, .866], w = [.866, -.501], c = [-123.5 + w[0] * 2.1 + v[0] * 2.6, 49.4 + w[1] * 2.1 + v[1] * 2.6], ST = { gb: G.stone, uv: uvTile(6, 3.6) }, GL = { gb: G.glass, uv: uvTile(6, 3.6) };
+    obox(c[0], c[1], v[0], v[1], 10, 4.6, Y(109.6), Y(117.8), { front: ST, back: GL, left: ST, right: ST, top: { gb: G.roof } }); obox(c[0], c[1], v[0], v[1], 10.4, 5, Y(117.8), Y(118.6), { front: { gb: G.para }, back: { gb: G.para }, left: { gb: G.para }, right: { gb: G.para }, top: { gb: G.para } }); }
   /* 경비실-1·주민공동시설-3(어린이 승하차장) — 공사계획평면도: 진입로 북쪽, 단지 경계 안 3.5m, 9×4.5m 1층 + 진입로 쪽 승하차 캐노피 */
   { const gu = [Math.cos(-.227), Math.sin(-.227)], gf = [-gu[1], gu[0]], c = [-110.1, 55.7], y0 = Y(109.9), y1 = Y(113.7), ST = { gb: G.stone, uv: uvTile(6, 3.6) }, GL = { gb: G.glass, uv: uvTile(6, 3.6) };
     obox(c[0], c[1], gu[0], gu[1], 9, 4.5, y0, y1, { front: GL, back: ST, left: ST, right: ST, top: { gb: G.roof } }); obox(c[0], c[1], gu[0], gu[1], 9.3, 4.8, y1, y1 + .5, { front: { gb: G.para }, back: { gb: G.para }, left: { gb: G.para }, right: { gb: G.para }, top: { gb: G.para } });
