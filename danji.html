@@ -787,17 +787,18 @@ function buildSchools() {
     for (const [p0, p1] of [[[64, 166], [106, 158]], [[106, 158], [128, 156]]]) { const L = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), vx = (p1[0] - p0[0]) / L, vz = (p1[1] - p0[1]) / L;
       obox((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, vx, vz, L, .3, y - 1, y + 1.6, { front: { gb: G.wallR, uv: uvTile(6, 1.6) }, back: { gb: G.wallR, uv: uvTile(6, 1.6) }, top: { gb: G.roofW } }); } }
   /* (가상) 신흥초 증축 교사 — 교육시설용지, 부지 FH 102: 신흥초 교사와 같은 외관·4층, ㄱ자 + 작은 마당 */
+  const TOPN = 106.3 + 15.2 - Y0; /* 요청: 증축 교사·공공청사 지붕 높이를 새나리관 지붕(해발 121.5m)과 똑같이 */
   { const y = 102 - Y0; pad(102, [[128, 120], [150, 110], [158, 138], [138, 148]]);
-    box('sh', [140, 98], 46, 13, y - .6, y + 4 * 3.6, 'roofG', 'shEnd');
-    obox(158, 120, -uz, ux, 34, 12, y - .6, y + 4 * 3.6, { front: { gb: G.sh, uv: uvTile(13, 3.6) }, back: { gb: G.sh, uv: uvTile(13, 3.6) }, left: { gb: G.shEnd, uv: uvTile(13, 3.6) }, right: { gb: G.shEnd, uv: uvTile(13, 3.6) }, top: { gb: G.roofG } });
-    box('shEnd', [124, 112], 10, 10, y - .6, y + 4 * 3.6 + 1.2, 'roofW'); /* 계단실 */ }
+    box('sh', [140, 98], 46, 13, y - .6, TOPN, 'roofG', 'shEnd');
+    obox(158, 120, -uz, ux, 34, 12, y - .6, TOPN, { front: { gb: G.sh, uv: uvTile(13, 3.6) }, back: { gb: G.sh, uv: uvTile(13, 3.6) }, left: { gb: G.shEnd, uv: uvTile(13, 3.6) }, right: { gb: G.shEnd, uv: uvTile(13, 3.6) }, top: { gb: G.roofG } });
+    box('shEnd', [124, 112], 10, 10, y - .6, TOPN + 1.2, 'roofW'); /* 계단실 */ }
   /* (가상) 공공 복합건물: 도서관 + 수영장 — 공공청사용지, 부지 FH 96 */
   { const y = 96 - Y0, v = [Math.cos(-.9), Math.sin(-.9)];
-    obox(196, 76, v[0], v[1], 40, 22, y - .6, y + 18, { front: { gb: G.lib, uv: uvTile(13, 3.6) }, back: { gb: G.lib, uv: uvTile(13, 3.6) }, left: { gb: G.lib, uv: uvTile(13, 3.6) }, right: { gb: G.lib, uv: uvTile(13, 3.6) }, top: { gb: G.roofW } }); /* 도서관 4층 */
-    obox(196, 76, v[0], v[1], 30, 14, y + 18, y + 18.15, { top: { gb: G.solar } });
-    obox(186, 104, v[0], v[1], 38, 26, y - .6, y + 11, { front: { gb: G.pool, uv: uvTile(13, 3.6) }, back: { gb: G.pool, uv: uvTile(13, 3.6) }, left: { gb: G.pool, uv: uvTile(13, 3.6) }, right: { gb: G.pool, uv: uvTile(13, 3.6) }, top: { gb: G.poolR, uv: true, uvTop: uvPlanar(6) } }); /* 수영장동 */
+    obox(196, 76, v[0], v[1], 40, 22, y - .6, TOPN, { front: { gb: G.lib, uv: uvTile(13, 3.6) }, back: { gb: G.lib, uv: uvTile(13, 3.6) }, left: { gb: G.lib, uv: uvTile(13, 3.6) }, right: { gb: G.lib, uv: uvTile(13, 3.6) }, top: { gb: G.roofW } }); /* 도서관 4층 */
+    obox(196, 76, v[0], v[1], 30, 14, TOPN, TOPN + .15, { top: { gb: G.solar } });
+    obox(186, 104, v[0], v[1], 38, 26, y - .6, TOPN, { front: { gb: G.pool, uv: uvTile(13, 3.6) }, back: { gb: G.pool, uv: uvTile(13, 3.6) }, left: { gb: G.pool, uv: uvTile(13, 3.6) }, right: { gb: G.pool, uv: uvTile(13, 3.6) }, top: { gb: G.poolR, uv: true, uvTop: uvPlanar(6) } }); /* 수영장동 */
     pad(96, [[170, 60], [206, 40], [222, 70], [186, 92]]); }
-  for (const [txt, x, h, z] of [['새나리관', 111, 106.3 + 15.2, 138], ['신흥초 증축(예정·가상)', 141, 102 + 14.4, 108], ['도서관·수영장 복합(예정·가상)', 192, 96 + 18, 88]]) {
+  for (const [txt, x, h, z] of [['새나리관', 111, 106.3 + 15.2, 138], ['신흥초 증축(예정·가상)', 141, 121.5, 108], ['도서관·수영장 복합(예정·가상)', 192, 121.5, 88]]) {
     const c = cnv(512, 96), g = c.getContext('2d'); g.font = '700 38px "Noto Sans KR", sans-serif'; const tw = Math.min(500, g.measureText(txt).width + 36); g.fillStyle = 'rgba(30,38,46,.8)'; roundRect(g, (512 - tw) / 2, 14, tw, 66, 18); g.fill(); g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, 256, 48);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false, fog: false })); sp.position.set(x, h - Y0 + 8, z); sp.renderOrder = 4; scene.add(sp); planLabels.push(sp); }
   /* 성남여중: 흙 운동장 + 남쪽 줄무늬 지붕 부속동 */
