@@ -437,7 +437,9 @@ function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (
   g.fillStyle = brick ? '#6c3a2b' : '#d8d5cf'; g.fillRect(0, 0, 1024, 12);
   if (!brick) { g.fillStyle = 'rgba(40,40,40,.16)'; for (let x = 14; x < 1024; x += 22) if (x < 296 || x > 728) g.fillRect(x, 0, 2.5, 256); g.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 17; x < 1024; x += 22) if (x < 296 || x > 728) g.fillRect(x, 0, 1.5, 256); } /* 모형 동영상: 측벽은 밝은 회색 + 고른 가는 세로 홈 */
   /* 모형: 측벽 가운데 짙은 남색 유리 세로 띠(지붕까지) */
-  g.fillStyle = brick ? '#5a2f24' : '#2a3442'; g.fillRect(302, 0, 420, 256); glass(g, 314, 6, 396, 244, 1); g.fillStyle = brick ? '#5a2f24' : '#2a3442'; g.fillRect(442, 0, 8, 256); g.fillRect(574, 0, 8, 256); g.fillRect(302, 120, 420, 6);
+  if (brick) { g.fillStyle = '#4a2e25'; g.fillRect(302, 0, 420, 256); for (const x of [340, 470, 600]) win(g, x, 70, 84, 110, 1, 6, '#b8b4ad', 3); }
+  else { g.fillStyle = '#2f5b6c'; g.fillRect(302, 0, 420, 256); g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(302, 0, 420, 128); /* 모형 VE26: 청록빛 유리 판넬 + 층마다 밝은 창 */
+    for (const x of [338, 400, 468, 530, 598, 660]) { g.fillStyle = '#e9e2d0'; g.fillRect(x, 92, 26, 62); g.fillStyle = 'rgba(40,70,85,.5)'; g.fillRect(x, 120, 26, 3); } g.fillStyle = '#244a58'; g.fillRect(302, 248, 420, 8); }
   return tex(c); }
 /* 유리는 매끈하게(하늘이 비침), 벽은 거칠게: 색 텍스처에서 거칠기 지도를 만듦 */
 function roughFrom(t) { const src = t.image, w = src.width, h = src.height, c = cnv(w, h), g = c.getContext('2d'); g.drawImage(src, 0, 0); const d = g.getImageData(0, 0, w, h), a = d.data;
@@ -522,7 +524,7 @@ async function build() {
   const pbr = map => new THREE.MeshStandardMaterial({ map, roughnessMap: roughFrom(map), roughness: 1, metalness: 0, envMapIntensity: .5 }); /* 유리에 하늘 반사 */
   /* 하늘을 환경맵으로: 유리창에 하늘이 비치게 */
   { const pm = new THREE.PMREMGenerator(renderer), es = new THREE.Scene(); es.add(new THREE.Mesh(sky.geometry, sky.material)); scene.environment = pm.fromScene(es, .02, 1, 30000).texture; pm.dispose(); }
-  const MAT = { podium: pbr(T.podium), terr: pbr(T.terr), tdeck: new THREE.MeshStandardMaterial({ color: '#bdb9b1', roughness: .9 }), rail: new THREE.MeshStandardMaterial({ color: '#cfe0e8', roughness: .1, transparent: true, opacity: .4 }), front: pbr(T.front), frontDk: pbr(T.frontDk), frontLt: pbr(T.frontLt), back: pbr(T.back), side: pbr(T.side), bfront: pbr(T.bfront), bback: pbr(T.bback), bside: pbr(T.bside), core: pbr(T.core), roof: std(T.roof, .55),
+  const MAT = { podium: pbr(T.podium), terr: pbr(T.terr), tdeck: new THREE.MeshStandardMaterial({ color: '#8d8780', roughness: .9 }), rail: new THREE.MeshStandardMaterial({ color: '#cfe0e8', roughness: .1, transparent: true, opacity: .4 }), front: pbr(T.front), frontDk: pbr(T.frontDk), frontLt: pbr(T.frontLt), back: pbr(T.back), side: pbr(T.side), bfront: pbr(T.bfront), bback: pbr(T.bback), bside: pbr(T.bside), core: pbr(T.core), roof: std(T.roof, .55),
     white: new THREE.MeshStandardMaterial({ color: '#e2dfd9', roughness: .8 }), fin: new THREE.MeshStandardMaterial({ color: '#3d3733', roughness: .75 }), green: std(T.green, 1), concrete: std(T.concrete, .95),
     brick: new THREE.MeshStandardMaterial({ color: '#634033', roughness: .9 }), glassBox: new THREE.MeshStandardMaterial({ color: '#4c6378', roughness: .35 }) };
 
