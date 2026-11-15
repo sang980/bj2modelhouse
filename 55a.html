@@ -2090,6 +2090,10 @@ const bed2 = bed(.72, 7.0, Math.PI, 1.1, 2.0, '싱글 침대'); // 사진: 화�
 /* VR: 창 앞 흰 책상(양옆 판재 다리) + 노트북 · 노란 연필꽂이 · 파란 소품 · 그림 카드 · 탁상시계, 노란 셸 의자 */
 /* 알파룸(VR): 원형 테이블 의자 — 흰 부클레 둥근(배럴) 의자 2개가 테이블을 향함(테이블과 함께 움직임) */
 for (const [sx, sz] of [[-.5, .27], [.44, -.32]]) { const c = diningChair(alphaTable, sx, sz, Math.atan2(-sx, -sz)); c.traverse(o => { if (o.isMesh && o.material !== M.black) o.material = M.boucle; }); }
+{ const lx = .42, lz = -.8, y = 1.48; /* VR(55A 침실2): 침대 머리 쪽 벽 가까이 검정 돔 펜던트(긴 줄) — 침대와 함께 움직임 */
+  mesh(CY(.003, .003, H - y - .06), M.black, lx, (H + y + .06) / 2, lz, bed2, { cast: false }); mesh(CY(.03, .03, .02, 16), M.black, lx, H - .01, lz, bed2, { cast: false });
+  const sh = mesh(new THREE.SphereGeometry(.075, 28, 12, 0, Math.PI * 2, 0, Math.PI / 2), std(0x1b1b1d, .45, .3, { side: THREE.DoubleSide }), lx, y, lz, bed2); sh.scale.set(1, .85, 1);
+  mesh(CY(.012, .012, .05, 12), M.black, lx, y + .085, lz, bed2, { cast: false }); mesh(new THREE.SphereGeometry(.028, 14, 10), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff1d8, emissiveIntensity: 1.6 }), lx, y + .005, lz, bed2, { cast: false }); }
 const desk2 = piece('책상', 1.8, 7.78, Math.PI);
 { const d = desk2, wt = std(0xf6f5f2, .4), yel = std(0xe3b13a, .45), al = std(0xc9ccd0, .35, .6);
   mesh(RB(1.0, .03, .55, .008), wt, 0, .735, 0, d); for (const sx of [-1, 1]) mesh(BX(.025, .72, .5), wt, sx * .485, .36, 0, d); mesh(BX(.945, .22, .015), wt, 0, .61, -.24, d);
