@@ -2678,7 +2678,7 @@ let b6door = null;
 { const g = item('b2', '현관중문', false), blk = std(0x151618, .35, .3);
   const smoke = new THREE.MeshStandardMaterial({ color: 0x2a2e33, roughness: .12, metalness: .1, transparent: true, opacity: .45, side: THREE.DoubleSide, depthWrite: false });
   const z0 = 3.22, z1 = 4.3, top = 2.12, n = 3, pw = (z1 - z0) / n + .03, ph = top - .02;
-  pbox(5.64, 5.79, top, H, z0, z1, M.white, g); pbox(5.66, 5.77, top - .03, top, z0, z1, blk, g);
+  pbox(5.64, 5.79, top, H, z0, z1 - .004, M.white, g); pbox(5.66, 5.77, top - .03, top, z0, z1 - .004, blk, g); /* 끝면이 신발장 문 앞면과 같은 평면이 되지 않게 4mm 짧게 */
   const panels = [], parts = [];
   for (let i = 0; i < n; i++) { const p = new THREE.Group(); g.add(p); panels.push(p);
     const add = m => { p.add(m); parts.push(m); return m; };

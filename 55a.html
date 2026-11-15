@@ -2631,7 +2631,7 @@ function pantryGoods(g, lv, y) {
     for (const [k, x, c, z = 2.83] of row) storeItem(g, k, x, y, z, c, k === 'blanket' ? .28 : .24, x > 4.1 ? .24 : .28); }); /* 물품: 신발상자·바구니·담요·수납함 */
   g.position.z = 2 * WZ(3.4); g.scale.z = -1; } /* 창고 문이 북쪽(신발장 맞은편)으로 옮겨져 선반은 문 반대편 남쪽 안쪽 코너로 대칭 */
 // 3 현관중문 (3연동 슬라이딩도어)
-{ const r = item('o3', '현관중문 레일', false); cab(r, 1.96, 3.34, 2.06, 2.12, 3.44, 3.52, M.metalDark);
+{ const r = item('o3', '현관중문 레일', false); cab(r, 1.96, 3.335, 2.06, 2.12, 3.44, 3.52, M.metalDark); /* 끝면이 현관장 문 앞면과 같은 평면이 되지 않게 5mm 짧게 */
   const g = item('o3', '현관중문');
   const panel = (x0, z) => { cab(g, x0, x0 + .47, .02, 2.06, z - .006, z + .006, M.glass, { cast: false }); for (const [a, b, c, d] of [[x0, x0 + .03, .02, 2.06], [x0 + .44, x0 + .47, .02, 2.06], [x0, x0 + .47, .02, .07], [x0, x0 + .47, 2.0, 2.06]]) cab(g, a, b, c, d, z - .015, z + .015, M.rail); };
   panel(1.98, 3.455); panel(2.42, 3.48); panel(2.45, 3.505); }
@@ -2640,7 +2640,7 @@ function peninsula(k, name, x0, x1, z0, z1) {
   const g = item(k, name);
   /* 남쪽(식탁 쪽) 여닫이 문 n짝 — 클릭하면 열림, 속이 빈 수납장 + 선반 + 그릇 */
   const inner = std(0xebe9e4, .6), n = Math.max(2, Math.round((x1 - x0) / .45)), zf = z1 - .03;
-  cab(g, x0, x1, .1, .86, z0, z0 + .02, inner); cab(g, x0, x0 + .02, .1, .86, z0, zf); cab(g, x1 - .02, x1, .1, .86, z0, zf);
+  cab(g, x0 + .02, x1 - .02, .1, .86, z0, z0 + .02, inner); cab(g, x0, x0 + .02, .1, .86, z0, zf); cab(g, x1 - .02, x1, .1, .86, z0, zf); /* 뒤판은 옆판 사이에만(옆판 바깥면과 겹치면 z-fighting) */
   cab(g, x0 + .02, x1 - .02, .1, .12, z0 + .02, zf, inner); cab(g, x0 + .02, x1 - .02, .47, .49, z0 + .02, zf, inner);
   cab(g, x0 + .04, x1, 0, .1, z0 + .04, z1 - .04, M.black);
   cab(g, x0 - .03, x1, .86, .9, z0 - .03, z1 + .03, M.counter);
