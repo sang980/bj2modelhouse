@@ -2043,7 +2043,10 @@ function dining4() {
   const cx = [-.38, -1.02];
   for (const [x, z, r] of [[cx[0], -.52, 0], [cx[1], -.52, 0], [cx[0], .52, Math.PI], [cx[1], .52, Math.PI]]) diningChair(g, x, z, r);
   for (const px of cx) for (const pz of [-.22, .22]) { const m = mesh(CY(.16, .16, .004, 30), std(0x45474b, .8), px, .757, pz, g, { cast: false }); m.scale.set(1.2, 1, 1); mesh(CY(.1, .09, .02, 30), M.whiteGloss, px, .768, pz, g, { cast: false }); }
-  tablePlant(g, -.7, .755, 0);
+  { const wd = std(0xe2c9a2, .55, 0, { map: M.oak.map }); mesh(RB(.36, .05, .16, .008, 2), wd, -.7, .78, 0, g); mesh(BX(.33, .01, .13), std(0x5a4632, .9), -.7, .8, 0, g, { cast: false }); /* VR: 원목 트레이 + 새싹 채소 */
+    const lg = new THREE.SphereGeometry(.012, 8, 6), gm = [std(0x7fae4a, .7), std(0x9cc45a, .7), std(0x6a9a3c, .7)]; for (let i = 0; i < 70; i++) { const l = mesh(lg, gm[i % 3], -.7 + (rnd() - .5) * .31, .815 + rnd() * .025, (rnd() - .5) * .11, g, { cast: false }); l.scale.set(1, .35, .7); l.rotation.set(rnd(), rnd() * 6, rnd()); } }
+  { const nap = std(0x8e9196, .95, 0, { map: M.navy.map }), ss = M.chrome; for (const px of cx) for (const pz of [-.22, .22]) { const n = mesh(BX(.14, .012, .07), nap, px, .785, pz, g, { cast: false }); n.rotation.y = .6;
+      for (const [dz, w] of [[-.03, .012], [.03, .016]]) { const c = mesh(BX(.15, .004, w), ss, px + Math.sin(.6) * dz, .793, pz + Math.cos(.6) * dz, g, { cast: false }); c.rotation.y = .6; } } } /* 접은 회색 린넨 냅킨 + 포크·나이프(냅킨과 나란히) */
   g.userData.len = L; return g;
 }
 const dining4B = dining4();
