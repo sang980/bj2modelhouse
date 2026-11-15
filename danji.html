@@ -1129,6 +1129,10 @@ function buildEntrance() {
     obox(c[0], c[1], wd[0], wd[1], 6.5, 4.6, Yp - .3, 121 - Y0 + 3.4, { front: F, back: F, left: F, right: F, top: { gb: sb } });
     const cv = cnv(256, 256), g = cv.getContext('2d'); noiseFill(g, 256, 256, '#9c9890', .03, 500); g.fillStyle = '#2a2826'; for (const [x, w] of [[36, 22], [96, 52], [176, 22]]) g.fillRect(x, 16, w, 224); g.fillStyle = '#c9c5bd'; g.fillRect(0, 0, 256, 10);
     const sm = new THREE.Mesh(sb.build(), new THREE.MeshStandardMaterial({ map: tex(cv), roughness: .9 })); sm.castShadow = sm.receiveShadow = true; scene.add(sm); }
+  /* 남쪽 진입로 끝 작은 주차장(모형 VN04: 근린생활시설 동쪽, 흰 주차칸 4~5대) */
+  { const e = [ENT.sse[0] - ENT.R[0], ENT.sse[1] - ENT.R[1]], el = Math.hypot(...e), u = [e[0] / el, e[1] / el], v = [-u[1], u[0]], c = [ENT.sse[0] + u[0] * 4, ENT.sse[1] + u[1] * 4], P = [[-6, -4], [6, -4], [6, 4], [-6, 4]].map(([a2, b2]) => [c[0] + v[0] * a2 + u[0] * b2, c[1] + v[1] * a2 + u[1] * b2]);
+    flatP(P, aM, Yp + .085, 8); const Wl = new THREE.MeshLambertMaterial({ color: '#efefe9', ...off(-8, -16) });
+    for (let k = -5; k <= 5.1; k += 2.5) { const p0 = [c[0] + v[0] * k + u[0] * 1, c[1] + v[1] * k + u[1] * 1], p1 = [c[0] + v[0] * k + u[0] * 4, c[1] + v[1] * k + u[1] * 4]; flatP(strip(p0, p1, .14), Wl, Yp + .1, 8); } }
   /* 진입광장 남쪽 절반(모형 사진): 넓은 포장 대신 잔디 정원 + 나무 숲 + 보도블록 길 */
   { const L2 = (s0, t0) => [ENT.R[0] + ENT.d[0] * s0 + ENT.n[0] * t0, ENT.R[1] + ENT.d[1] * s0 + ENT.n[1] * t0];
     const lawns = [[[-24, 6], [-4.5, 6], [-4.5, 36], [-17, 37], [-24.5, 29], [-24.5, 12]], [[4.5, 6], [30, 6], [33, 13], [33, 44], [11, 38.5], [4.5, 37.5]]];
