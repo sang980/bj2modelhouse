@@ -1112,6 +1112,11 @@ function buildEntrance() {
     seg(t0, 11.3, y0, y1); seg(11.3, 20, Yp + 4.7, y1); seg(20, t1, y0, y1); /* 지하주차장 입구 자리는 비움 */
     const cv = cnv(512, 512), g = cv.getContext('2d'); paintBrown(g, 512, 512); g.fillStyle = 'rgba(30,18,12,.5)'; g.fillRect(0, 300, 512, 6); for (let x = 30; x < 512; x += 64) { g.fillStyle = '#2a2420'; g.fillRect(x, 200, 34, 60); g.fillStyle = 'rgba(230,214,180,.55)'; g.fillRect(x + 4, 204, 26, 52); } g.fillStyle = '#d9d4cc'; g.fillRect(0, 0, 512, 12);
     const t = tex(cv); const m = new THREE.Mesh(gb.build(), new THREE.MeshStandardMaterial({ map: t, roughness: .9, side: THREE.DoubleSide })); m.receiveShadow = true; scene.add(m); }
+  /* 외부계단 2(모형 사진·VE08: 101동 남서쪽, 광장 동쪽 옹벽에 붙은 회색 계단탑 + 검은 세로 홈) */
+  { const A = [-68.6, 24.7], wd = [.501, .865], n0 = [-ENT.d[0], -ENT.d[1]], c = [A[0] + wd[0] * 31 + n0[0] * 2.6, A[1] + wd[1] * 31 + n0[1] * 2.6], sb = new GB(), F = { gb: sb, uv: uvTile(6, 4) };
+    obox(c[0], c[1], wd[0], wd[1], 6.5, 4.6, Yp - .3, 121 - Y0 + 3.4, { front: F, back: F, left: F, right: F, top: { gb: sb } });
+    const cv = cnv(256, 256), g = cv.getContext('2d'); noiseFill(g, 256, 256, '#9c9890', .03, 500); g.fillStyle = '#2a2826'; for (const [x, w] of [[36, 22], [96, 52], [176, 22]]) g.fillRect(x, 16, w, 224); g.fillStyle = '#c9c5bd'; g.fillRect(0, 0, 256, 10);
+    const sm = new THREE.Mesh(sb.build(), new THREE.MeshStandardMaterial({ map: tex(cv), roughness: .9 })); sm.castShadow = sm.receiveShadow = true; scene.add(sm); }
   /* 진입광장 남쪽 절반(모형 사진): 넓은 포장 대신 잔디 정원 + 나무 숲 + 보도블록 길 */
   { const L2 = (s0, t0) => [ENT.R[0] + ENT.d[0] * s0 + ENT.n[0] * t0, ENT.R[1] + ENT.d[1] * s0 + ENT.n[1] * t0];
     const lawns = [[[-24, 6], [-4.5, 6], [-4.5, 36], [-17, 37], [-24.5, 29], [-24.5, 12]], [[4.5, 6], [30, 6], [33, 13], [33, 44], [11, 38.5], [4.5, 37.5]]];
