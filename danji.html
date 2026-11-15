@@ -682,6 +682,11 @@ async function build() {
         obox(px - nx2 * .08, pz - nz2 * .08, ux, uz, L, .06, yy, yy + 1.15, { front: { gb: Rl }, back: { gb: Rl }, top: { gb: Rl } }); } }
     const hm = new THREE.Mesh(H2.build(), new THREE.MeshLambertMaterial({ map: T.green })); hm.receiveShadow = hm.castShadow = true; scene.add(hm);
     const rm = new THREE.Mesh(Rl.build(), new THREE.MeshStandardMaterial({ color: '#b9c3c8', roughness: .3, transparent: true, opacity: .45 })); scene.add(rm); }
+  /* 외부계단 3(모형 사진: 106·107동 앞 121↔112 옹벽에 붙은 짙은 회색 계단탑 + 검은 세로 홈) */
+  { const u = [.5, .87], n = [-.87, .5], c = [74 + n[0] * 2.2, 48 + n[1] * 2.2], y0 = 112 - Y0 - .3, y1 = 121 - Y0 + 3.1, sb = new GB(), F = { gb: sb, uv: uvTile(6, 4) };
+    obox(c[0], c[1], u[0], u[1], 6.2, 4.4, y0, y1, { front: F, back: F, left: F, right: F, top: { gb: sb } });
+    const cv = cnv(256, 256), g = cv.getContext('2d'); noiseFill(g, 256, 256, '#55524e', .03, 500); g.fillStyle = '#1d1c1b'; for (const [x, w] of [[40, 26], [110, 40], [190, 22]]) g.fillRect(x, 20, w, 216); g.fillStyle = '#8a857e'; g.fillRect(0, 0, 256, 10);
+    const t = tex(cv); const m2 = new THREE.Mesh(sb.build(), new THREE.MeshStandardMaterial({ map: t, roughness: .9 })); m2.castShadow = m2.receiveShadow = true; scene.add(m2); }
   /* 동쪽 외부계단 5(모형): 근린공원 산책로로 내려가는 벽돌 계단탑 */
   { const sx = 176, sz = 34, gy = GEO.ok ? groundAt(sx + 6, sz) : -4, top = levelAt(166, 34) + 3.2, B2 = new GB(), F = { front: { gb: B2, uv: uvTile(7, 7) }, back: { gb: B2, uv: uvTile(7, 7) }, left: { gb: B2, uv: uvTile(4.5, 7) }, right: { gb: B2, uv: uvTile(4.5, 7) }, top: { gb: B2 } };
     obox(sx, sz, 0, 1, 7, 4.5, Math.min(gy, top - 4) - 1, top, F);
