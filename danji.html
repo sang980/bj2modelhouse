@@ -458,6 +458,9 @@ function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (
   else { g.fillStyle = '#1f2f3c'; g.fillRect(180, 0, 664, 256); g.fillStyle = 'rgba(255,255,255,.04)'; g.fillRect(180, 0, 664, 128); /* 모형 VE08·VE26: 측벽 폭의 약 65% 청록·남색 유리 판넬 + 층마다 밝은 창 */
     for (let x = 214; x < 820; x += 66) { g.fillStyle = '#2b3946'; g.fillRect(x, 92, 26, 62); g.fillStyle = 'rgba(40,70,85,.5)'; g.fillRect(x, 120, 26, 3); } g.fillStyle = '#17242e'; g.fillRect(180, 248, 664, 8); }
   return tex(c); }
+/* 측벽 회색 띠(모형 VE08: 남색 판넬 아래 2개 층 — 회색 벽 + 층마다 가운데 짙은 가로 판) */
+function texSideB() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#9b968f', .03, 1200); g.fillStyle = 'rgba(40,40,40,.14)'; for (let x = 14; x < 1024; x += 22) if (x < 174 || x > 850) g.fillRect(x, 0, 2.5, 256);
+  g.fillStyle = '#c9c5be'; g.fillRect(180, 0, 664, 256); g.fillStyle = '#3a3836'; g.fillRect(196, 40, 632, 176); g.fillStyle = 'rgba(255,255,255,.06)'; g.fillRect(196, 40, 632, 60); return tex(c); }
 /* 북쪽 줄 동 측벽(모형 VE26 113·114동): 밝은 회색 + 청록 유리 판넬(폭 약 70%) + 층마다 밝은 창 2개씩 */
 function texSideT() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#b0ada7', .03, 1400); g.fillStyle = '#d8d5cf'; g.fillRect(0, 0, 1024, 12);
   g.fillStyle = 'rgba(40,40,40,.16)'; for (let x = 14; x < 1024; x += 22) if (x < 150 || x > 874) g.fillRect(x, 0, 2.5, 256);
@@ -542,12 +545,12 @@ async function build() {
   prog(10); await tick();
 
   /* ===== 텍스처 ===== */
-  const T = { sideT: texSideT(), sideP: texSideP(), podium: texPodium(), terr: texTerr(), front: texFront(0), frontDk: texFront(0, 1), frontLt: texFront(0, 0, 1), back: texBack(0), side: texSide(0), bfront: texFront(1), bback: texBack(1), bside: texSide(1), core: texCore(), roof: texRoof(), green: texGreen(), concrete: texConcrete(), villa: texVilla(), apt: texApt() };
+  const T = { sideB: texSideB(), sideT: texSideT(), sideP: texSideP(), podium: texPodium(), terr: texTerr(), front: texFront(0), frontDk: texFront(0, 1), frontLt: texFront(0, 0, 1), back: texBack(0), side: texSide(0), bfront: texFront(1), bback: texBack(1), bside: texSide(1), core: texCore(), roof: texRoof(), green: texGreen(), concrete: texConcrete(), villa: texVilla(), apt: texApt() };
   const std = (map, r = .86) => new THREE.MeshStandardMaterial({ map, roughness: r, metalness: 0 });
   const pbr = map => new THREE.MeshStandardMaterial({ map, roughnessMap: roughFrom(map), roughness: 1, metalness: 0, envMapIntensity: .5 }); /* 유리에 하늘 반사 */
   /* 하늘을 환경맵으로: 유리창에 하늘이 비치게 */
   { const pm = new THREE.PMREMGenerator(renderer), es = new THREE.Scene(); es.add(new THREE.Mesh(sky.geometry, sky.material)); scene.environment = pm.fromScene(es, .02, 1, 30000).texture; pm.dispose(); }
-  const MAT = { sideT: pbr(T.sideT), path: (() => { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#9a9a96'; g.fillRect(0, 0, 256, 256); for (let y = 0; y < 256; y += 32) for (let x = (y / 32 & 1) * 16; x < 256; x += 32) { const v = 190 + (rand() - .5) * 24 | 0; g.fillStyle = `rgb(${v},${v},${v - 4})`; g.fillRect(x + 1, y + 1, 30, 30); } const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return new THREE.MeshStandardMaterial({ map: t, roughness: .95, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 }); })(), grille: (() => { const c = cnv(256, 128), g = c.getContext('2d'); g.clearRect(0, 0, 256, 128); g.fillStyle = '#a9a69f'; for (let x = 0; x < 256; x += 16) g.fillRect(x, 0, 4, 128); g.fillRect(0, 0, 256, 10); g.fillRect(0, 118, 256, 10); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return new THREE.MeshStandardMaterial({ map: t, alphaTest: .4, transparent: false, side: THREE.DoubleSide, roughness: .7 }); })(), sideP: pbr(T.sideP), podium: pbr(T.podium), terr: pbr(T.terr), tdeck: new THREE.MeshStandardMaterial({ color: '#7a7168', roughness: .9 }), rail: new THREE.MeshStandardMaterial({ color: '#cfe0e8', roughness: .1, transparent: true, opacity: .4 }), front: pbr(T.front), frontDk: pbr(T.frontDk), frontLt: pbr(T.frontLt), back: pbr(T.back), side: pbr(T.side), bfront: pbr(T.bfront), bback: pbr(T.bback), bside: pbr(T.bside), core: pbr(T.core), roof: std(T.roof, .55),
+  const MAT = { vent: new THREE.MeshStandardMaterial({ color: '#3b3d40', roughness: .7 }), sideB: pbr(T.sideB), sideT: pbr(T.sideT), path: (() => { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#9a9a96'; g.fillRect(0, 0, 256, 256); for (let y = 0; y < 256; y += 32) for (let x = (y / 32 & 1) * 16; x < 256; x += 32) { const v = 190 + (rand() - .5) * 24 | 0; g.fillStyle = `rgb(${v},${v},${v - 4})`; g.fillRect(x + 1, y + 1, 30, 30); } const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return new THREE.MeshStandardMaterial({ map: t, roughness: .95, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 }); })(), grille: (() => { const c = cnv(256, 128), g = c.getContext('2d'); g.clearRect(0, 0, 256, 128); g.fillStyle = '#a9a69f'; for (let x = 0; x < 256; x += 16) g.fillRect(x, 0, 4, 128); g.fillRect(0, 0, 256, 10); g.fillRect(0, 118, 256, 10); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return new THREE.MeshStandardMaterial({ map: t, alphaTest: .4, transparent: false, side: THREE.DoubleSide, roughness: .7 }); })(), sideP: pbr(T.sideP), podium: pbr(T.podium), terr: pbr(T.terr), tdeck: new THREE.MeshStandardMaterial({ color: '#7a7168', roughness: .9 }), rail: new THREE.MeshStandardMaterial({ color: '#cfe0e8', roughness: .1, transparent: true, opacity: .4 }), front: pbr(T.front), frontDk: pbr(T.frontDk), frontLt: pbr(T.frontLt), back: pbr(T.back), side: pbr(T.side), bfront: pbr(T.bfront), bback: pbr(T.bback), bside: pbr(T.bside), core: pbr(T.core), roof: std(T.roof, .55),
     white: new THREE.MeshStandardMaterial({ color: '#e2dfd9', roughness: .8 }), fin: new THREE.MeshStandardMaterial({ color: '#57504a', roughness: .75 }), green: std(T.green, 1), concrete: std(T.concrete, .95),
     brick: new THREE.MeshStandardMaterial({ color: '#634033', roughness: .9 }), glassBox: new THREE.MeshStandardMaterial({ color: '#4c6378', roughness: .35 }) };
 
@@ -700,7 +703,7 @@ async function build() {
   prog(50); await tick();
 
   /* ===== 단지 동 ===== */
-  const G = {}; for (const k of ['sideT', 'path', 'grille', 'sideP', 'podium', 'terr', 'tdeck', 'rail', 'front', 'frontDk', 'frontLt', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
+  const G = {}; for (const k of ['vent', 'sideB', 'sideT', 'path', 'grille', 'sideP', 'podium', 'terr', 'tdeck', 'rail', 'front', 'frontDk', 'frontLt', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
   for (const D of DONG) buildDong(D, G, MAT);
   for (const k in G) { if (!G[k].i.length) continue; const m = new THREE.Mesh(G[k].build(), MAT[k]); m.castShadow = true; m.receiveShadow = true; scene.add(m); }
   buildAmenities(MAT); buildYard(); T_GREEN_REF.t = T.green; buildEntrance(); if (GEO.ok) { buildNW(); buildCut(); }
@@ -821,7 +824,7 @@ function buildDong(D, G, MAT) {
     if (t) obox(cx, cz, ux, uz, L, DEP, 0, yT, { front: { gb: G.terr, uv: uvTile(tw, FH) }, back: { gb: G.bback, uv: uvTile(tw, FH) }, left: { gb: G.bside, uv: uvTile(DEP, FH) }, right: { gb: G.bside, uv: uvTile(DEP, FH) } });
     obox(cx, cz, ux, uz, L, DEP, D.pit ? pitH : (t ? yT : 0), base, { front: { gb: G.bfront, uv: uvTile(tw, FH) }, back: { gb: G.bback, uv: uvTile(tw, FH) }, left: { gb: G.bside, uv: uvTile(DEP, FH) }, right: { gb: G.bside, uv: uvTile(DEP, FH) } });
     obox(cx, cz, ux, uz, L, DEP, base, H, { front: { gb: G.front, uv: uvTile(tw, FH) }, back: { gb: G.back, uv: uvTile(tw, FH) }, top: { gb: NOSOLAR.has(D.d) ? G.white : G.roof, uv: true, uvTop: uvPlanar(8) } });
-    { const north = D.d >= 112 && ![117, 118, 122].includes(D.d) && !SIDEP.has(D.d), yb2 = SIDEP.has(D.d) ? H : north ? base : Math.min(H, base + 2 * FH), SP = { gb: G.sideP, uv: uvTile(DEP, FH) }, SN = { gb: north ? G.sideT : G.side, uv: uvTile(DEP, FH) }; /* 북쪽 줄(VE26)은 저층 위부터 청록 판넬 */ /* 모형 VE08: 측벽 남색 판넬은 갈색 저층 위 2개 층 회색 띠 위부터 꼭대기까지 */
+    { const north = D.d >= 112 && ![117, 118, 122].includes(D.d) && !SIDEP.has(D.d), yb2 = SIDEP.has(D.d) ? H : north ? base : Math.min(H, base + 2 * FH), SP = { gb: SIDEP.has(D.d) ? G.sideP : G.sideB, uv: uvTile(DEP, FH) }, SN = { gb: north ? G.sideT : G.side, uv: uvTile(DEP, FH) }; /* 북쪽 줄(VE26)은 저층 위부터 청록 판넬 */ /* 모형 VE08: 측벽 남색 판넬은 갈색 저층 위 2개 층 회색 띠 위부터 꼭대기까지 */
       if (yb2 > base) obox(cx, cz, ux, uz, L, DEP, base, yb2, { left: SP, right: SP }); if (yb2 < H) obox(cx, cz, ux, uz, L, DEP, yb2, H, { left: SN, right: SN }); }
     /* 옥상 난간 */
     const pr = (px2, pz2, l, d, uxx, uzz) => { obox(px2, pz2, uxx, uzz, l, d, H, H + .35, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } });
@@ -876,6 +879,8 @@ function buildDong(D, G, MAT) {
       if (polyDist(SITE, pcx, pcz) < -3) for (let k = 0; k < ns; k++) { const a = -hl + k * hl * 2 / ns, b = a + hl * 2 / ns, mx = pcx + ux * (a + b) / 2, mz = pcz + uz * (a + b) / 2;
         if (Math.abs(levelAt(mx, mz) - y0) > .4 || polyDist(SITE, mx, mz) > -2) continue; const P = [pcx + ux * a, pcz + uz * a], Q = [pcx + ux * b, pcz + uz * b], y = y0 + .16;
         G.path.quad([P[0] + fx * w, y, P[1] + fz * w], [Q[0] + fx * w, y, Q[1] + fz * w], [Q[0] - fx * w, y, Q[1] - fz * w], [P[0] - fx * w, y, P[1] - fz * w], [0, 1, 0], [(P[0]) / 4, -P[1] / 4, Q[0] / 4, -Q[1] / 4, (Q[0] - fx * 2 * w) / 4, -(Q[1] - fz * 2 * w) / 4, (P[0] - fx * 2 * w) / 4, -(P[1] - fz * 2 * w) / 4]); } }
+    { const off = DEP / 2 + CORE_D + 6.6, y0 = levelAt(cx - fx * off, cz - fz * off); if (polyDist(SITE, cx - fx * off, cz - fz * off) < -3) for (const sgn of [-1, 1]) { const s2 = sgn * (L / 2 - 3), bx = cx + ux * s2 - fx * off, bz = cz + uz * s2 - fz * off; if (Math.abs(levelAt(bx, bz) - y0) > .3) continue;
+      obox(bx, bz, ux, uz, 2.2, 1.6, y0 - YOFF, y0 - YOFF + 1.3, { front: { gb: G.vent }, back: { gb: G.vent }, left: { gb: G.vent }, right: { gb: G.vent }, top: { gb: G.vent } }); } } /* 모형 VE08: 길가 짙은 회색 환기구 */
     pieces.push({ cx, cz, ux, uz, L, H, f, ft, yF1, yb, t, n, ln: w.ln || Array.from({ length: n }, (_, k) => n - k) });
     topY = Math.max(topY, yF1 + H); cxs += cx * L; czs += cz * L; wsum += L;
   });
@@ -896,7 +901,7 @@ function buildDong(D, G, MAT) {
   sp.position.set(p0.cx, p0.yF1 + p0.H + 9, p0.cz); sp.userData.dong = D.d; sp.renderOrder = 5; scene.add(sp); labels.push(sp);
 }
 const SIGNS = {};
-function signMat(d) { if (SIGNS[d]) return SIGNS[d]; const c = cnv(256, 128), g = c.getContext('2d'); g.clearRect(0, 0, 256, 128); g.fillStyle = '#3d4a5a'; g.font = '800 92px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(d), 128, 70);
+function signMat(d) { if (SIGNS[d]) return SIGNS[d]; const c = cnv(256, 128), g = c.getContext('2d'); g.fillStyle = '#34322f'; g.fillRect(0, 0, 256, 128); g.fillStyle = '#f2f0ea'; g.font = '800 84px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(String(d), 128, 68); /* 모형 VE08: 짙은 판에 흰 동 번호 */
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return SIGNS[d] = new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: .6, polygonOffset: true, polygonOffsetFactor: -2 }); }
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 
