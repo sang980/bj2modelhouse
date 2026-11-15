@@ -935,11 +935,11 @@ wall(3.4, 3.72, 4.74, 3.72, TI, [], 'storage');
 wall(5.0, 2.29, 5.0, 3.72, TI, [], 'o1wall');
 wall(3.4, 3.72, 3.96, 3.72, TI, [], 'o1wall');
 wall(3.4, 2.29, 5.4, 2.29, .24, []); /* 평면도: 발코니 남쪽 내력벽 z 2.29(두께 0.24, 면 2.17·2.41) — 예전 2.6은 식당 쪽 벽을 25cm 짧게 만들었음 */
-wall(5.4, 0, 5.4, 2.29, TI, [{ from: .8, to: 2.1, y1: 2.1, kind: 'open' }]);
+wall(5.4, 0, 5.4, 2.29, TI, [{ from: .47, to: 1.9, y1: 2.1, kind: 'open' }]); /* 평면도·VR: 세탁실 문 남쪽 끝 z 1.9(문틀~모서리 흰 벽 약 51cm), 북쪽은 주방 상부장 옆면(z 0.46)에 바로 붙임 */
 // 주방 ↔ 다용도실(세탁실): 사진처럼 2짝 슬라이딩 도어 — 흰 알루미늄 프레임 + 민트빛 반투명(샌드블라스트) 유리
 // 주방 상판 쪽(북쪽) 짝은 고정, 남쪽 짝이 고정 짝 뒤로 미끄러져 열림
 { const g = new THREE.Group(); structure.add(g);
-  const X = 5.4, z0 = .8, z1 = 2.1, top = 2.1, alu = std(0xf2f2f0, .35, .3);
+  const X = 5.4, z0 = .47, z1 = 1.9, top = 2.1, alu = std(0xf2f2f0, .35, .3);
   const frosted = new THREE.MeshStandardMaterial({ color: 0xbfe2dc, roughness: .35, metalness: 0, transparent: true, opacity: .72, side: THREE.DoubleSide, depthWrite: false });
   // 문틀(사방) + 상·하 레일
   pbox(X - .065, X + .065, 0, top, z0, z0 + .03, alu, g); pbox(X - .065, X + .065, 0, top, z1 - .03, z1, alu, g);
