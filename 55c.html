@@ -1632,7 +1632,7 @@ pbox(10.655, 10.67, .6, .82, 2.82, 3.06, M.chrome, fixed); pbox(10.6, 10.655, .6
   const bar = mesh(CY(.009, .009, tx1 - tx0, 12), M.chrome, WX((tx0 + tx1) / 2), 1.2, WZ(tz - .05), fixed); bar.rotation.z = Math.PI / 2;
   for (const x of [tx0, tx1]) pbox(x - .02, x + .02, 1.17, 1.23, tz - .05, tz, M.chrome, fixed);
   const tw = (c, x0, x1, y0, y1, dz) => pbox(x0, x1, y0, y1, tz - .055 - dz, tz - .045 - dz, std(c, .95), fixed);
-  tw(0x1c1c1e, 9.7, 10.15, .75, 1.2, .0); tw(0xf4f4f2, 9.72, 10.13, .95, 1.21, .012); tw(0x2f6fc0, 9.8, 10.05, .82, 1.13, .024); }
+  tw(0xf6f5f1, 9.7, 10.15, .75, 1.2, .0); tw(0xf4f4f2, 9.72, 10.13, .95, 1.21, .012); tw(0x93bf3e, 9.8, 10.05, .82, 1.13, .024); } /* VR 55C: 흰 수건 + 연두 잎무늬 수건 */
 // 바닥 매트(세면기 앞)
 mesh(BX(.5, .01, .34), std(0x6f7276, .95), WX(9.95), .012, WZ(3.3), fixed, { cast: false });
 ceilingPanel(9.75, 10.25, 3.0, 3.5, .8, 2.2);
@@ -1675,7 +1675,7 @@ ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
     for (const s of [-1, 1]) { mesh(CY(.018, .018, .012, 16), M.chrome, s * (w / 2 + .03), y, .006, t).rotation.x = Math.PI / 2; mesh(CY(.008, .008, .05, 10), M.chrome, s * (w / 2 + .03), y, .03, t).rotation.x = Math.PI / 2; }
     const wt = std(0xffffff, 1, 0, { map: towelTex }); for (const [zz, k] of [[.042, 1], [.07, .96]]) { const tw = mesh(RB(w * .92, .58 * k, .014, .006, 2), wt, 0, y - .29 * k + .01, zz, t); tw.rotation.x = zz > .05 ? -.03 : .02; }
     mesh(CY(.016, .016, w * .92, 14), std(0xf4f3ef, 1), 0, y + .004, .056, t).rotation.z = Math.PI / 2;
-    const nv = std(0x34507a, 1, 0, { map: fiber }); mesh(RB(w * .58, .3, .012, .005, 2), nv, 0, y - .17, .082, t).rotation.x = -.04; mesh(CY(.012, .012, w * .58, 12), nv, 0, y + .006, .062, t).rotation.z = Math.PI / 2; }
+    const nv = std(0x93bf3e, 1, 0, { map: fiber }); /* VR 55C: 연두 잎무늬 수건 */ mesh(RB(w * .58, .3, .012, .005, 2), nv, 0, y - .17, .082, t).rotation.x = -.04; mesh(CY(.012, .012, w * .58, 12), nv, 0, y + .006, .062, t).rotation.z = Math.PI / 2; }
   // 욕실1 세면대 상판(높이 .855) 양끝: 왼쪽 디스펜서 2, 오른쪽 작은 풀 화분
   const pumpBottle = (x, y, z, col, h = .15, r = .03, ry = 0, glass = false, label = false) => { const b = new THREE.Group(); b.position.set(WX(x), y, WZ(z)); b.rotation.y = ry; g.add(b); /* 펌프병: 어깨 있는 병 + 칼라 + 펌프 머리 + 노즐 */
     mesh(new THREE.LatheGeometry([[0, 0], [r * .9, 0], [r, .008], [r, h * .7], [r * .86, h * .79], [r * .42, h * .85], [r * .4, h * .9], [0, h * .9]].map(([a, c]) => new THREE.Vector2(a, c)), 28), glass ? std(col, .1, 0, { transparent: true, opacity: .88 }) : std(col, .35, .05), 0, 0, 0, b);
