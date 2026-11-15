@@ -2043,7 +2043,7 @@ await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
   s.traverse(o => { if (o.isMesh && (o.material === M.check || o.material === M.navy)) o.visible = false; });
   const leafTex = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#f6f6ef'; x.fillRect(0, 0, 64, 64); x.strokeStyle = '#a9c43a'; x.lineWidth = 2.6; x.lineJoin = 'round'; for (let r = 0; r < 5; r++) { x.beginPath(); for (let k = 0; k <= 16; k++) { const px = 3 + k * 3.7, py = 8 + r * 12 + Math.sin(k * 1.7 + r * 2) * 4 + (k % 2 ? 3 : -3); k ? x.lineTo(px, py) : x.moveTo(px, py); } x.stroke(); } return c; /* VR: 연두 지그재그 낙서 무늬 */ })());
   [[-.72, std(0xe8d13a, .9)], [-.36, std(0xffffff, .9, 0, { map: leafTex })], [0, std(0xf7f6f2, .9)], [.36, std(0xf0cf80, .9)], [.72, std(0xf7f6f2, .9)]].forEach(([px, m], i) => {
-    const p = mesh(pillowG(.44, .42, .16), m, -px, .62, -.2 + (i % 2) * .03, s); p.rotation.set(-.22, (i - 2) * .05, (i % 2 ? .06 : -.05)); });
+    const p = mesh(sqPillowG(.44, .42, .18), m, -px, .63, -.2 + (i % 2) * .04, s); p.rotation.set(-.22, (i - 2) * .05, (i % 2 ? .06 : -.05)); }); /* 모서리 뾰족한 사각 쿠션 */
   // (작은 사이드 선반은 팔걸이 속에 묻혀 끝면이 팔걸이 옆면과 겹쳐 검은 줄이 깜빡였음 → 삭제)
   // VR: 창 쪽 끝 낮은 받침 위 검은 테 흑백 사진 액자(소파 끝면은 무늬 없이 흰색 그대로)
   const bw = toTex((() => { const c = mkCanvas(64, 48), x = c.getContext('2d'); const gr = x.createLinearGradient(0, 0, 0, 48); gr.addColorStop(0, '#d9d9d9'); gr.addColorStop(1, '#6d6d6d'); x.fillStyle = gr; x.fillRect(0, 0, 64, 48);

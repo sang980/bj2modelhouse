@@ -2055,7 +2055,7 @@ function dresser(x, z, rot) {
   s.traverse(o => { if (o.isMesh && (o.material === M.check || o.material === M.navy)) o.visible = false; }); /* VR: 쿠션 5개(베이지 · 흰색 2 · 분홍 베이지 · 털) — 기본 쿠션은 숨김 */
   const fur = std(0xd9d1c0, 1, 0, { map: M.boucle.map, bumpMap: M.boucle.bumpMap, bumpScale: 2.5 });
   [[.74, std(0xd8c2ab, .9), .44, -.24], [.55, std(0xf7f5f1, .9), .42, -.14], [.3, std(0xf7f5f1, .9), .42, -.2], [-.35, std(0xdcc0ae, .9), .4, -.16], [-.62, fur, .46, -.2]].forEach(([px, m, sz, pz], i) => {
-    const p = mesh(pillowG(sz, sz * .92, .16), m, px, .64, pz, s); p.rotation.set(-.22, (i - 2) * .06, (i % 2 ? .06 : -.05)); }); }
+    const p = mesh(sqPillowG(sz, sz * .92, .18), m, px, .65, pz, s); p.rotation.set(-.22, (i - 2) * .06, (i % 2 ? .06 : -.05)); }); } /* 모서리 뾰족한 사각 쿠션 */
 // VR: 거실 회색 샤기 러그(긴 털) — 털 결 무늬 + 같은 무늬로 강한 요철, 두께 3cm
 M.shagGrey = (() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = '#9c9b98'; x.fillRect(0, 0, 256, 256); x.lineCap = 'round';
   for (let i = 0; i < 2400; i++) { const px = rnd() * 256, py = rnd() * 256, a = rnd() * 6.28, l = 5 + rnd() * 10, v = 120 + rnd() * 105 | 0; x.strokeStyle = `rgb(${v},${v},${Math.max(0, v - 3)})`; x.lineWidth = 1.4 + rnd() * 1.8; x.beginPath(); x.moveTo(px, py); x.quadraticCurveTo(px + Math.cos(a + 1) * l * .6, py + Math.sin(a + 1) * l * .6, px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke(); }

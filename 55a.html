@@ -1776,7 +1776,7 @@ function sofa(x, z, rot, style = 'arm') {
       mesh(BX(.3, .355, .02), lea, sg * 1.075, .2125, -.45, g); /* 뒤판 */
       let bx = .945; for (let i = 0; bx < 1.15; i++) { const bw = .022 + ((i * 7 + (sg > 0 ? 3 : 0)) % 5) * .006, bh = .21 + ((i * 5 + (sg > 0 ? 1 : 0)) % 4) * .03; mesh(BOOK.geo(bw, bh, .24, 'z'), BOOK.mats[[5, 0, 4, 5, 2, 1, 5, 0, 4][(i + (sg > 0 ? 3 : 0)) % 9]], sg * (bx + bw / 2), .036 + bh / 2, .29, g); bx += bw + .003; } }
   }
-  const pil = (m, px, pz, rz, ry, s = .44) => { const p = mesh(pillowG(s, s, .17), m, px, .62, pz, g); p.rotation.set(-.2, ry, rz); };
+  const pil = (m, px, pz, rz, ry, s = .44) => { const p = mesh(sqPillowG(s, s, .19), m, px, .64, pz, g); p.rotation.set(-.2, ry, rz); }; /* 모서리 뾰족한 사각 쿠션 */
   if (style === 'arm') { /* VR 55A: 연회색 잔체크 쿠션 + 선명한 파랑 쿠션 */
     const lc = mkCanvas(64, 64), x = lc.getContext('2d'); x.fillStyle = '#f1f1ef'; x.fillRect(0, 0, 64, 64); for (let i = 0; i < 16; i++) for (let j = 0; j < 16; j++) if ((i + j) % 2) { x.fillStyle = '#b9bbbe'; x.fillRect(i * 4, j * 4, 4, 4); }
     for (let i = 0; i < 300; i++) { x.fillStyle = `rgba(0,0,0,${rnd() * .06})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 1); }
