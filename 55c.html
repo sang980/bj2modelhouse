@@ -2081,7 +2081,14 @@ const desk2 = piece('책상', 1.75, 7.8, Math.PI);
   mesh(CY(.06, .07, .015, 24), wt, .32, .758, -.12, d); mesh(CY(.005, .005, .3, 8), alu, .32, .9, -.12, d); mesh(CY(.08, .1, .12, 28, 1, true), new THREE.MeshStandardMaterial({ color: 0xfbf8f1, roughness: .7, side: THREE.DoubleSide, emissive: 0xfff1d8, emissiveIntensity: .25 }), .32, 1.06, -.12, d, { cast: false });
   mesh(CY(.035, .03, .1, 18), std(0xf2f0eb, .3), -.38, .8, -.14, d); for (let i = 0; i < 5; i++) { const st = mesh(CY(.002, .002, .16, 5), M.plant, -.38 + (i - 2) * .006, .9, -.14, d, { cast: false }); st.rotation.z = (i - 2) * .15; mesh(new THREE.SphereGeometry(.013, 8, 6), std(0xf6f3ec, .7), -.38 + (i - 2) * .03, .98, -.14, d, { cast: false }); }
   { const mg = mesh(BX(.22, .008, .3), std(0xe9e6df, .7), -.05, .754, -.05, d); mg.rotation.y = .25; }
-  shellChair(d, .05, .45, Math.PI - .1, alu); }
+  shellChair(d, .05, .45, Math.PI - .1, alu);
+  /* VR 55C: 책상 위 흰 벽선반 2단(엇갈림) + 세운 흰 책·상자·은색 와이어 큐브 (책상과 함께 움직임) */
+  for (const [x, y] of [[-.12, 1.22], [.12, 1.52]]) mesh(BX(.62, .022, .2), wt, x, y, -.17, d);
+  for (let i = 0; i < 6; i++) { const h = .2 + (i % 3) * .02; mesh(BX(.025, h, .15), std(i % 2 ? 0xf3f1ec : 0xe6e2da, .6), -.05 + i * .028, 1.231 + h / 2, -.17, d); }
+  mesh(BX(.16, .045, .14), std(0xf4f2ee, .5), .15, 1.254, -.17, d);
+  { const wire = new THREE.EdgesGeometry(new THREE.BoxGeometry(.11, .11, .11)), lm = new THREE.LineBasicMaterial({ color: 0xb8bcc0 }); const w = new THREE.LineSegments(wire, lm); w.position.set(-.3, 1.231 + .055, -.17); w.rotation.y = .5; d.add(w); }
+  mesh(BX(.16, .05, .12), std(0xd9c27a, .6), .18, 1.556, -.17, d); for (let i = 0; i < 3; i++) mesh(BX(.2, .02, .14), std([0xf4f2ee, 0xe2ddd3, 0xf4f2ee][i], .6), .38, 1.541 + i * .02, -.17, d); }
+{ const r = piece('작은 털 러그', 1.5, 6.95, 0, { solid: false }); mesh(RB(.95, .02, 1.25, .01), M.rug, 0, .01, 0, r, { cast: false }); } /* VR 55C: 의자 쪽 흰 털 러그 */
 
 /* ───────── avatar ───────── */
 const avatar = new THREE.Group(); scene.add(avatar);
