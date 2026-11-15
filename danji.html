@@ -822,7 +822,7 @@ function buildDong(D, G, MAT) {
     else if (D.d === 105) panel(2, 4, base, base + 4 * FH, G.frontDk, .02, .98); /* 105동 2·1호 4~7층 차콜 */
     else if (D.d === 101) panel(0, 1, base, (t + 9) * FH, G.frontDk, .02, .98); /* 모형 사진: 101동 서쪽 끝 4호 4~9층 짙은 차콜 */
     else if (D.d === 103) panel(1, 2, base, H, G.frontDk, .02, .98); /* 모형 사진: 103동 동쪽 끝 1호 4층~꼭대기 짙은 차콜 */
-    else if (D.d === 107 || D.d === 108) { } /* 모형 사진: 107·108동 정면은 차콜 판넬 없이 고른 토프 */
+    else if ([107, 108, 116, 117, 118].includes(D.d)) { } /* 모형 사진: 107·108·116·117·118동 정면은 차콜 판넬 없이 고른 토프 */
     else { if (f >= 8 && D.w.length === 1) panel(n - 1, n, base, H, G.frontLt, .02, .98); /* 모형: 1호 라인(동쪽 끝)은 밝은 회색 판 */
     if (n === 4 && f >= 8) panel(1, 2, base, Math.min(f - 3, nb + 4) * FH, G.frontDk);
     else if (n === 2 && f >= 8 && D.w.length === 1) { panel(0, 1, base, Math.min(f - 3, nb + 3) * FH, G.frontDk, .05, .7); panel(1, 2, yLowR, Math.min(f - 2, 6) * FH, G.bfront, .72, .995);
