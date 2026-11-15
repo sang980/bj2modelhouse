@@ -633,7 +633,7 @@ async function build() {
     const deckMat = new THREE.MeshStandardMaterial({ map: planTex, roughness: .95 }); detailDeck(deckMat); mk(fp, fu, deckMat); mk(wp, wu, wallMat);
     if (lp.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#c9cac7', .03, 600); g.fillStyle = 'rgba(0,0,0,.06)'; g.fillRect(0, 0, 256, 3); const t = tex(c); const lm = new THREE.MeshStandardMaterial({ map: t, roughness: .9, side: THREE.DoubleSide }); mk(lp, lu, lm); } }
   /* 단지 둘레 옹벽: 안쪽 단 높이 ↔ 바깥 실제 지면 높이 사이(바깥이 높으면 산을 막는 옹벽) */
-  { const gb = new GB(), gp = new GB(); let s = 0; /* gp: 모형 사진 — 학교 쪽(남쪽) 큰 옹벽은 무늬 없는 짙은 회색 */
+  { const gb = new GB(), gp = new GB(), gt = new GB(), gpl = new GB(); let s = 0; /* gp: 모형 사진 — 학교 쪽(남쪽) 큰 옹벽은 무늬 없는 짙은 회색 · gt/gpl: 동쪽은 모형 VE32·VN20처럼 단(段)으로 나눈 밝은 회색 벽 + 화단 */
     for (let i = 0; i < SITE.length; i++) { const a = SITE[i], b = SITE[(i + 1) % SITE.length], ex = b[0] - a[0], ez = b[1] - a[1], L = Math.hypot(ex, ez), n = Math.max(1, Math.ceil(L / 4));
       let nx2 = ez / L, nz2 = -ex / L; /* 바깥쪽 법선 */
       if (polyDist(SITE, (a[0] + b[0]) / 2 + nx2 * .5, (a[1] + b[1]) / 2 + nz2 * .5) < 0) { nx2 = -nx2; nz2 = -nz2; }
@@ -641,8 +641,20 @@ async function build() {
         if (AMEN_POLYS.some(A2 => polyDist(A2, (P[0] + Q[0]) / 2, (P[1] + Q[1]) / 2) < -.2) || inPoly(ENT_GAP, (P[0] + Q[0]) / 2, (P[1] + Q[1]) / 2)) { s += L / n; continue; } /* 부대시설 건물 외벽이 옹벽 대신 */
         const yin = p => levelAt(p[0] - nx2 * 1.2, p[1] - nz2 * 1.2), yout = p => GEO.ok ? groundAt(p[0] + nx2 * 2, p[1] + nz2 * 2) : -4;
         const tP = Math.max(yin(P), yout(P)) + .02, tQ = Math.max(yin(Q), yout(Q)) + .02, bP = Math.min(yin(P), yout(P)) - 1.5, bQ = Math.min(yin(Q), yout(Q)) - 1.5, l = L / n;
+        const east = nx2 > .4 && (P[0] + Q[0]) / 2 > 115 && (P[1] + Q[1]) / 2 > -60, dP = yin(P) - yout(P), dQ = yin(Q) - yout(Q);
+        if (east && dP > 4.5 && dQ > 4.5) { const nt = Math.min(3, Math.ceil(Math.max(dP, dQ) / 3.8)), off = 3.4;
+          for (let j = 0; j < nt; j++) { const o = j * off, tPj = yin(P) - dP * j / nt + .02, tQj = yin(Q) - dQ * j / nt + .02, bPj = yin(P) - dP * (j + 1) / nt - (j === nt - 1 ? 1.5 : 0), bQj = yin(Q) - dQ * (j + 1) / nt - (j === nt - 1 ? 1.5 : 0);
+            const P2 = [P[0] + nx2 * o, P[1] + nz2 * o], Q2 = [Q[0] + nx2 * o, Q[1] + nz2 * o];
+            gt.quad([P2[0], bPj, P2[1]], [Q2[0], bQj, Q2[1]], [Q2[0], tQj, Q2[1]], [P2[0], tPj, P2[1]], [nx2, 0, nz2], [s / 6, bPj / 3, (s + L / n) / 6, bQj / 3, (s + L / n) / 6, tQj / 3, s / 6, tPj / 3]);
+            if (j < nt - 1) { const P3 = [P2[0] + nx2 * off, P2[1] + nz2 * off], Q3 = [Q2[0] + nx2 * off, Q2[1] + nz2 * off], yP = bPj + .5, yQ = bQj + .5;
+              { const A3 = [P2[0], yP, P2[1]], B3 = [P3[0], yP, P3[1]], C3 = [Q3[0], yQ, Q3[1]], D3 = [Q2[0], yQ, Q2[1]], cy = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]); cy >= 0 ? gpl.quad(A3, B3, C3, D3, [0, 1, 0], [0, 0, 1, 0, 1, 1, 0, 1]) : gpl.quad(A3, D3, C3, B3, [0, 1, 0], [0, 0, 1, 0, 1, 1, 0, 1]); } /* 단 사이 화단 */
+              if (k % 2 === 0) extraTrees.push([(P2[0] + P3[0]) / 2, yP - .1, (P2[1] + P3[1]) / 2, .9 + rand() * .6, 3]); } }
+          s += L / n; continue; }
         const south = nx2 * .502 + nz2 * .865 > .9 && (P[1] + Q[1]) / 2 > 60; (south ? gp : gb).quad([P[0], bP, P[1]], [Q[0], bQ, Q[1]], [Q[0], tQ, Q[1]], [P[0], tP, P[1]], [nx2, 0, nz2], south ? [s / 6, bP / 3, (s + l) / 6, bQ / 3, (s + l) / 6, tQ / 3, s / 6, tP / 3] : [s / 20, bP / 10, (s + l) / 20, bQ / 10, (s + l) / 20, tQ / 10, s / 20, tP / 10]); s += l; } }
     const m = new THREE.Mesh(gb.build(), wallMat); m.receiveShadow = true; m.castShadow = true; scene.add(m);
+    if (gt.i.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#b0ada7', .03, 700); g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(0, 0, 2, 128); g.fillRect(128, 0, 2, 128); g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(0, 0, 256, 4);
+      const mt = new THREE.Mesh(gt.build(), new THREE.MeshStandardMaterial({ map: tex(c), roughness: .95, side: THREE.DoubleSide })); mt.receiveShadow = mt.castShadow = true; scene.add(mt);
+      const mp2 = new THREE.Mesh(gpl.build(), new THREE.MeshLambertMaterial({ map: T.green, side: THREE.DoubleSide })); mp2.receiveShadow = true; scene.add(mp2); }
     if (gp.i.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#6e6d6a', .03, 700); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, 0, 2, 128); g.fillRect(128, 0, 2, 128); const t = tex(c); const mp = new THREE.Mesh(gp.build(), new THREE.MeshStandardMaterial({ map: t, roughness: .95, side: THREE.DoubleSide })); mp.receiveShadow = mp.castShadow = true; scene.add(mp); } }
   /* 데크 가장자리 화단(모형): 옹벽 위를 따라 낮은 관목 띠 + 난간 — 각 단 높이에 */
   { const H2 = new GB(), Rl = new GB(), hedge = { gb: H2, uv: uvTile(4, 1) }, top = { gb: H2, uv: true, uvTop: uvPlanar(4) };
@@ -655,8 +667,10 @@ async function build() {
     const hm = new THREE.Mesh(H2.build(), new THREE.MeshLambertMaterial({ map: T.green })); hm.receiveShadow = hm.castShadow = true; scene.add(hm);
     const rm = new THREE.Mesh(Rl.build(), new THREE.MeshStandardMaterial({ color: '#b9c3c8', roughness: .3, transparent: true, opacity: .45 })); scene.add(rm); }
   /* 동쪽 외부계단 5(모형): 근린공원 산책로로 내려가는 벽돌 계단탑 */
-  { const sx = 176, sz = 34, gy = GEO.ok ? groundAt(sx + 6, sz) : -4, top = levelAt(166, 34) + 3.2, B2 = new GB(), F = { front: { gb: B2, uv: uvTile(3, 3) }, back: { gb: B2, uv: uvTile(3, 3) }, left: { gb: B2, uv: uvTile(3, 3) }, right: { gb: B2, uv: uvTile(3, 3) }, top: { gb: B2 } };
-    obox(sx, sz, 0, 1, 7, 4.5, Math.min(gy, top - 4) - 1, top, F); const sm = new THREE.Mesh(B2.build(), MAT.bfront); sm.castShadow = sm.receiveShadow = true; scene.add(sm); }
+  { const sx = 176, sz = 34, gy = GEO.ok ? groundAt(sx + 6, sz) : -4, top = levelAt(166, 34) + 3.2, B2 = new GB(), F = { front: { gb: B2, uv: uvTile(7, 7) }, back: { gb: B2, uv: uvTile(7, 7) }, left: { gb: B2, uv: uvTile(4.5, 7) }, right: { gb: B2, uv: uvTile(4.5, 7) }, top: { gb: B2 } };
+    obox(sx, sz, 0, 1, 7, 4.5, Math.min(gy, top - 4) - 1, top, F);
+    const stc = cnv(256, 256), sg = stc.getContext('2d'); paintBrown(sg, 256, 256); for (const x of [60, 168]) { sg.fillStyle = '#2b2522'; sg.fillRect(x - 4, 0, 36, 256); glass(sg, x, 0, 28, 256, 1); } sg.fillStyle = 'rgba(0,0,0,.25)'; sg.fillRect(0, 0, 256, 4); /* 모형 VE32: 갈색 계단탑 + 세로 슬릿 창 */
+    const stt = tex(stc); const sm = new THREE.Mesh(B2.build(), new THREE.MeshStandardMaterial({ map: stt, roughness: .9 })); sm.castShadow = sm.receiveShadow = true; scene.add(sm); }
   prog(50); await tick();
 
   /* ===== 단지 동 ===== */
