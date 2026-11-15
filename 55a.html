@@ -1507,6 +1507,12 @@ function drapeCloth(parent, { hx, z0, z1, top, hang = .2, foot = 0, r = .05, th 
   return mesh(thickSurf(P, nx, nz, th), mat, 0, 0, 0, parent); }
 /* 푹신한 베개·쿠션(w×h×d, 가장 얇은 축이 두께): 둥근 사각 윤곽 + 가운데 볼록, 가장자리로 얇아짐(같은 크기는 형상 공유) */
 const _pillowC = new Map();
+/* 모서리가 뾰족한 일반 사각 베개(가운데 볼록, 가장자리로 갈수록 얇아져 솔기에서 만남) — 두께는 로컬 z */
+function sqPillowG(w, h, d) { const key = 'sq' + [w, h, d].join(); if (_pillowC.has(key)) return _pillowC.get(key); const parts = [];
+  for (const s of [1, -1]) { const g = new THREE.PlaneGeometry(1, 1, 22, 22); if (s < 0) g.rotateY(Math.PI); const p = g.attributes.position;
+    for (let i = 0; i < p.count; i++) { const u = p.getX(i) * 2, v = p.getY(i) * 2, f = Math.pow(Math.max(0, 1 - u * u), .5) * Math.pow(Math.max(0, 1 - v * v), .5); p.setXYZ(i, u * w / 2 * (1 - .05 * v * v), v * h / 2 * (1 - .05 * u * u), s * f * d / 2); }
+    g.computeVertexNormals(); parts.push(g); }
+  const g = mergeGeometries(parts, false); _pillowC.set(key, g); return g; }
 function pillowG(w, h, d) { const key = [w, h, d].join(); if (_pillowC.has(key)) return _pillowC.get(key);
   const S = [w, h, d], ax = S.indexOf(Math.min(w, h, d)), [a1, a2] = [0, 1, 2].filter(i => i !== ax), g = new THREE.SphereGeometry(1, 40, 24);
   if (ax === 0) g.rotateZ(Math.PI / 2); else if (ax === 2) g.rotateX(Math.PI / 2);

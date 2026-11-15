@@ -1289,6 +1289,12 @@ function drapeCloth(parent, { hx, z0, z1, top, hang = .2, foot = 0, r = .05, th 
   return mesh(thickSurf(P, nx, nz, th), mat, 0, 0, 0, parent); }
 /* 푹신한 베개·쿠션(w×h×d, 가장 얇은 축이 두께): 둥근 사각 윤곽 + 가운데 볼록, 가장자리로 얇아짐(같은 크기는 형상 공유) */
 const _pillowC = new Map();
+/* 모서리가 뾰족한 일반 사각 베개(가운데 볼록, 가장자리로 갈수록 얇아져 솔기에서 만남) — 두께는 로컬 z */
+function sqPillowG(w, h, d) { const key = 'sq' + [w, h, d].join(); if (_pillowC.has(key)) return _pillowC.get(key); const parts = [];
+  for (const s of [1, -1]) { const g = new THREE.PlaneGeometry(1, 1, 22, 22); if (s < 0) g.rotateY(Math.PI); const p = g.attributes.position;
+    for (let i = 0; i < p.count; i++) { const u = p.getX(i) * 2, v = p.getY(i) * 2, f = Math.pow(Math.max(0, 1 - u * u), .5) * Math.pow(Math.max(0, 1 - v * v), .5); p.setXYZ(i, u * w / 2 * (1 - .05 * v * v), v * h / 2 * (1 - .05 * u * u), s * f * d / 2); }
+    g.computeVertexNormals(); parts.push(g); }
+  const g = mergeGeometries(parts, false); _pillowC.set(key, g); return g; }
 function pillowG(w, h, d) { const key = [w, h, d].join(); if (_pillowC.has(key)) return _pillowC.get(key);
   const S = [w, h, d], ax = S.indexOf(Math.min(w, h, d)), [a1, a2] = [0, 1, 2].filter(i => i !== ax), g = new THREE.SphereGeometry(1, 40, 24);
   if (ax === 0) g.rotateZ(Math.PI / 2); else if (ax === 2) g.rotateX(Math.PI / 2);
@@ -2104,6 +2110,8 @@ const bed1B = bed(6.81, 9.6, Math.PI / 2, 1.6, 2.1, '침대');
 function recolorBed(b, throwC, pillowC, pillow2C) { const t = std(throwC, .98, 0, { map: M.throwBlue.map }), p1 = std(pillowC, .95, 0, { map: M.charcoal.map }), p2 = std(pillow2C, .95, 0, { map: M.charcoal.map });
   b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = t; else if (o.material === M.charcoal) o.material = p1; else if (o.material === M.check) o.material = p2; }); }
 recolorBed(bed1B, 0x6e7173, 0x1f5446, 0x23604f);
+{ const rm = [], g1 = pillowG(.5, .46, .17), g2 = pillowG(.6, .28, .15); bed1B.traverse(o => { if (o.isMesh && (o.geometry === g1 || o.geometry === g2)) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
+  const gv = std(0x1f5446, .7, 0, { map: M.charcoal.map }), L = 2.1; for (const [px, ry, rz] of [[-.28, .14, .04], [.3, -.1, -.03]]) { const c = mesh(sqPillowG(.5, .48, .17), gv, px, .77, -L / 2 + .6, bed1B); c.rotation.set(-.32, ry, rz); } } /* VR: 짙은 초록 벨벳 사각 쿠션 2를 나란히(가운데 겹친 쿠션·긴 쿠션이 서로 박혀 보이던 것 정리) */
 { const w = 1.6, l = 2.1, hx = w / 2 + .04, parts = []; /* VR: 러너 양옆 끝단 흰 술 장식(침대 로컬: 러너 z l/2-.75 ~ l/2-.14, 끝단 높이 .23) */
   for (const s of [-1, 1]) for (let zz = l / 2 - .74; zz <= l / 2 - .15; zz += .02) { const t = new THREE.CylinderGeometry(.0028, .002, .06, 5); t.translate(s * (hx + .006), .2, zz); t.rotateZ(0); parts.push(t); }
   mesh(mergeGeometries(parts, false), std(0xf2efe8, .9), 0, 0, 0, bed1B, { cast: false }); }
