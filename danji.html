@@ -1130,7 +1130,7 @@ function buildTrees(planData, PW, PH, PK) {
     const k = (py * PW + px) * 4, r = planData[k], g = planData[k + 1], b = planData[k + 2];
     if (!(g > r + 14 && g > b + 6 && g < 150 && r < 120)) continue;
     if (inBld(jx, jz) || AMEN_POLYS.some(P => polyDist(P, jx, jz) < 2) || polyDist(YARD.court, jx, jz) < 2 || polyDist(YARD.teal, jx, jz) < 1 || polyDist(YARD.sand, jx, jz) < 1.5 || polyDist(YARD.sandN, jx, jz) < 1.5 || polyDist(YARD.sandW, jx, jz) < 1.5 || inPoly(ENT.PZ, jx, jz)) continue; /* 마당 시설은 비워 둠 */
-    pts.push([jx, levelAt(jx, jz), jz, 1.15 + rand() * 1.05, 0]); /* 모형: 작고 짙은 조경수 */
+    if (rand() < .18) pts.push([jx, levelAt(jx, jz), jz, .9 + rand() * .7, 2]); else pts.push([jx, levelAt(jx, jz), jz, 1.15 + rand() * 1.05, 0]); /* 모형: 작고 짙은 조경수 + 원뿔형 침엽수 섞임 */
   }
   /* 숲: 단지 주변 1.2km */
   const nF = LOW ? 5000 : 16000, R = LOW ? 800 : 1250; let tries = 0, made = 0;
@@ -1162,7 +1162,7 @@ function buildTrees(planData, PW, PH, PK) {
     list.forEach((t, i) => { const r = t[3], th = t[4] ? r * 1.1 : r * .9 + .8;
       ps.set(t[0], t[1] + th + r * .95, t[2]); sc.set(r, r * (1.05 + rand() * .3), r); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rand() * 6.28); m4.compose(ps, q, sc); canopy.setMatrixAt(i, m4);
       if (trunk) { ps.set(t[0], t[1], t[2]); sc.set(1, th + r * .5, 1); m4.compose(ps, q, sc); trunk.setMatrixAt(i, m4); }
-      const l = rand(); if (t[4] === 0) col.setHSL(.27 + rand() * .07, .38 + rand() * .2, .17 + l * .1); else col.setHSL(.22 + rand() * .1, .3 + rand() * .2, t[4] === 1 ? .17 + l * .1 : .23 + l * .12); canopy.setColorAt(i, col); }); /* 단지 안 나무는 모형처럼 짙은 초록 */
+      const l = rand(); if (t[4] === 0 || (t[4] === 3 && polyDist(SITE, t[0], t[2]) < 0)) col.setHSL(.27 + rand() * .07, .38 + rand() * .2, .17 + l * .1); else col.setHSL(.22 + rand() * .1, .3 + rand() * .2, t[4] === 1 ? .17 + l * .1 : .23 + l * .12); canopy.setColorAt(i, col); }); /* 단지 안 나무는 모형처럼 짙은 초록 */
     canopy.castShadow = canopy.receiveShadow = true; scene.add(canopy); if (trunk) { trunk.castShadow = true; scene.add(trunk); } }
 }
 
