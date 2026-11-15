@@ -771,9 +771,9 @@ function buildDong(D, G, MAT) {
       /* 세대 사이 도장 칸막이 + 테라스 위 처마(1층 바닥 슬래브) */
       for (let k = 0; k <= n; k++) { const s = -L / 2 + tw * k, ex = Math.max(-L / 2 + .2, Math.min(L / 2 - .2, s)); obox(cx + ux * ex + fx * ox, cz + uz * ex + fz * ox, fx, fz, dep, .35, .12, 2.5, { front: F(G.tdeck), back: F(G.tdeck), left: F(G.tdeck), right: F(G.tdeck), top: F(G.tdeck) }); }
       obox(cx + fx * (DEP / 2 + .9), cz + fz * (DEP / 2 + .9), ux, uz, L, 1.8, yT - .25, yT + .05, { front: { gb: G.white }, back: { gb: G.white }, top: { gb: G.white } }); }
-    /* 측벽 동 번호 사인(맨 위층 아래) */
+    /* 측벽 동 번호 사인(모형: 저층부 바로 위) */
     if (wi === 0 || D.w.length > 1) for (const e of (D.w.length > 1 ? (wi === 0 ? [-1] : [1]) : [-1, 1])) { const sx = cx + ux * e * (L / 2 + .06) + fx * DEP * .27, sz = cz + uz * e * (L / 2 + .06) + fz * DEP * .27, m = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8), signMat(D.d)); /* 측벽 가운데 짙은 띠를 피해 앞쪽 */
-      m.position.set(sx, yF1 + H - 3.2, sz); m.lookAt(sx + ux * e, yF1 + H - 3.2, sz + uz * e); scene.add(m); }
+      const yS = yF1 + Math.min(base + 1.7, H - 3.2); m.position.set(sx, yS, sz); m.lookAt(sx + ux * e, yS, sz + uz * e); scene.add(m); } /* 모형: 동 번호는 갈색 저층부 바로 위 측벽 */
     YOFF = 0;
     pieces.push({ cx, cz, ux, uz, L, H, f, ft, yF1, yb, t, n, ln: w.ln || Array.from({ length: n }, (_, k) => n - k) });
     topY = Math.max(topY, yF1 + H); cxs += cx * L; czs += cz * L; wsum += L;
