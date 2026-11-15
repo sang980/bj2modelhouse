@@ -888,7 +888,10 @@ function buildOSM() {
       for (let k = 0; k < cntT * 2; k++) { const x = x0 + rand() * (x1 - x0), z = z0 + rand() * (z1 - z0); if (polyDist(p, x, z) > -1.5 || polyDist(SITE, x, z) < 5) continue;
         if (occAt(x, z) || occAt(x + 2, z) || occAt(x - 2, z) || occAt(x, z + 2) || occAt(x, z - 2)) continue; extraTrees.push([x, heightAt(x, z) - .3, z, 1.9 + rand() * 1.5, 3]); } }
     /* 단지 이름표(OSM 주거단지 이름) */
-    for (const l of GEO.env.labels || []) { if (Math.hypot(l.x, l.z - 15) > 3000) continue; const c = cnv(512, 96), g = c.getContext('2d'); g.font = '700 40px "Noto Sans KR", sans-serif'; const tw = Math.min(500, g.measureText(l.n).width + 40);
+    const labs = []; for (const l of GEO.env.land || []) { if (l.k !== 'residential' || !l.n || !/아파트|단지|자이|푸르지오|포레스티아|위브|센트리빌|아이파크|힐스테이트|래미안|편한세상|캐슬|호반|더샵|주공|타운/.test(l.n) || /빌라|연립|빌리지/.test(l.n)) continue;
+      let A = 0, x = 0, z = 0; for (let k = 0; k < l.p.length; k++) { const a = l.p[k], b = l.p[(k + 1) % l.p.length], c2 = a[0] * b[1] - b[0] * a[1]; A += c2; x += (a[0] + b[0]) * c2; z += (a[1] + b[1]) * c2; }
+      if (Math.abs(A) < 2 * 6000) continue; x /= 3 * A; z /= 3 * A; if (labs.some(q => Math.hypot(q.x - x, q.z - z) < 160)) continue; labs.push({ n: l.n, x, z }); }
+    for (const l of labs) { if (Math.hypot(l.x, l.z - 15) > 3000) continue; const c = cnv(512, 96), g = c.getContext('2d'); g.font = '700 40px "Noto Sans KR", sans-serif'; const tw = Math.min(500, g.measureText(l.n).width + 40);
       g.fillStyle = 'rgba(30,38,46,.78)'; roundRect(g, (512 - tw) / 2, 14, tw, 68, 20); g.fill(); g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(l.n, 256, 50);
       const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false, fog: false })); sp.position.set(l.x, groundAt(l.x, l.z) + 95, l.z); sp.renderOrder = 4; scene.add(sp); areaLabels.push(sp); } }
   /* 가로수: 큰길 양쪽 1.1km 안 */
