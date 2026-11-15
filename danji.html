@@ -455,9 +455,10 @@ function texConcrete() { const c = cnv(1024, 512), g = c.getContext('2d'); noise
   g.fillStyle = 'rgba(0,0,0,.07)'; for (let y = 0; y < 512; y += 26) g.fillRect(0, y, 1024, 1.5); for (let y = 0, r = 0; y < 512; y += 26, r++) for (let x = (r & 1) * 32; x < 1024; x += 64) g.fillRect(x, y, 1.5, 26);
   mazeShapes(g, 1024, 512, '#3c3e42', 31, 40);
   return tex(c); }
-/* 56T 아래 벽돌 옹벽(모형): 갈색 벽돌 + 짙은 세로 홈 무늬 */
-function texPodium() { const c = cnv(1024, 512), g = c.getContext('2d'); g.save(); g.scale(1, 1); brickFill(g, 1024, 512); g.restore();
-  mazeShapes(g, 1024, 512, 'rgba(40,26,22,.92)', 57, 34); g.fillStyle = '#d9d4cc'; g.fillRect(0, 0, 1024, 14); return tex(c); }
+/* 56T 아래 옹벽: 도장(페인트) 마감 — 매끈한 밝은 회색 + 짙은 회색 무늬 칠(벽돌·줄눈 없음) */
+function texPodium() { const c = cnv(1024, 512), g = c.getContext('2d'); noiseFill(g, 1024, 512, '#cbcbc6', .012, 1200);
+  for (let k = 0; k < 14; k++) { g.fillStyle = `rgba(${rand() < .5 ? '255,255,255' : '90,90,85'},${.02 + rand() * .025})`; g.fillRect(rand() * 1024, 0, 60 + rand() * 160, 512); } /* 롤러 자국 */
+  mazeShapes(g, 1024, 512, '#46484c', 57, 34); return tex(c); }
 /* 56T 테라스 세대(모형): 짙은 회색 틀 + 큰 유리문·창(흰 문살), 위 처마 띠 — 한 세대 폭 × 한 층 */
 function texTerr() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#3f4146', .04, 800);
   for (const [x0, w0] of [[40, 300], [380, 300], [720, 140], [880, 110]]) { glass(g, x0, 40, w0, 196, 0); g.fillStyle = 'rgba(255,236,200,.18)'; g.fillRect(x0, 40, w0, 196); g.fillStyle = '#ecebe8'; g.strokeStyle = '#ecebe8'; g.lineWidth = 6; g.strokeRect(x0, 40, w0, 196); for (let x = x0 + w0 / 3; x < x0 + w0 - 5; x += w0 / 3) g.fillRect(x - 2, 40, 4, 196); }
@@ -487,7 +488,7 @@ function obox(cx, cz, ux, uz, L, D, y0, y1, f) {
   y0 += YOFF; y1 += YOFF;
   const fx = -uz, fz = ux, hl = L / 2, hd = D / 2;
   const A = [cx - ux * hl - fx * hd, cz - uz * hl - fz * hd], B = [cx + ux * hl - fx * hd, cz + uz * hl - fz * hd], C = [cx + ux * hl + fx * hd, cz + uz * hl + fz * hd], E = [cx - ux * hl + fx * hd, cz - uz * hl + fz * hd];
-  const wall = (P, Q, nx, nz, s, w) => { if (!s) return; s.gb.quad([P[0], y0, P[1]], [Q[0], y0, Q[1]], [Q[0], y1, Q[1]], [P[0], y1, P[1]], [nx, 0, nz], s.uv ? s.uv(w, y0, y1) : null, s.col); };
+  const wall = (P, Q, nx, nz, s, w) => { if (!s) return; s.gb.quad([P[0], y0, P[1]], [Q[0], y0, Q[1]], [Q[0], y1, Q[1]], [P[0], y1, P[1]], [nx, 0, nz], s.uv ? s.uv(w, y0 - YOFF, y1 - YOFF) : null, s.col); }; /* 텍스처 층 줄은 그 동 맨 아래 층 바닥 기준(실제 슬래브와 맞춤) */
   wall(E, C, fx, fz, f.front, L); wall(B, A, -fx, -fz, f.back, L); wall(C, B, ux, uz, f.right, D); wall(A, E, -ux, -uz, f.left, D);
   if (f.top) { const t = f.top; t.gb.quad([A[0], y1, A[1]], [E[0], y1, E[1]], [C[0], y1, C[1]], [B[0], y1, B[1]], [0, 1, 0], t.uv ? t.uvTop(A, E, C, B) : null, t.col); }
 }
@@ -721,7 +722,7 @@ function buildDong(D, G, MAT) {
   wings.forEach((w, wi) => {
     const { A, L, ux, uz, f, n } = w, cx = A[0] + ux * L / 2, cz = A[1] + uz * L / 2, fx = -uz, fz = ux, tw = L / n;
     /* 해발고(공사계획평면도 FL): 1층 바닥 yb. 56T(테라스) 층은 FL 아래, 낮은 쪽 단을 향함. 116동은 지면(130)~FL(135.7) 필로티 */
-    const yb = (FLV[D.d] || 121) - Y0, t = D.t && (D.w.length === 1 || wi === 1) ? D.t : 0, yF1 = D.pit ? 130 - Y0 : yb - t * FH, ft = D.pit ? f : f + t, H = ft * FH;
+    const yb = (FLV[D.d] || 121) - Y0, t = D.t && (D.w.length === 1 || wi === 1) ? D.t : 0, yF1 = D.pit ? 130 - Y0 : yb - t * FH, ft = D.pit ? f : f + t, H = ft * FH + (D.pit ? yb - yF1 : 0); /* 필로티 동: FL 위로 f개 층 */
     let dW = 0, yl = yb; const tz0 = TZ.find(q => q.key === D.d + '_' + wi); if (tz0) { dW = tz0.dW; yl = tz0.yl; } else for (let d = DEP / 2 + .5; d < 32; d += .5) { const lv = levelAt(cx + fx * d, cz + fz * d); if (lv < yb - 1) { dW = d; yl = levelAt(cx + fx * (d + 2), cz + fz * (d + 2)); break; } }
     const yLowR = Math.min(0, (t ? yl : yb) - yF1) - .4, yBackR = yb - yF1, pitH = D.pit ? yb - yF1 : 0;
     const base = pitH + (t + (f >= 9 ? 3 : 2)) * FH; /* 모형: 1층 바닥 위 3개 층(낮은 동 2개 층)까지 갈색 벽돌, 56T 층 포함 */
@@ -759,18 +760,18 @@ function buildDong(D, G, MAT) {
       obox(ccx - fx * (CORE_D / 2 + .02), ccz - fz * (CORE_D / 2 + .02), ux, uz, 2.4, .04, yBackR, yBackR + 2.6, { back: { gb: G.fin } }); }
     /* 테라스(56T): 테라스 층 앞 포디움(낮은 단 ~ 테라스 바닥) — 앞 옹벽까지, 위는 옥상정원 */
     if (t) { const dep = Math.max(3.8, (dW || DEP / 2 + 3.8) - DEP / 2), ox = DEP / 2 + dep / 2, F = (gb, uv) => ({ gb, uv });
-      /* 벽돌 옹벽(아래 단 ~ 테라스 바닥) + 테라스 바닥 */
+      /* 도장 옹벽(아래 단 ~ 테라스 바닥) + 테라스 바닥 */
       obox(cx + fx * (ox + .1), cz + fz * (ox + .1), ux, uz, L - .2, dep + .2, Math.min(yl - yF1, 0) - .4, .12, { front: F(G.podium, uvTile(20, 10)), left: F(G.podium, uvTile(20, 10)), right: F(G.podium, uvTile(20, 10)), top: { gb: G.tdeck } });
       /* 테라스 가장자리 유리 난간 */
       obox(cx + fx * (DEP / 2 + dep - .15), cz + fz * (DEP / 2 + dep - .15), ux, uz, L - .4, .06, .12, 1.25, { front: { gb: G.rail }, back: { gb: G.rail }, top: { gb: G.white } });
-      /* 세대 사이 벽돌 칸막이 + 테라스 위 처마(1층 바닥 슬래브) */
-      for (let k = 0; k <= n; k++) { const s = -L / 2 + tw * k, ex = Math.max(-L / 2 + .2, Math.min(L / 2 - .2, s)); obox(cx + ux * ex + fx * ox, cz + uz * ex + fz * ox, fx, fz, dep, .35, .12, 2.5, { front: F(G.brick), back: F(G.brick), left: F(G.brick), right: F(G.brick), top: F(G.brick) }); }
+      /* 세대 사이 도장 칸막이 + 테라스 위 처마(1층 바닥 슬래브) */
+      for (let k = 0; k <= n; k++) { const s = -L / 2 + tw * k, ex = Math.max(-L / 2 + .2, Math.min(L / 2 - .2, s)); obox(cx + ux * ex + fx * ox, cz + uz * ex + fz * ox, fx, fz, dep, .35, .12, 2.5, { front: F(G.tdeck), back: F(G.tdeck), left: F(G.tdeck), right: F(G.tdeck), top: F(G.tdeck) }); }
       obox(cx + fx * (DEP / 2 + .9), cz + fz * (DEP / 2 + .9), ux, uz, L, 1.8, yT - .25, yT + .05, { front: { gb: G.white }, back: { gb: G.white }, top: { gb: G.white } }); }
     /* 측벽 동 번호 사인(맨 위층 아래) */
     if (wi === 0 || D.w.length > 1) for (const e of (D.w.length > 1 ? (wi === 0 ? [-1] : [1]) : [-1, 1])) { const sx = cx + ux * e * (L / 2 + .06) + fx * DEP * .27, sz = cz + uz * e * (L / 2 + .06) + fz * DEP * .27, m = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8), signMat(D.d)); /* 측벽 가운데 짙은 띠를 피해 앞쪽 */
       m.position.set(sx, yF1 + H - 3.2, sz); m.lookAt(sx + ux * e, yF1 + H - 3.2, sz + uz * e); scene.add(m); }
     YOFF = 0;
-    pieces.push({ cx, cz, ux, uz, L, H, f, ft, yF1, yb: D.pit ? yF1 : yb, t, n, ln: w.ln || Array.from({ length: n }, (_, k) => n - k) });
+    pieces.push({ cx, cz, ux, uz, L, H, f, ft, yF1, yb, t, n, ln: w.ln || Array.from({ length: n }, (_, k) => n - k) });
     topY = Math.max(topY, yF1 + H); cxs += cx * L; czs += cz * L; wsum += L;
   });
   /* ㄱ자 동: 꺾이는 곳 코어 */
@@ -1267,7 +1268,7 @@ function unitView(dong, ho) {
   for (const p of b.pieces) { const k = p.ln.indexOf(line); if (k < 0) continue;
     if (fl === 0 || fl > p.f || (fl < 0 && -fl > (p.t || 0))) return { err: `${dong}동 ${line}호 라인은 1~${p.f}층${p.t ? `(테라스 세대는 B${line < 10 ? '1' : ''}0${line}처럼 B를 붙여 입력)` : ''}입니다. 1층은 테라스 세대 바로 위 층입니다.` };
     const tw = p.L / p.n, s = -p.L / 2 + tw * (k + .5), fx = -p.uz, fz = p.ux, off = DEP / 2 + (b.D.t && fl <= b.D.t + 1 ? 4.5 : .9);
-    return { x: p.cx + p.ux * s + fx * off, y: p.yb + (fl > 0 ? fl - 1 : fl) * FH + 1.45, z: p.cz + p.uz * s + fz * off, nx: fx, nz: fz, fl, line, f: p.ft, asl: Y0 + p.yb + (fl > 0 ? fl - 1 : fl) * FH + 1.45 }; }
+    return { x: p.cx + p.ux * s + fx * off, y: p.yb + (fl > 0 ? fl - 1 : fl) * FH + 1.45, z: p.cz + p.uz * s + fz * off, nx: fx, nz: fz, fl, line, f: p.f, asl: Y0 + p.yb + (fl > 0 ? fl - 1 : fl) * FH + 1.45 }; }
   return { err: `${dong}동은 1~${lines}호 라인입니다. 예: 1003 = 10층 3호` };
 }
 let unit = null;
