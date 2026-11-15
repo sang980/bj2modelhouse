@@ -2760,7 +2760,7 @@ let b6door = null;
     for (const [w, h, x, y] of [[lw + .004, .008, lw / 2, .012], [lw + .004, .008, lw / 2, lh + .008], [.008, lh, .002, lh / 2 + .01], [.008, lh, lw - .002, lh / 2 + .01]] /* 테를 문짝 끝보다 2mm 내밀어 끝면 z-fighting 방지 */) {
       const f = mesh(BX(w, h, .022), M.black, x, y, 0, d.pivot); f.userData.door = d; doorMeshes.push(f); } } // 얇은 블랙 테
   // 오픈 선반 소품: 화분 + 디퓨저
-  tablePlant(g, WX(nx0 + .12), cnt, WZ(nb + .18)).scale.setScalar(.75);
+  tablePlant(g, WX(nx0 + .12), cnt, WZ(nb + .18)).scale.setScalar(.6); /* 위 선반(거울장 바닥)을 잎이 뚫지 않게 */
   { const dx = nx1 - .12, dz = nb + .2;
     mesh(new THREE.LatheGeometry([[0, 0], [.035, 0], [.04, .03], [.035, .08], [.012, .1], [.01, .12], [0, .12]].map(([x, y]) => new THREE.Vector2(x, y)), 20), M.glass, WX(dx), cnt, WZ(dz), g, { cast: false });
     for (let i = 0; i < 5; i++) { const s = mesh(CY(.0018, .0018, .17, 5), M.black, WX(dx), cnt + .18, WZ(dz), g, { cast: false }); s.rotation.set(Math.cos(i * 1.3) * .2, 0, Math.sin(i * 1.3) * .2); } }

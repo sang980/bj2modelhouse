@@ -1279,7 +1279,7 @@ await phase('침실을 꾸미는 중', 61);
 // ── 침실1: 루버 헤드보드 + LED, 침대 옆 블랙 펜던트, 평판등, 커튼 ──
 // 평면도 방향: 헤드보드는 서쪽 벽(x=8.88), 침실 문(북서쪽) 바로 남쪽부터
 /* VR(55C): 침대 뒤 벽 토프 패브릭 큰 패널 격자 헤드보드(3열 × 2단, 가운데 열이 조금 넓음) */
-{ const tp = std(0xb3a395, .95, 0, { map: M.linen.map }), cols = [[5.15, 5.95], [5.97, 6.93], [6.95, 7.75]];
+{ const tp = std(0xb3a395, .95, 0, { map: M.linen.map }), cols = [[5.3, 5.98], [6.0, 6.93], [6.95, 7.75]]; /* 문 옆 스위치·온도조절기(z ~5.18)가 패널에 묻히지 않게 5.3부터 */
   for (const [z0, z1] of cols) for (const [y0, y1] of [[.52, 1.12], [1.14, 1.74]]) mesh(RB(.06, y1 - y0 - .004, z1 - z0 - .004, .02, 3), tp, WX(8.91), (y0 + y1) / 2, WZ((z0 + z1) / 2), fixed); }
 ledRectWall(8.97, 1.6, 6.45, 2.5, .8, 1, 0, 0xffdcb0, .5, 1.6);
 /* VR 55C: 침대 옆 펜던트 없음 */
@@ -1705,8 +1705,8 @@ ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
     for (const [sx, r] of [[-gap / 2, .06], [gap / 2, -.05]]) { const sp = new THREE.Group(); sp.position.x = sx; sp.rotation.y = r; pr.add(sp); mesh(_slp.sg, _slp.sole, 0, .018, 0, sp, { cast: false }); mesh(_slp.sg, cm, 0, .03, 0, sp); mesh(_slp.strap, cm, 0, .03, .05, sp); } };
   /* 회색 발매트 + 남색 슬리퍼(앞코가 세면대 쪽) */
   { const fib = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#8b8d8f'; x.fillRect(0, 0, 64, 64); for (let i = 0; i < 700; i++) { const v = 110 + rnd() * 60 | 0; x.fillStyle = `rgb(${v},${v + 2},${v + 4})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 1); } return c; })(), { rep: [3, 2] });
-    mesh(RB(.62, .02, .42, .01, 2), shagM('#c9c8c4'), WX(1.3), .01, WZ(4.32), g, { cast: false }); /* VR 55C: 회색 털 매트 + 흰 슬리퍼 */
-    slipperPair(1.3, 4.32, 0xf2f0eb); }
+    mesh(RB(.62, .02, .42, .01, 2), shagM('#c9c8c4'), WX(1.35), .01, WZ(4.72), g, { cast: false }); /* VR 55C: 회색 털 매트 + 흰 슬리퍼 — 열린 문짝이 뚫지 않게 문 회전 범위 밖 */
+    slipperPair(1.35, 4.72, 0xf2f0eb); }
   /* VR 욕실2: 돌 선반 위 갈색 유리 펌프병, 세면기 앞 진회색 발매트 + 연하늘 슬리퍼(앞코가 세면기 쪽) */
   mesh(CY(.032, .03, .1, 18), std(0xf4f2ee, .35), WX(10.2), 1.33, WZ(2.64), g); /* VR 55C: 오른쪽 흰 항아리 2(컵과 짝) + 왼쪽 작은 유리병 3 */
   for (const [x, h, c] of [[9.6, .09, 0x6f8f5a], [9.66, .07, 0xb07a3a], [9.72, .08, 0xdfe6e4]]) { mesh(new THREE.LatheGeometry([[0, 0], [.02, 0], [.022, .01], [.022, h * .6], [.008, h * .8], [.007, h], [0, h]].map(([a, b]) => new THREE.Vector2(a, b)), 18), std(c, .1, 0, { transparent: true, opacity: .8 }), WX(x), 1.28, WZ(2.64), g, { cast: false }); mesh(CY(.008, .008, .015, 10), std(0xc9b48a, .7), WX(x), 1.28 + h + .006, WZ(2.64), g, { cast: false }); }
@@ -2701,7 +2701,7 @@ wall(10.75, 2.5, 12.32, 2.5, TI, [{ from: 10.95, to: 11.75, y1: 2.15, kind: 'ope
   doors.push(d); }
 // 8 드레스룸 시스템선반 — 모델하우스처럼 동쪽(오른쪽) 벽에만 행거, 서쪽은 통로로 비움
 { const g0 = item('o8-1', '드레스룸 시스템선반'); systemShelf(g0, 11.7, 12.21, .2, 2.44, true, { chest: true, chestStart: true, low: true });
-  suitcase(item('o8-1', '캐리어', false), 11.98, 2.1, Math.PI / 2 + .15);
+  suitcase(item('o8-1', '캐리어', false), 11.985, 2.25, .12); /* 낮은 2단 선반(z ~2.06)을 뚫지 않게 선반 끝과 벽 사이에 세로로 */
   // (사진: 작은 창에는 블라인드 없음)
 }
 { const g = item('o8-2', '대형 드레스룸 시스템선반'); systemShelf(g, 11.7, 12.21, .2, 4.82, true, { chest: true, chestStart: true, low: true }); }
@@ -2815,7 +2815,7 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
     for (const [w, h, x, y] of [[lw + .004, .008, lw / 2, .012], [lw + .004, .008, lw / 2, lh + .008], [.008, lh, .002, lh / 2 + .01], [.008, lh, lw - .002, lh / 2 + .01]] /* 테를 문짝 끝보다 2mm 내밀어 끝면 z-fighting 방지 */) {
       const f = mesh(BX(w, h, .022), M.black, x, y, 0, d.pivot); f.userData.door = d; doorMeshes.push(f); } } // 얇은 블랙 테
   // 오픈 선반 소품: 화분 + 디퓨저
-  tablePlant(g, WX(nx0 + .12), cnt, WZ(nb + .18)).scale.setScalar(.75);
+  tablePlant(g, WX(nx0 + .12), cnt, WZ(nb + .18)).scale.setScalar(.6); /* 위 선반(거울장 바닥)을 잎이 뚫지 않게 */
   { const dx = nx1 - .12, dz = nb + .2;
     mesh(new THREE.LatheGeometry([[0, 0], [.035, 0], [.04, .03], [.035, .08], [.012, .1], [.01, .12], [0, .12]].map(([x, y]) => new THREE.Vector2(x, y)), 20), M.glass, WX(dx), cnt, WZ(dz), g, { cast: false });
     for (let i = 0; i < 5; i++) { const s = mesh(CY(.0018, .0018, .17, 5), M.black, WX(dx), cnt + .18, WZ(dz), g, { cast: false }); s.rotation.set(Math.cos(i * 1.3) * .2, 0, Math.sin(i * 1.3) * .2); } }
