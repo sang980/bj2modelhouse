@@ -890,7 +890,12 @@ function addOpening(horiz, line, t, o, parent = structure) {
       put(o.from + ft, o.to - ft, (y0 + y1) / 2 - .03, (y0 + y1) / 2 + .03, -.035, .02, std(0x2d3035, .45, .4));
     } else {
       const panes = 2;
-      for (let i = 1; i < panes; i++) { const u = o.from + w * i / panes; put(u - .03, u + .03, y0, y1, -.04, .04, M.winFrame); }
+      for (let i = 1; i < panes; i++) { const u = o.from + w * i / panes; put(u - .03, u + .03, y0, y1, -.04, .04, M.winFrame);
+        /* 창 잠금 손잡이(크레센트): 가운데 맞닿는 창틀 양쪽 면 — 창은 가운데 높이, 큰 미닫이는 1.05m */
+        const yh = y1 - y0 > 1.6 ? y0 + 1.05 : (y0 + y1) / 2;
+        for (const sd of [-1, 1]) { const vv = (a, b) => sd > 0 ? [a, b] : [-b, -a];
+          put(u - .011, u + .011, yh - .045, yh + .045, ...vv(.04, .047), M.chrome, { cast: false });
+          put(u - .006, u + .006, yh - .004, yh + .04, ...vv(.047, .058), M.chrome, { cast: false }); } }
       put(o.from + ft, o.to - ft, y0 + ft, y1 - ft, -.006, .006, M.glass, { cast: false, recv: false });
       if (o.sill !== false && y0 > .2) put(o.from - .04, o.to + .04, y0 - .028, y0 + .002, -t / 2 - .04, t / 2 + .01, M.white); // 양쪽 벽면보다 나오고 윗면도 창 아래 벽 윗면보다 2mm 위(같은 면이면 깜빡임)
     }
