@@ -1323,6 +1323,20 @@ curtainSet(9.3, 12.0, 9.75, 11.55);
   for (let i = 0; i < 9; i++) { const y = [.125, .545, .965, 1.385, 1.805][i % 5] + .003; let z = z0 + .08 + (i * .37) % 1.6; const bh = .2 + (i % 3) * .04, bt = .05 + (i % 2) * .04;
     for (const dz of [z0 + .45, z0 + .9, z0 + 1.35]) if (z < dz + .025 && z + bt > dz - .005) z = dz + .03; if (z + bt > z1 - .025) z = z1 - .03 - bt; /* 칸막이에 책이 박히지 않게(겹치면 z-fighting) */
     mesh(BOOK.geo(.22, bh, bt, '-x'), BOOK.mats[i % 7], WX(x0 + .16), y + bh / 2, WZ(z + bt / 2), g); } // 책등이 방 쪽(열린 쪽 x0, -x)
+  { const blk = std(0x1a1a1c, .35), wht = std(0xf4f3ef, .35), X = 4.9, cz = [6.175, 6.625, 7.075, 7.515], ly = [.125, .545, .965, 1.385, 1.805]; /* VR: 빈 칸마다 소품 — 흰 공 조형·화분·눕힌 책·TOM FORD 책·액자·흰 공·펼친 그림책·검은 매듭·카드·검은 링·검은 화병 */
+    for (let i = 0; i < 3; i++) mesh(new THREE.SphereGeometry(.045 - i * .008, 18, 12), wht, WX(X + (i % 2) * .02), ly[4] + .045 + i * .07, WZ(cz[0] + (i - 1) * .02), g);
+    mesh(CY(.045, .038, .08, 20), wht, WX(X), ly[4] + .04, WZ(cz[1]), g); grassTuft(g, WX(X), ly[4] + .08, WZ(cz[1]), 20, .12);
+    for (let i = 0; i < 2; i++) { const b = mesh(BOOK.geo(.26, .035, .2, 'lie'), BOOK.mats[[0, 5][i]], WX(X - .01), ly[4] + .0175 + i * .036, WZ(cz[2]), g); b.rotation.y = i * .1; }
+    for (let i = 0; i < 2; i++) mesh(BOOK.geo(.22, .28, .045, '-x'), BOOK.mats[7], WX(X), ly[1] + .14, WZ(cz[0] - .05 + i * .05), g);
+    { const f = new THREE.Group(); f.position.set(WX(X + .05), ly[1], WZ(cz[2])); f.rotation.z = .12; g.add(f); mesh(BX(.015, .2, .16), blk, 0, .1, 0, f); mesh(BX(.002, .16, .12), std(0xd9d6cf, .7), -.009, .1, 0, f, { cast: false }); }
+    mesh(new THREE.SphereGeometry(.06, 20, 14), std(0xf2f1ec, .5), WX(X), ly[1] + .06, WZ(cz[3]), g);
+    { const st = new THREE.Group(); st.position.set(WX(X), ly[2], WZ(cz[0])); g.add(st); mesh(BX(.12, .012, .2), blk, 0, .006, 0, st); const pg = new THREE.Group(); pg.position.set(-.02, .012, 0); pg.rotation.z = -.35; st.add(pg); mesh(BX(.006, .16, .24), std(0xfbfaf6, .8), 0, .08, 0, pg);
+      for (const [y, z, c] of [[.11, -.06, 0xd9482b], [.07, .05, 0x6aa84f], [.12, .07, 0xe9a23b]]) mesh(new THREE.SphereGeometry(.018, 10, 8), std(c, .6), -.005, y, z, pg, { cast: false }).scale.x = .2; }
+    { const k = mesh(new THREE.TorusKnotGeometry(.045, .016, 64, 10), blk, WX(X), ly[2] + .08, WZ(cz[3]), g); k.rotation.y = Math.PI / 2; }
+    for (let i = 0; i < 2; i++) { const c = mesh(BX(.012, .18, .13), std(0xf6f5f1, .6), WX(X + .06), ly[3] + .09, WZ(cz[0] - .07 + i * .14), g); c.rotation.z = .1; }
+    { const r = mesh(new THREE.TorusGeometry(.06, .022, 16, 40), blk, WX(X), ly[3] + .082, WZ(cz[1]), g); r.rotation.y = Math.PI / 2; }
+    for (let i = 0; i < 3; i++) { const b = mesh(BOOK.geo(.24, .03, .18, 'lie'), BOOK.mats[[1, 5, 4][i]], WX(X - .01), ly[0] + .015 + i * .031, WZ(cz[1]), g); b.rotation.y = (i - 1) * .08; }
+    mesh(new THREE.LatheGeometry([[0, 0], [.04, 0], [.05, .05], [.035, .14], [.02, .18], [.025, .2], [0, .2]].map(([a, b]) => new THREE.Vector2(a, b)), 24), blk, WX(X), ly[0], WZ(cz[3]), g); }
   ledRectWall(4.7, 1.1, 6.85, 1.7, 1.9, -1, 0, 0xeaf3ff, .5, 1.3); }
 const alphaTable = piece('원형 테이블', 3.75, 7.15, 0);
 { const t = alphaTable;
