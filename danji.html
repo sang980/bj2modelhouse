@@ -848,8 +848,8 @@ function buildDong(D, G, MAT) {
     /* 그 밖의 동: 모형 사진처럼 정면은 차콜 판넬 없이 고른 토프(저층 3개 층 갈색) */
     /* 코어(계단·엘리베이터) — 뒤쪽, 옥상 기계실까지 */
     const cores = D.w.length > 1 ? (wi === 0 ? [.5] : []) : (n === 4 ? [.25, .75] : [.5]);
-    for (const t of cores) { const s = t * L - L / 2, ccx = cx + ux * s - fx * (DEP / 2 + CORE_D / 2 - .4), ccz = cz + uz * s - fz * (DEP / 2 + CORE_D / 2 - .4), ch = H + 2.2;
-      obox(ccx, ccz, ux, uz, CORE_W, CORE_D, yLowR, ch, { front: { gb: G.core, uv: uvTile(CORE_W, FH) }, back: { gb: G.core, uv: uvTile(CORE_W, FH) }, left: { gb: G.core, uv: uvTile(CORE_D, FH) }, right: { gb: G.core, uv: uvTile(CORE_D, FH) }, top: { gb: G.white } });
+    for (const t of cores) { const s = t * L - L / 2, ccx = cx + ux * s - fx * (DEP / 2 + CORE_D / 2 - .4), ccz = cz + uz * s - fz * (DEP / 2 + CORE_D / 2 - .4), ch = H + (NOSOLAR.has(D.d) ? 2.2 : .5);
+      obox(ccx, ccz, ux, uz, CORE_W, CORE_D, yLowR, ch, { front: { gb: G.core, uv: uvTile(CORE_W, FH) }, back: { gb: G.core, uv: uvTile(CORE_W, FH) }, left: { gb: G.core, uv: uvTile(CORE_D, FH) }, right: { gb: G.core, uv: uvTile(CORE_D, FH) }, top: { gb: NOSOLAR.has(D.d) ? G.white : G.fin } }); /* 태양광 동은 코어를 캐노피 높이 아래로(모형: 옥상에 흰 상자 안 보임) */
       /* (모형: 옥탑 기계실이 태양광 캐노피 뒤에 낮게 숨어 보이지 않음) */
       /* 공동현관: 코어 뒤쪽 캐노피 + 유리문 */
       const ex = ccx - fx * (CORE_D / 2 + 1.1), ez = ccz - fz * (CORE_D / 2 + 1.1);
