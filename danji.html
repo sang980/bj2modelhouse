@@ -1150,8 +1150,14 @@ function buildCut() {
     const C = new GB(), K = new GB(), c0 = [a[0] - dx * 1.6, a[1] - dz * 1.6]; /* 터널 안 어두운 바닥(도로 띠가 갱구 앞에서 끝나 보이게) */
     { const g2 = new GB(); g2.quad([a[0] - ux * 8 - dx * 1.2, yb - .05, a[1] - uz * 8 - dz * 1.2], [a[0] + ux * 8 - dx * 1.2, yb - .05, a[1] + uz * 8 - dz * 1.2], [a[0] + ux * 8 + dx * .4, yb + .55, a[1] + uz * 8 + dz * .4], [a[0] - ux * 8 + dx * .4, yb + .55, a[1] - uz * 8 + dz * .4], [0, 1, 0]); }
     obox(c0[0], c0[1], ux, uz, W, 3.2, yb - .5, yt, { front: { gb: C }, back: { gb: C }, top: { gb: C }, left: { gb: C }, right: { gb: C } });
-    for (const s2 of [-4, 4]) { const p = [a[0] + ux * s2 + dx * .02, a[1] + uz * s2 + dz * .02]; K.quad([p[0] - ux * 3.4, yb + .2, p[1] - uz * 3.4], [p[0] + ux * 3.4, yb + .2, p[1] + uz * 3.4], [p[0] + ux * 3.4, yb + 6.4, p[1] + uz * 3.4], [p[0] - ux * 3.4, yb + 6.4, p[1] - uz * 3.4], [dx, 0, dz]); }
-    scene.add(new THREE.Mesh(C.build(), new THREE.MeshStandardMaterial({ color: '#a8a6a0', roughness: .95, side: THREE.DoubleSide }))); scene.add(new THREE.Mesh(K.build(), new THREE.MeshBasicMaterial({ color: '#111316', side: THREE.DoubleSide }))); }
+    /* 11-16 모형 WE1·WG1·WG4·WG9: 넓은 아치 하나 + 위에 '영장산터널' 판 + 잔디 덮인 지붕 */
+    { const sh = new THREE.Shape(), hw = 7.2, sp = 4.0, rise = 2.6; sh.moveTo(-hw, 0); sh.lineTo(hw, 0); sh.lineTo(hw, sp); sh.absellipse(0, sp, hw, rise, 0, Math.PI, false); sh.lineTo(-hw, 0);
+      const ag = new THREE.ShapeGeometry(sh, 24), pos = ag.attributes.position; for (let i = 0; i < pos.count; i++) { const u = pos.getX(i), v = pos.getY(i); pos.setXYZ(i, a[0] + ux * u + dx * .03, yb + .2 + v, a[1] + uz * u + dz * .03); } ag.computeVertexNormals();
+      scene.add(new THREE.Mesh(ag, new THREE.MeshBasicMaterial({ color: '#111316', side: THREE.DoubleSide }))); }
+    { const sc = cnv(1024, 256), sg = sc.getContext('2d'); sg.fillStyle = '#3d3c39'; sg.fillRect(0, 0, 1024, 256); sg.strokeStyle = '#e9e8e3'; sg.lineWidth = 8; sg.strokeRect(16, 16, 992, 224); sg.fillStyle = '#f3f2ee'; sg.font = '800 150px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; sg.textAlign = 'center'; sg.textBaseline = 'middle'; sg.fillText('영장산터널', 512, 136);
+      const st = new THREE.CanvasTexture(sc); st.colorSpace = THREE.SRGBColorSpace; st.anisotropy = ANISO; const sm = new THREE.Mesh(new THREE.PlaneGeometry(10, 2.5), new THREE.MeshStandardMaterial({ map: st, roughness: .6 })), p = [a[0] + dx * .3, a[1] + dz * .3]; sm.position.set(p[0], yt + 1.3, p[1]); sm.lookAt(p[0] + dx, yt + 1.3, p[1] + dz); scene.add(sm);
+      const GT = new GB(); obox(c0[0], c0[1], ux, uz, W - .4, 3.0, yt, yt + .3, { top: { gb: GT }, front: { gb: GT }, back: { gb: GT }, left: { gb: GT }, right: { gb: GT } }); scene.add(new THREE.Mesh(GT.build(), new THREE.MeshLambertMaterial({ color: '#5e8a3c' }))); }
+    scene.add(new THREE.Mesh(C.build(), new THREE.MeshStandardMaterial({ color: '#c6c4be', roughness: .95, side: THREE.DoubleSide }))); } /* 밝은 회색 면벽 */
 }
 function buildNW() {
   const mkT = draw => { const c = cnv(256, 256), g = c.getContext('2d'); draw(g); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
