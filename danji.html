@@ -511,7 +511,7 @@ function texConcrete() { const c = cnv(1024, 512), g = c.getContext('2d'); noise
   return tex(c); }
 /* 56T 아래 옹벽: 갈색 도장(페인트) 마감 + 짙은 홈 무늬(벽돌·줄눈 없음) */
 function texPodium(light) { const c = cnv(1024, 512), g = c.getContext('2d'); if (light) noiseFill(g, 1024, 512, '#b2afa8', .03, 1600); else paintBrown(g, 1024, 512); /* light: 모형 VE27·VE29 111~113동 테라스 아래는 밝은 회색 도장 */ /* 모형: 저층과 같은 갈색 도장 + 짙은 홈 무늬 */
-  { const rr = rng(57); g.fillStyle = light ? 'rgba(48,48,48,.8)' : 'rgba(30,20,16,.85)'; for (let row = 0; row < 4; row++) { const y = 40 + row * 120; for (let x = 18 + (row & 1) * 40; x < 1010; x += 80 + (rr() * 3 | 0) * 16) { const h = 40 + (rr() * 3 | 0) * 18; g.fillRect(x, y + (rr() * 20 | 0), 20, h); } } } /* 모형 사진: 작은 짙은 세로 홈이 고르게(한 장 20m×10m: 홈 0.4m×0.8~1.5m) */
+  mazeShapes(g, 1024, 512, light ? 'rgba(48,48,48,.8)' : 'rgba(52,26,18,.78)', 57, 40); /* 11-16 모형 사진 1 확대(105동 56T 아래): 갈색 벽에 더 짙은 갈색 테트리스 무늬(막대·T·S자, 0.8m 칸) — 작은 세로 홈이 아님 */
   return tex(c); }
 /* 56T 테라스 세대(모형): 짙은 회색 틀 + 큰 유리문·창(흰 문살), 위 처마 띠 — 한 세대 폭 × 한 층 */
 function texTerr() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#36332f', .04, 800); /* 모형 사진: 56T 줄은 짙은 회갈색 벽 + 불 켜진 큰 창·작은 창이 한 줄로 */
