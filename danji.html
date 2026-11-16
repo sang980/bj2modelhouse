@@ -1217,8 +1217,8 @@ function buildEntrance() {
   /* 단지 경계 바깥 보도(도로 가장자리 ~ 경계): 맨땅 대신 보도블록 */
   { const road = z => { const t = (z - 1) / 134; return [-157 + 74 * t + .876 * 3.7, z - .484 * 3.7]; };
     drapePoly([road(26), road(104), [-97.5, 94.7], [-105.7, 78.2], [-116.7, 59], [-127.7, 39.7], [-132, 31]], new THREE.MeshLambertMaterial({ map: pav, ...off(-3, -6) }), .5, 2.5); }
-  /* 조형물 광장(도면 원형): 둥근 무늬 바닥 + 스테인리스 고리 조형물 */
-  { const ring = mkT(g => { g.fillStyle = '#c9c7c0'; g.fillRect(0, 0, 256, 256); g.strokeStyle = '#a9a69d'; g.lineWidth = 5; for (let r = 20; r < 128; r += 22) { g.beginPath(); g.arc(128, 128, r, 0, 7); g.stroke(); } });
+  /* 조형물 광장: 11-16 삭제 — 모형 VE07·VE09·VN04~07에는 조형물 없이 포장 + 작은 나무 줄뿐(배치도의 둥근 나무 기호를 원형 광장으로 잘못 읽었음) */
+  if (false) { const ring = mkT(g => { g.fillStyle = '#c9c7c0'; g.fillRect(0, 0, 256, 256); g.strokeStyle = '#a9a69d'; g.lineWidth = 5; for (let r = 20; r < 128; r += 22) { g.beginPath(); g.arc(128, 128, r, 0, 7); g.stroke(); } });
     const c = new THREE.Mesh(new THREE.CircleGeometry(5.8, 56).rotateX(-Math.PI / 2), new THREE.MeshLambertMaterial({ map: ring, ...off(-6, -12) })); c.position.set(ENT.sculp[0], Yp + .1, ENT.sculp[1]); scene.add(c);
     const st = new THREE.MeshStandardMaterial({ color: '#dfe3e6', metalness: .85, roughness: .18 });
     const tor = new THREE.Mesh(new THREE.TorusGeometry(2.1, .22, 14, 48), st); tor.position.set(ENT.sculp[0], Yp + 2.6, ENT.sculp[1]); tor.rotation.y = .6; tor.castShadow = true; scene.add(tor);
