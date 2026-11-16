@@ -736,9 +736,9 @@ async function build() {
     const hm = new THREE.Mesh(H2.build(), new THREE.MeshLambertMaterial({ map: T.green })); hm.receiveShadow = hm.castShadow = true; scene.add(hm);
     const rm = new THREE.Mesh(Rl.build(), new THREE.MeshStandardMaterial({ color: '#b9c3c8', roughness: .3, transparent: true, opacity: .45 })); scene.add(rm); }
   /* 외부계단 3(모형 사진: 106·107동 앞 121↔112 옹벽에 붙은 짙은 회색 계단탑 + 검은 세로 홈) */
-  { const u = [.5, .87], n = [-.87, .5], c = [74 + n[0] * 2.2, 48 + n[1] * 2.2], y0 = 112 - Y0 - .3, y1 = 121 - Y0 + 3.1, sb = new GB(), F = { gb: sb, uv: uvTile(6, 4) };
+  { const u = [.5, .87], n = [-.87, .5], c = [74 + n[0] * 2.2, 48 + n[1] * 2.2], y0 = 112 - Y0 - .3, y1 = 121 - Y0 + 3.1, sb = new GB(), F = { gb: sb, uv: () => [0, 0, 1, 0, 1, 1, 0, 1] }; /* 한 면에 무늬 한 장(반복 없음) */
     obox(c[0], c[1], u[0], u[1], 6.2, 4.4, y0, y1, { front: F, back: F, left: F, right: F, top: { gb: sb } });
-    const cv = cnv(256, 256), g = cv.getContext('2d'); noiseFill(g, 256, 256, '#8c8780', .03, 500); g.fillStyle = 'rgba(0,0,0,.12)'; for (let y = 64; y < 256; y += 64) g.fillRect(0, y, 256, 2); g.fillStyle = '#2b2a28'; g.fillRect(26, 30, 84, 200); g.fillRect(146, 60, 84, 170); g.fillStyle = '#e9e8e4'; g.fillRect(0, 0, 256, 12); /* 모형 사진 2 확대: 중간 회색 + 큰 짙은 판 2개 + 흰 갓 */
+    const cv = cnv(256, 256), g = cv.getContext('2d'); noiseFill(g, 256, 256, '#b4b0a9', .03, 500); g.fillStyle = '#2b2a28'; for (const [x, y, w, h] of [[22, 30, 70, 92], [22, 132, 70, 104], [112, 40, 26, 196], [160, 46, 74, 84], [160, 140, 74, 80]]) g.fillRect(x, y, w, h); g.fillStyle = '#4a4642'; g.fillRect(0, 0, 256, 14); /* 11-16 모형 사진 1 확대: 밝은 회색 + 좌우 2단 큰 짙은 판 + 가운데 긴 홈, 짙은 갓 띠 */ /* 모형 사진 2 확대: 중간 회색 + 큰 짙은 판 2개 + 흰 갓 */
     const t = tex(cv); const m2 = new THREE.Mesh(sb.build(), new THREE.MeshStandardMaterial({ map: t, roughness: .9 })); m2.castShadow = m2.receiveShadow = true; scene.add(m2); }
   /* 동쪽 외부계단 5(모형): 근린공원 산책로로 내려가는 벽돌 계단탑 */
   { const sx = 176, sz = 34, gy = GEO.ok ? groundAt(sx + 6, sz) : -4, top = levelAt(166, 34) + 3.2, B2 = new GB(), F = { front: { gb: B2, uv: uvTile(7, 7) }, back: { gb: B2, uv: uvTile(7, 7) }, left: { gb: B2, uv: uvTile(4.5, 7) }, right: { gb: B2, uv: uvTile(4.5, 7) }, top: { gb: B2 } };
