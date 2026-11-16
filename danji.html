@@ -880,11 +880,11 @@ function buildDong(D, G, MAT) {
       const yS = yF1 + Math.min(base + 1.7, H - 3.2); m.position.set(sx, yS, sz); m.lookAt(sx + ux * e, yS, sz + uz * e); scene.add(m); } /* 모형: 동 번호는 갈색 저층부 바로 위 측벽 */
     YOFF = 0;
     /* 동 뒤(공동현관 쪽) 보행로(모형 VE08: 동을 따라 곧게 뻗은 회색 보도블록 길) — 단 높이가 같은 구간만 */
-    { const off = DEP / 2 + CORE_D + 3.6 + ([118, 119].includes(D.d) ? 5 : 0), pcx = cx - fx * off, pcz = cz - fz * off, y0 = levelAt(pcx, pcz), hl = L / 2 + ([118, 119].includes(D.d) ? 14 : 4) /* 모형 VE17: 118·119동 뒤 넓은 길은 두 동 사이 한가운데 */, w = [118, 119].includes(D.d) ? 3 : 2, ns = Math.ceil(hl * 2 / 3);
+    { const off = DEP / 2 + CORE_D + 3.6 + ([118, 119].includes(D.d) ? 5 : 4), pcx = cx - fx * off, pcz = cz - fz * off, y0 = levelAt(pcx, pcz), hl = L / 2 + ([118, 119].includes(D.d) ? 14 : 4) /* 모형 VE08·VE17: 동 뒤 길은 동 사이 가운데쯤 — 코어 쪽에 나무 한 줄·환기구가 들어갈 자리 */, w = [118, 119].includes(D.d) ? 3 : 2, ns = Math.ceil(hl * 2 / 3);
       if (polyDist(SITE, pcx, pcz) < -3) for (let k = 0; k < ns; k++) { const a = -hl + k * hl * 2 / ns, b = a + hl * 2 / ns, mx = pcx + ux * (a + b) / 2, mz = pcz + uz * (a + b) / 2;
         if (Math.abs(levelAt(mx, mz) - y0) > .4 || polyDist(SITE, mx, mz) > -2) continue; const P = [pcx + ux * a, pcz + uz * a], Q = [pcx + ux * b, pcz + uz * b], y = y0 + .16; WALKS.push([P, Q, w]);
         G.path.quad([P[0] + fx * w, y, P[1] + fz * w], [Q[0] + fx * w, y, Q[1] + fz * w], [Q[0] - fx * w, y, Q[1] - fz * w], [P[0] - fx * w, y, P[1] - fz * w], [0, 1, 0], [(P[0]) / 4, -P[1] / 4, Q[0] / 4, -Q[1] / 4, (Q[0] - fx * 2 * w) / 4, -(Q[1] - fz * 2 * w) / 4, (P[0] - fx * 2 * w) / 4, -(P[1] - fz * 2 * w) / 4]); } }
-    { const off = DEP / 2 + CORE_D + ([118, 119].includes(D.d) ? 4 : 6.6), y0 = levelAt(cx - fx * off, cz - fz * off); if (polyDist(SITE, cx - fx * off, cz - fz * off) < -3) for (const sgn of [-1, 1]) { const s2 = sgn * (L / 2 - 3), bx = cx + ux * s2 - fx * off, bz = cz + uz * s2 - fz * off; if (Math.abs(levelAt(bx, bz) - y0) > .3) continue;
+    { const off = DEP / 2 + CORE_D + 3, y0 = levelAt(cx - fx * off, cz - fz * off); if (polyDist(SITE, cx - fx * off, cz - fz * off) < -3) for (const sgn of [-1, 1]) { const s2 = sgn * (L / 2 - 3), bx = cx + ux * s2 - fx * off, bz = cz + uz * s2 - fz * off; if (Math.abs(levelAt(bx, bz) - y0) > .3) continue;
       obox(bx, bz, ux, uz, 2.2, 1.6, y0 - YOFF, y0 - YOFF + 1.3, { front: { gb: G.vent }, back: { gb: G.vent }, left: { gb: G.vent }, right: { gb: G.vent }, top: { gb: G.vent } }); } } /* 모형 VE08: 길가 짙은 회색 환기구 */
     pieces.push({ cx, cz, ux, uz, L, H, f, ft, yF1, yb, t, n, ln: w.ln || Array.from({ length: n }, (_, k) => n - k) });
     topY = Math.max(topY, yF1 + H); cxs += cx * L; czs += cz * L; wsum += L;
