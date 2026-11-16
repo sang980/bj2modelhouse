@@ -456,8 +456,8 @@ function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (
   if (!brick) { g.fillStyle = 'rgba(40,40,40,.16)'; for (let x = 14; x < 1024; x += 22) if (x < 174 || x > 850) g.fillRect(x, 0, 2.5, 256); g.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 17; x < 1024; x += 22) if (x < 174 || x > 850) g.fillRect(x, 0, 1.5, 256); } /* 모형 동영상: 측벽은 밝은 회색 + 고른 가는 세로 홈 */
   /* 모형: 측벽 가운데 짙은 남색 유리 세로 띠(지붕까지) */
   if (brick) { g.fillStyle = '#4a2e25'; g.fillRect(180, 0, 664, 256); for (const x of [240, 420, 600, 760]) win(g, x, 70, 64, 110, 1, 6, '#b8b4ad', 3); }
-  else { g.fillStyle = '#1f2f3c'; g.fillRect(180, 0, 664, 256); g.fillStyle = 'rgba(255,255,255,.04)'; g.fillRect(180, 0, 664, 128); /* 모형 VE08·VE26: 측벽 폭의 약 65% 청록·남색 유리 판넬 + 층마다 밝은 창 */
-    for (let x = 214; x < 820; x += 66) { g.fillStyle = '#2b3946'; g.fillRect(x, 92, 26, 62); g.fillStyle = 'rgba(40,70,85,.5)'; g.fillRect(x, 120, 26, 3); } g.fillStyle = '#17242e'; g.fillRect(180, 248, 664, 8); }
+  else { g.fillStyle = '#26231f'; g.fillRect(180, 0, 664, 256); /* 모형 사진 1(104동 서측): 남색이 아니라 거의 검은 짙은 유리 판(51,46,39) */ g.fillStyle = 'rgba(255,255,255,.04)'; g.fillRect(180, 0, 664, 128); /* 모형 VE08·VE26: 측벽 폭의 약 65% 청록·남색 유리 판넬 + 층마다 밝은 창 */
+    for (let x = 214; x < 820; x += 66) { g.fillStyle = '#332f2b'; g.fillRect(x, 92, 26, 62); g.fillStyle = 'rgba(90,85,78,.4)'; g.fillRect(x, 120, 26, 3); } g.fillStyle = '#1b1916'; g.fillRect(180, 248, 664, 8); }
   return tex(c); }
 /* 측벽 회색 띠(모형 VE08: 남색 판넬 아래 2개 층 — 회색 벽 + 층마다 가운데 짙은 가로 판) */
 function texSideB() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#9b968f', .03, 1200); g.fillStyle = 'rgba(40,40,40,.14)'; for (let x = 14; x < 1024; x += 22) if (x < 174 || x > 850) g.fillRect(x, 0, 2.5, 256);
