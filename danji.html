@@ -1021,7 +1021,7 @@ function buildYard() {
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; const P = [], U = [], I = [];
     for (const [x, z] of FZ) { let best = null, bd = 1e9; for (const k in BLD) for (const p of BLD[k].pieces) { const d = Math.hypot(x - p.cx, z - p.cz); if (d < bd) { bd = d; best = p; } } if (!best) continue;
       const ux = best.ux, uz = best.uz, hl = 5, hw = 2.4, y = levelAt(x, z), Q = [[-hl, -hw], [hl, -hw], [hl, hw], [-hl, hw]].map(([a, b2]) => [x + ux * a - uz * b2, z + uz * a + ux * b2]);
-      if (Q.some(q => Math.abs(levelAt(q[0], q[1]) - y) > .3)) continue; const n0 = P.length / 3; for (const q of Q) P.push(q[0], y + .07, q[1]); U.push(0, 0, 1, 0, 1, 1, 0, 1); I.push(n0, n0 + 2, n0 + 1, n0, n0 + 3, n0 + 2); }
+      if (Q.some(q => Math.abs(levelAt(q[0], q[1]) - y) > .3)) continue; const n0 = P.length / 3; for (const q of Q) P.push(q[0], y + .07, q[1]); U.push(0, 1, 1, 1, 1, 0, 0, 0); /* 위에서 볼 때 글자가 바로 읽히게(거울상 방지) */ I.push(n0, n0 + 2, n0 + 1, n0, n0 + 3, n0 + 2); }
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(U, 2)); geo.setIndex(I); geo.computeVertexNormals();
     const fm = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: .9, side: THREE.DoubleSide, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -8, polygonOffsetUnits: -16 })); fm.receiveShadow = true; fm.renderOrder = 4; scene.add(fm); }
   /* 어린이놀이터-2: 모래색 바닥 + 놀이기구 + 흰 퍼걸러 */
@@ -1484,7 +1484,7 @@ function buildTrees(planData, PW, PH, PK) {
     pts.push([x, heightAt(x, z) - .4, z, 3.4 + rand() * 2.8, rand() < .28 ? 2 : 1]); made++; }
   /* 모형 VE08·VE16: 동 뒤 보행로 양옆으로 나무·관목 줄 */
   for (const [P, Q, w] of WALKS) { const L = Math.hypot(Q[0] - P[0], Q[1] - P[1]), ux = (Q[0] - P[0]) / L, uz = (Q[1] - P[1]) / L, nx = -uz, nz = ux;
-    for (let d = 1.2; d < L; d += 2.8) for (const sd of [-1, 1]) for (const row of [0]) { if (rand() < .5) continue; /* 모형 VE17: 길 양옆 한 줄, 작은 나무·관목 */ const o = w + 1.6 + row + rand() * 1.2, x = P[0] + ux * d + nx * o * sd, z = P[1] + uz * d + nz * o * sd; if (inBld(x, z) || polyDist(SITE, x, z) > -2 || WALKS.some(([A, B, w2]) => pathDist([A, B], x, z) < w2 + .8)) continue;
+    for (let d = 1.2; d < L; d += 2.8) for (const sd of [-1, 1]) for (const row of [0]) { if (rand() < .5) continue; /* 모형 VE17: 길 양옆 한 줄, 작은 나무·관목 */ const o = w + 1.6 + row + rand() * 1.2, x = P[0] + ux * d + nx * o * sd, z = P[1] + uz * d + nz * o * sd; if (inBld(x, z) || polyDist(SITE, x, z) > -2 || WALKS.some(([A, B, w2]) => pathDist([A, B], x, z) < w2 + .8) || FZ.some(([fx2, fz2]) => Math.hypot(x - fx2, z - fz2) < 6.5)) continue;
       pts.push([x, levelAt(x, z), z, rand() < .65 ? .5 + rand() * .3 : .9 + rand() * .45, rand() < .15 ? 2 : 0]); } } /* 모형 VE16: 길가는 대부분 낮은 관목, 나무는 드문드문 */
   for (const t of extraTrees) pts.push(t);
   /* 침엽수(원뿔) */
