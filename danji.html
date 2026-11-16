@@ -1269,7 +1269,13 @@ function buildEntrance() {
         g.computeVertexNormals(); const m = new THREE.Mesh(g, om); m.renderOrder = 4; scene.add(m);
         for (const [p, q] of [[B1, A], [B2, A], [B1, B2]]) flatP(strip(p, q, .16), OL, Yp + .105, 8); };
       split([-d[0], -d[1]], 9.3, 19, 2.4);
-      { const dv = [ENT.sse[0] - R[0], ENT.sse[1] - R[1]], dl = Math.hypot(dv[0], dv[1]); split([dv[0] / dl, dv[1] / dl], 9.3, 15, 1.8); } } }
+      { const dv = [ENT.sse[0] - R[0], ENT.sse[1] - R[1]], dl = Math.hypot(dv[0], dv[1]); split([dv[0] / dl, dv[1] / dl], 9.3, 15, 1.8); }
+      /* 모형 VN06: 회전교차로 바깥 가장자리와 세 갈래 길 양쪽 가장자리를 따라 주황 선 */
+      { const legs = [[[-d[0], -d[1]], 3.6, 24], ...[[ENT.ne, 3.25], [ENT.sse, 3]].map(([p, hw]) => { const v = [p[0] - R[0], p[1] - R[1]], l = Math.hypot(v[0], v[1]); return [[v[0] / l, v[1] / l], hw, l - 1]; })];
+        const gaps = legs.map(([u, hw]) => [Math.atan2(-u[1], u[0]), Math.asin(Math.min(.99, (hw + .2) / 9.35))]).sort((a, b) => a[0] - b[0]);
+        for (let i = 0; i < gaps.length; i++) { const [a0, h0] = gaps[i], [a1, h1] = gaps[(i + 1) % gaps.length]; const s0 = a0 + h0; let s1 = a1 - h1; if (s1 <= s0) s1 += Math.PI * 2;
+          const m = new THREE.Mesh(new THREE.RingGeometry(9.22, 9.4, 48, 1, s0, s1 - s0).rotateX(-Math.PI / 2), OL); m.position.set(R[0], Yp + .105, R[1]); m.renderOrder = 4; scene.add(m); }
+        for (const [u, hw, L] of legs) { const w = [-u[1], u[0]], o0 = hw - .2, r0 = Math.sqrt(Math.max(0, 9.31 * 9.31 - o0 * o0)); for (const sg of [-1, 1]) { const o = sg * o0; flatP(strip([R[0] + u[0] * r0 + w[0] * o, R[1] + u[1] * r0 + w[1] * o], [R[0] + u[0] * L + w[0] * o, R[1] + u[1] * L + w[1] * o], .16), OL, Yp + .105, 8); } } } } }
   /* 도로 → 광장 경사로(단지 경계 바깥, GL 108.3 → FH 110) */
   { const g = new GB(), n = ENT.n, w = 6; const P0 = ENT.at(33), P1 = ENT.mouth, y0 = heightAt(P0[0], P0[1]) + .45, y1 = Yp + .08;
     g.quad([P0[0] - n[0] * w, y0, P0[1] - n[1] * w], [P0[0] + n[0] * w, y0, P0[1] + n[1] * w], [P1[0] + n[0] * w, y1, P1[1] + n[1] * w], [P1[0] - n[0] * w, y1, P1[1] - n[1] * w], [0, 1, 0], [0, 0, 1.5, 0, 1.5, 1, 0, 1]); /* 위를 향하게 */
