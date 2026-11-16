@@ -489,7 +489,7 @@ function roughFrom(t) { const src = t.image, w = src.width, h = src.height, c = 
   for (let i = 0; i < a.length; i += 4) { const r = a[i], gg = a[i + 1], b = a[i + 2], l = .3 * r + .59 * gg + .11 * b, gl = b > r + 6 && l < 200; const v = gl ? 22 : 228; a[i] = a[i + 1] = a[i + 2] = v; }
   g.putImageData(d, 0, 0); const rt = new THREE.CanvasTexture(c); rt.wrapS = t.wrapS; rt.wrapT = t.wrapT; rt.anisotropy = ANISO; return rt; }
 function texCore() { const c = cnv(512, 256), g = c.getContext('2d'); noiseFill(g, 512, 256, '#c2beb7', .04, 900); /* 모형: 코어는 밝은 회색 벽 + 계단실 작은 창 */
-  g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(0, 250, 512, 6); g.fillStyle = '#e2e0da'; g.fillRect(226, 80, 60, 96); glass(g, 232, 86, 48, 84, 1);
+  g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(0, 250, 512, 6); g.fillStyle = '#e2e0da'; g.fillRect(226, 80, 60, 96); glass(g, 232, 86, 48, 84, 4); /* 11-16: 계단실 창도 푸른빛 없는 짙은 유리(모형) */
   return tex(c); }
 function texRoof() { const c = cnv(512, 512), g = c.getContext('2d'); noiseFill(g, 512, 512, '#5d6368', .04, 1500); /* 모형 사진 1: 태양광 판은 푸른기 적은 회청 슬레이트(87,93,99) */
   for (let y = 20; y < 500; y += 70) for (let x = 16; x < 500; x += 60) { g.fillStyle = '#50565c'; g.fillRect(x, y, 58, 68); g.fillStyle = 'rgba(150,160,175,.12)'; for (let k = 1; k < 4; k++) g.fillRect(x, y + k * 15.5, 54, 1.5); g.fillRect(x + 27, y, 1.5, 62); }
