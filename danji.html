@@ -1132,19 +1132,24 @@ const ENT_GAP = (() => { const a = ENT.at(20), b = ENT.at(33), n = ENT.n, w = 4.
 /* ---------- 북서쪽 부출입구(공사계획평면도·모형 VE14): 서측 도로 지상 차로(GL 117→126.6)를 단지 서쪽 옹벽 따라 북쪽으로, 117동 모퉁이에 부출입구(옹벽 속 지하주차장 입구+횡단보도), 옆에 데크 하부 시설 ---------- */
 function buildCut() {
   const M = CUT.M, gb = new GB(), cap = new GB(), off = .3; let s = 0;
-  for (const sd of [-1, 1]) for (let i = 0; i < M.length - 1; i++) { const a = M[i], b = M[i + 1], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz), nx = -dz / L * sd, nz = dx / L * sd;
-    const P = [a[0] + nx * (CUT.HW + off), a[1] + nz * (CUT.HW + off)], Q = [b[0] + nx * (CUT.HW + off), b[1] + nz * (CUT.HW + off)];
-    const top = p => groundAt(p[0] + nx * 1.2, p[1] + nz * 1.2) + .9, bot = p => groundAt(p[0] - nx * 1.5, p[1] - nz * 1.5) - .5;
-    const tP = top(P), tQ = top(Q), bP = bot(P), bQ = bot(Q); if (tP - bP < 1.2 && tQ - bQ < 1.2) continue;
-    const [p, q] = sd > 0 ? [Q, P] : [P, Q], [tp, tq, bp, bq] = sd > 0 ? [tQ, tP, bQ, bP] : [tP, tQ, bP, bQ];
-    gb.quad([p[0], bp, p[1]], [q[0], bq, q[1]], [q[0], tq, q[1]], [p[0], tp, p[1]], [-nx, 0, -nz], [s / 6, bp / 3, (s + L) / 6, bq / 3, (s + L) / 6, tq / 3, s / 6, tp / 3]); s += L;
-    obox((P[0] + Q[0]) / 2 + nx * .25, (P[1] + Q[1]) / 2 + nz * .25, dx / L, dz / L, L + .05, .5, Math.min(tP, tQ) - .1, Math.max(tP, tQ) + .25, { top: { gb: cap }, front: { gb: cap }, back: { gb: cap } }); } /* 옹벽 위 난간 턱 */
+  /* 11-16 사용자 지적(난간이 계단식): 구간마다 평평한 상자 대신, 이음매 법선을 평균하고 윗선을 부드럽게 다듬은 하나의 경사 옹벽 + 경사 난간 턱 */
+  for (const sd of [-1, 1]) {
+    const V = M.map((m, i) => { const a = M[Math.max(0, i - 1)], b = M[Math.min(M.length - 1, i + 1)], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz), nx = -dz / l * sd, nz = dx / l * sd, p = [m[0] + nx * (CUT.HW + off), m[1] + nz * (CUT.HW + off)];
+      return { p, nx, nz, t: groundAt(p[0] + nx * 1.2, p[1] + nz * 1.2) + .9, b: groundAt(p[0] - nx * 1.5, p[1] - nz * 1.5) - .5 }; });
+    for (let k = 0; k < 3; k++) { const T = V.map(v => v.t); for (let i = 1; i < V.length - 1; i++) V[i].t = (T[i - 1] + 2 * T[i] + T[i + 1]) / 4; }
+    for (let i = 0; i < V.length - 1; i++) { const A = V[i], B = V[i + 1]; if (A.t - A.b < 1.2 && B.t - B.b < 1.2) continue; const L = Math.hypot(B.p[0] - A.p[0], B.p[1] - A.p[1]), nx = (A.nx + B.nx) / 2, nz = (A.nz + B.nz) / 2;
+      const [p, q, tp, tq, bp, bq] = sd > 0 ? [B.p, A.p, B.t, A.t, B.b, A.b] : [A.p, B.p, A.t, B.t, A.b, B.b];
+      gb.quad([p[0], bp, p[1]], [q[0], bq, q[1]], [q[0], tq, q[1]], [p[0], tp, p[1]], [-nx, 0, -nz], [s / 6, bp / 3, (s + L) / 6, bq / 3, (s + L) / 6, tq / 3, s / 6, tp / 3]); s += L;
+      const Ao = [A.p[0] + A.nx * .5, A.p[1] + A.nz * .5], Bo = [B.p[0] + B.nx * .5, B.p[1] + B.nz * .5], ta = A.t + .25, tb = B.t + .25, la = A.t - .1, lb = B.t - .1;
+      cap.quad([A.p[0], ta, A.p[1]], [B.p[0], tb, B.p[1]], [Bo[0], tb, Bo[1]], [Ao[0], ta, Ao[1]], [0, 1, 0]);
+      cap.quad([A.p[0], la, A.p[1]], [B.p[0], lb, B.p[1]], [B.p[0], tb, B.p[1]], [A.p[0], ta, A.p[1]], [-nx, 0, -nz]);
+      cap.quad([Ao[0], la, Ao[1]], [Bo[0], lb, Bo[1]], [Bo[0], tb, Bo[1]], [Ao[0], ta, Ao[1]], [nx, 0, nz]); } } /* 옹벽 위 난간 턱(이어진 경사 띠) */
   { const fl = new GB(); for (let i = 0; i < M.length - 1; i++) { const P = [M[i], M[i + 1]].map((m, k) => { const a = M[Math.max(0, i + k - 1)], b = M[Math.min(M.length - 1, i + k + 1)], dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz), nx = -dz / l, nz = dx / l, w = CUT.HW + .45, y = groundAt(m[0], m[1]) + .15; return [[m[0] + nx * w, y, m[1] + nz * w], [m[0] - nx * w, y, m[1] - nz * w]]; });
       fl.quad(P[0][1], P[0][0], P[1][0], P[1][1], [0, 1, 0]); }
     const fm = new THREE.Mesh(fl.build(), new THREE.MeshLambertMaterial({ color: '#57595c', side: THREE.DoubleSide })); fm.receiveShadow = true; scene.add(fm); } /* 깎기 바닥(가운데 높이로 평평하게) */
   const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#9a9893', .03, 700); g.fillStyle = 'rgba(0,0,0,.14)'; for (let x = 0; x < 256; x += 64) g.fillRect(x, 0, 2, 128);
   const wm = new THREE.Mesh(gb.build(), new THREE.MeshStandardMaterial({ map: tex(c), roughness: .95, side: THREE.DoubleSide })); wm.receiveShadow = wm.castShadow = true; scene.add(wm);
-  scene.add(new THREE.Mesh(cap.build(), new THREE.MeshStandardMaterial({ color: '#c9c7c1', roughness: .9 })));
+  scene.add(new THREE.Mesh(cap.build(), new THREE.MeshStandardMaterial({ color: '#cfcdc7', roughness: .9, side: THREE.DoubleSide })));
   /* 갱구: 깎기 끝(북쪽) — 콘크리트 면벽 + 상·하행 어두운 터널 입구 */
   { const a = M[0], b = M[1], L = Math.hypot(b[0] - a[0], b[1] - a[1]), dx = (b[0] - a[0]) / L, dz = (b[1] - a[1]) / L, ux = -dz, uz = dx, yb = groundAt(a[0], a[1]), yt = yb + CUT.dep(a[1]) + 1.6, W = CUT.HW * 2 + 1.4;
     const C = new GB(), K = new GB(), c0 = [a[0] - dx * 1.6, a[1] - dz * 1.6]; /* 터널 안 어두운 바닥(도로 띠가 갱구 앞에서 끝나 보이게) */
