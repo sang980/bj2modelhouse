@@ -975,7 +975,7 @@ function detailDeck(mat, maskTex) {
         float asph = (1. - smoothstep(.16, .26, lum)) * (1. - smoothstep(.06, .12, sat)); /* 어두운 무채색 = 차로 */
         float gr = 1. - pv; /* 단지 안에는 지상 차로가 없음(모형): 길 아닌 곳은 모두 잔디 */ /* 나머지는 모형처럼 고른 잔디 */
         float P = texture2D(tPav, vWP.xz * .5).r, G = texture2D(tGrs, vWP.xz / 3.).r;
-        vec3 pathC = vec3(.68, .63, .55) * (.86 + .2 * P), grassC = vec3(.15, .185, .056) * (.82 + .3 * G); /* 11-16: 모형 영상 녹지 전체 평균(98,113,66)·사진 1(89,102,55)에 맞춰 더 어둡고 덜 노랗게. 모형 영상 VE08·VE17·VE20·VE22 열린 잔디(91~132,106~153,30~73) — 사진 1은 나무 그늘이라 더 어두움 */
+        vec3 pathC = vec3(.657, .59, .50) * (.86 + .2 * P) /* 11-16 모형 VE08·VE17 데크 길(186~192, r−b≈18) */, grassC = vec3(.15, .185, .056) * (.82 + .3 * G); /* 11-16: 모형 영상 녹지 전체 평균(98,113,66)·사진 1(89,102,55)에 맞춰 더 어둡고 덜 노랗게. 모형 영상 VE08·VE17·VE20·VE22 열린 잔디(91~132,106~153,30~73) — 사진 1은 나무 그늘이라 더 어두움 */
         diffuseColor.rgb = mix(mix(c, grassC, gr), pathC, pv); }`); };
 }
 
@@ -1206,7 +1206,7 @@ function buildNW() {
 }
 function buildEntrance() {
   const mkT = draw => { const c = cnv(256, 256), g = c.getContext('2d'); draw(g); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
-  const pav = mkT(g => { g.fillStyle = '#9d9e9a'; g.fillRect(0, 0, 256, 256); for (let y = 0; y < 256; y += 32) for (let x = 0; x < 256; x += 32) { const v = 196 + (rand() - .5) * 22 | 0; g.fillStyle = `rgb(${v},${v - 1},${v - 5})`; g.fillRect(x + 1, y + 1, 30, 30); } }); /* 40cm 보도블록(한 장 4m) */
+  const pav = mkT(g => { g.fillStyle = '#aca69c'; g.fillRect(0, 0, 256, 256); for (let y = 0; y < 256; y += 32) for (let x = 0; x < 256; x += 32) { const v = 214 + (rand() - .5) * 20 | 0; g.fillStyle = `rgb(${v},${v - 7},${v - 17})`; /* 11-16 모형 VE09 광장(206,198,187) */ g.fillRect(x + 1, y + 1, 30, 30); } }); /* 40cm 보도블록(한 장 4m) */
   const asp = mkT(g => { g.fillStyle = '#4c4f54'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 2600; i++) { const v = (rand() - .5) * .12; g.fillStyle = v > 0 ? `rgba(255,255,255,${v})` : `rgba(0,0,0,${-v})`; g.fillRect(rand() * 256, rand() * 256, 2, 2); } });
   const Yp = 110 - Y0, off = (f, u) => ({ polygonOffset: true, polygonOffsetFactor: f, polygonOffsetUnits: u });
   const flatP = (P, mat, y, uvs = 4) => { const sh = new THREE.Shape(P.map(p => new THREE.Vector2(p[0], -p[1]))), g = new THREE.ShapeGeometry(sh, 8).rotateX(-Math.PI / 2), pos = g.attributes.position, uv = g.attributes.uv;
