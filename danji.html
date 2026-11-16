@@ -1014,7 +1014,7 @@ function buildYard() {
   if (GEO.ok) { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#45474a'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 2500; i++) { const v = (rand() - .5) * .12; g.fillStyle = v > 0 ? `rgba(255,255,255,${v})` : `rgba(0,0,0,${-v})`; g.fillRect(rand() * 256, rand() * 256, 2, 2); }
     /* 모형 VE02: 주차1은 주차칸 선 없이 고른 짙은 회색 판 */
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO;
-    drapePoly([[-100, 101], [-70, 95], [-56, 101], [-50, 116], [-58, 131], [-80, 139], [-98, 124]], new THREE.MeshLambertMaterial({ map: t, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }), .25); }
+    drapePoly([[-99.5, 96], [-86.5, 98.9], [-70, 90.6], [-55.6, 96.3], [-46.2, 114.6], [-50, 124], [-58, 131], [-80, 139], [-99, 124]], new THREE.MeshLambertMaterial({ map: t, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }), .25); } /* 모형 VE03: 주차1은 단지 옹벽 밑까지 꽉 찬 판(옹벽과 사이에 맨땅 없음) */
 }
 
 /* ---------- 주출입구(공사계획평면도): 40m 도로(GL≈108.3) → 횡단보도 → 진입로 → 회전교차로(FH 110) → 지하주차장 출입구(동쪽 옹벽)·남쪽 진입로 ---------- */
