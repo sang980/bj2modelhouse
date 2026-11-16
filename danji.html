@@ -1280,6 +1280,7 @@ function buildModelSigns() {
   one('근린생활시설', '', -94.9, 85.5, 116 - Y0, .5); /* 지붕 기계실 상자 위 */
   one('주민운동시설3', '', -12, 84, levelAt(-12, 84), 2.4);
   { const P = YARD.sand, x = P.reduce((a, p) => a + p[0], 0) / 4, z = P.reduce((a, p) => a + p[1], 0) / 4; one('어린이놀이터2', '', x - 6, z + 4, levelAt(x, z), 2.4); }
+  { const P = YARD.sandW, x = P.reduce((a, p) => a + p[0], 0) / 4, z = P.reduce((a, p) => a + p[1], 0) / 4; one('유아놀이터', '', x - 7, z + 3, levelAt(x - 7, z + 3), 2.4); } /* 모형 VE10: 122동 옆 놀이터 표지판 */
   one('외부계단5', '', 176, 31, levelAt(166, 34) + 3.2, .9);
   one('외부계단2', '', -55.3, 52.8, 121 - Y0 + 3.4, .6); one('외부계단3', '', 72.1, 49.1, 121 - Y0 + 3.1, .6); /* 모형 VE09·사진 2: 계단탑 위 사인 */
   if (GEO.ok) { const c = cnv(1024, 300), g = c.getContext('2d'); g.fillStyle = '#4b4a47'; g.fillRect(0, 0, 1024, 300); g.strokeStyle = '#e9e8e3'; g.lineWidth = 6; g.strokeRect(14, 14, 996, 272); g.fillStyle = '#f3f2ee'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '700 54px "IBM Plex Sans KR", "Noto Sans KR", sans-serif';
