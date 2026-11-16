@@ -743,7 +743,7 @@ async function build() {
   /* 동쪽 외부계단 5(모형): 근린공원 산책로로 내려가는 벽돌 계단탑 */
   { const sx = 176, sz = 34, gy = GEO.ok ? groundAt(sx + 6, sz) : -4, top = levelAt(166, 34) + 3.2, B2 = new GB(), F = { front: { gb: B2, uv: uvTile(7, 7) }, back: { gb: B2, uv: uvTile(7, 7) }, left: { gb: B2, uv: uvTile(4.5, 7) }, right: { gb: B2, uv: uvTile(4.5, 7) }, top: { gb: B2 } };
     obox(sx, sz, 0, 1, 7, 4.5, Math.min(gy, top - 4) - 1, top, F);
-    const stc = cnv(256, 256), sg = stc.getContext('2d'); paintBrown(sg, 256, 256); for (const x of [60, 168]) { sg.fillStyle = '#2b2522'; sg.fillRect(x - 4, 0, 36, 256); glass(sg, x, 0, 28, 256, 1); } sg.fillStyle = 'rgba(0,0,0,.25)'; sg.fillRect(0, 0, 256, 4); /* 모형 VE32: 갈색 계단탑 + 세로 슬릿 창 */
+    const stc = cnv(256, 256), sg = stc.getContext('2d'); paintBrown(sg, 256, 256); for (const x of [60, 168]) { sg.fillStyle = '#2b2522'; sg.fillRect(x - 4, 0, 36, 256); glass(sg, x, 0, 28, 256, 4); } /* 11-16 모형 VE32: 세로 유리 띠는 푸른빛 없는 짙은 색 */ sg.fillStyle = 'rgba(0,0,0,.25)'; sg.fillRect(0, 0, 256, 4); /* 모형 VE32: 갈색 계단탑 + 세로 슬릿 창 */
     const stt = tex(stc); const sm = new THREE.Mesh(B2.build(), new THREE.MeshStandardMaterial({ map: stt, roughness: .9 })); sm.castShadow = sm.receiveShadow = true; scene.add(sm); }
   prog(50); await tick();
 
