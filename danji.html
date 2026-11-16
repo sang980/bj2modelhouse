@@ -1235,7 +1235,7 @@ function buildEntrance() {
       { const h = at(a0 + 2.4, b0 - .3); obox(h[0], h[1], u[0], u[1], 2, 1.6, Yp, Yp + 1.4, all2(pc.b)); obox(h[0], h[1], u[0], u[1], 2.3, 1.9, Yp + 1.4, Yp + 1.7, all2(pc.r)); } /* 놀이집 */
       scene.add(new THREE.Mesh(fe.build(), new THREE.MeshLambertMaterial({ color: '#f4f3ef' }))); for (const [k, col] of [['r', '#d9533b'], ['y', '#f0c33c'], ['b', '#3d7fc1']]) { const m2 = new THREE.Mesh(pc[k].build(), new THREE.MeshStandardMaterial({ color: col, roughness: .6 })); m2.castShadow = true; scene.add(m2); }
       const sc = cnv(512, 128), sg = sc.getContext('2d'); sg.fillStyle = '#2f6b4f'; roundRect(sg, 6, 10, 500, 108, 22); sg.fill(); sg.fillStyle = '#ffffff'; sg.font = '800 66px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; sg.textAlign = 'center'; sg.textBaseline = 'middle'; sg.fillText('어린이집', 256, 66);
-      const stx = new THREE.CanvasTexture(sc); stx.colorSpace = THREE.SRGBColorSpace; stx.anisotropy = ANISO; const sp = at(a0, .14), sm = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 1.05), new THREE.MeshStandardMaterial({ map: stx, roughness: .6 })); sm.position.set(sp[0], Yp + 3.6, sp[1]); sm.lookAt(sp[0] + f2[0], Yp + 3.6, sp[1] + f2[1]); scene.add(sm); }
+      const stx = new THREE.CanvasTexture(sc); stx.colorSpace = THREE.SRGBColorSpace; stx.anisotropy = ANISO; const sp = at(a0, .14), sm = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 1.05), new THREE.MeshStandardMaterial({ map: stx, roughness: .6 })); sm.position.set(sp[0], Yp + 3.6, sp[1]); sm.lookAt(sp[0] + f2[0], Yp + 3.6, sp[1] + f2[1]); sm.visible = false; /* 모형 사진 1: 이 건물 정면 사인은 '주민공동시설2(관리사무소·작은도서관)' — 초록 어린이집 사인 없음 */ }
     /* 주민공동시설 앞 긴 화단(도면 빗금 화단) + 나무 */
     for (const [cx, cz, L, W2, nt] of [[-92.5, 47.7, 8, 2.2, 2], [-85.8, 41, 15, 2.6, 4]]) { const u = [.844, -.537], f2 = [.537, .844], P = [[cx - u[0] * L / 2 - f2[0] * W2 / 2, cz - u[1] * L / 2 - f2[1] * W2 / 2], [cx + u[0] * L / 2 - f2[0] * W2 / 2, cz + u[1] * L / 2 - f2[1] * W2 / 2], [cx + u[0] * L / 2 + f2[0] * W2 / 2, cz + u[1] * L / 2 + f2[1] * W2 / 2], [cx - u[0] * L / 2 + f2[0] * W2 / 2, cz - u[1] * L / 2 + f2[1] * W2 / 2]];
       const cur = new GB(); obox(cx, cz, u[0], u[1], L, W2, Yp, Yp + .45, { front: { gb: cur }, back: { gb: cur }, left: { gb: cur }, right: { gb: cur } }); scene.add(new THREE.Mesh(cur.build(), new THREE.MeshLambertMaterial({ color: '#cfccc4' }))); flatP(P, green, Yp + .46, 6);
@@ -1251,7 +1251,15 @@ function buildModelSigns() {
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const w = 5, hh = w * c.height / 512, m = new THREE.Mesh(new THREE.PlaneGeometry(w, hh), new THREE.MeshStandardMaterial({ map: t, roughness: .6, side: THREE.DoubleSide }));
     const yS = y + h + hh / 2; m.position.set(x, yS, z); m.lookAt(x - .4, yS, z + .92); scene.add(m);
     obox(x, z, 1, 0, .1, .1, y, yS - hh / 2, { front: { gb: post }, back: { gb: post }, left: { gb: post }, right: { gb: post } }); };
-  one('주민공동시설1', '(어린이집)', -109.8, 40.7, 131.3 - Y0, 1.2);
+  one('주민공동시설1', '(어린이집)', -131, 19, 131.4 - Y0, 1.0); /* 모형 VN06: 도로변 건물 옥상 */
+  { /* 모형 사진 1 확대: 진입광장 북쪽 건물 정면(1층 위)에 붙은 비스듬한 사인 — 서쪽 주민공동시설2, 동쪽 주민공동시설4 */
+    const wall = (t1, t2, A, B, C) => { const c = cnv(640, 176), g = c.getContext('2d'); g.fillStyle = '#4b4a47'; g.fillRect(0, 0, 640, 176); g.fillStyle = 'rgba(255,255,255,.2)'; g.fillRect(0, 0, 640, 6); g.fillStyle = '#f3f2ee'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = '800 64px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText(t1, 320, 62); g.font = '600 38px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText(t2, 320, 136);
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const l = Math.hypot(B[0] - A[0], B[1] - A[1]), u = [(B[0] - A[0]) / l, (B[1] - A[1]) / l]; let n = [-u[1], u[0]]; const m0 = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2]; if ((C[0] - m0[0]) * n[0] + (C[1] - m0[1]) * n[1] > 0) n = [-n[0], -n[1]];
+      const p = [m0[0] + n[0] * .5, m0[1] + n[1] * .5], y = 113.6 - Y0 + 1.1, mm = new THREE.Mesh(new THREE.PlaneGeometry(7.2, 2), new THREE.MeshStandardMaterial({ map: t, roughness: .6, side: THREE.DoubleSide }));
+      mm.position.set(p[0], y, p[1]); mm.lookAt(p[0] + n[0], y + .35, p[1] + n[1]); scene.add(mm); };
+    wall('주민공동시설2', '(관리사무소·작은도서관)', [-119.69, 55.95], [-92, 38.35], [-110, 40]);
+    wall('주민공동시설4', '(골프연습장·피트니스센터)', [-91.13, 39.7], [-67.33, 24.35], [-84, 25]); }
   one('경비실(주)', '(어린이승하차장)', -108.6, 58.2, 114.2 - Y0, .9);
   one('근린생활시설', '', -94.9, 85.5, 114.4 - Y0, .9);
   one('주민운동시설3', '', -12, 84, levelAt(-12, 84), 2.4);
