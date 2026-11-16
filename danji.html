@@ -1447,7 +1447,7 @@ function buildModelSigns() {
 const STAIR1 = (() => { const A3 = [-129.32, 39.25], A2 = [-116.2, 32.3], P3 = [-127.3, 42.81], P2 = [-100.2, 25.55], u = (a, b, d) => { const l = Math.hypot(b[0] - a[0], b[1] - a[1]); return [a[0] + (b[0] - a[0]) / l * d, a[1] + (b[1] - a[1]) / l * d]; }; return [A3, u(A3, A2, 9), u(P3, P2, 9), P3]; })();
 const AMEN_POLYS = [[[-150.46, 0.5], [-116.5, -1], [-116.2, 32.3], [-129.32, 39.25]], [[-119.69, 55.95], [-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-127.3, 42.81]], [[-115.1, 54.1], [-105.6, 51.9], [-104.6, 60.5], [-114.1, 62.7]], [[-108.8, 73.9], [-96.2, 68], [-80.6, 96.5], [-93.9, 103.7]], STAIR1]; /* 나무가 지붕을 뚫지 않게 */
 function buildAmenities(MAT) {
-  const G = { brickLit: new GB(), stoneBig: new GB(), brick: new GB(), white: new GB(), glass: new GB(), roof: new GB(), roofGd: new GB(), stone: new GB(), para: new GB(), gateL: new GB(), lg: new GB(), cw: new GB(), fas: new GB(), slot: new GB(), sbox: new GB(), louv: new GB(), char: new GB(), big2: new GB(), brickLit2: new GB(), stone2: new GB() };
+  const G = { brickLit: new GB(), stoneBig: new GB(), brick: new GB(), white: new GB(), glass: new GB(), roof: new GB(), roofGd: new GB(), stone: new GB(), para: new GB(), gateL: new GB(), lg: new GB(), cw: new GB(), fas: new GB(), slot: new GB(), sbox: new GB(), louv: new GB(), char: new GB(), big2: new GB(), brickLit2: new GB(), stone2: new GB(), score: new GB() };
   const ru = [.484, .875], rl = Math.hypot(...ru), ux = ru[0] / rl, uz = ru[1] / rl; /* 서측 대로와 나란한 방향 */
   /* 바닥 해발고(도면): 주민공동시설-3은 서측 도로 GL≈115 → 윗층이 북쪽 단(130)에 닿음, 어린이집·경비실은 진입광장 FH 110, 근린생활시설은 도로 GL≈107 */
   const blk = (c, L, D, y0, h1, h2, absBase) => { if (absBase !== undefined) { const d = absBase - Y0 - .4 - y0; y0 += d; h1 += d; h2 += d; }
@@ -1499,7 +1499,7 @@ function buildAmenities(MAT) {
     deckFace([[-150.46, 0.5], [-116.5, -1], [-116.35, 16.0], [-142.0, 16.0]], Y(127.2)); /* 주민공동시설1 북쪽 낮은 날개만(본동 지붕 131.4는 데크보다 높음) */ } /* 주민공동시설2·4 지붕(137.6)은 데크보다 높아 난간벽 불필요 */
   /* 하부외부계단 1(모형 VE10·사진: 정문 옆 도로 모퉁이의 낮은 밝은 회색 상자, 2개 층) */
   /* 11-16 모형 WE2·WE4: 정문 옆 보도 위 낮은 회색 상자는 없음(그 자리는 주민공동시설2 갈색 벽) → 하부외부계단1은 두 건물 사이 계단실 + 데크 위 상자 */
-  { prism(STAIR1, Y(113), Y(134.2), G.lg, G.roof, 4.6); const S2 = shrink(STAIR1, .25); prism(S2, Y(134.2), Y(138.8), G.sbox, G.roof, 4.6); prism(STAIR1, Y(138.8), Y(139.3), G.para); } /* 모형 WE2: 계단실 상자는 옆 지붕보다 조금 높음 */
+  { prism(STAIR1, Y(113), Y(134.2), G.score, G.roof, 4.6); /* 11-16 모형 WE2: 도로 쪽에서 본 계단실은 짙은 차콜 + 작은 푸른 창 */ const S2 = shrink(STAIR1, .25); prism(S2, Y(134.2), Y(138.8), G.sbox, G.roof, 4.6); prism(STAIR1, Y(138.8), Y(139.3), G.para); } /* 모형 WE2: 계단실 상자는 옆 지붕보다 조금 높음 */
   /* 경비실-1·주민공동시설-3(어린이 승하차장) — 공사계획평면도: 진입로 북쪽, 단지 경계 안 3.5m, 9×4.5m 1층 + 진입로 쪽 승하차 캐노피 */
   { const gu = [Math.cos(-.227), Math.sin(-.227)], gf = [-gu[1], gu[0]], c = [-110.1, 55.7], y0 = Y(109.9), y1 = Y(113.7), ST = { gb: G.stone, uv: uvTile(6, 3.6) }, GL = { gb: G.glass, uv: uvTile(6, 3.6) };
     obox(c[0], c[1], gu[0], gu[1], 9, 4.5, y0, y1, { front: GL, back: ST, left: ST, right: ST, top: { gb: G.roof } }); obox(c[0], c[1], gu[0], gu[1], 9.3, 4.8, y1, y1 + .5, { front: { gb: G.para }, back: { gb: G.para }, left: { gb: G.para }, right: { gb: G.para }, top: { gb: G.para } });
@@ -1548,6 +1548,7 @@ function buildAmenities(MAT) {
     m(G.big2, am(g => { noiseFill(g, 512, 256, '#b6b2aa', .03, 900); g.fillStyle = 'rgba(70,66,60,.08)'; for (let x = 0; x < 512; x += 64) g.fillRect(x, 0, 2, 256); for (const x of [45, 200]) darkWin(g, x, 66, 108, 122); })); /* 23m에 큰 짙은 창 둘(WG3) */
     { const B3 = [[110, 70, 252, 120]]; m(G.brickLit2, amE(g => { paintBrown(g, 512, 256); g.fillStyle = 'rgba(255,235,220,.10)'; g.fillRect(0, 214, 512, 8); for (const [x, y, w, h] of B3) litWin(g, x, y, w, h); darkWin(g, 440, 96, 26, 70); }, B3)); /* 7.5m마다 넓은 불 켜진 창 + 좁은 짙은 창 */
       const S3 = [[90, 64, 300, 128]]; m(G.stone2, amE(g => { stoneBase(g); for (const [x, y, w, h] of S3) litWin(g, x, y, w, h); }, S3)); } /* 맨 위층 넓은 불 켜진 창 */
+    { const SC = [[60, 80, 70, 52], [290, 120, 70, 52]]; m(G.score, amE(g => { noiseFill(g, 512, 256, '#3c3e42', .03, 900); g.fillStyle = 'rgba(255,255,255,.05)'; for (let x = 0; x < 512; x += 128) g.fillRect(x, 0, 2, 256); for (const [x, y, w, h] of SC) litWin(g, x, y, w, h); }, SC)); }
     m(G.char, am(g => { noiseFill(g, 512, 256, '#47494d', .03, 900); for (const x of [70, 330]) darkWin(g, x, 70, 110, 110); })); /* 짙은 차콜 석재 + 작은 짙은 창 */
     { const SB = [[86, 70, 130, 104], [300, 70, 130, 104]]; m(G.sbox, amE(g => { stoneBase(g); for (const [x, y, w, h] of SB) litWin(g, x, y, w, h); }, SB)); } /* 모형 WE2·WE4: 하부외부계단1 상자 — 밝은 회색 + 파란 창 2개 */
     m(G.louv, am(g => { paintBrown(g, 512, 256); g.fillStyle = 'rgba(38,24,17,.5)'; for (let y = 6; y < 256; y += 13) g.fillRect(0, y, 512, 4); g.fillStyle = '#2c2420'; g.fillRect(0, 96, 512, 78); g.fillStyle = '#b9d0e6'; g.fillRect(96, 106, 44, 34); g.fillRect(352, 106, 44, 34); })); /* 모형 WE2: 갈색 가로 루버 + 짙은 긴 창 띠 */ m(G.slot, new THREE.MeshStandardMaterial({ color: '#3a3c3f', roughness: .7 }));
