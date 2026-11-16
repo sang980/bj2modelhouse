@@ -715,6 +715,32 @@ async function build() {
     const og = new THREE.BufferGeometry(); og.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); og.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); og.setIndex(idx); og.computeVertexNormals();
     const outer = new THREE.Mesh(og, new THREE.MeshLambertMaterial({ vertexColors: true })); scene.add(outer); }
   prog(40); await tick();
+  /* 11-17 사용자 요청: 롯데월드타워 — 실제 위치 37°30′45.03″N 127°6′9.81″E(osmbuild 변환: LAT0 37.4514·LON0 127.1432, 88483/110986.1 m/°, +25/+12), 높이 554.5 m(땅 해발 약 20 m 위),
+     기단 약 70 m 정사각형(두 모서리는 둥글게, 마주 보는 두 모서리는 1→10 m 홈), 위로 갈수록 볼록하게 가늘어짐, 서울 도심(북서) 쪽 면 가운데 세로 이음선, 꼭대기 약 120 m는 철골 격자 랜턴 */
+  { const LX = (127.102725 - 127.1432) * 88483 + 25, LZ = -(37.512508 - 37.4514) * 110986.1 + 12, H = 554.5, YG = 20 - Y0, TL = 1 - 120 / H, S2 = Math.SQRT1_2, ex = [S2, S2], ez = [-S2, S2];
+    const W = t => 35 * (.12 + .88 * Math.pow(Math.max(0, 1 - Math.pow(t, 2.8)), .7)); /* 반폭(m): 기단 35 → 꼭대기 4.2 */
+    const sec = (w, t) => { const P = [], n = Math.min(1 + 9 * t, w * .4), r = Math.min(2 + 6 * t, w * .45), C = [[1, 1], [-1, 1], [-1, -1], [1, -1]];
+      for (let c = 0; c < 4; c++) { const [sx, sz] = C[c];
+        if (c % 2 === 0) { const a0 = Math.atan2(sz, sx) - Math.PI / 4; for (let k = 0; k <= 6; k++) { const a = a0 + k / 6 * Math.PI / 2; P.push([sx * (w - r) + Math.cos(a) * r, sz * (w - r) + Math.sin(a) * r]); } }
+        else { const S = [sx * (w - n), sz * w], M = [sx * (w - n), sz * (w - n)], E = [sx * w, sz * (w - n)]; for (let k = 0; k < 3; k++) P.push([S[0] + (M[0] - S[0]) * k / 3, S[1] + (M[1] - S[1]) * k / 3]); for (let k = 0; k <= 3; k++) P.push([M[0] + (E[0] - M[0]) * k / 3, M[1] + (E[1] - M[1]) * k / 3]); } }
+      return P; };
+    const toW = (lx, lz, y) => [LX + ex[0] * lx + ez[0] * lz, y, LZ + ex[1] * lx + ez[1] * lz];
+    const fogLite = m => { m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <fog_fragment>', '#ifdef USE_FOG\n float fdL = fogDensity * .45; float fogF = 1.0 - exp(-fdL * fdL * vFogDepth * vFogDepth); gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogF);\n#endif'); }; return m; }; /* 7.6 km 떨어져 짙은 안개에 묻히지 않게 타워만 안개를 약하게 */
+    const tex = (draw, w2, h2) => { const c = cnv(w2, h2), g = c.getContext('2d'); draw(g); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
+    const bodyT = tex(g => { g.fillStyle = '#c6d0d9'; g.fillRect(0, 0, 128, 128); g.fillStyle = '#b4c0ca'; for (let x = 0; x < 128; x += 32) g.fillRect(x, 0, 2, 128); g.fillStyle = '#8e9aa5'; g.fillRect(0, 0, 128, 4); g.fillRect(0, 64, 128, 4); }, 128, 128); /* 은빛 유리 + 층 띠(4.4 m) + 세로 멀리언(1.5 m) */
+    const lanT = tex(g => { g.fillStyle = '#dde4ea'; g.fillRect(0, 0, 128, 128); g.strokeStyle = '#8fa0ad'; g.lineWidth = 5; for (const [a, b, c2, d] of [[0, 0, 128, 128], [128, 0, 0, 128], [-64, 0, 64, 128], [64, 0, 192, 128], [64, 0, -64, 128], [192, 0, 64, 128]]) { g.beginPath(); g.moveTo(a, b); g.lineTo(c2, d); g.stroke(); } }, 128, 128); /* 랜턴: 다이아그리드 */
+    const build = (t0, t1, NR, mat) => { const pos = [], uv = [], idx = []; let K = 0;
+      for (let i = 0; i <= NR; i++) { const t = t0 + (t1 - t0) * i / NR, w = W(t), P = sec(w, t); K = P.length; let acc = 0;
+        for (let k = 0; k <= K; k++) { const p = P[k % K]; if (k) { const q = P[k - 1]; acc += Math.hypot(p[0] - q[0], p[1] - q[1]); } pos.push(...toW(p[0], p[1], YG + t * H)); uv.push(acc / 6, t * H / 8.8); } }
+      for (let i = 0; i < NR; i++) for (let k = 0; k < K; k++) { const a = i * (K + 1) + k, b = a + K + 1; idx.push(a, b, a + 1, a + 1, b, b + 1); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+      const m = new THREE.Mesh(g, mat); scene.add(m); envMeshes.push(m); return m; };
+    build(0, TL, 48, fogLite(new THREE.MeshStandardMaterial({ map: bodyT, roughness: .32, metalness: .3, emissive: '#2b333a', side: THREE.DoubleSide })));
+    build(TL, 1, 16, fogLite(new THREE.MeshStandardMaterial({ map: lanT, roughness: .45, metalness: .25, emissive: '#3a4248', side: THREE.DoubleSide })));
+    { const P = sec(W(1), 1), pos = [], c = toW(0, 0, YG + H); for (let k = 0; k < P.length; k++) { const a = P[k], b = P[(k + 1) % P.length]; pos.push(...c, ...toW(a[0], a[1], YG + H), ...toW(b[0], b[1], YG + H)); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals(); const m = new THREE.Mesh(g, fogLite(new THREE.MeshStandardMaterial({ color: '#c9d1d8', roughness: .5, side: THREE.DoubleSide }))); scene.add(m); envMeshes.push(m); } /* 꼭대기 뚜껑 */
+    { const pos = [], idx = [], NR = 40; for (let i = 0; i <= NR; i++) { const t = TL * i / NR, w = W(t) + .12; for (const s of [-.75, .75]) pos.push(...toW(-w, s, YG + t * H)); } for (let i = 0; i < NR; i++) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); const m = new THREE.Mesh(g, fogLite(new THREE.MeshStandardMaterial({ color: '#4a545d', roughness: .5, side: THREE.DoubleSide }))); scene.add(m); envMeshes.push(m); } } /* 북서(도심) 쪽 면 가운데 세로 이음선 */
 
   /* ===== 배치도: 단지 데크 윗면 + 주변 띠(가장자리 부드럽게) ===== */
   const pc = cnv(PW, PH), pg = pc.getContext('2d'); pg.drawImage(planImg, 0, 0);
