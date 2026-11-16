@@ -411,6 +411,7 @@ sun.castShadow = true; sun.shadow.mapSize.set(LOW ? 2048 : 4096, LOW ? 2048 : 40
 Object.assign(sun.shadow.camera, { left: -270, right: 270, top: 270, bottom: -270, near: 200, far: 1300 });
 sun.shadow.bias = -.0004; sun.shadow.normalBias = .9;
 scene.add(sun, sun.target);
+const fill = new THREE.DirectionalLight('#f3f1ec', .85); fill.position.set(.36 * 700, .5 * 700, -.6 * 700); fill.target.position.set(0, 0, 15); scene.add(fill, fill.target); /* 모형은 실내 조명이라 북쪽 그늘면도 밝음(VE22 뒷벽 132 대 우리 75) — 그림자 없는 북쪽 보조광 */
 
 /* 하늘 */
 const sky = new THREE.Mesh(new THREE.SphereGeometry(24000, 32, 16), new THREE.ShaderMaterial({
