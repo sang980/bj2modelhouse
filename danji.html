@@ -879,7 +879,8 @@ function buildDong(D, G, MAT) {
     else if (D.d === 105) { const y0 = yT + .02; panel(0, 2, y0, base, G.frontLt, .005, .55); panel(2, 4, y0, base, G.frontDk, .6, .45); panel(2, 3, base, base + 6 * FH, G.frontDk, .55, .98); } /* 모형 사진 1 확대: 105동 2호 4~9층도 짙은 차콜 */ /* 105동 1~3층 — 4호~3호 서쪽 밝은 회색, 3호~2호 갈색, 2호 동쪽~1호 짙은 차콜, 1호 동쪽 갈색 */
     else if (D.d === 122) panel(0, 2, yT + .02, base, G.frontDk, .67, .26); /* 모형 사진: 122동 1~3층 4호 동쪽~3호 서쪽 짙은 차콜 */
     else if (D.d === 101) panel(0, 1, base, (t + 9) * FH, G.frontDk, .02, .98); /* 모형 사진: 101동 서쪽 끝 4호 4~9층 짙은 차콜 */
-    else if (D.d === 103 || D.d === 107) panel(1, 2, base, H, G.frontDk, .02, .98); /* 모형 사진 1 확대: 103·107동 동쪽 끝 1호 4층~꼭대기 짙은 판 */
+    else if (D.d === 103 || D.d === 107) panel(1, 2, base, H, G.frontDk, .02, .98);
+    if (D.d === 108) { panel(0, 1, base, base + 3 * FH, G.bfront, .005, .62); obox(cx - ux * (L / 2 + .03), cz - uz * (L / 2 + .03), ux, uz, .04, DEP - .1, base, base + 3 * FH, { left: { gb: G.bside, uv: uvTile(DEP, FH) } }); } /* 모형 사진 2 확대: 108동 서쪽 세대·서측벽은 갈색이 3개 층 더 올라감 */ /* 모형 사진 1 확대: 103·107동 동쪽 끝 1호 4층~꼭대기 짙은 판 */
     /* 그 밖의 동: 모형 사진처럼 정면은 차콜 판넬 없이 고른 토프(저층 3개 층 갈색) */
     /* 코어(계단·엘리베이터) — 뒤쪽, 옥상 기계실까지 */
     const cores = D.w.length > 1 ? (wi === 0 ? [.5] : []) : (n === 4 ? [.25, .75] : [.5]);
@@ -907,7 +908,7 @@ function buildDong(D, G, MAT) {
       obox(cx + fx * (DEP / 2 + .9), cz + fz * (DEP / 2 + .9), ux, uz, L, 1.8, yT - .35, yT + .05, { front: { gb: G.brick }, back: { gb: G.brick }, top: { gb: G.brick } }); }
     /* 측벽 동 번호 사인(모형: 저층부 바로 위) */
     if (wi === 0 || D.w.length > 1) for (const e of (D.w.length > 1 ? (wi === 0 ? [-1] : [1]) : [-1, 1])) { const sx = cx + ux * e * (L / 2 + .06) + fx * DEP * .27, sz = cz + uz * e * (L / 2 + .06) + fz * DEP * .27, m = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8), signMat(D.d)); /* 측벽 가운데 짙은 띠를 피해 앞쪽 */
-      const yS = yF1 + Math.min(base + 1.7, H - 3.2); m.position.set(sx, yS, sz); m.lookAt(sx + ux * e, yS, sz + uz * e); scene.add(m); } /* 모형: 동 번호는 갈색 저층부 바로 위 측벽 */
+      const yS = yF1 + Math.min(base + 1.7 + (D.d === 108 ? 3 * FH : 0), H - 3.2); /* 108동은 갈색이 더 높아 번호도 그 위(모형 사진 2) */ m.position.set(sx, yS, sz); m.lookAt(sx + ux * e, yS, sz + uz * e); scene.add(m); } /* 모형: 동 번호는 갈색 저층부 바로 위 측벽 */
     YOFF = 0;
     /* 동 뒤(공동현관 쪽) 보행로(모형 VE08: 동을 따라 곧게 뻗은 회색 보도블록 길) — 단 높이가 같은 구간만 */
     { const off = DEP / 2 + CORE_D + 3.6 + ([118, 119].includes(D.d) ? 5 : 4), pcx = cx - fx * off, pcz = cz - fz * off, y0 = levelAt(pcx, pcz), hl = L / 2 + ([118, 119].includes(D.d) ? 14 : 4) /* 모형 VE08·VE17: 동 뒤 길은 동 사이 가운데쯤 — 코어 쪽에 나무 한 줄·환기구가 들어갈 자리 */, w = [118, 119].includes(D.d) ? 3 : 2, ns = Math.ceil(hl * 2 / 3);
