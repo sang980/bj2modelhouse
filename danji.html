@@ -953,7 +953,7 @@ function detailDeck(mat, maskTex) {
         float asph = (1. - smoothstep(.16, .26, lum)) * (1. - smoothstep(.06, .12, sat)); /* 어두운 무채색 = 차로 */
         float gr = 1. - pv; /* 단지 안에는 지상 차로가 없음(모형): 길 아닌 곳은 모두 잔디 */ /* 나머지는 모형처럼 고른 잔디 */
         float P = texture2D(tPav, vWP.xz * .5).r, G = texture2D(tGrs, vWP.xz / 3.).r;
-        vec3 pathC = vec3(.68, .63, .55) * (.86 + .2 * P), grassC = vec3(.18, .23, .026) * (.82 + .3 * G); /* 모형 영상 VE08·VE17·VE20·VE22 열린 잔디(91~132,106~153,30~73) — 사진 1은 나무 그늘이라 더 어두움 */
+        vec3 pathC = vec3(.68, .63, .55) * (.86 + .2 * P), grassC = vec3(.15, .185, .056) * (.82 + .3 * G); /* 11-16: 모형 영상 녹지 전체 평균(98,113,66)·사진 1(89,102,55)에 맞춰 더 어둡고 덜 노랗게. 모형 영상 VE08·VE17·VE20·VE22 열린 잔디(91~132,106~153,30~73) — 사진 1은 나무 그늘이라 더 어두움 */
         diffuseColor.rgb = mix(mix(c, grassC, gr), pathC, pv); }`); };
 }
 
