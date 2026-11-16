@@ -1310,7 +1310,7 @@ function buildEntrance() {
           const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pa, 3)); g.computeVertexNormals();
           const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: '#efefe9', side: THREE.DoubleSide, ...off(-10, -20) })); m.renderOrder = 4; scene.add(m); } } } }
   /* 정문 앞 진입 차로(모형 VE05·VE07·VE10·VN07): 깎기 구간 옹벽 바로 안쪽, 본선보다 높은 2차로(6.1m) — 북서쪽 지상 차로에서 주차1 쪽 합류부까지. 주황 가장자리 선 + 흰 점선 중앙선, 정문 앞 주황 빗금 사다리꼴 */
-  if (GEO.ok && CUT.M.length > 2) { const M = CUT.M, o0 = CUT.HW + .9, o1 = CUT.HW + 7, L = [[M[0][0] + (M[0][0] - M[1][0]) * 1.4, M[0][1] + (M[0][1] - M[1][1]) * 1.4]];
+  if (GEO.ok && CUT.M.length > 2) { const M = CUT.M, o0 = CUT.HW + .9, o1 = CUT.HW + 6.1, L = [[M[0][0] + (M[0][0] - M[1][0]) * 1.4, M[0][1] + (M[0][1] - M[1][1]) * 1.4]];
     for (let i = 0; i < M.length - 1; i++) for (let k = 0; k < 3; k++) L.push([M[i][0] + (M[i + 1][0] - M[i][0]) * k / 3, M[i][1] + (M[i + 1][1] - M[i][1]) * k / 3]);
     const Q = L.filter(p => p[1] <= 106); if (Q.length > 2) { const tn = i => { const a = Q[Math.max(0, i - 1)], b = Q[Math.min(Q.length - 1, i + 1)], l = Math.hypot(b[0] - a[0], b[1] - a[1]); return [(b[0] - a[0]) / l, (b[1] - a[1]) / l]; };
       const t0 = tn(1), sd = polyDist(SITE, Q[1][0] - t0[1] * 14, Q[1][1] + t0[0] * 14) < polyDist(SITE, Q[1][0] + t0[1] * 14, Q[1][1] - t0[0] * 14) ? 1 : -1;
@@ -1322,6 +1322,9 @@ function buildEntrance() {
         g.fillStyle = '#e8804a'; g.fillRect(4, 0, 4, 512); g.fillRect(120, 0, 4, 512); g.fillStyle = '#efefe9'; g.fillRect(62, 0, 4, 256); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; })();
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
       const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: lt, side: THREE.DoubleSide, ...off(-6, -12) })); m.receiveShadow = true; m.renderOrder = 3; scene.add(m);
+      /* 11-16 모형 WE2·WE6: 진입 차로와 보도 사이 좁은 잔디 띠(연석) — 보도 폭 확보 위해 차로 바깥선 15→14.1m */
+      { const gp = [], gi = []; Q.forEach((p, i) => { const t = tn(i), nx = -t[1] * sd, nz = t[0] * sd; for (const o of [o1 + .15, o1 + .8]) { const x = p[0] + nx * o, z = p[1] + nz * o; gp.push(x, heightAt(x, z) + .64, z); } }); for (let i = 0; i < Q.length - 1; i++) { const a = i * 2; gi.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+        const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.Float32BufferAttribute(gp, 3)); gg.setIndex(gi); gg.computeVertexNormals(); const gm = new THREE.Mesh(gg, new THREE.MeshLambertMaterial({ color: '#6f9a3e', side: THREE.DoubleSide, ...off(-7, -14) })); gm.renderOrder = 3; scene.add(gm); }
       /* 정문 앞 주황 빗금 사다리꼴(긴 변은 본선 쪽) */
       { let bi = 0, bd = 1e9; Q.forEach((p, i) => { const dd = Math.abs((p[0] - ENT.R[0]) * ENT.n[0] + (p[1] - ENT.R[1]) * ENT.n[1]); if (dd < bd) { bd = dd; bi = i; } });
         const t = tn(bi), nx = -t[1] * sd, nz = t[0] * sd, oc = (o0 + o1) / 2, c = [Q[bi][0] + nx * oc, Q[bi][1] + nz * oc], tw = [ENT.n[0], ENT.n[1]], s1 = Math.sign(tw[0] * t[0] + tw[1] * t[1]) || 1, ax = [t[0] * s1, t[1] * s1];
