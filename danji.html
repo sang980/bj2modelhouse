@@ -2451,13 +2451,42 @@ function loop() {
   if (siteLabel) { siteLabel.visible = far; const d = siteLabel.position.distanceTo(camera.position) * .03; siteLabel.scale.set(d * 4.2, d, 1); }
   renderer.render(scene, camera);
 }
-addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+addEventListener('resize', () => { if (CAP_MODE) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+const CAP_MODE = new URLSearchParams(location.search).get('cap');
+/* ---------- 우리 집 창밖 촬영(타입 인테리어 페이지가 숨은 iframe으로 danji.html?cap=108-301 을 열면): 그 세대 거실 쪽 눈높이에서 6면을 찍어 부모 창에 보냄 ----------
+   호수: 301 = 3층 1호, T101 = 테라스 1층 1호(T1이 가장 낮은 층). 면 순서·방향(d, up)은 인테리어 페이지와 같아야 함 — 인테리어의 +z(거실 창 바깥)를 실제 거실 방향으로 돌려서 찍음 */
+const CAP_FACES = [[1, 0, 0, 0, 1, 0], [-1, 0, 0, 0, 1, 0], [0, 0, 1, 0, 1, 0], [0, 0, -1, 0, 1, 0], [0, 1, 0, 0, 0, -1], [0, -1, 0, 0, 0, 1]];
+function capSpot(dong, hoRaw) {
+  const b = BLD[dong]; if (!b) return { err: dong + '동이 없습니다' };
+  const s = String(hoRaw || '').trim(), isT = /^t/i.test(s), num = parseInt(s.replace(/[^0-9]/g, ''), 10); if (!num) return { err: '호수가 없습니다' };
+  const k = Math.floor(num / 100), line = num % 100, tD = b.D.t || 0, fl = isT ? -(Math.max(1, tD) - k + 1) : k;
+  for (const p of b.pieces) { const i = p.ln.indexOf(line); if (i < 0) continue;
+    const tw = p.L / p.n, sAl = -p.L / 2 + tw * (i + .5), fx = -p.uz, fz = p.ux, fy = p.yb + (fl > 0 ? fl - 1 : fl) * FH, back = fl < 0 ? DEP / 2 + 3 : DEP / 2 - 2.5; /* 테라스(T층) 세대는 타워 앞 저층부라 더 앞(조감도 거실 전망은 +4.5) */
+    return { x: p.cx + p.ux * sAl + fx * back, y: fy + 1.53, z: p.cz + p.uz * sAl + fz * back, fx, fz, fl, line, f: p.f, asl: Y0 + fy + 1.53, facing: facing(fx, fz) }; }
+  return { err: line + '호 라인이 없습니다' };
+}
+async function capHome(spec) {
+  const [dS, hS] = String(spec).split('-'), v = capSpot(+dS, hS), post = m => { const msg = Object.assign({ type: 'danji-cap', cap: spec }, m); window.__capOut = msg; try { parent.postMessage(msg, '*'); } catch (e) {} };
+  if (v.err) { post({ err: v.err }); return; }
+  const N = LOW ? 768 : 1024, wait = ms => new Promise(r => setTimeout(r, ms)), eye = new THREE.Vector3(v.x, v.y, v.z), a = Math.atan2(v.fx, v.fz), ca = Math.cos(a), sa = Math.sin(a);
+  const rot = (x, y, z) => new THREE.Vector3(x * ca + z * sa, y, -x * sa + z * ca);
+  setFly(false); camera.position.copy(eye); controls.target.set(eye.x + v.fx, eye.y, eye.z + v.fz); controls.update(); await wait(700); /* 주변 LOD·그림자가 그 자리에 맞게 몇 프레임 */
+  renderer.setPixelRatio(1); renderer.setSize(N, N, false); camera.fov = 90; camera.aspect = 1; camera.near = .25; camera.updateProjectionMatrix();
+  const faces = [];
+  for (const F of CAP_FACES) { const d = rot(F[0], F[1], F[2]), u = rot(F[3], F[4], F[5]);
+    camera.position.copy(eye); camera.up.copy(u); camera.lookAt(eye.x + d.x, eye.y + d.y, eye.z + d.z); camera.updateMatrixWorld();
+    sky.position.copy(eye); scene.fog.density = .000205 * (1 - .55 * smooth(350, 1800, eye.y)); scene.traverse(o => { if (o.isSprite) o.visible = false; });
+    renderer.render(scene, camera); faces.push(renderer.domElement.toDataURL('image/jpeg', .86)); await wait(30); }
+  camera.up.set(0, 1, 0);
+  post({ faces, info: { fl: v.fl, f: v.f, facing: v.facing, asl: Math.round(v.asl) } });
+}
 
 (async () => {
   try { await build(); } catch (e) { console.error(e); $('#loading p').textContent = '불러오기 중 문제가 생겼습니다: ' + e.message; return; }
   const v = VIEWS.bird; camera.position.set(...v.p); controls.target.set(...v.t); controls.update();
   prog(100); loop(); setTimeout(() => $('#loading').classList.add('done'), 150);
   const fromHash = () => { const m = location.hash.match(/^#(\d{3})-(\d{3,4})$/); if (m && !(unit && location.hash === unit.hash)) { enterUnit(+m[1], +m[2]); if (unit) unit.hash = location.hash; } }; /* 주소 #104-1003 → 그 세대 거실 전망 */
+  if (CAP_MODE) { capHome(CAP_MODE); return; } /* 우리 집 창밖 촬영 모드 */
   setTimeout(fromHash, 400); addEventListener('hashchange', fromHash);
 })();
 </script>

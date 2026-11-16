@@ -301,6 +301,14 @@ window.__mhLoadLog = () => LOADLOG;
 async function phase(msg, pct) { LOADLOG.phases.push([Math.round(performance.now()), msg]); loadMsg.textContent = msg; if (loadBar) loadBar.style.transform = `scaleX(${Math.max(.02, pct / 100)})`; await yieldUI(); }
 try {
 await phase('화면을 준비하는 중', 3);
+/* 우리 집 들어가기(?home=108-301): 3D 조감도를 숨은 iframe(danji.html?cap=…)으로 열어 그 세대 거실 쪽 눈높이에서 6면을 찍어 옴 — 창밖 배경으로 씀 */
+const HOME = (() => { const h = new URLSearchParams(location.search).get('home'); return h && /^1\d\d-T?\d{3,4}$/i.test(h) ? h.toUpperCase() : null; })();
+const homeCap = !HOME ? null : (() => { try { const c = sessionStorage.getItem('homecap:' + HOME); if (c) return Promise.resolve(JSON.parse(c)); } catch (e) {}
+  return new Promise(res => { const fr = document.createElement('iframe'); fr.src = 'danji.html?cap=' + encodeURIComponent(HOME); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+    fr.style.cssText = 'position:fixed;left:-3000px;top:0;width:600px;height:600px;border:0;opacity:0;pointer-events:none';
+    let fin = false; const done = d => { if (fin) return; fin = true; removeEventListener('message', on); fr.remove(); res(d); };
+    const on = e => { if (e.source !== fr.contentWindow || !e.data || e.data.type !== 'danji-cap') return; if (e.data.faces) { try { sessionStorage.setItem('homecap:' + HOME, JSON.stringify(e.data)); } catch (er) {} } done(e.data); };
+    addEventListener('message', on); setTimeout(() => done({ err: 'timeout' }), 120000); document.body.appendChild(fr); }); })();
 
 /* ───────── renderer / scene ───────── */
 const canvas = document.getElementById('gl');
@@ -558,6 +566,20 @@ const sky = new THREE.Mesh(new THREE.CylinderGeometry(70, 70, 90, 64, 1, true), 
 sky.position.y = -1; scene.add(sky);
 const skyFloor = new THREE.Mesh(new THREE.CircleGeometry(70, 48), new THREE.MeshBasicMaterial({ color: 0x8a9a7c, toneMapped: false }));
 skyFloor.rotation.x = -Math.PI / 2; skyFloor.position.y = -46; scene.add(skyFloor);
+if (homeCap) { /* 우리 집: 그린 하늘 원통 대신 조감도에서 찍은 실제 창밖 6면 상자(거실 창 바깥 = +z 를 실제 거실 방향으로 돌려 찍음) */
+  await phase('우리 집 창밖 풍경을 3D 조감도에서 찍는 중', 8); const cap = await homeCap;
+  const [hd, hh] = HOME.split('-'), bb = document.querySelector('.brand b'), bs = document.querySelector('.brand small');
+  if (cap && cap.faces && cap.faces.length === 6) {
+    const FACES = [[1, 0, 0, 0, 1, 0], [-1, 0, 0, 0, 1, 0], [0, 0, 1, 0, 1, 0], [0, 0, -1, 0, 1, 0], [0, 1, 0, 0, 0, -1], [0, -1, 0, 0, 0, 1]], D = 110, homeSky = new THREE.Group();
+    cap.faces.forEach((src, i) => { const F = FACES[i], d = new THREE.Vector3(F[0], F[1], F[2]), u = new THREE.Vector3(F[3], F[4], F[5]), r = new THREE.Vector3().crossVectors(d, u);
+      const img = new Image(), t = new THREE.Texture(img); t.colorSpace = THREE.SRGBColorSpace; img.onload = () => { t.needsUpdate = true; }; img.src = src;
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(2 * D, 2 * D), new THREE.MeshBasicMaterial({ map: t, toneMapped: false, fog: false, depthWrite: false }));
+      m.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(r, u, d.clone().negate())); m.position.copy(d).multiplyScalar(D); m.renderOrder = -10; m.frustumCulled = false; homeSky.add(m); });
+    homeSky.position.set(WX(3.875), 1.53 + 1, WZ(11.25 - 2.5)); sky.add(homeSky); sky.material.visible = false; skyFloor.material.visible = false; /* 하늘 원통의 자식이라 전체 보기에서 함께 숨음 */
+    const I = cap.info || {}; if (bb) bb.textContent = hd + '동 ' + hh + '호 · ' + bb.textContent.replace(/^신혼희망타운\s*/, '');
+    if (bs) bs.textContent = (I.fl > 0 ? I.fl + '층' : '테라스층') + (I.f ? '(최고 ' + I.f + '층)' : '') + (I.facing ? ' · 거실 ' + I.facing : '') + ' · 창밖은 3D 조감도의 실제 풍경';
+  } else if (bs) bs.textContent = hd + '동 ' + hh + '호 — 창밖 풍경을 불러오지 못해 기본 하늘로 보여 줍니다';
+}
 
 /* ───────── materials ───────── */
 await phase('마감재를 만드는 중', 14);
