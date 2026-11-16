@@ -646,6 +646,7 @@ function obox(cx, cz, ux, uz, L, D, y0, y1, f) {
   const wall = (P, Q, nx, nz, s, w) => { if (!s) return; s.gb.quad([P[0], y0, P[1]], [Q[0], y0, Q[1]], [Q[0], y1, Q[1]], [P[0], y1, P[1]], [nx, 0, nz], s.uv ? s.uv(w, y0 - YOFF, y1 - YOFF) : null, s.col); }; /* 텍스처 층 줄은 그 동 맨 아래 층 바닥 기준(실제 슬래브와 맞춤) */
   wall(E, C, fx, fz, f.front, L); wall(B, A, -fx, -fz, f.back, L); wall(C, B, ux, uz, f.right, D); wall(A, E, -ux, -uz, f.left, D);
   if (f.top) { const t = f.top; t.gb.quad([A[0], y1, A[1]], [E[0], y1, E[1]], [C[0], y1, C[1]], [B[0], y1, B[1]], [0, 1, 0], t.uv ? t.uvTop(A, E, C, B) : null, t.col); }
+  if (f.bottom) { const t = f.bottom; t.gb.quad([A[0], y0, A[1]], [B[0], y0, B[1]], [C[0], y0, C[1]], [E[0], y0, E[1]], [0, -1, 0], null, t.col); } /* 밑면(아래에서 올려다보는 처마 등) */
 }
 const uvTile = (tw, th, s0 = 0) => (w, y0, y1) => [s0 / tw, y0 / th, (s0 + w) / tw, y0 / th, (s0 + w) / tw, y1 / th, s0 / tw, y1 / th];
 const uvPlanar = ts => (A, E, C, B) => [A[0] / ts, -A[1] / ts, E[0] / ts, -E[1] / ts, C[0] / ts, -C[1] / ts, B[0] / ts, -B[1] / ts];
@@ -1096,7 +1097,7 @@ function buildDong(D, G, MAT) {
       if (t === 2) { const s2 = Math.min(3.2, dep - 1.2), o2 = DEP / 2 + s2 / 2, TU = { gb: G.terr, uv: uvTile(tw, FH) }; /* 모형 사진 1(122동): 56T 두 줄은 계단식 — 1층 세대가 앞으로 나오고 그 지붕이 2층 테라스 */
         obox(cx + fx * o2, cz + fz * o2, ux, uz, L - .3, s2, .12, FH, { front: TU, left: TU, right: TU, top: { gb: G.tdeckL } });
         obox(cx + fx * (DEP / 2 + s2 - .22), cz + fz * (DEP / 2 + s2 - .22), ux, uz, L - .5, .4, FH, FH + 1, { front: F(TB), back: F(TB), left: F(TB), right: F(TB), top: F(TB) }); }
-      obox(cx + fx * (DEP / 2 + .9), cz + fz * (DEP / 2 + .9), ux, uz, L, 1.8, yT - .35, yT + .05, { front: { gb: TB }, back: { gb: TB }, top: { gb: TB } }); }
+      obox(cx + fx * (DEP / 2 + .9), cz + fz * (DEP / 2 + .9), ux, uz, L, 1.8, yT - .35, yT + .05, { front: { gb: TB }, back: { gb: TB }, top: { gb: TB }, bottom: { gb: TB }, left: { gb: TB }, right: { gb: TB } }); } /* 테라스 위 처마(어닝): 11-17 사용자 — 밑에서 보면 뚫려 보임 → 밑면·양끝까지 닫힌 상자 */
     /* 측벽 동 번호 사인(모형: 저층부 바로 위) */
     if (wi === 0 || D.w.length > 1) for (const e of (D.w.length > 1 ? (wi === 0 ? [-1] : [1]) : [-1, 1])) { const sx = cx + ux * e * (L / 2 + .06) + fx * DEP * .27, sz = cz + uz * e * (L / 2 + .06) + fz * DEP * .27, m = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8), signMat(D.d)); /* 측벽 가운데 짙은 띠를 피해 앞쪽 */
       const yS = yF1 + Math.min(base + 1.7 + (D.d === 108 ? 3 * FH : 0), H - 3.2); /* 108동은 갈색이 더 높아 번호도 그 위(모형 사진 2) */ m.position.set(sx, yS, sz); m.lookAt(sx + ux * e, yS, sz + uz * e); scene.add(m); } /* 모형: 동 번호는 갈색 저층부 바로 위 측벽 */
