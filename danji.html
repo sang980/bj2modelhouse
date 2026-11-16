@@ -1792,6 +1792,11 @@ function buildTrees(planData, PW, PH, PK) {
       const px = Math.round((x / S + OX) / PK), py = Math.round((z / S + OY) / PK); if (px < 0 || py < 0 || px >= PW || py >= PH) continue; const k4 = (py * PW + px) * 4, r = planData[k4], g = planData[k4 + 1], bl = planData[k4 + 2]; if (!(g > r + 6 && g > bl)) continue; /* 배치도에서 잔디(초록)인 자리만 — 가운데 포장길은 비움 */
       if (polyDist(SITE, x, z) > -2 || inBld(x, z) || WALKS.some(([P, Q, w]) => pathDist([P, Q], x, z) < w + .8) || DA.some(([wx, wz]) => Math.hypot(x - wx, z - wz) < 3.2) || FZ.some(([wx, wz]) => Math.hypot(x - wx, z - wz) < 6.5) || pts.some(t => Math.hypot(t[0] - x, t[2] - z) < 2.2)) continue;
       pts.push([x, levelAt(x, z), z, 1.5 + (j + .5) * .8, 3]); } } }
+  /* 11-16 모형 VE32: 동남쪽 청록 운동마당 둘레 잔디에 나무·관목(우리는 넓은 잔디만) */
+  { const C = TEALE.reduce((q, p) => [q[0] + p[0] / 4, q[1] + p[1] / 4], [0, 0]); for (let k = 0; k < 36; k++) { const an = k / 36 * 6.283 + hash2(k, 7) * .3, rr = 8 + hash2(k, 11) * 9, x = C[0] + Math.cos(an) * rr, z = C[1] + Math.sin(an) * rr;
+      if (polyDist(SITE, x, z) > -3 || polyDist(TEALE, x, z) < 2.5 || inBld(x, z) || pts.some(t => Math.hypot(t[0] - x, t[2] - z) < 2.4)) continue;
+      const px = Math.round((x / S + OX) / PK), py = Math.round((z / S + OY) / PK); if (px >= 0 && py >= 0 && px < PW && py < PH) { const k4 = (py * PW + px) * 4; if (!(planData[k4 + 1] > planData[k4] + 6)) continue; }
+      const h = hash2(k, 23); pts.push([x, levelAt(x, z), z, h < .45 ? .7 + h : 1.4 + h * .8, h < .45 ? 0 : 3]); } }
   /* 숲: 단지 주변 1.2km */
   const nF = LOW ? 5000 : 16000, R = LOW ? 800 : 1250; let tries = 0, made = 0;
   while (made < nF && tries < nF * 6) { tries++;
