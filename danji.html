@@ -1093,9 +1093,10 @@ function buildYard() {
       const rm = new THREE.Mesh(rg.build(), pm); rm.receiveShadow = true; scene.add(rm); }
     flat(strip(YARD.path, 2.6), pm, .13, uvP, 112 - Y0); for (const br of YARD.branches) flat(strip(br, 2), pm, .135, uvP, 112 - Y0); } /* 마당 높이(FH 112)에 딱 붙게 */
   /* 117·118동 사이 산책로 가운데 짙은 회색 정자(모형 VN10·VE16) */
-  if (BLD[118]) { const p = BLD[118].pieces[0], fx = -p.uz, fz = p.ux, off = DEP / 2 + CORE_D + 3.6, c = [p.cx - fx * off - p.ux * (p.L / 2 + 6), p.cz - fz * off - p.uz * (p.L / 2 + 6)], y0 = levelAt(c[0], c[1]), pg = new GB(), F = { front: { gb: pg }, back: { gb: pg }, left: { gb: pg }, right: { gb: pg }, top: { gb: pg } };
+  if (BLD[118]) { const p = BLD[118].pieces[0], fx = -p.uz, fz = p.ux, off = DEP / 2 + CORE_D + 3.6, pg = new GB(), F = { front: { gb: pg }, back: { gb: pg }, left: { gb: pg }, right: { gb: pg }, top: { gb: pg } };
+    for (const sh of [-(p.L / 2 + 6), p.L / 2 + 14]) { const c = [p.cx - fx * off + p.ux * sh, p.cz - fz * off + p.uz * sh], y0 = levelAt(c[0], c[1]); /* 11-16 모형 VE17: 산책로에 정자 두 개 */
     for (const [a2, b2] of [[-1.6, -1.2], [1.6, -1.2], [1.6, 1.2], [-1.6, 1.2]]) obox(c[0] + p.ux * a2 + fx * b2, c[1] + p.uz * a2 + fz * b2, p.ux, p.uz, .18, .18, y0, y0 + 2.6, F);
-    obox(c[0], c[1], p.ux, p.uz, 3.8, 3, y0 + 2.6, y0 + 2.9, F); const m2 = new THREE.Mesh(pg.build(), new THREE.MeshStandardMaterial({ color: '#2f3134', roughness: .6 })); m2.castShadow = true; scene.add(m2); }
+    obox(c[0], c[1], p.ux, p.uz, 3.8, 3, y0 + 2.6, y0 + 2.9, F); } const m2 = new THREE.Mesh(pg.build(), new THREE.MeshStandardMaterial({ color: '#2f3134', roughness: .6 })); m2.castShadow = true; scene.add(m2); }
   /* 북쪽 큰 놀이터(모형 VN18: 모래 마당) + 122동 옆 작은 놀이터 — 같은 모래 바닥, 놀이기구 */
   for (const [Q, big] of [[YARD.sandN, true], [YARD.sandW, false]]) { const y2 = flat(Q, new THREE.MeshStandardMaterial({ color: '#b39a5c', roughness: 1, envMapIntensity: .15, ...off }), .1);
     const qx = Q.reduce((s, p) => s + p[0], 0) / 4, qz = Q.reduce((s, p) => s + p[1], 0) / 4, du = [Q[1][0] - Q[0][0], Q[1][1] - Q[0][1]], dl = Math.hypot(...du), vx = du[0] / dl, vz = du[1] / dl, wx = -vz, wz = vx, at2 = (a, b) => [qx + vx * a + wx * b, qz + vz * a + wz * b];
