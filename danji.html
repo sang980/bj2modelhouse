@@ -482,7 +482,7 @@ function texCore() { const c = cnv(512, 256), g = c.getContext('2d'); noiseFill(
 function texRoof() { const c = cnv(512, 512), g = c.getContext('2d'); noiseFill(g, 512, 512, '#5d6368', .04, 1500); /* 모형 사진 1: 태양광 판은 푸른기 적은 회청 슬레이트(87,93,99) */
   for (let y = 20; y < 500; y += 70) for (let x = 16; x < 500; x += 60) { g.fillStyle = '#50565c'; g.fillRect(x, y, 58, 68); g.fillStyle = 'rgba(150,160,175,.12)'; for (let k = 1; k < 4; k++) g.fillRect(x, y + k * 15.5, 54, 1.5); g.fillRect(x + 27, y, 1.5, 62); }
   return tex(c); }
-function texGreen() { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill(g, 256, 256, '#4a6626', .12, 1800);
+function texGreen() { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill(g, 256, 256, '#6e8430', .12, 1800);
   for (let i = 0; i < 70; i++) { g.fillStyle = `rgba(${40 + rand() * 30 | 0},${80 + rand() * 40 | 0},${35 + rand() * 20 | 0},.8)`; g.beginPath(); g.arc(rand() * 256, rand() * 256, 4 + rand() * 9, 0, 7); g.fill(); }
   return tex(c); }
 /* 옹벽(모형 사진): 중간 회색 도장 + 굵은 짙은 회색 테트리스 무늬(세로 막대·ㄱ·ㄴ·T자) — 한 장 = 20m × 10m */
@@ -937,7 +937,7 @@ function detailDeck(mat, maskTex) {
         float asph = (1. - smoothstep(.16, .26, lum)) * (1. - smoothstep(.06, .12, sat)); /* 어두운 무채색 = 차로 */
         float gr = 1. - pv; /* 단지 안에는 지상 차로가 없음(모형): 길 아닌 곳은 모두 잔디 */ /* 나머지는 모형처럼 고른 잔디 */
         float P = texture2D(tPav, vWP.xz * .5).r, G = texture2D(tGrs, vWP.xz / 3.).r;
-        vec3 pathC = vec3(.5, .48, .44) * (.86 + .2 * P), grassC = vec3(.058, .105, .02) * (.82 + .3 * G); /* 모형 사진 1(48,69,24)·영상(91,106,30) 사이 올리브 잔디 */
+        vec3 pathC = vec3(.5, .48, .44) * (.86 + .2 * P), grassC = vec3(.14, .18, .02) * (.82 + .3 * G); /* 모형 영상 VE08·VE17·VE20·VE22 열린 잔디(91~132,106~153,30~73) — 사진 1은 나무 그늘이라 더 어두움 */
         diffuseColor.rgb = mix(mix(c, grassC, gr), pathC, pv); }`); };
 }
 
@@ -1399,7 +1399,7 @@ function buildTrees(planData, PW, PH, PK) {
     const k = (py * PW + px) * 4, r = planData[k], g = planData[k + 1], b = planData[k + 2];
     if (!(g > r + 10 && g > b + 4 && r < 150 && (g < 170 || (g < 205 && rand() < .45)))) continue; /* 모형 사진 1: 데크 잔디 위에도 작은 나무가 촘촘 — 옅은 잔디 픽셀에도 일부 */ /* 잔디(옅은 초록)에도 나무 */
     if (inBld(jx, jz) || AMEN_POLYS.some(P => polyDist(P, jx, jz) < 2) || polyDist(YARD.court, jx, jz) < 2 || polyDist(YARD.teal, jx, jz) < 1 || polyDist(YARD.sand, jx, jz) < 1.5 || polyDist(YARD.sandN, jx, jz) < 1.5 || polyDist(YARD.sandW, jx, jz) < 1.5 || inPoly(ENT.PZ, jx, jz) || pathDist(YARD.path, jx, jz) < 2.2 || WALKS.some(([P, Q, w]) => pathDist([P, Q], jx, jz) < w + 1) || pathDist(YARD.ring, jx, jz) < 2.4 || YARD.branches.some(b => pathDist(b, jx, jz) < 1.8)) continue; /* 마당 시설은 비워 둠 */
-    if (jz < -40 && polyDist(SITE, jx, jz) > -9 && rand() < .7) continue; /* 모형 VN14: 북쪽 경계 안쪽은 잔디 + 드문 관목 */
+    if (jz < -40 && polyDist(SITE, jx, jz) > -20 && rand() < .8) continue; /* 모형 VN14·VE20·VE22: 북쪽 경계와 동 뒷면 사이는 잔디 + 드문 관목(숲처럼 빽빽하지 않음) */
     if (rand() < .18) pts.push([jx, levelAt(jx, jz), jz, .75 + rand() * .55, 2]); else pts.push([jx, levelAt(jx, jz), jz, .9 + rand() * .8, 0]); /* 모형 VE17: 데크 나무는 작음 */ /* 모형: 작고 짙은 조경수 + 원뿔형 침엽수 섞임 */
   }
   /* 숲: 단지 주변 1.2km */
@@ -1419,7 +1419,7 @@ function buildTrees(planData, PW, PH, PK) {
     const cgc = mergeShade([c1, c2], .55); const im = new THREE.InstancedMesh(cgc, new THREE.MeshLambertMaterial({ color: '#ffffff', vertexColors: true }), con.length);
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), col = new THREE.Color();
     con.forEach((t, i) => { const r = t[3] * .62; ps.set(t[0], t[1] + 1.5, t[2]); sc.set(r, r * (3 + rand() * .8), r); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rand() * 6.28); m4.compose(ps, q, sc); im.setMatrixAt(i, m4);
-      if (polyDist(SITE, t[0], t[2]) < 0) col.setHSL(.21 + rand() * .05, .6 + rand() * .15, .05 + rand() * .03); else col.setHSL(.3 + rand() * .06, .3 + rand() * .15, .12 + rand() * .07); im.setColorAt(i, col); }); /* 단지 안 침엽수도 모형처럼 짙은 올리브 */
+      if (polyDist(SITE, t[0], t[2]) < 0) col.setHSL(.21 + rand() * .05, .42 + rand() * .15, .062 + rand() * .035); else col.setHSL(.3 + rand() * .06, .3 + rand() * .15, .12 + rand() * .07); im.setColorAt(i, col); }); /* 단지 안 침엽수도 모형처럼 짙은 올리브 */
     im.castShadow = true; im.receiveShadow = true; scene.add(im); }
   /* 나무다운 수관: 크고 작은 울퉁불퉁한 덩어리 2~3개를 합친 모양 + 아래쪽은 그늘지게(정점 색) — 인스턴스 색과 곱해짐 */
   const crown = (det, lumps) => { const L = lumps === 3 ? [[0, 0, 0, 1], [.56, -.2, .22, .64], [-.42, -.14, -.4, .6]] : [[0, 0, 0, 1], [.45, -.25, -.18, .68]];
@@ -1436,7 +1436,7 @@ function buildTrees(planData, PW, PH, PK) {
     list.forEach((t, i) => { const r = t[3], th = t[4] ? r * 1.1 : r * .9 + .8;
       ps.set(t[0], t[1] + th + r * .95, t[2]); sc.set(r, r * (1.05 + rand() * .3), r); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rand() * 6.28); m4.compose(ps, q, sc); canopy.setMatrixAt(i, m4);
       if (trunk) { ps.set(t[0], t[1], t[2]); sc.set(1, th + r * .5, 1); m4.compose(ps, q, sc); trunk.setMatrixAt(i, m4); }
-      const l = rand(); if (t[4] === 0 || (t[4] === 3 && polyDist(SITE, t[0], t[2]) < 10)) col.setHSL(.19 + rand() * .05, .65 + rand() * .15, .05 + l * .035); /* 모형 사진: 짙은 올리브 초록(46,60,22) */ else col.setHSL(.22 + rand() * .1, .3 + rand() * .2, t[4] === 1 ? .17 + l * .1 : .23 + l * .12); canopy.setColorAt(i, col); }); /* 단지 안 나무는 모형처럼 짙은 초록 */
+      const l = rand(); if (t[4] === 0 || (t[4] === 3 && polyDist(SITE, t[0], t[2]) < 10)) col.setHSL(.2 + rand() * .05, .45 + rand() * .15, .062 + l * .04); /* 모형 사진: 짙은 올리브 초록(46,60,22) */ else col.setHSL(.22 + rand() * .1, .3 + rand() * .2, t[4] === 1 ? .17 + l * .1 : .23 + l * .12); canopy.setColorAt(i, col); }); /* 단지 안 나무는 모형처럼 짙은 초록 */
     canopy.castShadow = canopy.receiveShadow = true; scene.add(canopy); if (trunk) { trunk.castShadow = true; scene.add(trunk); } }
 }
 
