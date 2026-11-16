@@ -496,12 +496,18 @@ function texGreen() { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill
   for (let i = 0; i < 70; i++) { g.fillStyle = `rgba(${40 + rand() * 30 | 0},${80 + rand() * 40 | 0},${35 + rand() * 20 | 0},.8)`; g.beginPath(); g.arc(rand() * 256, rand() * 256, 4 + rand() * 9, 0, 7); g.fill(); }
   return tex(c); }
 /* 옹벽(모형 사진): 중간 회색 도장 + 굵은 짙은 회색 테트리스 무늬(세로 막대·ㄱ·ㄴ·T자) — 한 장 = 20m × 10m */
-function mazeShapes(g, W, Hh, col, seed, unit) { const rr = rng(seed), u = unit; g.fillStyle = col;
-  for (let x = u * 1.5; x < W - u; x += u * (2.2 + rr() * 2.2)) { const len = u * (3 + (rr() * 6 | 0)), y0 = rr() < .5 ? u * (rr() * 3 | 0) : Hh - len - u * (rr() * 3 | 0); g.fillRect(x, y0, u, len);
-    const r = rr(); if (r < .3) g.fillRect(x, y0 + len - u, u * (2 + (rr() * 3 | 0)), u); else if (r < .55) g.fillRect(x - u * (1 + (rr() * 2 | 0)), y0, u * (2 + (rr() * 2 | 0)), u); else if (r < .7) { const yy = y0 + u * (1 + (rr() * Math.max(1, len / u - 2) | 0)); g.fillRect(x, yy, u * 3, u); } } }
+function mazeShapes(g, W, Hh, col, seed, unit) { const rr = rng(seed), u = unit, C = Math.floor(W / u), R = Math.floor(Hh / u), occ = new Uint8Array(C * R); /* 모형 VE08·VE28 확대: 정사각 단위로 된 세로 막대(가장 많음)·+·T·S·Z·L·작은 네모가 불규칙하게 흩어짐 — 글자처럼 짝지어 반복되지 않게 겹침 금지 격자 배치 */
+  const I3 = [[0, 0], [0, 1], [0, 2]], I4 = [[0, 0], [0, 1], [0, 2], [0, 3]], I5 = [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]], I6 = [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5]];
+  const S = [I3, I4, I4, I5, I5, I6, I3, I4, [[0, 0], [0, 1], [0, 2], [0, 3], [1, 1], [-1, 1]], [[0, 0], [1, 0], [-1, 0], [0, 1], [0, 2], [0, 3]], [[0, 0], [0, 1], [1, 1], [1, 2], [1, 3]], [[0, 0], [0, 1], [0, 2], [-1, 2], [-1, 3]], [[0, 0], [0, 1], [0, 2], [0, 3], [1, 3]], [[0, 0]], [[0, 0], [0, 1]], [[0, 0], [1, 0], [2, 0], [1, 1], [1, 2]]];
+  g.fillStyle = col; let n = 0;
+  for (let t = 0; t < 900 && n < C * R * .15; t++) { const sh = S[rr() * S.length | 0], cx = 1 + (rr() * (C - 2) | 0), cy = rr() * R | 0;
+    if (sh.some(([dx, dy]) => cx + dx < 0 || cx + dx >= C || cy + dy < 0 || cy + dy >= R)) continue;
+    let hit = false; for (const [dx, dy] of sh) for (let ax = -1; ax <= 1 && !hit; ax++) for (let ay = -1; ay <= 1 && !hit; ay++) { const x = cx + dx + ax, y = cy + dy + ay; if (x >= 0 && x < C && y >= 0 && y < R && occ[y * C + x]) hit = true; } if (hit) continue;
+    for (const [dx, dy] of sh) { occ[(cy + dy) * C + cx + dx] = 1; g.fillRect((cx + dx) * u, (cy + dy) * u, u, u); n++; } } }
 function texConcrete() { const c = cnv(1024, 512), g = c.getContext('2d'); noiseFill(g, 1024, 512, '#8d877a', .02, 1800); /* 모형 사진 1: 따뜻한 중간 회색 도장(115,111,91 그늘) — (줄눈 없음) — 햇빛 받아도 중간 회색으로 보이게 */
   for (let k = 0; k < 16; k++) { g.fillStyle = `rgba(${rand() < .5 ? '255,255,255' : '40,40,40'},${.015 + rand() * .02})`; g.fillRect(rand() * 1024, 0, 60 + rand() * 160, 512); }
-  mazeShapes(g, 1024, 512, '#2f2d29', 31, 54); /* 모형 확대: 막대가 더 굵고 김 */
+  g.fillStyle = 'rgba(0,0,0,.07)'; for (let x = 0; x < 1024; x += 26) g.fillRect(x, 0, 2, 512); /* 모형 VE08·VE28: 가는 세로 판 줄눈(0.5m) */
+  mazeShapes(g, 1024, 512, '#2f2d29', 31, 64); /* 한 칸 1.25m(모형 VE08: 막대가 벽 높이의 1/3~1/2) */
   return tex(c); }
 /* 56T 아래 옹벽: 갈색 도장(페인트) 마감 + 짙은 홈 무늬(벽돌·줄눈 없음) */
 function texPodium(light) { const c = cnv(1024, 512), g = c.getContext('2d'); if (light) noiseFill(g, 1024, 512, '#b2afa8', .03, 1600); else paintBrown(g, 1024, 512); /* light: 모형 VE27·VE29 111~113동 테라스 아래는 밝은 회색 도장 */ /* 모형: 저층과 같은 갈색 도장 + 짙은 홈 무늬 */
@@ -654,7 +660,10 @@ async function build() {
       if (Math.max(ay, by, cy) - Math.min(ay, by, cy) >= .6) { const yM = Math.max(ay, by, cy); for (const z2 of TZ) { const dd = polyDist(z2.P, mx, mz); if (dd > -1.4 && dd < 1.4 && yM <= z2.h - Y0 + .3) return; } } /* 테라스 포디움 앞면 옹벽이 이 단 벽을 대신함(톱니 조각이 포디움 밖으로 삐져나오지 않게) */
       if (Math.max(ay, by, cy) - Math.min(ay, by, cy) < .6) { fp.push(ax, ay, az, bx, by, bz, cx, cy, cz); for (const [x, z] of [[ax, az], [bx, bz], [cx, cz]]) { const u = planUV(x, z); fu.push(u[0], u[1]); } }
       else if (Math.max(ay, by, cy) - Math.min(ay, by, cy) < 3.5) { lp.push(ax, ay, az, bx, by, bz, cx, cy, cz); lu.push((ax + az) / 6, ay / 3, (bx + bz) / 6, by / 3, (cx + cz) / 6, cy / 3); }
-      else { wp.push(ax, ay, az, bx, by, bz, cx, cy, cz); wu.push((ax + az) / 20, ay / 10, (bx + bz) / 20, by / 10, (cx + cz) / 20, cy / 10); } };
+      else { wp.push(ax, ay, az, bx, by, bz, cx, cy, cz); const [tX, tZ] = wallTan(mx, mz); /* 벽면 방향 기준 가로 좌표(방향마다 무늬가 눌리지 않게) */
+        wu.push((ax * tX + az * tZ) / 20, ay / 10, (bx * tX + bz * tZ) / 20, by / 10, (cx * tX + cz * tZ) / 20, cy / 10); } };
+    const WT = new Map(), wallTan = (x, z) => { const k = Math.round(x / 1.5) + ',' + Math.round(z / 1.5); let v = WT.get(k); if (v) return v; const x0 = Math.round(x / 1.5) * 1.5, z0 = Math.round(z / 1.5) * 1.5, h0 = levelAt(x0, z0); let gx = 0, gz = 0; /* 반지름 3.5m 16방향 표본으로 단 경계(벽)의 법선 추정 — 계단식 격자 삼각형마다 방향이 바뀌지 않게 */
+      for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8, dx = Math.cos(a), dz = Math.sin(a), dh = levelAt(x0 + dx * 3.5, z0 + dz * 3.5) - h0; gx += dh * dx; gz += dh * dz; } const l = Math.hypot(gx, gz); v = l > 1e-3 ? [-gz / l, gx / l] : [.7071, .7071]; WT.set(k, v); return v; };
     const quadT = (xa, za, xb, zb, a, b, c, d) => { tri(xa, za, a, xa, zb, c, xb, za, b); tri(xb, za, b, xa, zb, c, xb, zb, d); };
     for (let j = 0; j < gz - 1; j++) for (let i = 0; i < gx - 1; i++) {
       const k = j * gx + i, xa = x0 + i * st, za = z0 + j * st, a = Y[k], b = Y[k + 1], c = Y[k + gx], d = Y[k + gx + 1], ins = IN[k] + IN[k + 1] + IN[k + gx] + IN[k + gx + 1];
