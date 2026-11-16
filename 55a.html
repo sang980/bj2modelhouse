@@ -302,11 +302,12 @@ try {
 await phase('화면을 준비하는 중', 3);
 /* 우리 집 들어가기(?home=108-301): 3D 조감도를 숨은 iframe(danji.html?cap=…)으로 열어 그 세대 거실 쪽 눈높이에서 6면을 찍어 옴 — 창밖 배경으로 씀 */
 const HOME = (() => { const h = new URLSearchParams(location.search).get('home'); return h && /^1\d\d-T?\d{3,4}$/i.test(h) ? h.toUpperCase() : null; })();
-const homeCap = !HOME ? null : (() => { try { const c = sessionStorage.getItem('homecap:' + HOME); if (c) return Promise.resolve(JSON.parse(c)); } catch (e) {}
-  return new Promise(res => { const fr = document.createElement('iframe'); fr.src = 'danji.html?cap=' + encodeURIComponent(HOME); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+const HOME_NEAR = false && !!HOME && /-T/.test(HOME); /* 테라스 세대: 거실 밖으로 나갈 수 있어 가까운 주변(반경 45~60m)은 진짜 3D로 받아 옴 */
+const homeCap = !HOME ? null : (() => { if (!HOME_NEAR) try { const c = sessionStorage.getItem('homecap:' + HOME); if (c) { const j = JSON.parse(c); if (j.info && j.info.eyeRel) return Promise.resolve(j); } } catch (e) {}
+  return new Promise(res => { const fr = document.createElement('iframe'); fr.src = 'danji.html?cap=' + encodeURIComponent(HOME) + (HOME_NEAR ? '&near=1' : ''); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
     fr.style.cssText = 'position:fixed;left:-3000px;top:0;width:600px;height:600px;border:0;opacity:0;pointer-events:none';
     let fin = false; const done = d => { if (fin) return; fin = true; removeEventListener('message', on); fr.remove(); res(d); };
-    const on = e => { if (e.source !== fr.contentWindow || !e.data || e.data.type !== 'danji-cap') return; if (e.data.faces) { try { sessionStorage.setItem('homecap:' + HOME, JSON.stringify(e.data)); } catch (er) {} } done(e.data); };
+    const on = e => { if (e.source !== fr.contentWindow || !e.data || e.data.type !== 'danji-cap') return; if (e.data.faces && !e.data.near) { try { sessionStorage.setItem('homecap:' + HOME, JSON.stringify(e.data)); } catch (er) {} } done(e.data); };
     addEventListener('message', on); setTimeout(() => done({ err: 'timeout' }), 120000); document.body.appendChild(fr); }); })();
 
 /* ───────── renderer / scene ───────── */
@@ -580,7 +581,8 @@ if (homeCap) { /* 우리 집: 그린 하늘 원통 대신 조감도에서 찍은
       const img = new Image(), t = new THREE.Texture(img); t.colorSpace = THREE.SRGBColorSpace; img.onload = () => { t.needsUpdate = true; }; img.src = src;
       const m = new THREE.Mesh(new THREE.PlaneGeometry(2 * D, 2 * D), new THREE.MeshBasicMaterial({ map: t, toneMapped: false, fog: false, depthWrite: false }));
       m.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(r, u, d.clone().negate())); m.position.copy(d).multiplyScalar(D); m.renderOrder = -10; m.frustumCulled = false; homeSky.add(m); });
-    homeSky.position.set(WX(6.91), 1.53 + 1, WZ(8.22 - 2.5)); sky.add(homeSky); sky.material.visible = false; skyFloor.material.visible = false; /* 하늘 원통의 자식이라 전체 보기에서 함께 숨음 */
+    const ER = (cap.info && cap.info.eyeRel) || null; window.__homeEye = ER ? new THREE.Vector3(ER[0], ER[1], WZ(8.22) + ER[2]) : null; window.__homeNear = cap.near || null;
+    if (ER) homeSky.position.set(window.__homeEye.x, window.__homeEye.y + 1, window.__homeEye.z); else homeSky.position.set(WX(6.91), 1.53 + 1, WZ(8.22 - 2.5)); sky.add(homeSky); sky.material.visible = false; skyFloor.material.visible = false; /* 하늘 원통의 자식이라 전체 보기에서 함께 숨음 */
     const I = cap.info || {}; if (bb) bb.textContent = hd + '동 ' + hh + '호 · ' + bb.textContent.replace(/^신혼희망타운\s*/, '');
     if (bs) bs.textContent = (I.fl > 0 ? I.fl + '층' : '테라스층') + (I.f ? '(최고 ' + I.f + '층)' : '') + (I.facing ? ' · 거실 ' + I.facing : '') + ' · 창밖은 3D 조감도의 실제 풍경';
   } else if (bs) bs.textContent = hd + '동 ' + hh + '호 — 창밖 풍경을 불러오지 못해 기본 하늘로 보여 줍니다';
@@ -3843,6 +3845,30 @@ addEventListener('visibilitychange', () => { perf.last = 0; perf.acc = perf.n = 
 await phase('조명을 계산하는 중', 88);
 // 안전장치: 여기까지(텍스처·벽·가구 만들기)가 오래 걸린 기기는 CPU·GPU가 약한 것 → 셰이더를 만들기 전에 가벼운 모드로 전환
 if (!tierLocked && !userLocked && tier < 3 && !loadWasHidden && performance.now() - BUILD_T0 > 6000) { tier = 3; rememberSlow(); }
+if (window.__homeNear && window.__homeEye) { await phase('우리 집 주변을 3D로 놓는 중', 87); try {
+  const NR = window.__homeNear, E = window.__homeEye, bb = new THREE.Box3(), tb = new THREE.Box3();
+  scene.traverse(o => { if (!o.isMesh || o === skyFloor) return; for (let p = o; p; p = p.parent) if (p === sky) return; o.geometry.computeBoundingBox(); tb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld); const sz = tb.getSize(new THREE.Vector3()); if (sz.x > 40 || sz.z > 40) return; bb.union(tb); }); /* 인테리어 모델 범위 */
+  const x0 = bb.min.x - .25, x1 = bb.max.x + .25, z0 = bb.min.z - .25, z1 = bb.max.z + .25, y0 = bb.min.y - .6, y1 = bb.max.y + .35;
+  const texs = NR.texs.map(t => { const img = new Image(), tx = new THREE.Texture(img); img.onload = () => { tx.needsUpdate = true; }; img.src = t.src; tx.colorSpace = t.srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; tx.wrapS = t.ws; tx.wrapT = t.wt; tx.flipY = !!t.flipY; tx.anisotropy = 4; return tx; });
+  const CLS = { MeshStandardMaterial: THREE.MeshStandardMaterial, MeshLambertMaterial: THREE.MeshLambertMaterial, MeshBasicMaterial: THREE.MeshBasicMaterial, MeshPhongMaterial: THREE.MeshPhongMaterial };
+  const mats = NR.mats.map(m => { const M = new (CLS[m.type] || THREE.MeshStandardMaterial)(); M.color.setHex(m.color); if (M.emissive) { M.emissive.setHex(m.emissive); M.emissiveIntensity = m.ei; } if ('roughness' in M) { M.roughness = m.rough; M.metalness = m.metal; }
+    M.transparent = !!m.tr; M.opacity = m.op; M.side = m.side; M.vertexColors = !!m.vc; M.alphaTest = m.at; M.depthWrite = !!m.dw; if (m.po) { M.polygonOffset = true; M.polygonOffsetFactor = m.po[0]; M.polygonOffsetUnits = m.po[1]; } if (m.map >= 0 && texs[m.map]) M.map = texs[m.map]; if (m.em >= 0 && texs[m.em] && 'emissiveMap' in M) M.emissiveMap = texs[m.em]; M.flatShading = !!m.flat; return M; });
+  const grp = new THREE.Group(); grp.position.set(E.x, E.y + 1, E.z); grp.name = 'homeNear'; let kept = 0;
+  const BX = [x0 - E.x, x1 - E.x, y0 - E.y, y1 - E.y, z0 - E.z, z1 - E.z], PL = [[0, -1, BX[0]], [0, 1, BX[1]], [1, -1, BX[2]], [1, 1, BX[3]], [2, -1, BX[4]], [2, 1, BX[5]]]; /* 우리 세대 범위(묶음 좌표) — 긴 앞면 띠도 이 상자 안쪽만 잘라 냄 */
+  const cut = (poly, ax, sg, val, outside) => { const o = []; for (let i = 0; i < poly.length; i++) { const a = poly[i], b = poly[(i + 1) % poly.length], da = sg * (a[ax] - val), db = sg * (b[ax] - val), ia = outside ? da > 0 : da <= 0, ib = outside ? db > 0 : db <= 0; if (ia) o.push(a); if (ia !== ib) { const t = da / (da - db); o.push(a.map((x, q) => x + (b[q] - x) * t)); } } return o; };
+  for (const g of NR.meshes) { const P = g.pos, NN = g.nor, UV = g.uv, CO = g.col, nv = P.length / 3, out = { p: [], n: [], u: UV ? [] : null, c: CO ? [] : null };
+    const vert = i => { const v = [P[3 * i], P[3 * i + 1], P[3 * i + 2], NN[3 * i], NN[3 * i + 1], NN[3 * i + 2]]; if (UV) v.push(UV[2 * i], UV[2 * i + 1]); if (CO) v.push(CO[3 * i], CO[3 * i + 1], CO[3 * i + 2]); return v; };
+    const emit = v => { out.p.push(v[0], v[1], v[2]); out.n.push(v[3], v[4], v[5]); let k = 6; if (UV) { out.u.push(v[k], v[k + 1]); k += 2; } if (CO) out.c.push(v[k], v[k + 1], v[k + 2]); };
+    for (let t = 0; t < nv; t += 3) { let mnx = 1e9, mxx = -1e9, mny = 1e9, mxy = -1e9, mnz = 1e9, mxz = -1e9; for (let q = t; q < t + 3; q++) { const x = P[3 * q], y = P[3 * q + 1], z = P[3 * q + 2]; mnx = Math.min(mnx, x); mxx = Math.max(mxx, x); mny = Math.min(mny, y); mxy = Math.max(mxy, y); mnz = Math.min(mnz, z); mxz = Math.max(mxz, z); }
+      const tri = [vert(t), vert(t + 1), vert(t + 2)];
+      if (mxx <= BX[0] || mnx >= BX[1] || mxy <= BX[2] || mny >= BX[3] || mxz <= BX[4] || mnz >= BX[5]) { tri.forEach(emit); continue; } /* 상자 밖: 그대로 */
+      if (mnx >= BX[0] && mxx <= BX[1] && mny >= BX[2] && mxy <= BX[3] && mnz >= BX[4] && mxz <= BX[5]) continue; /* 상자 안: 버림 */
+      let rest = tri; for (const [ax, sg, val] of PL) { const o = cut(rest, ax, sg, val, true); if (o.length >= 3) for (let q = 1; q < o.length - 1; q++) { emit(o[0]); emit(o[q]); emit(o[q + 1]); } rest = cut(rest, ax, sg, val, false); if (rest.length < 3) break; } } /* 걸친 삼각형: 상자 밖 조각만 */
+    if (!out.p.length) continue; kept += out.p.length / 9;
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(out.p, 3)); geo.setAttribute('normal', new THREE.Float32BufferAttribute(out.n, 3)); if (out.u) geo.setAttribute('uv', new THREE.Float32BufferAttribute(out.u, 2)); if (out.c) geo.setAttribute('color', new THREE.Float32BufferAttribute(out.c, 3));
+    const mesh = new THREE.Mesh(geo, mats[g.m]); mesh.renderOrder = g.ro || 0; mesh.matrixAutoUpdate = false; grp.add(mesh); }
+  sky.add(grp); grp.updateMatrixWorld(true); window.__homeNearInfo = { tris: kept, meshes: grp.children.length, box: [x0, x1, z0, z1, y0, y1].map(v => +v.toFixed(2)) }; /* 하늘 원통의 자식(위치 −1 보정) — 전체 보기에서 함께 숨음 */
+} catch (e) { console.warn('homeNear', e); } }
 applyQuality();
 // 텍스처도 첫 화면에서 한꺼번에 GPU로 올라가며 멈춤 → 몇 장씩 미리 올리고 양보
 {
