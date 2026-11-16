@@ -1391,7 +1391,7 @@ function buildModelSigns() {
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const w = 5, hh = w * c.height / 512, m = new THREE.Mesh(new THREE.PlaneGeometry(w, hh), new THREE.MeshStandardMaterial({ map: t, roughness: .6, side: THREE.DoubleSide }));
     const yS = y + h + hh / 2; m.position.set(x, yS, z); m.lookAt(x - .4, yS, z + .92); scene.add(m);
     obox(x, z, 1, 0, .1, .1, y, yS - hh / 2, { front: { gb: post }, back: { gb: post }, left: { gb: post }, right: { gb: post } }); };
-  one('주민공동시설1', '(어린이집)', -131, 19, 131.4 - Y0, 1.0); /* 모형 VN06: 도로변 건물 옥상 */
+  one('주민공동시설3', '(다함께돌봄센터)', -131, 19, 138.6 - Y0, 1.0); one('주민공동시설1', '(어린이집)', -109.8, 40.7, 138.6 - Y0, 1.0); /* 배치도·360 사진 WG7·WG9: 북서쪽 건물 = 주민공동시설3, 정문 옆 큰 건물 지붕 = 주민공동시설1(어린이집) */
   { /* 모형 사진 1 확대: 진입광장 북쪽 건물 정면(1층 위)에 붙은 비스듬한 사인 — 서쪽 주민공동시설2, 동쪽 주민공동시설4 */
     const wall = (t1, t2, A, B, C) => { const c = cnv(640, 176), g = c.getContext('2d'); g.fillStyle = '#4b4a47'; g.fillRect(0, 0, 640, 176); g.fillStyle = 'rgba(255,255,255,.2)'; g.fillRect(0, 0, 640, 6); g.fillStyle = '#f3f2ee'; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.font = '800 64px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText(t1, 320, 62); g.font = '600 38px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText(t2, 320, 136);
@@ -1401,7 +1401,7 @@ function buildModelSigns() {
     wall('주민공동시설2', '(관리사무소·작은도서관)', [-119.69, 55.95], [-92, 38.35], [-110, 40]);
     wall('주민공동시설4', '(골프연습장·피트니스센터)', [-91.13, 39.7], [-67.33, 24.35], [-84, 25]); }
   one('경비실(주)', '(어린이승하차장)', -108.6, 58.2, 114.2 - Y0, .9);
-  { const cx = STAIR1.reduce((t, p) => t + p[0], 0) / 4, cz = STAIR1.reduce((t, p) => t + p[1], 0) / 4; one('하부외부계단1', '', cx - 1.5, cz + .6, 134.1 - Y0, .8); } /* 모형 WE4: 계단실 상자 위 판 */
+  { const cx = STAIR1.reduce((t, p) => t + p[0], 0) / 4, cz = STAIR1.reduce((t, p) => t + p[1], 0) / 4; one('하부외부계단1', '', cx - 1.5, cz + .6, 139.4 - Y0, .8); } /* 모형 WE4: 계단실 상자 위 판 */
   one('근린생활시설', '', -94.9, 85.5, 116 - Y0, .5); /* 지붕 기계실 상자 위 */
   one('주민운동시설3', '', -12, 84, levelAt(-12, 84), 2.4);
   { const P = YARD.sand, x = P.reduce((a, p) => a + p[0], 0) / 4, z = P.reduce((a, p) => a + p[1], 0) / 4; one('어린이놀이터2', '', x - 6, z + 4, levelAt(x, z), 2.4); }
@@ -1427,16 +1427,16 @@ function buildAmenities(MAT) {
     obox(c[0], c[1], ux, uz, L, D, h1, h2, { front: { gb: G.white, uv }, back: { gb: G.glass, uv }, left: { gb: G.white, uv }, right: { gb: G.white, uv }, top: { gb: G.roof } }); };
   /* 위치는 배치도를 정사영으로 겹쳐 잰 값(월드 m) */
   /* 부대시설: 공사계획평면도 윤곽(월드 m) + 모형 사진 외관(저층 갈색 벽돌, 위층 회색 패널, 큰 유리창, 옥상 정원) */
-  const prism = (P, y0, y1, gw, roof) => { let A = 0; for (let k = 0; k < P.length; k++) { const p = P[k], q = P[(k + 1) % P.length]; A += p[0] * q[1] - q[0] * p[1]; } const sg = A > 0 ? 1 : -1; let s = 0;
+  const prism = (P, y0, y1, gw, roof, vt = 3.6) => { let A = 0; for (let k = 0; k < P.length; k++) { const p = P[k], q = P[(k + 1) % P.length]; A += p[0] * q[1] - q[0] * p[1]; } const sg = A > 0 ? 1 : -1; let s = 0;
     for (let k = 0; k < P.length; k++) { const a = P[k], b = P[(k + 1) % P.length], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz); if (L < .05) continue;
       const nx = dz / L * sg, nz = -dx / L * sg, [p, q, sp, sq] = sg < 0 ? [a, b, s, s + L] : [b, a, s + L, s];
-      gw.quad([p[0], y0, p[1]], [q[0], y0, q[1]], [q[0], y1, q[1]], [p[0], y1, p[1]], [nx, 0, nz], [sp / 6, 0, sq / 6, 0, sq / 6, (y1 - y0) / 3.6, sp / 6, (y1 - y0) / 3.6]); s += L; }
+      gw.quad([p[0], y0, p[1]], [q[0], y0, q[1]], [q[0], y1, q[1]], [p[0], y1, p[1]], [nx, 0, nz], [sp / 6, 0, sq / 6, 0, sq / 6, (y1 - y0) / vt, sp / 6, (y1 - y0) / vt]); s += L; }
     if (roof) for (const [i0, i1, i2] of THREE.ShapeUtils.triangulateShape(P.map(p => new THREE.Vector2(p[0], p[1])), [])) { const A3 = [P[i0][0], y1, P[i0][1]], B3 = [P[i1][0], y1, P[i1][1]], C3 = [P[i2][0], y1, P[i2][1]], cr = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]); cr >= 0 ? roof.tri(A3, B3, C3, [0, 1, 0]) : roof.tri(A3, C3, B3, [0, 1, 0]); } };
   const Y = h => h - Y0, shrink = (P, d) => { const cx = P.reduce((s, p) => s + p[0], 0) / P.length, cz = P.reduce((s, p) => s + p[1], 0) / P.length; return P.map(p => { const l = Math.hypot(p[0] - cx, p[1] - cz); return [p[0] - (p[0] - cx) / l * d, p[1] - (p[1] - cz) / l * d]; }); };
   /* 주민공동시설(서측 대로변, 부대복리시설-2): 도로 GL≈115 → 1·2층 벽돌, 3·4층 회색, 4층은 안으로 물러남, 옥상 정원 */
   /* 11-16 사용자 요청 + 모형 WE1·WE2·WE9로 높이 다시 계산: 본동(남쪽 60%)은 도로 쪽 보도(113.8~118.8)에서 4~5개 층이 물러남 없이 지붕 131.4까지(데크 130과 거의 같은 높이), 북쪽 40%는 2개 층 낮은 날개(지붕 127.2) + 옥상정원(나무) — 바닥 114.6과 높이값은 기존 그대로 */
   { const P = [[-150.46, 0.5], [-116.5, -1], [-116.2, 32.3], [-129.32, 39.25]], W = [-142.0, 16.0], E = [-116.35, 16.0], PM = [W, E, P[2], P[3]], PN = [P[0], P[1], E, W];
-    prism(PM, Y(114.6), Y(131.4), G.lg, G.roof); prism(PM, Y(131.4), Y(132.2), G.para); /* 본동 */
+    prism(PM, Y(114.6), Y(137.6), G.lg, G.roof, 4.6); prism(PM, Y(137.6), Y(138.4), G.para); /* 본동: 데크(130) 위로 2개 층 — 사용자 지적·360 사진 WG5 */
     prism(PN, Y(114.6), Y(127.2), G.lg, G.roof); prism(PN, Y(127.2), Y(128.0), G.para); /* 북쪽 낮은 날개 */
     { const Q = shrink(PN, .7), sh = new THREE.Shape(Q.map(p => new THREE.Vector2(p[0], -p[1]))), gg = new THREE.ShapeGeometry(sh).rotateX(-Math.PI / 2), pos = gg.attributes.position, uv = gg.attributes.uv;
       for (let i = 0; i < pos.count; i++) { pos.setY(i, Y(127.2) + .12); uv.setXY(i, pos.getX(i) / 6, pos.getZ(i) / 6); } gg.computeVertexNormals(); const lm = new THREE.Mesh(gg, new THREE.MeshLambertMaterial({ map: T_GREEN_REF.t })); lm.receiveShadow = true; scene.add(lm);
@@ -1446,12 +1446,11 @@ function buildAmenities(MAT) {
   { /* 남쪽 면을 옹벽보다 0.9m 광장 쪽으로. 모형: 서쪽 절반은 갈색 도장, 동쪽 절반은 1층 갈색 위 회색 석재 박스(큰 짙은 창) + 갈색 띠 + 물러난 회색 맨 위층 */
     const PW = [[-119.69, 55.95], [-92, 38.35], [-100.2, 25.55], [-127.3, 42.81]], PE = [[-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-100.2, 25.55]]; /* 동쪽 절반은 121→110 옹벽이 1m 앞에 있어 앞면을 1.6m 광장 쪽으로 */
     /* 모형 사진(주민공동시설4): 아래 2개 층 회색 석재+큰 짙은 창, 가운데 2개 층 갈색, 맨 위층은 안으로 물러난 회색 석재(옥상 테라스 화단) */
-    prism(PW, Y(109.6), Y(118.2), G.brick); prism(PW, Y(118.2), Y(125.4), G.brickLit, G.roof); /* 11-16 모형 사진 1: 광장 쪽 위 2개 층은 불 켜진 푸른빛 창 줄 */ prism(PW, Y(125.4), Y(126.3), G.para); /* 모형 사진 1 확대: 서쪽은 1~4층 모두 갈색 */
-    { const A = PW[3], B = PW[0], l = Math.hypot(B[0] - A[0], B[1] - A[1]), u = [(B[0] - A[0]) / l, (B[1] - A[1]) / l], m = [(A[0] + B[0]) / 2 - u[1] * .07, (A[1] + B[1]) / 2 + u[0] * .07], ST = { gb: G.white, uv: uvTile(6, 3.6) }; const GLb = { gb: G.glass, uv: uvTile(6, 3.6) }, BRb = { gb: G.brick, uv: uvTile(6, 3.6) }, LVb = { gb: G.louv, uv: uvTile(6, 3.6) }; obox(m[0], m[1], u[0], u[1], l + .1, .12, Y(109.6), Y(113.4), { front: GLb, left: GLb, right: GLb }); obox(m[0], m[1], u[0], u[1], l + .1, .12, Y(118.2), Y(121.8), { front: BRb, left: BRb, right: BRb }); obox(m[0], m[1], u[0], u[1], l + .1, .12, Y(121.8), Y(125.4), { front: LVb, left: LVb, right: LVb }); } /* 11-16 모형 WE2: 도로 쪽 면 1층 짙은 유리 → 2·3층 갈색 작은 창 → 4층 가로 루버 */ /* 모형 VE10: 도로 쪽(서쪽) 면은 1층만 회색 석재 + 큰 창, 2~4층 갈색 띠, 맨 위는 물러난 회색 */
-    const QW = shrink(PW, 2.4); prism(QW, Y(125.4), Y(130.4), G.stone, G.roof); prism(QW, Y(130.4), Y(131.3), G.para);
-    prism(PE, Y(109.6), Y(113.2), G.glass); prism(PE, Y(113.2), Y(119.6), G.stoneBig); /* 모형 사진 1 확대: 주민공동시설4 1층은 불 켜진 유리 */ prism(PE, Y(119.6), Y(123.2), G.brickLit, G.roof); prism(PE, Y(123.2), Y(124.1), G.para); /* 모형 사진 1 확대: 동쪽은 1층 갈색(유리) → 2·3층 회색 석재 상자(큰 짙은 창) → 4층 갈색 띠 → 물러난 회색 맨 위층 */
-    const QE = shrink(PE, 2.2); prism(QE, Y(123.2), Y(128.6), G.stone, G.roof); prism(QE, Y(128.6), Y(129.5), G.para);
-    for (const Pp of [PW, PE]) { const cx2 = Pp.reduce((s2, p) => s2 + p[0], 0) / Pp.length, cz2 = Pp.reduce((s2, p) => s2 + p[1], 0) / Pp.length; for (let k = 0; k < Pp.length; k++) { const a2 = Pp[k], b2 = Pp[(k + 1) % Pp.length], mx = (a2[0] + b2[0]) / 2, mz = (a2[1] + b2[1]) / 2, dl = Math.hypot(mx - cx2, mz - cz2); extraTrees.push([mx + (cx2 - mx) / dl * 1.2, Y(Pp === PW ? 125.4 : 123.2), mz + (cz2 - mz) / dl * 1.2, .8, 3]); } } }
+    /* 11-16 사용자 지적 + 360 사진 WG2·WG3·WG5·WG7: 118·119동 앞 데크(130) 위로 2개 층 솟음 → 지붕 137.6(바닥 109.6 그대로). 서쪽(2)·동쪽(4)은 지붕선이 하나로 이어진 한 덩어리, 광장 쪽 층 띠 = 1층 유리 / 2층 회색+큰 짙은 창 / 3·4층 갈색+불 켜진 창 / 5·6층 회색+불 켜진 창 */
+    const BANDS = [[109.6, 114.2, G.glass], [114.2, 118.8, G.stoneBig], [118.8, 123.4, G.brickLit], [123.4, 128.0, G.brickLit], [128.0, 132.8, G.stone], [132.8, 137.6, G.stone]];
+    for (const Pp of [PW, PE]) { for (const [a, b, g] of BANDS) prism(Pp, Y(a), Y(b), g, b === 137.6 ? G.roof : null, b - a); prism(Pp, Y(137.6), Y(138.4), G.para); }
+    { const A = PW[3], B = PW[0], l = Math.hypot(B[0] - A[0], B[1] - A[1]), u = [(B[0] - A[0]) / l, (B[1] - A[1]) / l], m = [(A[0] + B[0]) / 2 - u[1] * .07, (A[1] + B[1]) / 2 + u[0] * .07], ST = { gb: G.white, uv: uvTile(6, 3.6) }; const GLb = { gb: G.glass, uv: uvTile(6, 4.6) }, BRb = { gb: G.brick, uv: uvTile(6, 4.6) }, LVb = { gb: G.louv, uv: uvTile(6, 4.6) }; obox(m[0], m[1], u[0], u[1], l + .1, .12, Y(109.6), Y(114.2), { front: GLb, left: GLb, right: GLb }); obox(m[0], m[1], u[0], u[1], l + .1, .12, Y(114.2), Y(123.4), { front: BRb, left: BRb, right: BRb }); obox(m[0], m[1], u[0], u[1], l + .1, .12, Y(123.4), Y(128.0), { front: LVb, left: LVb, right: LVb }); } /* 11-16 모형 WE2: 도로 쪽 면 1층 짙은 유리 → 2·3층 갈색 작은 창 → 4층 가로 루버 */ /* 모형 VE10: 도로 쪽(서쪽) 면은 1층만 회색 석재 + 큰 창, 2~4층 갈색 띠, 맨 위는 물러난 회색 */
+  }
   /* 11-16 사용자 지적: 데크 면을 건물 자리에서 뺀 대신, 데크(해발 130)가 지붕보다 높은 가장자리에는 지붕 높이~데크 높이 난간벽(지붕 위로 데크 잔디가 넘어와 보이지 않게) */
   { const deckFace = (P, yr) => { for (let k = 0; k < P.length; k++) { const a = P[k], b = P[(k + 1) % P.length], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz); if (L < .5) continue;
         let nx = -dz / L, nz = dx / L; if (polyDist(P, (a[0] + b[0]) / 2 + nx * .5, (a[1] + b[1]) / 2 + nz * .5) < 0) { nx = -nx; nz = -nz; } /* 바깥쪽 법선 */
@@ -1459,10 +1458,10 @@ function buildAmenities(MAT) {
         const n = Math.max(1, Math.ceil(L)); for (let i = 0; i < n; i++) { const t0 = i / n, t1 = (i + 1) / n, p = [a[0] + dx * t0 + nx * .05, a[1] + dz * t0 + nz * .05], q = [a[0] + dx * t1 + nx * .05, a[1] + dz * t1 + nz * .05], yp = yo(p), yq = yo(q);
           if (yp < yr + .15 && yq < yr + .15) continue; const ya = Math.max(yp, yr), yb = Math.max(yq, yr), l = L / n;
           G.para.quad([p[0], yr, p[1]], [q[0], yr, q[1]], [q[0], yb, q[1]], [p[0], ya, p[1]], [-nx, 0, -nz], [i * l / 6, 0, (i + 1) * l / 6, 0, (i + 1) * l / 6, (yb - yr) / 3.6, i * l / 6, (ya - yr) / 3.6]); } } };
-    deckFace([[-150.46, 0.5], [-116.5, -1], [-116.35, 16.0], [-142.0, 16.0]], Y(127.2)); /* 주민공동시설1 북쪽 낮은 날개만(본동 지붕 131.4는 데크보다 높음) */ deckFace([[-119.69, 55.95], [-92, 38.35], [-100.2, 25.55], [-127.3, 42.81]], Y(125.4)); deckFace([[-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-100.2, 25.55]], Y(123.2)); }
+    deckFace([[-150.46, 0.5], [-116.5, -1], [-116.35, 16.0], [-142.0, 16.0]], Y(127.2)); /* 주민공동시설1 북쪽 낮은 날개만(본동 지붕 131.4는 데크보다 높음) */ } /* 주민공동시설2·4 지붕(137.6)은 데크보다 높아 난간벽 불필요 */
   /* 하부외부계단 1(모형 VE10·사진: 정문 옆 도로 모퉁이의 낮은 밝은 회색 상자, 2개 층) */
   /* 11-16 모형 WE2·WE4: 정문 옆 보도 위 낮은 회색 상자는 없음(그 자리는 주민공동시설2 갈색 벽) → 하부외부계단1은 두 건물 사이 계단실 + 데크 위 상자 */
-  { prism(STAIR1, Y(113), Y(130.05), G.lg, G.roof); const S2 = shrink(STAIR1, .25); prism(S2, Y(130.05), Y(133.6), G.sbox, G.roof); prism(STAIR1, Y(133.6), Y(134.1), G.para); }
+  { prism(STAIR1, Y(113), Y(134.2), G.lg, G.roof, 4.6); const S2 = shrink(STAIR1, .25); prism(S2, Y(134.2), Y(138.8), G.sbox, G.roof, 4.6); prism(STAIR1, Y(138.8), Y(139.3), G.para); } /* 모형 WE2: 계단실 상자는 옆 지붕보다 조금 높음 */
   /* 경비실-1·주민공동시설-3(어린이 승하차장) — 공사계획평면도: 진입로 북쪽, 단지 경계 안 3.5m, 9×4.5m 1층 + 진입로 쪽 승하차 캐노피 */
   { const gu = [Math.cos(-.227), Math.sin(-.227)], gf = [-gu[1], gu[0]], c = [-110.1, 55.7], y0 = Y(109.9), y1 = Y(113.7), ST = { gb: G.stone, uv: uvTile(6, 3.6) }, GL = { gb: G.glass, uv: uvTile(6, 3.6) };
     obox(c[0], c[1], gu[0], gu[1], 9, 4.5, y0, y1, { front: GL, back: ST, left: ST, right: ST, top: { gb: G.roof } }); obox(c[0], c[1], gu[0], gu[1], 9.3, 4.8, y1, y1 + .5, { front: { gb: G.para }, back: { gb: G.para }, left: { gb: G.para }, right: { gb: G.para }, top: { gb: G.para } });
