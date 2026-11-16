@@ -312,7 +312,7 @@ function synthPlanned() {
 
 /* ---------- 도로: 실제 폭(OSM 차로 수)대로 지형 위에 띠로 깔아 선명하게(반경 2.2km) — 큰길은 중앙선·차선 ---------- */
 /* ---------- 자동차(11-16 사용자 요청): 40m 도로 양방향 차로를 따라 계속 달리고 영장산터널로 들어가 사라졌다 반대편에서 나옴, 진입 차로·주변 큰 길에도 — InstancedMesh 두 개(차체·유리) ---------- */
-let FRONT_LANE = null, trafficTick = null;
+let FRONT_LANE = null, WEST_LANE = null, trafficTick = null;
 function buildTraffic() {
   const env = GEO.env; if (!env || !env.roads) return;
   const paths = []; let seed = 11; const rr = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -328,7 +328,8 @@ function buildTraffic() {
     if (main) { for (const off of [-1.75, 1.75]) paths.push({ ...mkPath(p, off, .45, toT, fromT), sp: 13 + rr() * 3, gap: 34, tunnel: true }); }
     else { const back = p.slice().reverse(), lo = Math.max(2.4, r.w * .27); paths.push({ ...mkPath(p, lo, .45), sp: 11 + rr() * 3, gap: 70 }); paths.push({ ...mkPath(back, lo, .45), sp: 11 + rr() * 3, gap: 70 }); } } /* 가운데 분리대 피해 도로 폭의 약 1/4 */
   if (FRONT_LANE) { const DC = [-170.78, -36.14], e1 = [0.8633, -0.5047], n1 = [0.5047, 0.8633], fp = FRONT_LANE.pts.filter(q => q[1] > 9).concat([[-156, 6.5], [-161, 1], [-172, -15.5], [-176, -23], [DC[0] + n1[0] * 4.25 + e1[0] * 3, DC[1] + n1[1] * 4.25 + e1[1] * 3], [DC[0] + n1[0] * 4.25 + e1[0] * 29, DC[1] + n1[1] * 4.25 + e1[1] * 29]]);
-    paths.push({ ...mkPath(fp, 1.4, (x, z) => heightAt(x, z) + (z > 9 ? .66 : .5)), sp: 7.5, gap: 32 }); } /* 정문 앞 진입 차로(북쪽으로) → 북서쪽 지상 차로 → 부출입구 지하주차장으로 들어가 사라짐 */
+    paths.push({ ...mkPath(fp, 1.4, (x, z) => heightAt(x, z) + (z > 9 ? .66 : .5)), sp: 7.5, gap: 32 }); }
+  if (WEST_LANE) for (const P of [WEST_LANE.pts, WEST_LANE.pts.slice().reverse()]) paths.push({ ...mkPath(P, 1.6, (x, z) => heightAt(x, z) + .66), sp: 9, gap: 40 }); /* 서쪽 2차로: 양방향 */ /* 정문 앞 진입 차로(북쪽으로) → 북서쪽 지상 차로 → 부출입구 지하주차장으로 들어가 사라짐 */
   const cars = []; for (const P of paths) { if (P.S.length < 2) continue; for (let s0 = rr() * P.gap; s0 < P.len; s0 += P.gap * (.7 + rr() * .7)) cars.push({ P, s: s0, sp: P.sp * (.95 + rr() * .1) }); }
   if (!cars.length) return;
   const N = cars.length, body = new THREE.BoxGeometry(4.4, .75, 1.8).translate(0, .6, 0), cab = new THREE.BoxGeometry(2.3, .6, 1.6).translate(-.35, 1.27, 0);
@@ -395,7 +396,7 @@ function buildRoads() {
     const path = /^(footway|path|steps|cycleway|pedestrian|track)$/.test(r.k);
     if (path) { ribbon(r.p, Math.max(1.6, r.w), 'walk', .32); continue; }
     const main = CUT.M.length && r.w >= 14 && [r.p[0], r.p[r.p.length - 1]].some(q => Math.hypot(q[0] - CUT.M[0][0], q[1] - CUT.M[0][1]) < 25);
-    if (r.k === 'secondary_link' && CUT.M.length && r.p.some(q => Math.hypot(q[0] + 157, q[1] - 1) < 3)) continue; /* 11-16 사용자 지적(터널 쪽 실선 끊김): 단지 쪽 연결로(OSM 7m)가 따로 그린 진입 차로·북서쪽 차로와 1~2m 비껴 겹쳐 선이 두 벌로 엇갈림 → 그리지 않음 */
+    if (r.k === 'secondary_link' && CUT.M.length && r.p.some(q => Math.hypot(q[0] + 157, q[1] - 1) < 3 || Math.hypot(q[0] + 166, q[1] - 41) < 3)) continue; /* 서쪽 연결로도 따로 그린 서쪽 2차로로 대신 */ /* 11-16 사용자 지적(터널 쪽 실선 끊김): 단지 쪽 연결로(OSM 7m)가 따로 그린 진입 차로·북서쪽 차로와 1~2m 비껴 겹쳐 선이 두 벌로 엇갈림 → 그리지 않음 */
     if (r.w >= 12) ribbon(r.p, r.w + 6, 'walk', .3, main); /* 깎기 구간에서는 보도 띠도 생략(가장자리가 높은 지면에 걸려 바닥 위로 떠 보이던 것) */
     ribbon(r.p, r.w, r.w >= 16 ? 'big' : r.w >= 10 ? 'mid' : 'small', r.w >= 16 ? .42 : r.w >= 10 ? .4 : .38, main); }
   if (CUT.M.length > 1) ribbon(CUT.M, CUT.HW * 2 - .4, 'big', .42);
@@ -1459,6 +1460,17 @@ function buildEntrance() {
       /* 11-16 모형 WE2·WE6: 진입 차로와 보도 사이 좁은 잔디 띠(연석) — 보도 폭 확보 위해 차로 바깥선 15→14.1m */
       { const gp = [], gi = []; Q.forEach((p, i) => { const t = tn(i), nx = -t[1] * sd, nz = t[0] * sd; for (const o of [o1 + .15, o1 + .8]) { const x = p[0] + nx * o, z = p[1] + nz * o; gp.push(x, heightAt(x, z) + .64, z); } }); for (let i = 0; i < Q.length - 1; i++) { const a = i * 2; gi.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
         const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.Float32BufferAttribute(gp, 3)); gg.setIndex(gi); gg.computeVertexNormals(); const gm = new THREE.Mesh(gg, new THREE.MeshLambertMaterial({ color: '#6f9a3e', side: THREE.DoubleSide, ...off(-7, -14) })); gm.renderOrder = 3; scene.add(gm); }
+      /* 11-16 사용자 지적·모형 WF9·VE12: 깎기 구간 서쪽(단지 반대편) 옹벽 위 지상 2차로 — 터널 입구 위 교차로에서 남쪽으로, 바깥 잔디 띠 + 보도 */
+      { const QW = L.filter(p => p[1] <= 236), sw = -sd, w0 = CUT.HW + .9, w1 = CUT.HW + 7.4, tw2 = i => { const a = QW[Math.max(0, i - 1)], b = QW[Math.min(QW.length - 1, i + 1)], l = Math.hypot(b[0] - a[0], b[1] - a[1]); return [(b[0] - a[0]) / l, (b[1] - a[1]) / l]; };
+        const band2 = (oA, oB, lift, uvU) => { const P2 = [], U2 = [], I2 = []; let acc = 0; QW.forEach((p, i) => { const t = tw2(i), nx = -t[1] * sw, nz = t[0] * sw; if (i) acc += Math.hypot(p[0] - QW[i - 1][0], p[1] - QW[i - 1][1]); for (const [o, u] of [[oA, 0], [oB, 1]]) { const x = p[0] + nx * o, z = p[1] + nz * o; P2.push(x, heightAt(x, z) + lift, z); U2.push(uvU ? u : (x + z) / 4, acc / 8); } });
+          for (let i = 0; i < QW.length - 1; i++) { const a = i * 2; I2.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.Float32BufferAttribute(P2, 3)); g2.setAttribute('uv', new THREE.Float32BufferAttribute(U2, 2)); g2.setIndex(I2); g2.computeVertexNormals(); return g2; };
+        const rm = new THREE.Mesh(band2(w0, w1, .6, true), new THREE.MeshLambertMaterial({ map: lt, side: THREE.DoubleSide, ...off(-6, -12) })); rm.receiveShadow = true; rm.renderOrder = 3; scene.add(rm);
+        scene.add(new THREE.Mesh(band2(w1 + .15, w1 + 1.3, .64), new THREE.MeshLambertMaterial({ color: '#6f9a3e', side: THREE.DoubleSide, ...off(-7, -14) })));
+        const pvT = (() => { const c = cnv(128, 128), g = c.getContext('2d'); g.fillStyle = '#c9c6be'; g.fillRect(0, 0, 128, 128); g.fillStyle = 'rgba(0,0,0,.07)'; for (let y = 0; y < 128; y += 16) g.fillRect(0, y, 128, 1); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t; })();
+        scene.add(new THREE.Mesh(band2(w1 + 1.3, w1 + 3.4, .62), new THREE.MeshLambertMaterial({ map: pvT, side: THREE.DoubleSide, ...off(-6, -12) })));
+        { let acc = 0, iC = 0; for (let i = 1; i < QW.length; i++) { acc += Math.hypot(QW[i][0] - QW[i - 1][0], QW[i][1] - QW[i - 1][1]); if (acc > 14) { iC = i; break; } } const t = tw2(iC), nx = -t[1] * sw, nz = t[0] * sw, CW = new THREE.MeshLambertMaterial({ color: '#efefe9', ...off(-10, -20) }); /* 모형 VN08: 교차로 바로 남쪽 횡단보도 */
+          for (let k = w0 + .55; k < w1 - .3; k += .9) { const c = [QW[iC][0] + nx * k, QW[iC][1] + nz * k]; drapePoly([[c[0] - t[0] * 1.7 - nx * .22, c[1] - t[1] * 1.7 - nz * .22], [c[0] + t[0] * 1.7 - nx * .22, c[1] + t[1] * 1.7 - nz * .22], [c[0] + t[0] * 1.7 + nx * .22, c[1] + t[1] * 1.7 + nz * .22], [c[0] - t[0] * 1.7 + nx * .22, c[1] - t[1] * 1.7 + nz * .22]], CW, .68, 2); } }
+        WEST_LANE = { pts: QW.map((p, i) => { const t = tw2(i), oc = (w0 + w1) / 2; return [p[0] - t[1] * sw * oc, p[1] + t[0] * sw * oc]; }) }; } /* 남쪽으로(자동차용 중심선) */
       /* 정문 앞 주황 빗금 사다리꼴(긴 변은 본선 쪽) */
       { let bi = 0, bd = 1e9; Q.forEach((p, i) => { const dd = Math.abs((p[0] - ENT.R[0]) * ENT.n[0] + (p[1] - ENT.R[1]) * ENT.n[1]); if (dd < bd) { bd = dd; bi = i; } });
         const t = tn(bi), nx = -t[1] * sd, nz = t[0] * sd, oc = (o0 + o1) / 2, c = [Q[bi][0] + nx * oc, Q[bi][1] + nz * oc], tw = [ENT.n[0], ENT.n[1]], s1 = Math.sign(tw[0] * t[0] + tw[1] * t[1]) || 1, ax = [t[0] * s1, t[1] * s1];
