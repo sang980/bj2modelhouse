@@ -489,7 +489,7 @@ function texSideT() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFil
 function roughFrom(t) { const src = t.image, w = src.width, h = src.height, c = cnv(w, h), g = c.getContext('2d'); g.drawImage(src, 0, 0); const d = g.getImageData(0, 0, w, h), a = d.data;
   for (let i = 0; i < a.length; i += 4) { const r = a[i], gg = a[i + 1], b = a[i + 2], l = .3 * r + .59 * gg + .11 * b, gl = b > r + 6 && l < 200; const v = gl ? 22 : 228; a[i] = a[i + 1] = a[i + 2] = v; }
   g.putImageData(d, 0, 0); const rt = new THREE.CanvasTexture(c); rt.wrapS = t.wrapS; rt.wrapT = t.wrapT; rt.anisotropy = ANISO; return rt; }
-function texCore() { const c = cnv(512, 256), g = c.getContext('2d'); noiseFill(g, 512, 256, '#c2beb7', .04, 900); /* 모형: 코어는 밝은 회색 벽 + 계단실 작은 창 */
+function texCore() { const c = cnv(512, 256), g = c.getContext('2d'); noiseFill(g, 512, 256, '#d2cdc6', .04, 900); /* 11-16 모형 VN12·VE23: 코어 벽 157~169 */ /* 모형: 코어는 밝은 회색 벽 + 계단실 작은 창 */
   g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(0, 250, 512, 6); g.fillStyle = '#e2e0da'; g.fillRect(226, 80, 60, 96); glass(g, 232, 86, 48, 84, 4); /* 11-16: 계단실 창도 푸른빛 없는 짙은 유리(모형) */
   return tex(c); }
 function texRoof() { const c = cnv(512, 512), g = c.getContext('2d'); noiseFill(g, 512, 512, '#5d6368', .04, 1500); /* 모형 사진 1: 태양광 판은 푸른기 적은 회청 슬레이트(87,93,99) */
