@@ -1434,9 +1434,14 @@ function buildAmenities(MAT) {
     if (roof) for (const [i0, i1, i2] of THREE.ShapeUtils.triangulateShape(P.map(p => new THREE.Vector2(p[0], p[1])), [])) { const A3 = [P[i0][0], y1, P[i0][1]], B3 = [P[i1][0], y1, P[i1][1]], C3 = [P[i2][0], y1, P[i2][1]], cr = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]); cr >= 0 ? roof.tri(A3, B3, C3, [0, 1, 0]) : roof.tri(A3, C3, B3, [0, 1, 0]); } };
   const Y = h => h - Y0, shrink = (P, d) => { const cx = P.reduce((s, p) => s + p[0], 0) / P.length, cz = P.reduce((s, p) => s + p[1], 0) / P.length; return P.map(p => { const l = Math.hypot(p[0] - cx, p[1] - cz); return [p[0] - (p[0] - cx) / l * d, p[1] - (p[1] - cz) / l * d]; }); };
   /* 주민공동시설(서측 대로변, 부대복리시설-2): 도로 GL≈115 → 1·2층 벽돌, 3·4층 회색, 4층은 안으로 물러남, 옥상 정원 */
-  { const P = [[-150.46, 0.5], [-116.5, -1], [-116.2, 32.3], [-129.32, 39.25]]; /* 모형: 도로 쪽 면이 보도에 바로 면함 — 단지 경계 옹벽선보다 0.8m 바깥(전에는 3~5m 안쪽이라 옹벽에 가려짐) */ prism(P, Y(114.6), Y(127.2), G.lg, G.roof); /* 모형 VE10·VE15: 도로·북서 교차로 쪽 면은 밝은 회색 석재 + 짙은 펀칭 창(갈색 아님) */ prism(P, Y(127.2), Y(128.1), G.para); const Q = shrink(P, 3); prism(Q, Y(127.2), Y(131.4), G.lg, G.roof); prism(Q, Y(131.4), Y(132.2), G.para);
-    { const A = P[2], B = P[3], L = Math.hypot(B[0] - A[0], B[1] - A[1]), eu = (B[0] - A[0]) / L, ev = (B[1] - A[1]) / L, nx = -ev, nz = eu, sd = polyDist(P, (A[0] + B[0]) / 2 + nx, (A[1] + B[1]) / 2 + nz) > 0 ? 1 : -1, cx = (A[0] + B[0]) / 2 + nx * sd * .2, cz = (A[1] + B[1]) / 2 + nz * sd * .2, yt = levelAt(cx + nx * sd * 1.8, cz + nz * sd * 1.8) + .14;
-      if (yt > Y(128.1)) obox(cx + eu * .9, cz + ev * .9, eu, ev, L + 2.2, 1.8, Y(127.2), yt, { front: { gb: G.lg }, back: { gb: G.lg }, left: { gb: G.lg }, right: { gb: G.lg }, top: { gb: G.para } }); } } /* 북쪽 단 데크(해발 130)가 지붕(127.2)보다 높아 데크 끝 톱니가 보이던 곳: 데크 쪽 면에 난간벽 */ /* 모형: 도로 쪽 갈색 도장 3개 층 + 물러난 회색 석재 맨 위층, 회색 자갈 지붕·난간 */
+  /* 11-16 사용자 요청 + 모형 WE1·WE2·WE9로 높이 다시 계산: 본동(남쪽 60%)은 도로 쪽 보도(113.8~118.8)에서 4~5개 층이 물러남 없이 지붕 131.4까지(데크 130과 거의 같은 높이), 북쪽 40%는 2개 층 낮은 날개(지붕 127.2) + 옥상정원(나무) — 바닥 114.6과 높이값은 기존 그대로 */
+  { const P = [[-150.46, 0.5], [-116.5, -1], [-116.2, 32.3], [-129.32, 39.25]], W = [-142.0, 16.0], E = [-116.35, 16.0], PM = [W, E, P[2], P[3]], PN = [P[0], P[1], E, W];
+    prism(PM, Y(114.6), Y(131.4), G.lg, G.roof); prism(PM, Y(131.4), Y(132.2), G.para); /* 본동 */
+    prism(PN, Y(114.6), Y(127.2), G.lg, G.roof); prism(PN, Y(127.2), Y(128.0), G.para); /* 북쪽 낮은 날개 */
+    { const Q = shrink(PN, .7), sh = new THREE.Shape(Q.map(p => new THREE.Vector2(p[0], -p[1]))), gg = new THREE.ShapeGeometry(sh).rotateX(-Math.PI / 2), pos = gg.attributes.position, uv = gg.attributes.uv;
+      for (let i = 0; i < pos.count; i++) { pos.setY(i, Y(127.2) + .12); uv.setXY(i, pos.getX(i) / 6, pos.getZ(i) / 6); } gg.computeVertexNormals(); const lm = new THREE.Mesh(gg, new THREE.MeshLambertMaterial({ map: T_GREEN_REF.t })); lm.receiveShadow = true; scene.add(lm);
+      const cx = Q.reduce((t, p) => t + p[0], 0) / Q.length, cz = Q.reduce((t, p) => t + p[1], 0) / Q.length; let sd = 31;
+      for (let k = 0; k < 26; k++) { sd = (sd * 16807) % 2147483647; const a = sd / 2147483647; sd = (sd * 16807) % 2147483647; const b = sd / 2147483647; const x = cx + (a - .5) * 32, z = cz + (b - .5) * 15; if (polyDist(Q, x, z) > -1.2) continue; extraTrees.push([x, Y(127.2) + .12, z, .6 + ((k * 7) % 5) * .14, k % 4 === 0 ? 2 : 0]); } } } /* 모형 WE1·WE9: 낮은 날개 지붕은 나무·관목 옥상정원 */
   /* 주민공동시설(진입광장 북쪽, 부대복리시설-1): 광장 FH 110 ~ 북쪽 단 130 사이 옹벽에 붙은 5층 — 아래 2층 벽돌, 위 3층 회색·유리 */
   { /* 남쪽 면을 옹벽보다 0.9m 광장 쪽으로. 모형: 서쪽 절반은 갈색 도장, 동쪽 절반은 1층 갈색 위 회색 석재 박스(큰 짙은 창) + 갈색 띠 + 물러난 회색 맨 위층 */
     const PW = [[-119.69, 55.95], [-92, 38.35], [-100.2, 25.55], [-127.3, 42.81]], PE = [[-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-100.2, 25.55]]; /* 동쪽 절반은 121→110 옹벽이 1m 앞에 있어 앞면을 1.6m 광장 쪽으로 */
@@ -1454,7 +1459,7 @@ function buildAmenities(MAT) {
         const n = Math.max(1, Math.ceil(L)); for (let i = 0; i < n; i++) { const t0 = i / n, t1 = (i + 1) / n, p = [a[0] + dx * t0 + nx * .05, a[1] + dz * t0 + nz * .05], q = [a[0] + dx * t1 + nx * .05, a[1] + dz * t1 + nz * .05], yp = yo(p), yq = yo(q);
           if (yp < yr + .15 && yq < yr + .15) continue; const ya = Math.max(yp, yr), yb = Math.max(yq, yr), l = L / n;
           G.para.quad([p[0], yr, p[1]], [q[0], yr, q[1]], [q[0], yb, q[1]], [p[0], ya, p[1]], [-nx, 0, -nz], [i * l / 6, 0, (i + 1) * l / 6, 0, (i + 1) * l / 6, (yb - yr) / 3.6, i * l / 6, (ya - yr) / 3.6]); } } };
-    deckFace(AMEN_POLYS[0], Y(127.2)); deckFace([[-119.69, 55.95], [-92, 38.35], [-100.2, 25.55], [-127.3, 42.81]], Y(125.4)); deckFace([[-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-100.2, 25.55]], Y(123.2)); }
+    deckFace([[-150.46, 0.5], [-116.5, -1], [-116.35, 16.0], [-142.0, 16.0]], Y(127.2)); /* 주민공동시설1 북쪽 낮은 날개만(본동 지붕 131.4는 데크보다 높음) */ deckFace([[-119.69, 55.95], [-92, 38.35], [-100.2, 25.55], [-127.3, 42.81]], Y(125.4)); deckFace([[-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-100.2, 25.55]], Y(123.2)); }
   /* 하부외부계단 1(모형 VE10·사진: 정문 옆 도로 모퉁이의 낮은 밝은 회색 상자, 2개 층) */
   /* 11-16 모형 WE2·WE4: 정문 옆 보도 위 낮은 회색 상자는 없음(그 자리는 주민공동시설2 갈색 벽) → 하부외부계단1은 두 건물 사이 계단실 + 데크 위 상자 */
   { prism(STAIR1, Y(113), Y(130.05), G.lg, G.roof); const S2 = shrink(STAIR1, .25); prism(S2, Y(130.05), Y(133.6), G.sbox, G.roof); prism(STAIR1, Y(133.6), Y(134.1), G.para); }
