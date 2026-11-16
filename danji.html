@@ -778,6 +778,7 @@ async function build() {
   /* 단지 둘레 옹벽: 안쪽 단 높이 ↔ 바깥 실제 지면 높이 사이(바깥이 높으면 산을 막는 옹벽) */
   const northRail = [];
   { const gb = new GB(), gp = new GB(), gt = new GB(), gpl = new GB(), gcap = new GB(), gu = new GB(); let s = 0; /* gp: 모형 사진 — 학교 쪽(남쪽) 큰 옹벽은 무늬 없는 짙은 회색 · gt/gpl: 동쪽은 모형 VE32·VN20처럼 단(段)으로 나눈 밝은 회색 벽 + 화단 */
+    const NRM = SITE.map((a, i) => { const b = SITE[(i + 1) % SITE.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]); let x = (b[1] - a[1]) / L, z = -(b[0] - a[0]) / L; if (polyDist(SITE, (a[0] + b[0]) / 2 + x * .5, (a[1] + b[1]) / 2 + z * .5) < 0) { x = -x; z = -z; } return [x, z]; }); /* 변마다 바깥 법선(2단 옹벽 모서리 맞물림용) */
     for (let i = 0; i < SITE.length; i++) { const a = SITE[i], b = SITE[(i + 1) % SITE.length], ex = b[0] - a[0], ez = b[1] - a[1], L = Math.hypot(ex, ez), n = Math.max(1, Math.ceil(L / 4));
       let nx2 = ez / L, nz2 = -ex / L; /* 바깥쪽 법선 */
       if (polyDist(SITE, (a[0] + b[0]) / 2 + nx2 * .5, (a[1] + b[1]) / 2 + nz2 * .5) < 0) { nx2 = -nx2; nz2 = -nz2; }
@@ -793,9 +794,11 @@ async function build() {
         const mxw = (P[0] + Q[0]) / 2, mzw = (P[1] + Q[1]) / 2, sT = nx2 < -.2 && mxw > -60 && mxw < -34 && mzw > 92 && mzw < 127; /* 모형 사진 1·VE02·VE04: 남쪽 마당의 주차1 쪽(서쪽) 옹벽은 2단 + 사이 나무 화단, 학교 쪽(남쪽)은 VE00처럼 한 단 */
         if ((east || sT) && dP > 4.5 && dQ > 4.5) { const nt = 2, off = sT ? 4.2 : 3.8, GT = sT ? gp : gt; /* 모형 VE30·VE31·VE32: 동쪽 바깥 옹벽도 2단 + 사이 화단 */
           for (let j = 0; j < nt; j++) { const o = j * off, tPj = yin(P) - dP * j / nt + .02, tQj = yin(Q) - dQ * j / nt + .02, bPj = yin(P) - dP * (j + 1) / nt - (j === nt - 1 ? 1.5 : 0), bQj = yin(Q) - dQ * (j + 1) / nt - (j === nt - 1 ? 1.5 : 0);
-            const P2 = [P[0] + nx2 * o, P[1] + nz2 * o], Q2 = [Q[0] + nx2 * o, Q[1] + nz2 * o];
+            const dX = ex / L, dZ = ez / L, Np = NRM[(i - 1 + SITE.length) % SITE.length], Nn = NRM[(i + 1) % SITE.length], cP = 1 + Np[0] * nx2 + Np[1] * nz2, cN = 1 + Nn[0] * nx2 + Nn[1] * nz2,
+              shS = o2 => k === 0 && cP > .3 ? o2 * (Np[0] * dX + Np[1] * dZ) / cP : 0, shE = o2 => k === n - 1 && cN > .3 ? o2 * (Nn[0] * dX + Nn[1] * dZ) / cN : 0; /* 11-16: 모서리에서 바깥 단이 끊기지 않게 이웃 변과 비스듬히 맞물림 */
+            const P2 = [P[0] + nx2 * o + dX * shS(o), P[1] + nz2 * o + dZ * shS(o)], Q2 = [Q[0] + nx2 * o + dX * shE(o), Q[1] + nz2 * o + dZ * shE(o)];
             GT.quad([P2[0], bPj, P2[1]], [Q2[0], bQj, Q2[1]], [Q2[0], tQj, Q2[1]], [P2[0], tPj, P2[1]], [nx2, 0, nz2], [s / 6, bPj / 3, (s + L / n) / 6, bQj / 3, (s + L / n) / 6, tQj / 3, s / 6, tPj / 3]);
-            if (j < nt - 1) { const P3 = [P2[0] + nx2 * off, P2[1] + nz2 * off], Q3 = [Q2[0] + nx2 * off, Q2[1] + nz2 * off], yP = bPj + .5, yQ = bQj + .5;
+            if (j < nt - 1) { const o3 = o + off, P3 = [P[0] + nx2 * o3 + dX * shS(o3), P[1] + nz2 * o3 + dZ * shS(o3)], Q3 = [Q[0] + nx2 * o3 + dX * shE(o3), Q[1] + nz2 * o3 + dZ * shE(o3)], yP = bPj + .5, yQ = bQj + .5;
               { const A3 = [P2[0], yP, P2[1]], B3 = [P3[0], yP, P3[1]], C3 = [Q3[0], yQ, Q3[1]], D3 = [Q2[0], yQ, Q2[1]], cy = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]); cy >= 0 ? gpl.quad(A3, B3, C3, D3, [0, 1, 0], [0, 0, 1, 0, 1, 1, 0, 1]) : gpl.quad(A3, D3, C3, B3, [0, 1, 0], [0, 0, 1, 0, 1, 1, 0, 1]); } /* 단 사이 화단 */
               if (k % 2 === 0 || sT) extraTrees.push([(P2[0] + P3[0]) / 2, yP - .1, (P2[1] + P3[1]) / 2, sT ? 1.2 + rand() * .7 : .5 + rand() * .35, 3] /* 11-16 모형 VE30·VE32·VN19: 동쪽 옹벽 화단은 낮은 관목 */); } }
           s += L / n; continue; }
