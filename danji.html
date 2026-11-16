@@ -1102,12 +1102,14 @@ function buildNW() {
     const tx = (() => { const cv = cnv(1024, 256), g = cv.getContext('2d'); noiseFill(g, 1024, 256, '#c4c1bb', .03, 1400); g.fillStyle = 'rgba(0,0,0,.08)'; for (let y = 64; y < 256; y += 64) g.fillRect(0, y, 1024, 2); for (let x = 0; x < 1024; x += 128) g.fillRect(x, 0, 2, 256);
       for (let k = 0; k < 4; k++) { const x0 = k * 256 + 70, lit = k === 1; g.fillStyle = '#e2e0da'; g.fillRect(x0 - 6, 74, 128, 116); g.fillStyle = lit ? '#b9d2e6' : '#33363b'; g.fillRect(x0, 80, 116, 104); if (!lit) { g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(x0 + 60, 80, 20, 104); } }
       g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, 250, 1024, 6); const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; return t; })();
-    const top = levelAt(c0[0] + n[0] * 6, c0[1] + n[1] * 6), gb = new GB(), cap = new GB(), F = { gb, uv: uvTile(14, 3.6) }, CP = { gb: cap };
+    const top = levelAt(c0[0] + n[0] * 6, c0[1] + n[1] * 6), gb = new GB(), cap = new GB(), grn = new GB(), grv = new GB(), F = { gb, uv: uvTile(14, 3.6) }, CP = { gb: cap };
     /* 모형 VE12: 부출입구 쪽 7m는 2개 층, 나머지는 옹벽 높이 전체 + 데크 위로 한 층 더(밝은 석재 + 짙은 네모 창 줄) */
     for (const [s0, s1, yt] of [[0, el - 7.2, Math.max(y0 + 10.8, top + 2.4)], [el - 7.2, el, y0 + 7.2]]) { const sm = (s0 + s1) / 2 - el / 2, px = c[0] + e[0] * sm, pz = c[1] + e[1] * sm;
-      obox(px, pz, e[0], e[1], s1 - s0, 3.2, y0 - .4, yt, { front: F, back: F, left: F, right: F }); obox(px, pz, e[0], e[1], s1 - s0 + .3, 3.5, yt, yt + .35, { front: CP, back: CP, left: CP, right: CP, top: CP }); }
+      obox(px, pz, e[0], e[1], s1 - s0, 3.2, y0 - .4, yt, { front: F, back: F, left: F, right: F }); const low = s1 - s0 < 8; obox(px, pz, e[0], e[1], s1 - s0 + .3, 3.5, yt, yt + .35, low ? { front: CP, back: CP, left: CP, right: CP, top: { gb: grn } } : { front: CP, back: CP, left: CP, right: CP, top: { gb: grv } }); obox(px, pz, e[0], e[1], s1 - s0 + .3, 3.5, yt + .35, yt + .95, { front: CP, back: CP, left: CP, right: CP }); /* 난간 */
+      if (low) for (let k = 0; k < 4; k++) { const t2 = (k + .5) / 4 - .5, q = [px + e[0] * (s1 - s0) * t2 * .8, pz + e[1] * (s1 - s0) * t2 * .8]; extraTrees.push([q[0], yt + .35, q[1], 1 + rand() * .5, 3]); } } /* 모형 VE14·VE15: 낮은 쪽 지붕은 나무 심은 화단, 높은 쪽은 자갈 지붕 */
     const mesh = new THREE.Mesh(gb.build(), new THREE.MeshStandardMaterial({ map: tx, roughness: .8 })); mesh.castShadow = mesh.receiveShadow = true; scene.add(mesh);
-    const cm = new THREE.Mesh(cap.build(), new THREE.MeshStandardMaterial({ color: '#d9d7d1', roughness: .8 })); cm.castShadow = true; scene.add(cm); }
+    const cm = new THREE.Mesh(cap.build(), new THREE.MeshStandardMaterial({ color: '#d9d7d1', roughness: .8 })); cm.castShadow = true; scene.add(cm);
+    scene.add(new THREE.Mesh(grn.build(), new THREE.MeshLambertMaterial({ map: T_GREEN_REF.t }))); scene.add(new THREE.Mesh(grv.build(), new THREE.MeshStandardMaterial({ color: '#8f8b80', roughness: .95 }))); }
 }
 function buildEntrance() {
   const mkT = draw => { const c = cnv(256, 256), g = c.getContext('2d'); draw(g); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
