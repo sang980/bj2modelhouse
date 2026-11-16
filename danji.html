@@ -874,6 +874,9 @@ function buildDong(D, G, MAT) {
       obox(cx + fx * (DEP / 2 + dep - .15), cz + fz * (DEP / 2 + dep - .15), ux, uz, L - .4, .06, .12, 1.25, { front: { gb: G.rail }, back: { gb: G.rail }, top: { gb: G.white } });
       /* 세대 사이 칸막이·테라스 위 처마: 모형처럼 갈색 도장 */
       for (let k = 0; k <= n; k++) { const s = -L / 2 + tw * k, ex = Math.max(-L / 2 + .2, Math.min(L / 2 - .2, s)); obox(cx + ux * ex + fx * ox, cz + uz * ex + fz * ox, fx, fz, dep, .35, .12, 2.5, { front: F(G.brick), back: F(G.brick), left: F(G.brick), right: F(G.brick), top: F(G.brick) }); }
+      if (t === 2) { const s2 = Math.min(3.2, dep - 1.2), o2 = DEP / 2 + s2 / 2, TU = { gb: G.terr, uv: uvTile(tw, FH) }; /* 모형 사진 1(122동): 56T 두 줄은 계단식 — 1층 세대가 앞으로 나오고 그 지붕이 2층 테라스 */
+        obox(cx + fx * o2, cz + fz * o2, ux, uz, L - .3, s2, .12, FH, { front: TU, left: TU, right: TU, top: { gb: G.tdeck } });
+        obox(cx + fx * (DEP / 2 + s2 - .1), cz + fz * (DEP / 2 + s2 - .1), ux, uz, L - .5, .06, FH, FH + 1.1, { front: { gb: G.rail }, back: { gb: G.rail }, top: { gb: G.white } }); }
       obox(cx + fx * (DEP / 2 + .9), cz + fz * (DEP / 2 + .9), ux, uz, L, 1.8, yT - .35, yT + .05, { front: { gb: G.brick }, back: { gb: G.brick }, top: { gb: G.brick } }); }
     /* 측벽 동 번호 사인(모형: 저층부 바로 위) */
     if (wi === 0 || D.w.length > 1) for (const e of (D.w.length > 1 ? (wi === 0 ? [-1] : [1]) : [-1, 1])) { const sx = cx + ux * e * (L / 2 + .06) + fx * DEP * .27, sz = cz + uz * e * (L / 2 + .06) + fz * DEP * .27, m = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8), signMat(D.d)); /* 측벽 가운데 짙은 띠를 피해 앞쪽 */
