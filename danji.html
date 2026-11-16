@@ -1248,7 +1248,7 @@ function buildNW() {
 }
 function buildEntrance() {
   const mkT = draw => { const c = cnv(256, 256), g = c.getContext('2d'); draw(g); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; };
-  const pav = mkT(g => { g.fillStyle = '#aca69c'; g.fillRect(0, 0, 256, 256); for (let y = 0; y < 256; y += 32) for (let x = 0; x < 256; x += 32) { const v = 214 + (rand() - .5) * 20 | 0; g.fillStyle = `rgb(${v},${v - 7},${v - 17})`; /* 11-16 모형 VE09 광장(206,198,187) */ g.fillRect(x + 1, y + 1, 30, 30); } }); /* 40cm 보도블록(한 장 4m) */
+  const pav = mkT(g => { noiseFill(g, 256, 256, '#d2c6b4', .025, 1500); for (let i = 0; i < 260; i++) { const v = 60 + rand() * 50 | 0; g.fillStyle = `rgba(${v},${v - 4},${v - 8},${.55 + rand() * .35})`; const x = rand() * 256, y = rand() * 256, r = .9 + rand() * 1.4; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); } g.fillStyle = 'rgba(120,108,92,.10)'; for (let y = 0; y < 256; y += 64) g.fillRect(0, y, 256, 1); for (let x = 0; x < 256; x += 64) g.fillRect(x, 0, 1, 256); }); /* 11-16 360 사진 WG4·WG7: 밝은 베이지(202,191,174) 바탕에 짙은 점이 흩어진 포장 */
   const asp = mkT(g => { g.fillStyle = '#4c4f54'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 2600; i++) { const v = (rand() - .5) * .12; g.fillStyle = v > 0 ? `rgba(255,255,255,${v})` : `rgba(0,0,0,${-v})`; g.fillRect(rand() * 256, rand() * 256, 2, 2); } });
   const Yp = 110 - Y0, off = (f, u) => ({ polygonOffset: true, polygonOffsetFactor: f, polygonOffsetUnits: u });
   const flatP = (P, mat, y, uvs = 4) => { const sh = new THREE.Shape(P.map(p => new THREE.Vector2(p[0], -p[1]))), g = new THREE.ShapeGeometry(sh, 8).rotateX(-Math.PI / 2), pos = g.attributes.position, uv = g.attributes.uv;
