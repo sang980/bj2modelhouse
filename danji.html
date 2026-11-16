@@ -1012,15 +1012,15 @@ function buildYard() {
   const post = new GB(); for (const sgn of [-1, 1]) obox(C0[0] + cfx * sgn * Dc * .44, C0[1] + cfz * sgn * Dc * .44, YU[0], YU[1], .1, .1, yc, yc + 1.1, { front: { gb: post }, back: { gb: post }, left: { gb: post }, right: { gb: post } });
   const nm = new THREE.Mesh(net.build(), new THREE.MeshStandardMaterial({ color: '#1d2226', transparent: true, opacity: .55, side: THREE.DoubleSide })); scene.add(nm);
   scene.add(new THREE.Mesh(post.build(), new THREE.MeshStandardMaterial({ color: '#e8e8e4' })));
-  /* 연못(모형 VE04: 둥근 청록 수면 + 가운데를 건너는 다리) */
-  { const T = YARD.teal, cx = T.reduce((s, p) => s + p[0], 0) / 4, cz = T.reduce((s, p) => s + p[1], 0) / 4, P = [];
-    for (let k = 0; k < 40; k++) { const a = k / 40 * Math.PI * 2, r = 1 / Math.pow(Math.pow(Math.abs(Math.cos(a)), 4) + Math.pow(Math.abs(Math.sin(a)), 4), .25), lx = Math.cos(a) * r * 9.5, lz = Math.sin(a) * r * 6; P.push([cx + YU[0] * lx - YU[1] * lz, cz + YU[1] * lx + YU[0] * lz]); }
-    const yw = flat(P, new THREE.MeshStandardMaterial({ color: '#46645a', roughness: .75, metalness: 0, envMapIntensity: .15, ...off }), .1); /* 모형 사진 1: 하늘빛 반사 없는 짙은 청록 판 */
-    { const rim = new GB(); for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length], L = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]); obox((a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2, (b2[0] - a2[0]) / L, (b2[1] - a2[1]) / L, L + .1, .35, yw - .05, yw + .28, { front: { gb: rim }, back: { gb: rim }, top: { gb: rim } }); }
-      scene.add(new THREE.Mesh(rim.build(), new THREE.MeshStandardMaterial({ color: '#cfccc4', roughness: .9 }))); } /* 연못 가장자리 돌 테두리 */
-    const Q = []; for (const [lx, lz] of [[-2, -6.5], [1.2, -6.5], [1.2, 6.5], [-2, 6.5]]) Q.push([cx + YU[0] * lx - YU[1] * lz, cz + YU[1] * lx + YU[0] * lz]); flat(Q, new THREE.MeshStandardMaterial({ color: '#d9d4c8', roughness: .9, polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -12 }), .42);
-    const br = new GB(); for (const sd of [-2.05, 1.25]) { const x = cx - YU[1] * 0 + YU[0] * sd, z = cz + YU[1] * sd; obox(x, z, -YU[1], YU[0], 13, .06, yw + .42, yw + 1.3, { front: { gb: br }, back: { gb: br }, top: { gb: br } }); }
-    scene.add(new THREE.Mesh(br.build(), new THREE.MeshStandardMaterial({ color: '#c7d3d8', roughness: .2, transparent: true, opacity: .5, side: THREE.DoubleSide }))); } /* 다리: 수면보다 살짝 높게 + 유리 난간 */
+  /* 11-16 모형 VE04·사진 1 확대 + 배치도: 연못·다리가 아니라 청록 포장 다목적 운동마당 — ㄱ자(테니스장 쪽 네모 + 아래 띠) + 안쪽 흰 줄 */
+  { const T = YARD.teal, cx = T.reduce((s, p) => s + p[0], 0) / 4, cz = T.reduce((s, p) => s + p[1], 0) / 4, W = (lx, lz) => [cx + YU[0] * lx - YU[1] * lz, cz + YU[1] * lx + YU[0] * lz];
+    const LOC = [[.5, -6], [8.3, -6], [9.5, -4.8], [9.5, 3.2], [6.6, 6.3], [-8.2, 6.3], [-9.6, 4.9], [-9.6, 3], [-8.2, 1.8], [-.7, 1.8], [.5, .6]], P = LOC.map(([a, b]) => W(a, b));
+    flat(P, new THREE.MeshStandardMaterial({ color: '#4f6f63', roughness: .85, metalness: 0, envMapIntensity: .15, ...off }), .1);
+    let A2 = 0; for (let k = 0; k < LOC.length; k++) { const p = LOC[k], q = LOC[(k + 1) % LOC.length]; A2 += p[0] * q[1] - q[0] * p[1]; } const sg = A2 > 0 ? 1 : -1;
+    const g = new GB(), y = levelAt(cx, cz) + .14; for (let k = 0; k < LOC.length; k++) { const p = LOC[k], q = LOC[(k + 1) % LOC.length], dx = q[0] - p[0], dz = q[1] - p[1], L = Math.hypot(dx, dz); if (L < 1.6) continue; const ux = dx / L, uz = dz / L, nx = -uz * sg, nz = ux * sg; /* 안쪽 법선 */
+      const a = [p[0] + ux * .55 + nx * .55, p[1] + uz * .55 + nz * .55], b = [q[0] - ux * .55 + nx * .55, q[1] - uz * .55 + nz * .55], c = [b[0] + nx * .14, b[1] + nz * .14], d = [a[0] + nx * .14, a[1] + nz * .14], [A, B, C, Dd] = [a, b, c, d].map(([u, v]) => W(u, v));
+      g.quad([A[0], y, A[1]], [Dd[0], y, Dd[1]], [C[0], y, C[1]], [B[0], y, B[1]], [0, 1, 0], [0, 0, 1, 0, 1, 1, 0, 1]); }
+    const m = new THREE.Mesh(g.build(), new THREE.MeshStandardMaterial({ color: '#e9e8e2', roughness: .8, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -7, polygonOffsetUnits: -14 })); m.renderOrder = 4; scene.add(m); } /* 흰 줄 */
   { const wb = new GB(), wr = new GB(), u = [.866, -.5]; for (const [x, z] of WBOX) { const y = levelAt(x, z), A = { gb: wb, uv: uvTile(2, 2.4) }; obox(x, z, u[0], u[1], 4.6, 3, y, y + 2.3, { front: A, back: A, left: A, right: A });
       obox(x, z, u[0], u[1], 5.2, 3.6, y + 2.3, y + 2.55, { front: { gb: wr }, back: { gb: wr }, left: { gb: wr }, right: { gb: wr }, top: { gb: wr } }); }
     const c = cnv(128, 128), g = c.getContext('2d'); g.fillStyle = '#1c1e21'; g.fillRect(0, 0, 128, 128); g.fillStyle = '#2f3236'; for (let x = 4; x < 128; x += 10) g.fillRect(x, 8, 5, 112); g.fillStyle = '#121314'; g.fillRect(0, 0, 128, 8); g.fillRect(0, 60, 128, 4);
