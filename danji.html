@@ -321,6 +321,15 @@ function buildRoads() {
     if (path) { ribbon(r.p, Math.max(1.6, r.w), 'walk', .32); continue; }
     if (r.w >= 12) ribbon(r.p, r.w + 6, 'walk', .3);
     ribbon(r.p, r.w, r.w >= 16 ? 'big' : r.w >= 10 ? 'mid' : 'small', r.w >= 16 ? .42 : r.w >= 10 ? .4 : .38); }
+  /* 모형 VE01·VE02·VE05처럼 단지 앞 40m 도로 위 작은 자동차 */
+  { const cars = new GB(), glassG = new GB(), cols = ['#f2f2ef', '#c9ccd0', '#2a2c30', '#a8342c', '#2f4f7a', '#e8e8e4', '#8d9196'], byCol = cols.map(() => new GB()); let seed = 7; const rr = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (const r of [{ p: CUT.M }]) { /* 영장산터널로 들어가는 40m 도로 중심선(깎기 구간과 같은 선) */ const P = r.p; for (let i = 0; i < P.length - 1; i++) { const a2 = P[i], b2 = P[i + 1], L2 = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]); if (L2 < 1) continue; const ux2 = (b2[0] - a2[0]) / L2, uz2 = (b2[1] - a2[1]) / L2;
+      for (let d = 4; d < L2; d += 9 + rr() * 14) { const x0 = a2[0] + ux2 * d, z0 = a2[1] + uz2 * d; if (z0 < 22 || inTunnel(x0, z0)) continue; if (rr() < .45) continue;
+        const lane = [-6.6, -4.2, 4.2, 6.6][rr() * 4 | 0], dir = lane < 0 ? 1 : -1, x = x0 - uz2 * lane, z = z0 + ux2 * lane, y = (polyDist(SITE, x, z) < 0 ? groundAt(x, z) : heightAt(x, z)) + .45, ci = rr() * cols.length | 0;
+        obox(x, z, ux2 * dir, uz2 * dir, 4.4, 1.8, y, y + .75, { front: { gb: byCol[ci] }, back: { gb: byCol[ci] }, left: { gb: byCol[ci] }, right: { gb: byCol[ci] }, top: { gb: byCol[ci] } });
+        obox(x - ux2 * dir * .3, z - uz2 * dir * .3, ux2 * dir, uz2 * dir, 2.4, 1.6, y + .75, y + 1.35, { front: { gb: glassG }, back: { gb: glassG }, left: { gb: glassG }, right: { gb: glassG }, top: { gb: byCol[ci] } }); } } }
+    byCol.forEach((g2, k) => { if (g2.i.length) scene.add(new THREE.Mesh(g2.build(), new THREE.MeshStandardMaterial({ color: cols[k], roughness: .35, metalness: .3 }))); });
+    if (glassG.i.length) scene.add(new THREE.Mesh(glassG.build(), new THREE.MeshStandardMaterial({ color: '#1e2328', roughness: .15, metalness: .2 }))); }
   for (const k in G) { if (!G[k].length) continue; const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(G[k], 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(U[k], 2)); g.computeVertexNormals();
     const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: TX[k], polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: k === 'walk' ? -2 : -6 })); m.receiveShadow = true; m.renderOrder = 2; scene.add(m); }
 }
