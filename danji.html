@@ -2079,17 +2079,21 @@ function buildOSM() {
       for (let i = Math.floor(Math.min(x0, x1) / CS) - 1; i <= Math.floor(Math.max(x0, x1) / CS) + 1; i++) for (let j = Math.floor(Math.min(z0, z1) / CS) - 1; j <= Math.floor(Math.max(z0, z1) / CS) + 1; j++) { const kk = key(i, j); if (!hash.has(kk)) hash.set(kk, []); hash.get(kk).push([x0, z0, x1, z1, r.w]); } } }
   const roadDist = (x, z) => { const l = hash.get(key(Math.floor(x / CS), Math.floor(z / CS))); if (!l) return 1e9; let best = 1e9;
     for (const [x0, z0, x1, z1, w] of l) { const ex = x1 - x0, ez = z1 - z0, t = Math.max(0, Math.min(1, ((x - x0) * ex + (z - z0) * ez) / (ex * ex + ez * ez || 1))), d = Math.hypot(x - x0 - ex * t, z - z0 - ez * t) - w / 2; if (d < best) best = d; } return best; };
-  const V2 = THREE.Vector2; let i = 0, cnt = 0;
+  const V2 = THREE.Vector2; let i = 0, cnt = 0; const DUP = new Map(); let dupN = 0;
   const OE = 1700, ORS = 2, ON = OE * 2 / ORS, ocv = cnv(ON, ON), og = ocv.getContext('2d', { willReadFrequently: true }); og.fillStyle = '#000'; og.strokeStyle = '#000'; og.lineJoin = 'round'; og.lineCap = 'round';
   while (i < n) {
     const kind = B[i], lv = Math.max(1, B[i + 1]), h = B[i + 2] / 10, mh = B[i + 3] / 10, np = B[i + 4]; i += 5;
     const P = new Array(np); for (let k = 0; k < np; k++) { P[k] = [B[i] * .2, B[i + 1] * .2]; i += 2; }
     let cx = 0, cz = 0; for (const p of P) { cx += p[0]; cz += p[1]; } cx /= np; cz /= np;
+    let dupLow = 0; { let Aa = 0; for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np]; Aa += a[0] * b[1] - b[0] * a[1]; } Aa = Math.abs(Aa) / 2; const gi = Math.floor(cx / 25), gj = Math.floor(cz / 25); let dup = false, dupSame = false, dupE = 0; const eH = (x, z) => { const v = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453; return .04 + (v - Math.floor(v)) * .3; };
+      for (let di = -1; di <= 1 && !dup; di++) for (let dj = -1; dj <= 1 && !dup; dj++) { const L = DUP.get((gi + di) * 100003 + gj + dj); if (L) for (const q of L) if (inPoly(q.P, cx, cz) || inPoly(P, q.cx, q.cz)) { dup = true; dupSame = Math.abs(q.lv - lv) <= 1; dupE = q.e + .18; break; } }
+      if (dup) { for (let k = 0; k < np; k++) { const dx = P[k][0] - cx, dz = P[k][1] - cz, l = Math.hypot(dx, dz) || 1; P[k] = [P[k][0] - dx / l * dupE, P[k][1] - dz / l * dupE]; } dupLow = dupSame ? .15 : 0; dupN++; } /* 11-17 겹침 검사: 같은 자리에 거의 같은 건물이 두 번 들어간 곳 — 안쪽으로 0.2m 줄이고 지붕을 낮춰 같은 면 깜빡임 없앰(위치·색 순서는 그대로) */
+      else { const kk = gi * 100003 + gj; if (!DUP.has(kk)) DUP.set(kk, []); const e = eH(cx, cz); DUP.get(kk).push({ P, lv, A: Aa, cx, cz, e }); for (let k = 0; k < np; k++) { const dx = P[k][0] - cx, dz = P[k][1] - cz, l = Math.hypot(dx, dz) || 1; P[k] = [P[k][0] - dx / l * e, P[k][1] - dz / l * e]; } } } /* 일부만 겹친 이웃 건물의 같은 평면 벽도 서로 떨어지게: 건물마다 0.04~0.37m 다르게 안쪽으로 */
     const dist = Math.hypot(cx, cz - 15); if (LOW && dist > 1800) continue;
     if ((kind === 3 || kind === 4 || lv === 4) && cx > -80 && cx < 140 && cz > 85 && cz < 200 && SCHOOL_PADS.some(sp => inPoly(sp.p, cx, cz))) { SCHOOL_BLD.push({ P, lv, h, cx, cz, np }); continue; } /* 학교 건물은 따로 상세 모델 */
     if (Math.abs(cx) < OE - 60 && Math.abs(cz) < OE - 60) { og.beginPath(); P.forEach((p, k) => { const X = (p[0] + OE) / ORS, Z = (p[1] + OE) / ORS; k ? og.lineTo(X, Z) : og.moveTo(X, Z); }); og.closePath(); og.fill(); og.lineWidth = 1.2; og.stroke(); }
     let gmin = Infinity, gs = 0; for (const p of P) { const gy = heightAt(p[0], p[1]); gmin = Math.min(gmin, gy); gs += gy; }
-    const gavg = gs / np, top = (kind === 1 || lv >= 6 ? gmin + .3 : gavg) + h, base = gmin - .6 + mh, fh = h / lv; /* 경사지 아파트는 낮은 쪽 지면이 1층 */
+    const gavg = gs / np, top = (kind === 1 || lv >= 6 ? gmin + .3 : gavg) + h - dupLow, base = gmin - .6 + mh, fh = h / lv; /* 경사지 아파트는 낮은 쪽 지면이 1층 */
     let tk = kind === 1 || lv >= 6 ? 'apt' : kind === 2 ? (lv <= 3 ? 'shop' : 'office') : kind === 3 ? 'pub' : kind === 5 ? 'ind' : 'villa';
     if (tk === 'apt' && kind === 2) tk = 'stone';
     { const r = rand(); if (tk === 'villa') tk = r < .42 ? 'villaBrick' : r < .62 ? 'villaGray' : r < .8 ? 'villaTile' : 'villa'; /* 태평·신흥동 로드뷰 비율 */ else if (tk === 'apt') tk = lv >= 12 && inForestia(cx, cz) ? 'forestia' : lv >= 24 && cx > 250 && cx < 820 && cz > 100 && cz < 650 ? 'xi' : r < .65 ? 'aptK' : 'aptModern'; /* 남동쪽 29층 단지 = 자이푸르지오 계열 외관 */ else if (tk === 'office' && r < .55) tk = 'stone'; }
