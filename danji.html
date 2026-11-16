@@ -671,13 +671,14 @@ async function build() {
         if (i <= 16) { const yt = Math.max(yin(P), yout(P), yin(Q), yout(Q)) + .02; northRail.push([P, Q, yt]); } /* 모형 VN14·VE21: 북쪽 경계 옹벽 위 유리 난간 */
         const tP = Math.max(yin(P), yout(P)) + .02, tQ = Math.max(yin(Q), yout(Q)) + .02, bP = Math.min(yin(P), yout(P)) - 1.5, bQ = Math.min(yin(Q), yout(Q)) - 1.5, l = L / n;
         const east = (nx2 > .4 && (P[0] + Q[0]) / 2 > 115 && (P[1] + Q[1]) / 2 > -60) || (nz2 < -.35 && (P[0] + Q[0]) / 2 > -60), dP = yin(P) - yout(P), dQ = yin(Q) - yout(Q);
-        if (east && dP > 4.5 && dQ > 4.5) { const nt = Math.min(3, Math.ceil(Math.max(dP, dQ) / 3.8)), off = 3.4;
+        const sT = nz2 > .3 && (P[1] + Q[1]) / 2 > 30 && (P[0] + Q[0]) / 2 > -40; /* 모형 사진 1: 남쪽(학교 쪽) 옹벽은 2단 + 사이 나무 화단 */
+        if ((east || sT) && dP > 4.5 && dQ > 4.5) { const nt = sT ? 2 : Math.min(3, Math.ceil(Math.max(dP, dQ) / 3.8)), off = sT ? 4.2 : 3.4, GT = sT ? gp : gt;
           for (let j = 0; j < nt; j++) { const o = j * off, tPj = yin(P) - dP * j / nt + .02, tQj = yin(Q) - dQ * j / nt + .02, bPj = yin(P) - dP * (j + 1) / nt - (j === nt - 1 ? 1.5 : 0), bQj = yin(Q) - dQ * (j + 1) / nt - (j === nt - 1 ? 1.5 : 0);
             const P2 = [P[0] + nx2 * o, P[1] + nz2 * o], Q2 = [Q[0] + nx2 * o, Q[1] + nz2 * o];
-            gt.quad([P2[0], bPj, P2[1]], [Q2[0], bQj, Q2[1]], [Q2[0], tQj, Q2[1]], [P2[0], tPj, P2[1]], [nx2, 0, nz2], [s / 6, bPj / 3, (s + L / n) / 6, bQj / 3, (s + L / n) / 6, tQj / 3, s / 6, tPj / 3]);
+            GT.quad([P2[0], bPj, P2[1]], [Q2[0], bQj, Q2[1]], [Q2[0], tQj, Q2[1]], [P2[0], tPj, P2[1]], [nx2, 0, nz2], [s / 6, bPj / 3, (s + L / n) / 6, bQj / 3, (s + L / n) / 6, tQj / 3, s / 6, tPj / 3]);
             if (j < nt - 1) { const P3 = [P2[0] + nx2 * off, P2[1] + nz2 * off], Q3 = [Q2[0] + nx2 * off, Q2[1] + nz2 * off], yP = bPj + .5, yQ = bQj + .5;
               { const A3 = [P2[0], yP, P2[1]], B3 = [P3[0], yP, P3[1]], C3 = [Q3[0], yQ, Q3[1]], D3 = [Q2[0], yQ, Q2[1]], cy = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]); cy >= 0 ? gpl.quad(A3, B3, C3, D3, [0, 1, 0], [0, 0, 1, 0, 1, 1, 0, 1]) : gpl.quad(A3, D3, C3, B3, [0, 1, 0], [0, 0, 1, 0, 1, 1, 0, 1]); } /* 단 사이 화단 */
-              if (k % 2 === 0) extraTrees.push([(P2[0] + P3[0]) / 2, yP - .1, (P2[1] + P3[1]) / 2, .9 + rand() * .6, 3]); } }
+              if (k % 2 === 0 || sT) extraTrees.push([(P2[0] + P3[0]) / 2, yP - .1, (P2[1] + P3[1]) / 2, sT ? 1.2 + rand() * .7 : .9 + rand() * .6, 3]); } }
           s += L / n; continue; }
         const south = nz2 > .3 && (P[1] + Q[1]) / 2 > 30; /* 모형 VE04: 학교·주차장 쪽(남·남서) 바깥 옹벽은 무늬 없는 짙은 회색 */ (south ? gp : gb).quad([P[0], bP, P[1]], [Q[0], bQ, Q[1]], [Q[0], tQ, Q[1]], [P[0], tP, P[1]], [nx2, 0, nz2], south ? [s / 6, bP / 3, (s + l) / 6, bQ / 3, (s + l) / 6, tQ / 3, s / 6, tP / 3] : [s / 20, bP / 10, (s + l) / 20, bQ / 10, (s + l) / 20, tQ / 10, s / 20, tP / 10]); s += l; } }
     const m = new THREE.Mesh(gb.build(), wallMat); m.receiveShadow = true; m.castShadow = true; scene.add(m);
@@ -689,7 +690,7 @@ async function build() {
     if (gt.i.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#b0ada7', .03, 700); g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(0, 0, 2, 128); g.fillRect(128, 0, 2, 128); g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(0, 0, 256, 4);
       const mt = new THREE.Mesh(gt.build(), new THREE.MeshStandardMaterial({ map: tex(c), roughness: .95, side: THREE.DoubleSide })); mt.receiveShadow = mt.castShadow = true; scene.add(mt);
       const mp2 = new THREE.Mesh(gpl.build(), new THREE.MeshLambertMaterial({ map: T.green, side: THREE.DoubleSide })); mp2.receiveShadow = true; scene.add(mp2); }
-    if (gp.i.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#8e8c87', .03, 700); g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(0, 0, 2, 128); g.fillRect(128, 0, 2, 128); const t = tex(c); const mp = new THREE.Mesh(gp.build(), new THREE.MeshStandardMaterial({ map: t, roughness: .95, side: THREE.DoubleSide })); mp.receiveShadow = mp.castShadow = true; scene.add(mp); } }
+    if (gp.i.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#68655f', .03, 700); /* 모형 사진 1: 짙은 따뜻한 회색 */ g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(0, 0, 2, 128); g.fillRect(128, 0, 2, 128); const t = tex(c); const mp = new THREE.Mesh(gp.build(), new THREE.MeshStandardMaterial({ map: t, roughness: .95, side: THREE.DoubleSide })); mp.receiveShadow = mp.castShadow = true; scene.add(mp); } }
   /* 데크 가장자리 화단(모형): 옹벽 위를 따라 낮은 관목 띠 + 난간 — 각 단 높이에 */
   { const H2 = new GB(), Rl = new GB(), hedge = { gb: H2, uv: uvTile(4, 1) }, top = { gb: H2, uv: true, uvTop: uvPlanar(4) };
     for (let i = 0; i < SITE.length; i++) { const a = SITE[i], b = SITE[(i + 1) % SITE.length], ex = b[0] - a[0], ez = b[1] - a[1], L0 = Math.hypot(ex, ez); if (L0 < 2) continue;
@@ -1417,7 +1418,7 @@ function buildTrees(planData, PW, PH, PK) {
     list.forEach((t, i) => { const r = t[3], th = t[4] ? r * 1.1 : r * .9 + .8;
       ps.set(t[0], t[1] + th + r * .95, t[2]); sc.set(r, r * (1.05 + rand() * .3), r); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rand() * 6.28); m4.compose(ps, q, sc); canopy.setMatrixAt(i, m4);
       if (trunk) { ps.set(t[0], t[1], t[2]); sc.set(1, th + r * .5, 1); m4.compose(ps, q, sc); trunk.setMatrixAt(i, m4); }
-      const l = rand(); if (t[4] === 0 || (t[4] === 3 && polyDist(SITE, t[0], t[2]) < 0)) col.setHSL(.19 + rand() * .05, .65 + rand() * .15, .05 + l * .035); /* 모형 사진: 짙은 올리브 초록(46,60,22) */ else col.setHSL(.22 + rand() * .1, .3 + rand() * .2, t[4] === 1 ? .17 + l * .1 : .23 + l * .12); canopy.setColorAt(i, col); }); /* 단지 안 나무는 모형처럼 짙은 초록 */
+      const l = rand(); if (t[4] === 0 || (t[4] === 3 && polyDist(SITE, t[0], t[2]) < 10)) col.setHSL(.19 + rand() * .05, .65 + rand() * .15, .05 + l * .035); /* 모형 사진: 짙은 올리브 초록(46,60,22) */ else col.setHSL(.22 + rand() * .1, .3 + rand() * .2, t[4] === 1 ? .17 + l * .1 : .23 + l * .12); canopy.setColorAt(i, col); }); /* 단지 안 나무는 모형처럼 짙은 초록 */
     canopy.castShadow = canopy.receiveShadow = true; scene.add(canopy); if (trunk) { trunk.castShadow = true; scene.add(trunk); } }
 }
 
