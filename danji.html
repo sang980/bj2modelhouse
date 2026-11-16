@@ -1336,8 +1336,8 @@ function buildModelSigns() {
   one('외부계단2', '', -55.3, 52.8, 121 - Y0 + 3.4, .6); one('외부계단3', '', 72.1, 49.1, 121 - Y0 + 3.1, .6); /* 모형 VE09·사진 2: 계단탑 위 사인 */
   if (GEO.ok) { const c = cnv(1024, 300), g = c.getContext('2d'); g.fillStyle = '#4b4a47'; g.fillRect(0, 0, 1024, 300); g.strokeStyle = '#e9e8e3'; g.lineWidth = 6; g.strokeRect(14, 14, 996, 272); g.fillStyle = '#f3f2ee'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '700 54px "IBM Plex Sans KR", "Noto Sans KR", sans-serif';
     g.fillText('근린공원 내 산책로 조성 예정으로,', 512, 82); g.fillText('단지 동측 외부계단 및 공원 내 산책로를 통해', 512, 150); g.fillText('직접 외부로의 진출입이 가능합니다.', 512, 218); /* 모형 VE31·VE32·VN20: 동쪽 잔디 위 안내판 */
-    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const x = 189, z = 43, y = heightAt(x, z) + 1.2, m = new THREE.Mesh(new THREE.PlaneGeometry(9, 2.64), new THREE.MeshStandardMaterial({ map: t, roughness: .6, side: THREE.DoubleSide }));
-    m.position.set(x, y, z); m.lookAt(x + 1.6, y + 1.1, z + .2); scene.add(m); }
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const pm = new THREE.MeshStandardMaterial({ map: t, roughness: .6, side: THREE.DoubleSide });
+    for (const [x, z, lx, lz] of [[189, 43, 1.6, .2], [96, -127, 1, -1.1]]) { const y = heightAt(x, z) + 1.2, m = new THREE.Mesh(new THREE.PlaneGeometry(9, 2.64), pm); m.position.set(x, y, z); m.lookAt(x + lx, y + 1.1, z + lz); scene.add(m); } } /* 11-16 모형 VE27: 112·113동 북동쪽 언덕에도 같은 안내판 */
   scene.add(new THREE.Mesh(post.build(), new THREE.MeshStandardMaterial({ color: '#d9d9d5', roughness: .5 }))); }
 /* ---------- 부대시설(주민공동시설·근린생활시설·경비실) ---------- */
 const AMEN_POLYS = [[[-150.46, 0.5], [-116.5, -1], [-116.2, 32.3], [-129.32, 39.25]], [[-119.69, 55.95], [-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-127.3, 42.81]], [[-115.1, 54.1], [-105.6, 51.9], [-104.6, 60.5], [-114.1, 62.7]], [[-108.8, 73.9], [-96.2, 68], [-80.6, 96.5], [-93.9, 103.7]]]; /* 나무가 지붕을 뚫지 않게 */
