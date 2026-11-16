@@ -486,9 +486,9 @@ function texGreen() { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill
 function mazeShapes(g, W, Hh, col, seed, unit) { const rr = rng(seed), u = unit; g.fillStyle = col;
   for (let x = u * 1.5; x < W - u; x += u * (2.2 + rr() * 2.2)) { const len = u * (3 + (rr() * 6 | 0)), y0 = rr() < .5 ? u * (rr() * 3 | 0) : Hh - len - u * (rr() * 3 | 0); g.fillRect(x, y0, u, len);
     const r = rr(); if (r < .3) g.fillRect(x, y0 + len - u, u * (2 + (rr() * 3 | 0)), u); else if (r < .55) g.fillRect(x - u * (1 + (rr() * 2 | 0)), y0, u * (2 + (rr() * 2 | 0)), u); else if (r < .7) { const yy = y0 + u * (1 + (rr() * Math.max(1, len / u - 2) | 0)); g.fillRect(x, yy, u * 3, u); } } }
-function texConcrete() { const c = cnv(1024, 512), g = c.getContext('2d'); noiseFill(g, 1024, 512, '#8c8981', .02, 1800); /* 모형: 중간 회색 도장(줄눈 없음) — 햇빛 받아도 중간 회색으로 보이게 */
+function texConcrete() { const c = cnv(1024, 512), g = c.getContext('2d'); noiseFill(g, 1024, 512, '#8d877a', .02, 1800); /* 모형 사진 1: 따뜻한 중간 회색 도장(115,111,91 그늘) — (줄눈 없음) — 햇빛 받아도 중간 회색으로 보이게 */
   for (let k = 0; k < 16; k++) { g.fillStyle = `rgba(${rand() < .5 ? '255,255,255' : '40,40,40'},${.015 + rand() * .02})`; g.fillRect(rand() * 1024, 0, 60 + rand() * 160, 512); }
-  mazeShapes(g, 1024, 512, '#2e3033', 31, 40);
+  mazeShapes(g, 1024, 512, '#2f2d29', 31, 54); /* 모형 확대: 막대가 더 굵고 김 */
   return tex(c); }
 /* 56T 아래 옹벽: 갈색 도장(페인트) 마감 + 짙은 홈 무늬(벽돌·줄눈 없음) */
 function texPodium(light) { const c = cnv(1024, 512), g = c.getContext('2d'); if (light) noiseFill(g, 1024, 512, '#b2afa8', .03, 1600); else paintBrown(g, 1024, 512); /* light: 모형 VE27·VE29 111~113동 테라스 아래는 밝은 회색 도장 */ /* 모형: 저층과 같은 갈색 도장 + 짙은 홈 무늬 */
