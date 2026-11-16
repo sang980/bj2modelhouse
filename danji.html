@@ -518,7 +518,7 @@ function texPodium(light) { const c = cnv(1024, 512), g = c.getContext('2d'); if
   return tex(c); }
 /* 56T 테라스 세대(모형): 짙은 회색 틀 + 큰 유리문·창(흰 문살), 위 처마 띠 — 한 세대 폭 × 한 층 */
 function texTerr() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#36332f', .04, 800); /* 모형 사진: 56T 줄은 짙은 회갈색 벽 + 불 켜진 큰 창·작은 창이 한 줄로 */
-  for (const [x0, w0, y0, h0] of [[30, 230, 46, 186], [310, 120, 70, 120], [470, 120, 70, 120], [640, 230, 46, 186], [910, 90, 70, 120]]) { g.fillStyle = '#9a9087'; g.fillRect(x0 - 6, y0 - 6, w0 + 12, h0 + 12); glass(g, x0, y0, w0, h0, 3); g.fillStyle = '#9a9087'; for (let x = x0 + w0 / 2; x < x0 + w0 - 5; x += w0 / 2) g.fillRect(x - 3, y0, 6, h0); }
+  for (const [x0, w0, y0, h0] of [[40, 190, 66, 150], [300, 84, 84, 110], [440, 84, 84, 110], [640, 190, 66, 150], [900, 84, 84, 110]]) { g.fillStyle = '#5a554f'; g.fillRect(x0 - 6, y0 - 6, w0 + 12, h0 + 12); glass(g, x0, y0, w0, h0, 3); g.fillStyle = '#5a554f'; for (let x = x0 + w0 / 2; x < x0 + w0 - 5; x += w0 / 2) g.fillRect(x - 3, y0, 6, h0); g.fillRect(x0, y0 + h0 * .62, w0, 5); } /* 11-16 모형 사진 2 확대: 56T 줄은 짙은 벽이 더 넓고 창은 작게, 짙은 창틀·가로살 */
   g.fillStyle = '#5a3b2f'; g.fillRect(0, 0, 1024, 22); return tex(c, true); }
 function texVilla() { const c = cnv(256, 256), g = c.getContext('2d'); noiseFill(g, 256, 256, '#efefef', .06, 600);
   g.fillStyle = '#cfcfcf'; g.fillRect(0, 0, 256, 10); win(g, 70, 70, 120, 104, 2, 7, '#fafafa', 1); return tex(c); }
