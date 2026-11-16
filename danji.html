@@ -222,9 +222,16 @@ function terraceZones() {
       TZ.push({ P, h, key: D.d + '_' + wi, dW, yl }); }); }
   TZ_READY = true;
 }
+/* 북쪽 법면(공사계획평면도: 115동 북쪽 빗금 삼각 영역 = 데크 FH 130에서 경계 GL까지 오르는 비탈, 모형 VN12·VE23: 큰 옹벽 대신 녹지 비탈) — FH·GL 값은 그대로, 그 사이를 비탈로 */
+const BANK_B = [[-64.5, -97.8, 151.1], [-42.5, -111.5, 151.1], [-20.5, -122.5, 149.1], [-9.5, -128, 146.5], [12.5, -122.5, 140.9]]; /* 경계(x, z, 경계 지면 해발) */
+const BANK_I = [[-64.5, -97.8], [-45, -95], [-25, -97], [-8, -110], [12.5, -122.5]]; /* 비탈 아래 끝(데크 130) */
+const BANK = BANK_B.map(p => [p[0], p[1]]).concat(BANK_I.slice(1, -1).reverse());
+function segProj(P, x, z) { let best = 1e9, bi = 0, bt = 0; for (let i = 0; i < P.length - 1; i++) { const a = P[i], b = P[i + 1], dx = b[0] - a[0], dz = b[1] - a[1], l2 = dx * dx + dz * dz, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / l2)), d = Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t); if (d < best) { best = d; bi = i; bt = t; } } return [best, bi, bt]; }
+function bankH(x, z) { const [dO, i, t] = segProj(BANK_B, x, z), [dI] = segProj(BANK_I, x, z), gB = BANK_B[i][2] + (BANK_B[i + 1][2] - BANK_B[i][2]) * t - .4, k = dI / Math.max(.01, dI + dO); return 130 + Math.max(0, Math.min((gB - 130) * k, dI * .7)); } /* 비탈 기울기 최대 0.7(약 35°) — 남는 높이는 경계 옹벽이 맡아 북서쪽 옹벽과 자연스럽게 이어짐 */
 function levelAbs(x, z) {
   if (TZ_READY) for (const q of TZ) if (inPoly(q.P, x, z)) return q.h; /* 56T 테라스 앞 = 테라스 바닥 */
   if (inPoly(T_RING, x, z)) { let h = lerpTab(RING_Z, z); if (z < -100) h += (130 - h) * (1 - smooth(38, 62, x)); return h; }
+  if (inPoly(BANK, x, z)) return bankH(x, z);
   if (inPoly(T_PLAZA, x, z)) return 110;
   if (inPoly(T_S112, x, z)) return 112;
   return z < lerpTab(T_WN, x) ? 130 : 121;
@@ -664,6 +671,7 @@ async function build() {
     for (let j = 0; j < gz; j++) for (let i = 0; i < gx; i++) { const x = x0 + i * st, z = z0 + j * st; Y[j * gx + i] = levelAt(x, z); IN[j * gx + i] = inPoly(SITE, x, z) ? 1 : 0; }
     const fp = [], fu = [], wp = [], wu = [], lp = [], lu = []; /* lp: 3.5m 미만 낮은 단 벽(모형: 무늬 없는 밝은 회색) */
     const tri = (ax, az, ay, bx, bz, by, cx, cz, cy) => { const mx = (ax + bx + cx) / 3, mz = (az + bz + cz) / 3; if (!inPoly(SITE, mx, mz) || inPoly(DRIVE, mx, mz)) return;
+      if (polyDist(BANK, mx, mz) < .05 && Math.max(ay, by, cy) - Math.min(ay, by, cy) < 4) { fp.push(ax, ay, az, bx, by, bz, cx, cy, cz); for (const [x, z] of [[ax, az], [bx, bz], [cx, cz]]) { const u = planUV(x, z); fu.push(u[0], u[1]); } return; } /* 북쪽 법면은 녹지 비탈 */
       if (Math.max(ay, by, cy) - Math.min(ay, by, cy) >= .6) { const yM = Math.max(ay, by, cy); for (const z2 of TZ) { const dd = polyDist(z2.P, mx, mz); if (dd > -1.4 && dd < 1.4 && yM <= z2.h - Y0 + .3) return; } } /* 테라스 포디움 앞면 옹벽이 이 단 벽을 대신함(톱니 조각이 포디움 밖으로 삐져나오지 않게) */
       if (Math.max(ay, by, cy) - Math.min(ay, by, cy) < .6) { fp.push(ax, ay, az, bx, by, bz, cx, cy, cz); for (const [x, z] of [[ax, az], [bx, bz], [cx, cz]]) { const u = planUV(x, z); fu.push(u[0], u[1]); } }
       else if (Math.max(ay, by, cy) - Math.min(ay, by, cy) < 3.5) { lp.push(ax, ay, az, bx, by, bz, cx, cy, cz); lu.push((ax + az) / 6, ay / 3, (bx + bz) / 6, by / 3, (cx + cz) / 6, cy / 3); }
@@ -1039,7 +1047,9 @@ function buildYard() {
       const y = levelAt(x, z); obox(x, z, best.ux, best.uz, 3.6, 2.2, y, y + 1.15, { front: { gb }, back: { gb }, left: { gb }, right: { gb } }); obox(x, z, best.ux, best.uz, 3.3, 1.9, y + 1.15, y + 1.2, { top: { gb: gt, uv: true, uvTop: uvPlanar(1) } }); }
     const c = cnv(64, 64), g = c.getContext('2d'); g.fillStyle = '#2a2c2f'; g.fillRect(0, 0, 64, 64); g.fillStyle = '#56595d'; for (let x = 0; x < 64; x += 8) g.fillRect(x, 0, 3, 64); const t = tex(c);
     const m1 = new THREE.Mesh(gb.build(), new THREE.MeshStandardMaterial({ color: '#45474a', roughness: .75, envMapIntensity: .3 })); m1.castShadow = m1.receiveShadow = true; scene.add(m1); scene.add(new THREE.Mesh(gt.build(), new THREE.MeshStandardMaterial({ map: t, roughness: .6, metalness: .3 }))); } /* DA 환기구: 짙은 회색 낮은 상자 + 격자 뚜껑 */
-  { const [a, b] = NWRAMP, dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz), nx = -dz / L * 1.1, nz = dx / L * 1.1; flat([[a[0] + nx, a[1] + nz], [b[0] + nx, b[1] + nz], [b[0] - nx, b[1] - nz], [a[0] - nx, a[1] - nz]], new THREE.MeshStandardMaterial({ color: '#d3cdc3', roughness: .9, envMapIntensity: .25, ...off }), .08); } /* 북서 녹지 띠 산책로 */
+  { const [a, b] = NWRAMP, dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz), nx = -dz / L * 1.1, nz = dx / L * 1.1, N = 24, pos = [], idx = []; for (let k = 0; k <= N; k++) for (const sd of [1, -1]) { const x = a[0] + dx * k / N + nx * sd, z = a[1] + dz * k / N + nz * sd; pos.push(x, levelAt(x, z) + .1, z); } for (let k = 0; k < N; k++) { const i0 = k * 2; idx.push(i0, i0 + 1, i0 + 2, i0 + 1, i0 + 3, i0 + 2); }
+    const gr = new THREE.BufferGeometry(); gr.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); gr.setIndex(idx); gr.computeVertexNormals(); const mr = new THREE.Mesh(gr, new THREE.MeshStandardMaterial({ color: '#d3cdc3', roughness: .9, envMapIntensity: .25, side: THREE.DoubleSide, ...off })); mr.receiveShadow = true; mr.renderOrder = 3; scene.add(mr); } /* 북서 녹지 띠 산책로(법면을 따라 오름) */
+  if (false) { const [a, b] = NWRAMP, dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz), nx = -dz / L * 1.1, nz = dx / L * 1.1; flat([[a[0] + nx, a[1] + nz], [b[0] + nx, b[1] + nz], [b[0] - nx, b[1] - nz], [a[0] - nx, a[1] - nz]], new THREE.MeshStandardMaterial({ color: '#d3cdc3', roughness: .9, envMapIntensity: .25, ...off }), .08); } /* 북서 녹지 띠 산책로 */
   { flat(TEALE, new THREE.MeshStandardMaterial({ color: '#4f6f63', roughness: .85, envMapIntensity: .15, ...off }), .1); const g = new GB(), y = levelAt(157.5, 41.5) + .13; for (const [a, b] of [[[153.7, 37.7], [161.3, 37.7]], [[161.3, 37.7], [161.3, 45.3]], [[161.3, 45.3], [153.7, 45.3]], [[153.7, 45.3], [153.7, 37.7]]]) obox((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, b[0] - a[0] ? 1 : 0, b[1] - a[1] ? 1 : 0, Math.hypot(b[0] - a[0], b[1] - a[1]) + .14, .14, y - .02, y, { top: { gb: g } });
     scene.add(new THREE.Mesh(g.build(), new THREE.MeshStandardMaterial({ color: '#e9e8e2', roughness: .8 }))); } /* 흰 테두리 줄 */
   /* 소방차 전용구역(배치도 황토색 점선 사각형 + 원 기호, 모형 VE16·VE28·VE29: 포장 위 주황 원·점선) — 가까운 동과 나란히 */
