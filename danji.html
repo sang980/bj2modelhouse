@@ -1405,9 +1405,9 @@ function buildAmenities(MAT) {
       obox(cxp, czp, u[0], u[1], 9, 5, Y(114.4) - .1, Y(114.4) + 1.6, { front: RB, back: RB, left: RB, right: RB, top: { gb: G.roof } }); } } /* 모형 VE05·VE07: 근린생활시설 지붕은 회색 자갈 + 가운데 낮은 기계실 상자(나무는 지붕이 아니라 옆 광장 화단) */ /* 모형 VE07: 2층도 큰 짙은 창(회색 석재 판) */ /* 근린생활시설(도로 GL≈106, 2층): 도로 쪽 면을 경계선 0.8m 바깥으로(1층 유리 상점이 보도에 바로 면함) + 2층 밝은 회색 석재, 회색 지붕 */
   const m = (gb, mat) => { const x = new THREE.Mesh(gb.build(), mat); x.castShadow = x.receiveShadow = true; scene.add(x); };
   { const am = (draw) => { const c = cnv(512, 256), g = c.getContext('2d'); draw(g); const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughnessMap: roughFrom(t), roughness: 1, envMapIntensity: .7 }); };
-    const aB = am(g => { paintBrown(g, 512, 256); g.fillStyle = 'rgba(30,18,12,.45)'; for (let y = 14; y < 60; y += 7) g.fillRect(0, y, 512, 2); /* 모형 VE10: 갈색 벽 + 가로 루버 띠 + 넓은 가로창(푸른빛 조명) */
-      for (const [x0, w0] of [[24, 210], [276, 210]]) { g.fillStyle = '#3d2e27'; g.fillRect(x0 - 6, 76, w0 + 12, 128); const gr = g.createLinearGradient(0, 80, 0, 200); gr.addColorStop(0, '#cfe0ee'); gr.addColorStop(1, '#8fb0c9'); g.fillStyle = gr; g.fillRect(x0, 82, w0, 116); g.fillStyle = '#3d2e27'; for (let x = x0 + w0 / 4; x < x0 + w0 - 4; x += w0 / 4) g.fillRect(x - 2, 82, 4, 116); }
-      g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(0, 248, 512, 8); });
+    const aB = am(g => { paintBrown(g, 512, 256); /* 11-16: 가로줄이 벽돌처럼 보여 없앰(도장 마감) */ /* 모형 VE10: 갈색 벽 + 가로 루버 띠 + 넓은 가로창(푸른빛 조명) */
+      for (const x0 of [40, 210, 380]) { g.fillStyle = '#3d2e27'; g.fillRect(x0 - 5, 95, 100, 92); glass(g, x0, 100, 90, 82, 4); } /* 11-16 모형 VE10 확대: 갈색 벽에 작은 짙은 창(푸른 조명 큰 창 아님) */
+      g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(0, 250, 512, 6); });
     const stoneBase = g => { noiseFill(g, 512, 256, '#877f74', .035, 900); /* 모형 사진: 중간 회색 석재(132,127,122) */ g.fillStyle = 'rgba(70,66,60,.28)'; for (let x = 0; x < 512; x += 64) g.fillRect(x, 0, 2, 256); for (let y = 0; y < 256; y += 64) g.fillRect(0, y, 512, 2); };
     const aG = am(g => { stoneBase(g); for (const x0 of [56, 300]) { g.fillStyle = '#4a4c50'; g.fillRect(x0 - 8, 52, 172, 156); glass(g, x0, 60, 156, 140, 2); g.fillStyle = '#4a4c50'; g.fillRect(x0 + 76, 60, 4, 140); } }); /* 모형: 회색 석재 판 + 큰 짙은 창 */
     const aS = am(g => { stoneBase(g); for (let k = 0; k < 3; k++) win(g, 30 + k * 165, 80, 128, 96, 2, 6, '#e8e8e6', 0); g.fillStyle = 'rgba(255,240,210,.22)'; for (let k = 0; k < 3; k++) g.fillRect(30 + k * 165, 80, 128, 96); }); /* 맨 위층: 회색 석재 + 창 줄 */
