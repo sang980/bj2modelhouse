@@ -249,8 +249,10 @@ function overTunnel(x, z) { const M = CUT.M; if (M.length < 2) return false; con
 function cutDepth(x, z) { const M = CUT.M; if (!M.length || z < M[0][1] - 1 || z > M[M.length - 1][1]) return 0; let best = 1e9;
   for (let i = 0; i < M.length - 1; i++) { const a = M[i], b = M[i + 1], dx = b[0] - a[0], dz = b[1] - a[1], l2 = dx * dx + dz * dz, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / l2)), d = Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t); if (d < best) best = d; }
   return best < CUT.HW ? CUT.dep(z) : 0; }
-function groundAt(x, z) { if (!GEO.ok) return -4; let h = demRaw(x, z) + corrAt(x, z) - Y0 - cutDepth(x, z);
-  for (const sp of SCHOOL_PADS) { const d = polyDist(sp.p, x, z); if (d < 12) { const t = smooth(-4, 12, d); h = (sp.h - Y0) * (1 - t) + h * t; } } return h; }
+const LOT1 = { p: [[-99.5, 96.2], [-97.5, 95.1], [-86.5, 97.9], [-70, 89.6], [-56.2, 95.1], [-46.2, 114.6], [-50, 124], [-58, 131], [-80, 139], [-99, 124]], pad: [[-101, 88], [-97.5, 86.7], [-86.5, 89.5], [-70, 81.2], [-54, 86.7], [-45, 101], [-46.2, 114.6], [-50, 124], [-58, 131], [-80, 139], [-99, 124]], h: 98.3 }; /* p: 아스팔트(북쪽은 단지 옹벽 바로 밑까지) · pad: 지면 평탄화(옹벽 안쪽 8m까지 — 지형 격자가 옹벽 밑에서 솟아 보이지 않게, 단지 안 지형은 데크 밑이라 안 보임) */ /* 주차1(모형 VE02·VE04): 비탈이 아니라 평평한 판 — 옆 40m 도로 높이, 북쪽은 단지 옹벽 밑으로 깎고, 성남여중 마당(100.6)보다 낮음 */
+function groundAt(x, z) { if (!GEO.ok) return -4; const cd = cutDepth(x, z); let h = demRaw(x, z) + corrAt(x, z) - Y0 - cd;
+  for (const sp of SCHOOL_PADS) { const d = polyDist(sp.p, x, z); if (d < 12) { const t = smooth(-4, 12, d); h = (sp.h - Y0) * (1 - t) + h * t; } }
+  if (!cd) { const d = polyDist(LOT1.pad, x, z); if (d < 3) { const t = smooth(-.3, 3, d); h = (LOT1.h - Y0) * (1 - t) + h * t; } } return h; }
 const siteY = (x, z) => polyDist(SITE, x, z) < 0 ? levelAt(x, z) : groundAt(x, z); /* 단지 안은 단 높이, 밖은 실제 지면 */
 function forestAt(x, z) { const F = GEO.fmask; if (!F) return smooth(-12, 18, -polyDist(FOREST, x, z)); const M = F.M; let fx = (x + F.E) / (2 * F.E) * M - .5, fz = (z + F.E) / (2 * F.E) * M - .5;
   if (fx < 0 || fz < 0 || fx > M - 1.01 || fz > M - 1.01) return 0; const i = fx | 0, j = fz | 0, ax = fx - i, az = fz - j, a = F.a;
@@ -1027,7 +1029,7 @@ function buildYard() {
   if (GEO.ok) { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#45474a'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 2500; i++) { const v = (rand() - .5) * .12; g.fillStyle = v > 0 ? `rgba(255,255,255,${v})` : `rgba(0,0,0,${-v})`; g.fillRect(rand() * 256, rand() * 256, 2, 2); }
     /* 모형 VE02: 주차1은 주차칸 선 없이 고른 짙은 회색 판 */
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO;
-    drapePoly([[-99.5, 96], [-86.5, 98.9], [-70, 90.6], [-55.6, 96.3], [-46.2, 114.6], [-50, 124], [-58, 131], [-80, 139], [-99, 124]], new THREE.MeshLambertMaterial({ map: t, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }), .25); } /* 모형 VE03: 주차1은 단지 옹벽 밑까지 꽉 찬 판(옹벽과 사이에 맨땅 없음) */
+    drapePoly(LOT1.p, new THREE.MeshLambertMaterial({ map: t, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }), .25); } /* 모형 VE03: 주차1은 단지 옹벽 밑까지 꽉 찬 판(옹벽과 사이에 맨땅 없음) */
 }
 
 /* ---------- 주출입구(공사계획평면도): 40m 도로(GL≈108.3) → 횡단보도 → 진입로 → 회전교차로(FH 110) → 지하주차장 출입구(동쪽 옹벽)·남쪽 진입로 ---------- */
@@ -1262,7 +1264,7 @@ function buildAmenities(MAT) {
     for (const a of [-8.1, 8.1]) obox(gc[0] + A[0] * a, gc[1] + A[1] * a, A[0], A[1], 1.2, 6.5, gy - .3, gy + 4.8, W4);
     { const sc = cnv(512, 128), sg = sc.getContext('2d'); sg.fillStyle = '#3a3936'; sg.fillRect(0, 0, 512, 128); sg.fillStyle = '#f4f3ef'; sg.font = '800 70px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; sg.textAlign = 'center'; sg.textBaseline = 'middle'; sg.fillText('주출입구', 256, 68);
       const st = new THREE.CanvasTexture(sc); st.colorSpace = THREE.SRGBColorSpace; const D2 = ENT.d; for (const sgn of [-1, 1]) { const sm = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 1.4), new THREE.MeshStandardMaterial({ map: st, roughness: .6 })), p = [gc[0] + D2[0] * sgn * 3.3, gc[1] + D2[1] * sgn * 3.3]; sm.position.set(p[0], gy + 5.6, p[1]); sm.lookAt(p[0] + D2[0] * sgn, gy + 5.6, p[1] + D2[1] * sgn); scene.add(sm); } } } /* 모형 VE06·VN06: 정문 위 '주출입구' 사인 */
-  { const P = [[-108.8, 73.9], [-96.2, 68], [-80.6, 96.5], [-93.9, 103.7]]; prism(P, Y(105.4), Y(109.8), G.glass); prism(P, Y(109.8), Y(113.6), G.white, G.roof); prism(P, Y(113.6), Y(114.4), G.para);
+  { const P = [[-108.8, 73.9], [-96.2, 68], [-80.6, 96.5], [-93.9, 103.7]]; prism(P, LOT1.h - Y0 - .4, Y(105.4), G.para); /* 주차1 쪽으로 드러나는 밑동 */ prism(P, Y(105.4), Y(109.8), G.glass); prism(P, Y(109.8), Y(113.6), G.white, G.roof); prism(P, Y(113.6), Y(114.4), G.para);
     { const A2 = P[1], B2 = P[2], l = Math.hypot(B2[0] - A2[0], B2[1] - A2[1]), u = [(B2[0] - A2[0]) / l, (B2[1] - A2[1]) / l], cxp = P.reduce((s2, p) => s2 + p[0], 0) / 4, czp = P.reduce((s2, p) => s2 + p[1], 0) / 4; let nn = [-u[1], u[0]]; const mx = (A2[0] + B2[0]) / 2, mz = (A2[1] + B2[1]) / 2; if ((cxp - mx) * nn[0] + (czp - mz) * nn[1] < 0) nn = [-nn[0], -nn[1]];
       const c = [mx + nn[0] * 2, mz + nn[1] * 2], GD = { gb: G.roofGd }; obox(c[0], c[1], u[0], u[1], l - 1.6, 3.2, Y(113.6), Y(114.1), { front: { gb: G.para }, back: { gb: G.para }, left: { gb: G.para }, right: { gb: G.para }, top: GD });
       for (let k = 0; k < 6; k++) { const t2 = (k + .5) / 6 - .5; extraTrees.push([c[0] + u[0] * (l - 3) * t2, Y(114.1), c[1] + u[1] * (l - 3) * t2, 1.1 + rand() * .5, 3]); } } } /* 모형 VE05: 근린생활시설 지붕 광장 쪽 가장자리 나무 화단 */ /* 모형 VE07: 2층도 큰 짙은 창(회색 석재 판) */ /* 근린생활시설(도로 GL≈106, 2층): 도로 쪽 면을 경계선 0.8m 바깥으로(1층 유리 상점이 보도에 바로 면함) + 2층 밝은 회색 석재, 회색 지붕 */
