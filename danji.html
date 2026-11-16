@@ -479,7 +479,7 @@ function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (
   g.fillStyle = brick ? '#6c3a2b' : '#d8d5cf'; g.fillRect(0, 0, 1024, 12);
   if (!brick) { g.fillStyle = 'rgba(40,40,40,.16)'; for (let x = 14; x < 1024; x += 22) if (x < 174 || x > 850) g.fillRect(x, 0, 2.5, 256); g.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 17; x < 1024; x += 22) if (x < 174 || x > 850) g.fillRect(x, 0, 1.5, 256); } /* 모형 동영상: 측벽은 밝은 회색 + 고른 가는 세로 홈 */
   /* 모형: 측벽 가운데 짙은 남색 유리 세로 띠(지붕까지) */
-  if (brick) { g.fillStyle = '#4a2e25'; g.fillRect(180, 0, 664, 256); for (const x of [240, 420, 600, 760]) win(g, x, 70, 64, 110, 1, 6, '#b8b4ad', 3); }
+  if (brick) { g.fillStyle = '#4a2e25'; g.fillRect(180, 0, 664, 256); g.fillStyle = 'rgba(214,170,140,.22)'; for (let x = 230; x < 830; x += 104) g.fillRect(x, 0, 14, 256); for (const x of [350, 610]) { g.fillStyle = '#2e2420'; g.fillRect(x, 96, 40, 62); } } /* 11-16 모형 VE17·VN11: 측벽 저층은 갈색 도장 + 밝은 세로 줄눈, 창은 작고 짙음(불 켜진 창 없음) */
   else { g.fillStyle = '#252b36'; g.fillRect(180, 0, 664, 256); /* 모형 사진 1(104동 서측 51,46,39)·영상 VE08·VE17(43,49,57 · 27,32,43): 거의 검은 짙은 유리 판 */ g.fillStyle = 'rgba(255,255,255,.04)'; g.fillRect(180, 0, 664, 128); /* 모형 VE08·VE26: 측벽 폭의 약 65% 청록·남색 유리 판넬 + 층마다 밝은 창 */
     for (let x = 214; x < 820; x += 66) { g.fillStyle = '#33373d'; g.fillRect(x, 92, 26, 62); g.fillStyle = 'rgba(85,90,98,.4)'; g.fillRect(x, 120, 26, 3); } g.fillStyle = '#1a1d21'; g.fillRect(180, 248, 664, 8); }
   return tex(c); }
