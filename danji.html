@@ -456,7 +456,7 @@ function texFront(brick, dark, light) { const c = cnv(1024, 256), g = c.getConte
   for (const x0 of [112, 578]) { g.fillStyle = strip; g.fillRect(x0, 14, 172, 228); win(g, x0 + 30, 58, 42, 72, 1, 5, fr, 2); win(g, x0 + 100, 58, 42, 72, 1, 5, fr, 2); }
   g.fillStyle = strip; g.fillRect(844, 14, 50, 228); /* 모형: 난간 창 사이에도 짙은 판 */
   win(g, 300, 52, 244, 150, 3, 7, fr, 3); g.fillStyle = 'rgba(70,66,62,.55)'; for (let x = 304; x < 544; x += 13) g.fillRect(x, 156, 2, 46); g.fillStyle = fr; g.fillRect(296, 154, 252, 4); /* 거실 창 + 난간 살대 */
-  for (const x0 of [30, 760, 900]) { win(g, x0, 70, 74, 118, 2, 6, fr, 2); g.fillStyle = 'rgba(70,66,62,.55)'; for (let x = x0 + 3; x < x0 + 74; x += 12) g.fillRect(x, 156, 2, 32); g.fillStyle = fr; g.fillRect(x0 - 4, 154, 82, 4); }
+  for (const x0 of [30, 760, 900]) { win(g, x0, 70, 74, 118, 2, 6, fr, x0 === 760 ? 2 : 3); /* 11-16 모형 사진 1·2: 대부분 창에 불(밝은 면적 21~24%) */ g.fillStyle = 'rgba(70,66,62,.55)'; for (let x = x0 + 3; x < x0 + 74; x += 12) g.fillRect(x, 156, 2, 32); g.fillStyle = fr; g.fillRect(x0 - 4, 154, 82, 4); }
   g.fillStyle = brick ? 'rgba(40,20,12,.35)' : 'rgba(0,0,0,.16)'; g.fillRect(0, 250, 1024, 6); g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(0, 244, 1024, 6); /* 층 줄눈 */
   return tex(c, true); }
 /* 뒷면(모형 동영상 북쪽): 밝은 회색 + 짙은 차콜 세로 띠(층마다 작은 창) + 가운데 넓은 차콜 기둥, 사이에 흰 틀 창 — 저층은 갈색 도장 */
