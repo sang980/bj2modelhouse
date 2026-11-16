@@ -428,14 +428,15 @@ function wallBase(g, W2, H2, brick, col) { if (brick) brickFill(g, W2, H2); else
 /* 모형 104동 남쪽 면 기준(한 세대 폭 × 한 층): 회갈색 바탕 + 짙은 차콜 세로 띠 2줄(작은 창) + 흰 창틀 거실 큰 창(흰 격자 난간) + 좁은 방 창 2개
    variant: 0 회갈색, 1 밝은 회색 판(1호 라인), 2 차콜(저층 강조, 모형 사진: 차콜 판 창도 불 켜진 흰 창), brick 갈색 도장(저층 3개 층) */
 function texFront(brick, dark, light) { const c = cnv(1024, 256), g = c.getContext('2d');
-  const base = brick ? null : dark ? '#363432' : light ? '#a09a92' : '#6c635b'; /* 모형: 따뜻한 토프·베이지 */
+  const base = brick ? null : dark ? '#363432' : light ? '#a09a92' : '#857b72'; /* 모형 사진 2: 벽 중간 밝기 127 */
   if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, base, .035, 1600);
   const strip = brick ? '#5b3528' : dark ? '#252423' : light ? '#857e75' : '#48413c', fr = dark ? '#a9a6a0' : '#9a928a';
   g.fillStyle = strip; g.fillRect(150, 0, 84, 256); g.fillRect(612, 0, 84, 256);
   win(g, 160, 70, 64, 92, 1, 6, fr, 3); win(g, 622, 70, 64, 92, 1, 6, fr, 3);              /* 띠 안 작은 창 */
-  win(g, 272, 34, 300, 196, 3, 8, fr, 3); g.fillStyle = fr; g.fillRect(272, 150, 300, 6);    /* 거실 큰 창 */
-  g.fillStyle = 'rgba(245,245,243,.92)'; for (let x = 276; x < 572; x += 14) g.fillRect(x, 156, 3, 72); g.fillRect(272, 156, 300, 4); g.fillRect(272, 224, 300, 4); /* 흰 격자 난간 */
-  for (const x0 of [28, 740, 880]) { win(g, x0, 56, 104, 150, 2, 7, fr, 3); g.fillStyle = 'rgba(245,245,243,.92)'; for (let x = x0 + 3; x < x0 + 104; x += 12) g.fillRect(x, 160, 3, 46); g.fillRect(x0, 158, 104, 4); }
+  /* 모형 사진 2 측정: 밝은 면적 24%(우리 44%) — 창을 작게, 난간은 흰 판이 아니라 짙은 반투명 살대 */
+  win(g, 290, 52, 264, 150, 3, 10, fr, 3); g.fillStyle = fr; g.fillRect(290, 150, 264, 6);    /* 거실 창 */
+  g.fillStyle = 'rgba(70,66,62,.55)'; for (let x = 294; x < 554; x += 13) g.fillRect(x, 156, 2, 46); g.fillRect(290, 156, 264, 3); /* 난간 살대 */
+  for (const x0 of [40, 752, 892]) { win(g, x0, 70, 80, 118, 2, 8, fr, 3); g.fillStyle = 'rgba(70,66,62,.55)'; for (let x = x0 + 3; x < x0 + 80; x += 12) g.fillRect(x, 156, 2, 32); g.fillRect(x0, 154, 80, 3); }
   g.fillStyle = brick ? 'rgba(40,20,12,.35)' : 'rgba(0,0,0,.16)'; g.fillRect(0, 250, 1024, 6); g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(0, 244, 1024, 6); /* 층 줄눈 */
   return tex(c, true); }
 /* 뒷면(모형 동영상 북쪽): 밝은 회색 + 짙은 차콜 세로 띠(층마다 작은 창) + 가운데 넓은 차콜 기둥, 사이에 흰 틀 창 — 저층은 갈색 도장 */
