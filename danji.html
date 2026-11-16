@@ -418,7 +418,7 @@ function glass(g, x, y, w, h, dark = 0) { const gr = g.createLinearGradient(x, y
 function win(g, x, y, w, h, panes, fw = 6, col = '#f2f3f3', dark = 0) { g.fillStyle = col; g.fillRect(x - fw, y - fw, w + fw * 2, h + fw * 2); glass(g, x, y, w, h, dark); g.fillStyle = col; for (let i = 1; i < panes; i++) g.fillRect(x + w * i / panes - fw / 2, y, fw, h); }
 function rail(g, x, y, w, h) { g.fillStyle = 'rgba(226,236,243,.34)'; g.fillRect(x, y, w, h); g.fillStyle = '#f4f5f5'; g.fillRect(x, y - 3, w, 5); }
 /* 아파트 저층 갈색 벽: 벽돌이 아닌 도장(페인트) 마감 */
-function paintBrown(g, w, h) { noiseFill(g, w, h, '#6a4334', .028, 1500); /* 모형: 짙은 초콜릿 갈색 */ for (let k = 0; k < 10; k++) { g.fillStyle = `rgba(${rand() < .5 ? '255,255,255' : '40,20,10'},${.015 + rand() * .02})`; g.fillRect(rand() * w, 0, 40 + rand() * 120, h); } }
+function paintBrown(g, w, h) { noiseFill(g, w, h, '#634239', .028, 1500); /* 모형: 짙은 초콜릿 갈색 */ for (let k = 0; k < 10; k++) { g.fillStyle = `rgba(${rand() < .5 ? '255,255,255' : '40,20,10'},${.015 + rand() * .02})`; g.fillRect(rand() * w, 0, 40 + rand() * 120, h); } }
 function wallBase(g, W2, H2, brick, col) { if (brick) brickFill(g, W2, H2); else noiseFill(g, W2, H2, col, .05, 2600); }
 
 /* 단지조감도처럼: 연회색 벽 + 촘촘한 흰 수직 기둥 + 층마다 흰 수평 띠 + 청회색 유리·유리 난간, 저층은 붉은 벽돌 기둥, 일부 세대는 차콜 패널 */
