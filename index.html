@@ -26,8 +26,8 @@ h2{font:600 18px/1.3 var(--display);margin:0 0 4px;letter-spacing:-.01em}
 .home{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 22px 20px}
 .home h2{font-size:22px}
 .home .desc{margin:6px 0 18px;color:var(--muted);font-size:14px;line-height:1.6}
-.pick{display:grid;grid-template-columns:1fr 1.4fr auto;gap:12px;align-items:end}
-@media (max-width:620px){.pick{grid-template-columns:1fr 1fr}.pick .go{grid-column:1/-1}}
+.pick{display:grid;grid-template-columns:1fr 1fr 1.2fr auto;gap:12px;align-items:end}
+@media (max-width:620px){.pick{grid-template-columns:.9fr 1fr 1.1fr;gap:10px}.pick .go{grid-column:1/-1}.pick .fld select{font-size:15px;padding:12px 26px 12px 12px;background-position:right 10px center}}
 .fld{display:flex;flex-direction:column;gap:6px;min-width:0}
 .fld label{font:500 12px var(--body);color:var(--muted)}
 .fld select{appearance:none;-webkit-appearance:none;width:100%;font:500 16px var(--body);color:var(--ink);background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236b737a' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 14px center;border:1px solid var(--line);border-radius:12px;padding:12px 38px 12px 14px;min-height:48px}
@@ -70,9 +70,10 @@ footer{margin-top:28px;font-size:12px;color:var(--muted);line-height:1.6}
 
   <section class="home" aria-labelledby="home-h">
     <h2 id="home-h">우리 집 들어가기</h2>
-    <p class="desc">동과 호수를 고르고 입장하면 우리 집 타입이 실제 그 동·층·방향에 놓입니다. 거실과 방 창문 밖으로 3D 단지 조감도에서 본 실제 풍경이 그대로 보여요.</p>
+    <p class="desc">동·층·호수를 고르고 입장하면 우리 집 타입이 실제 그 동·층·방향에 놓입니다. 거실과 방 창문 밖으로 3D 단지 조감도에서 본 실제 풍경이 그대로 보여요. 테라스 세대는 층 목록에서 1층 아래 ‘T층’을 고르세요.</p>
     <form class="pick" id="homeForm">
       <div class="fld"><label for="dong">동</label><select id="dong" required></select></div>
+      <div class="fld"><label for="fl">층</label><select id="fl" required></select></div>
       <div class="fld"><label for="ho">호수</label><select id="ho" required></select></div>
       <a class="go" id="goHome" href="#" role="button">입장 →</a>
     </form>
@@ -117,19 +118,25 @@ const UNITS = {
   122: { L: L4(1, 10), T: { 1: [1, 2, 3, 4], 2: [1, 2, 3, 4] } },
 };
 const PAGE = { '55A': '55a.html', '55B': '55b.html', '55C': '55c.html', '56T': '56t.html' };
-const $ = id => document.getElementById(id), dongSel = $('dong'), hoSel = $('ho'), go = $('goHome'), info = $('homeInfo');
+const $ = id => document.getElementById(id), dongSel = $('dong'), flSel = $('fl'), hoSel = $('ho'), go = $('goHome'), info = $('homeInfo');
 const pad = n => String(n).padStart(2, '0');
 for (const d of Object.keys(UNITS)) dongSel.add(new Option(d + '동', d));
+/* 층: 위층부터 1층까지, 그 아래에 테라스층(T2 → T1, T1이 가장 낮음). 호 값 '301' / 'T101' 에서 끝 두 자리(라인)를 떼면 층 값 */
+function fillFl(keepHo) {
+  const U = UNITS[dongSel.value], lines = Object.values(U.L), maxF = Math.max(...lines.map(v => v[1])); flSel.innerHTML = '';
+  for (let f = maxF; f >= 1; f--) if (lines.some(([lo, hi]) => f >= lo && f <= hi)) flSel.add(new Option(f + '층', String(f)));
+  if (U.T) { const g = document.createElement('optgroup'); g.label = '1층 아래 · 테라스층';
+    for (const k of Object.keys(U.T).sort((a, b) => b - a)) g.appendChild(new Option('T' + k + '층', 'T' + k));
+    flSel.appendChild(g); }
+  const want = keepHo ? String(keepHo).slice(0, -2) : '3';
+  flSel.value = [...flSel.options].some(o => o.value === want) ? want : flSel.options[0].value;
+  fillHo(keepHo);
+}
 function fillHo(keep) {
-  const U = UNITS[dongSel.value]; hoSel.innerHTML = '';
-  const maxF = Math.max(...Object.values(U.L).map(v => v[1]));
-  for (let f = maxF; f >= 1; f--) { const g = document.createElement('optgroup'); g.label = f + '층';
-    for (const [ln, [lo, hi, t]] of Object.entries(U.L)) if (f >= lo && f <= hi) { const o = new Option(f + pad(ln) + '호', f + pad(ln)); o.dataset.type = t; o.dataset.fl = f + '층'; g.appendChild(o); }
-    if (g.children.length) hoSel.appendChild(g); }
-  if (U.T) for (const k of Object.keys(U.T).sort((a, b) => b - a)) { const g = document.createElement('optgroup'); g.label = '테라스층 T' + k;
-    for (const ln of U.T[k]) { const o = new Option('T' + k + pad(ln) + '호 (테라스)', 'T' + k + pad(ln)); o.dataset.type = '56T'; o.dataset.fl = '테라스층 T' + k; g.appendChild(o); }
-    hoSel.appendChild(g); }
-  if (keep && [...hoSel.options].some(o => o.value === keep)) hoSel.value = keep; else { const o = [...hoSel.options].find(o => /^3\d\d$/.test(o.value)) || hoSel.options[0]; if (o) hoSel.value = o.value; }
+  const U = UNITS[dongSel.value], f = flSel.value; hoSel.innerHTML = '';
+  if (f[0] === 'T') { const k = f.slice(1); for (const ln of U.T[k] || []) { const o = new Option('T' + k + pad(ln) + '호', 'T' + k + pad(ln)); o.dataset.type = '56T'; o.dataset.fl = '테라스층 T' + k + '(1층 아래)'; hoSel.add(o); } }
+  else for (const [ln, [lo, hi, t]] of Object.entries(U.L)) if (+f >= lo && +f <= hi) { const o = new Option(f + pad(ln) + '호', f + pad(ln)); o.dataset.type = t; o.dataset.fl = f + '층'; hoSel.add(o); }
+  if (keep && [...hoSel.options].some(o => o.value === keep)) hoSel.value = keep;
   update();
 }
 function update() {
@@ -139,12 +146,12 @@ function update() {
   info.innerHTML = ''; const c = document.createElement('span'); c.className = 'chip'; c.textContent = t + ' 타입'; info.append(c, document.createTextNode(dongSel.value + '동 ' + o.value + '호 · ' + o.dataset.fl + ' — 처음 들어갈 때 창밖 풍경을 조감도에서 찍느라 조금 더 걸립니다'));
   try { localStorage.setItem('mh:home', dongSel.value + '-' + o.value); } catch (e) {}
 }
-dongSel.addEventListener('change', () => fillHo()); hoSel.addEventListener('change', update);
+dongSel.addEventListener('change', () => fillFl()); flSel.addEventListener('change', () => fillHo()); hoSel.addEventListener('change', update);
 $('homeForm').addEventListener('submit', e => { e.preventDefault(); if (!go.hasAttribute('aria-disabled')) location.href = go.href; });
 go.addEventListener('keydown', e => { if (e.key === ' ') { e.preventDefault(); go.click(); } });
 let saved = null; try { saved = localStorage.getItem('mh:home'); } catch (e) {}
 const m = saved && saved.match(/^(1\d\d)-(T?\d{3,4})$/);
-if (m && UNITS[m[1]]) { dongSel.value = m[1]; fillHo(m[2]); } else { dongSel.value = '101'; fillHo(); }
+if (m && UNITS[m[1]]) { dongSel.value = m[1]; fillFl(m[2]); } else { dongSel.value = '101'; fillFl(); }
 </script>
 </body>
 </html>
