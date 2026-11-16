@@ -3561,7 +3561,7 @@ if (window.__homeNear && window.__homeEye) { await phase('우리 집 주변을 3
   const texs = NR.texs.map(t => { const img = new Image(), tx = new THREE.Texture(img); img.onload = () => { tx.needsUpdate = true; }; img.src = t.src; tx.colorSpace = t.srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; tx.wrapS = t.ws; tx.wrapT = t.wt; tx.flipY = !!t.flipY; tx.anisotropy = 4; return tx; });
   const CLS = { MeshStandardMaterial: THREE.MeshStandardMaterial, MeshLambertMaterial: THREE.MeshLambertMaterial, MeshBasicMaterial: THREE.MeshBasicMaterial, MeshPhongMaterial: THREE.MeshPhongMaterial };
   const mats = NR.mats.map(m => { const M = new (CLS[m.type] || THREE.MeshStandardMaterial)(); M.color.setHex(m.color); if (M.emissive) { M.emissive.setHex(m.emissive); M.emissiveIntensity = m.ei; } if ('roughness' in M) { M.roughness = m.rough; M.metalness = m.metal; }
-    M.transparent = !!m.tr; M.opacity = m.op; M.side = m.side; M.vertexColors = !!m.vc; M.alphaTest = m.at; M.depthWrite = !!m.dw; if (m.po) { M.polygonOffset = true; M.polygonOffsetFactor = m.po[0]; M.polygonOffsetUnits = m.po[1]; } if (m.map >= 0 && texs[m.map]) M.map = texs[m.map]; if (m.em >= 0 && texs[m.em] && 'emissiveMap' in M) M.emissiveMap = texs[m.em]; M.flatShading = !!m.flat; return M; });
+    M.transparent = !!m.tr; M.opacity = m.op; M.side = !m.tr && m.side === THREE.FrontSide ? THREE.DoubleSide : m.side; /* 양면: 잘라 낸 조각(처마·데크 상자)은 밑면이 열려 아래에서 뚫려 보임 */ M.vertexColors = !!m.vc; M.alphaTest = m.at; M.depthWrite = !!m.dw; if (m.po) { M.polygonOffset = true; M.polygonOffsetFactor = m.po[0]; M.polygonOffsetUnits = m.po[1]; } if (m.map >= 0 && texs[m.map]) M.map = texs[m.map]; if (m.em >= 0 && texs[m.em] && 'emissiveMap' in M) M.emissiveMap = texs[m.em]; M.flatShading = !!m.flat; return M; });
   const grp = new THREE.Group(); grp.position.set(E.x, E.y + 1, E.z); grp.name = 'homeNear'; let kept = 0;
   const BX = [x0 - E.x, x1 - E.x, y0 - E.y, y1 - E.y, z0 - E.z, z1 - E.z], PL = [[0, -1, BX[0]], [0, 1, BX[1]], [1, -1, BX[2]], [1, 1, BX[3]], [2, -1, BX[4]], [2, 1, BX[5]]]; /* 우리 세대 범위(묶음 좌표) — 긴 앞면 띠도 이 상자 안쪽만 잘라 냄 */
   const cut = (poly, ax, sg, val, outside) => { const o = []; for (let i = 0; i < poly.length; i++) { const a = poly[i], b = poly[(i + 1) % poly.length], da = sg * (a[ax] - val), db = sg * (b[ax] - val), ia = outside ? da > 0 : da <= 0, ib = outside ? db > 0 : db <= 0; if (ia) o.push(a); if (ia !== ib) { const t = da / (da - db); o.push(a.map((x, q) => x + (b[q] - x) * t)); } } return o; };
@@ -3576,7 +3576,13 @@ if (window.__homeNear && window.__homeEye) { await phase('우리 집 주변을 3
     if (!out.p.length) continue; kept += out.p.length / 9;
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(out.p, 3)); geo.setAttribute('normal', new THREE.Float32BufferAttribute(out.n, 3)); if (out.u) geo.setAttribute('uv', new THREE.Float32BufferAttribute(out.u, 2)); if (out.c) geo.setAttribute('color', new THREE.Float32BufferAttribute(out.c, 3));
     const mesh = new THREE.Mesh(geo, mats[g.m]); mesh.renderOrder = g.ro || 0; mesh.matrixAutoUpdate = false; grp.add(mesh); }
-  sky.add(grp); grp.updateMatrixWorld(true); window.__homeNearInfo = { tris: kept, meshes: grp.children.length, box: [x0, x1, z0, z1, y0, y1].map(v => +v.toFixed(2)) }; /* 하늘 원통의 자식(위치 −1 보정) — 전체 보기에서 함께 숨음 */
+  const wallM = new THREE.MeshLambertMaterial({ color: 0xf1efea }); let bands = 0;
+  scene.traverse(o => { if (!o.isMesh || o === skyFloor) return; for (let p = o; p; p = p.parent) if (p === sky) return; tb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld); const sz = tb.getSize(new THREE.Vector3());
+    if (tb.min.y < bb.max.y - .08 || sz.x < 1 || sz.z < 1 || sz.x > 40 || sz.z > 40) return; /* 지붕 판(천장 위)만 */
+    const yb = bb.max.y - .01, h = y1 + .01 - yb, w = new THREE.Mesh(new THREE.BoxGeometry(sz.x + .02, h, sz.z + .02), wallM);
+    w.position.set((tb.min.x + tb.max.x) / 2 - E.x, yb + h / 2 - E.y, (tb.min.z + tb.max.z) / 2 - E.z); w.name = 'homeBand'; grp.add(w); bands++; });
+  /* 지붕 판 위 ~ 잘라 낸 조감도 윗면(y1) 사이 띠: 조감도 동은 껍데기뿐이라 이 틈으로 속이 비쳐 보임 — 하얀 벽으로 막음 */
+  sky.add(grp); grp.updateMatrixWorld(true); window.__homeNearInfo = { bands, tris: kept, meshes: grp.children.length, box: [x0, x1, z0, z1, y0, y1].map(v => +v.toFixed(2)) }; /* 하늘 원통의 자식(위치 −1 보정) — 전체 보기에서 함께 숨음 */
 } catch (e) { console.warn('homeNear', e); } }
 applyQuality();
 // 텍스처도 첫 화면에서 한꺼번에 GPU로 올라가며 멈춤 → 몇 장씩 미리 올리고 양보
