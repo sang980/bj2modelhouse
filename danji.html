@@ -1030,6 +1030,8 @@ function buildYard() {
     /* 모형 VE02: 주차1은 주차칸 선 없이 고른 짙은 회색 판 */
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO;
     drapePoly(LOT1.p, new THREE.MeshLambertMaterial({ map: t, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -6 }), .25); } /* 모형 VE03: 주차1은 단지 옹벽 밑까지 꽉 찬 판(옹벽과 사이에 맨땅 없음) */
+  if (GEO.ok) { const c = cnv(512, 160), g = c.getContext('2d'); g.clearRect(0, 0, 512, 160); g.strokeStyle = '#f2f2ee'; g.lineWidth = 10; g.strokeRect(14, 14, 484, 132); g.fillStyle = '#f2f2ee'; g.font = '800 96px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('주차1', 256, 84); /* 모형 VE02·VE04: 바닥에 흰 테두리 '주차1' 글씨 */
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const m = new THREE.Mesh(new THREE.PlaneGeometry(14, 4.4), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -12 })); m.rotation.x = -Math.PI / 2; m.rotation.z = 0; m.position.set(-72, LOT1.h - Y0 + .32, 124); /* 남쪽(학교 쪽)에서 바로 읽히게 */ m.renderOrder = 5; scene.add(m); }
 }
 
 /* ---------- 주출입구(공사계획평면도): 40m 도로(GL≈108.3) → 횡단보도 → 진입로 → 회전교차로(FH 110) → 지하주차장 출입구(동쪽 옹벽)·남쪽 진입로 ---------- */
