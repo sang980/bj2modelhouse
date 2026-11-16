@@ -465,8 +465,8 @@ function texSideB() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFil
 /* 북쪽 줄 동 측벽(모형 VE26 113·114동): 밝은 회색 + 청록 유리 판넬(폭 약 70%) + 층마다 밝은 창 2개씩 */
 function texSideT() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#b0ada7', .03, 1400); g.fillStyle = '#d8d5cf'; g.fillRect(0, 0, 1024, 12);
   g.fillStyle = 'rgba(40,40,40,.16)'; for (let x = 14; x < 1024; x += 22) if (x < 150 || x > 874) g.fillRect(x, 0, 2.5, 256);
-  g.fillStyle = '#2d5f72'; g.fillRect(156, 0, 712, 256); g.fillStyle = 'rgba(255,255,255,.06)'; g.fillRect(156, 0, 712, 120);
-  for (const x of [240, 330, 700, 790]) { g.fillStyle = '#e8e2d2'; g.fillRect(x, 96, 30, 58); } g.fillStyle = '#244e5e'; g.fillRect(156, 248, 712, 8); return tex(c); }
+  g.fillStyle = '#3b5560'; g.fillRect(156, 0, 712, 256); /* 모형 VE28: 채도 낮은 청회색 판(52,66,73) */ g.fillStyle = 'rgba(255,255,255,.06)'; g.fillRect(156, 0, 712, 120);
+  for (const x of [240, 330, 700, 790]) { g.fillStyle = '#e8e2d2'; g.fillRect(x, 96, 30, 58); } g.fillStyle = '#304750'; g.fillRect(156, 248, 712, 8); return tex(c); }
 /* 유리는 매끈하게(하늘이 비침), 벽은 거칠게: 색 텍스처에서 거칠기 지도를 만듦 */
 function roughFrom(t) { const src = t.image, w = src.width, h = src.height, c = cnv(w, h), g = c.getContext('2d'); g.drawImage(src, 0, 0); const d = g.getImageData(0, 0, w, h), a = d.data;
   for (let i = 0; i < a.length; i += 4) { const r = a[i], gg = a[i + 1], b = a[i + 2], l = .3 * r + .59 * gg + .11 * b, gl = b > r + 6 && l < 200; const v = gl ? 22 : 228; a[i] = a[i + 1] = a[i + 2] = v; }
