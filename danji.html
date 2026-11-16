@@ -744,6 +744,7 @@ async function build() {
   prog(50); await tick();
 
   /* ===== 단지 동 ===== */
+  for (const k of ['front', 'frontDk', 'frontLt', 'back', 'side', 'sideP', 'sideB', 'sideT']) if (MAT[k]) MAT[k].color.set('#fff0dc'); /* 11-16 모형 사진 1(104동 정면 144,128,110)·사진 2(145,140,134) 모두 따뜻한 회갈색 — 우리(143,143,141)는 하늘빛에 식어 무채색: 외벽 재질에 따뜻한 색조 */
   { const emOf = t => { const sc = t.image, w = sc.width, h = sc.height, c = cnv(w, h), g = c.getContext('2d'); g.drawImage(sc, 0, 0); const id = g.getImageData(0, 0, w, h), d = id.data; let n = 0;
       for (let i = 0; i < d.length; i += 4) { const r = d[i], gg = d[i + 1], b = d[i + 2]; if (r > 190 && r - b > 6 && r - b < 90 && gg > b) n++; else d[i] = d[i + 1] = d[i + 2] = 0; }
       g.putImageData(id, 0, 0); const e = new THREE.CanvasTexture(c); e.wrapS = e.wrapT = THREE.RepeatWrapping; e.colorSpace = THREE.SRGBColorSpace; e.anisotropy = ANISO; return n > 50 ? e : null; };
