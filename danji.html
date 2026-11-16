@@ -671,7 +671,7 @@ async function build() {
     const st = 2, SUB = LOW ? 4 : 8, gx = Math.ceil((x1 - x0) / st) + 1, gz = Math.ceil((z1 - z0) / st) + 1, Y = new Float32Array(gx * gz), IN = new Uint8Array(gx * gz);
     for (let j = 0; j < gz; j++) for (let i = 0; i < gx; i++) { const x = x0 + i * st, z = z0 + j * st; Y[j * gx + i] = levelAt(x, z); IN[j * gx + i] = inPoly(SITE, x, z) ? 1 : 0; }
     const fp = [], fu = [], wp = [], wu = [], lp = [], lu = []; /* lp: 3.5m 미만 낮은 단 벽(모형: 무늬 없는 밝은 회색) */
-    const tri = (ax, az, ay, bx, bz, by, cx, cz, cy) => { const mx = (ax + bx + cx) / 3, mz = (az + bz + cz) / 3; if (!inPoly(SITE, mx, mz) || inPoly(DRIVE, mx, mz)) return;
+    const tri = (ax, az, ay, bx, bz, by, cx, cz, cy) => { const mx = (ax + bx + cx) / 3, mz = (az + bz + cz) / 3; if (!inPoly(SITE, mx, mz) || inPoly(DRIVE, mx, mz) || AMEN_POLYS.some(A2 => polyDist(A2, mx, mz) < .05)) return; /* 11-16 사용자 지적: 데크(해발 130) 잔디·포장이 낮은 부대시설 지붕 위로 넘어오지 않게 건물 자리는 비움 */
       if (polyDist(BANK, mx, mz) < .05 && Math.max(ay, by, cy) - Math.min(ay, by, cy) < 4) { fp.push(ax, ay, az, bx, by, bz, cx, cy, cz); for (const [x, z] of [[ax, az], [bx, bz], [cx, cz]]) { const u = planUV(x, z); fu.push(u[0], u[1]); } return; } /* 북쪽 법면은 녹지 비탈 */
       if (Math.max(ay, by, cy) - Math.min(ay, by, cy) >= .6) { const yM = Math.max(ay, by, cy); for (const z2 of TZ) { const dd = polyDist(z2.P, mx, mz); if (dd > -1.4 && dd < 1.4 && yM <= z2.h - Y0 + .3) return; } } /* 테라스 포디움 앞면 옹벽이 이 단 벽을 대신함(톱니 조각이 포디움 밖으로 삐져나오지 않게) */
       if (Math.max(ay, by, cy) - Math.min(ay, by, cy) < .6) { fp.push(ax, ay, az, bx, by, bz, cx, cy, cz); for (const [x, z] of [[ax, az], [bx, bz], [cx, cz]]) { const u = planUV(x, z); fu.push(u[0], u[1]); } }
@@ -685,7 +685,7 @@ async function build() {
       const k = j * gx + i, xa = x0 + i * st, za = z0 + j * st, a = Y[k], b = Y[k + 1], c = Y[k + gx], d = Y[k + gx + 1], ins = IN[k] + IN[k + 1] + IN[k + gx] + IN[k + gx + 1];
       if (ins === 0 && !inPoly(SITE, xa + st / 2, za + st / 2)) continue;
       const mid = levelAt(xa + st / 2, za + st / 2), rng = Math.max(a, b, c, d, mid) - Math.min(a, b, c, d, mid);
-      if (rng < .3 && ins === 4) { quadT(xa, za, xa + st, za + st, a, b, c, d); continue; }
+      if (rng < .3 && ins === 4 && !AMEN_POLYS.some(A2 => Math.abs(polyDist(A2, xa + st / 2, za + st / 2)) < 1.6)) { quadT(xa, za, xa + st, za + st, a, b, c, d); continue; } /* 부대시설 가장자리 칸은 0.25m로 잘게 */
       const s = st / SUB, L = []; for (let q = 0; q <= SUB; q++) { L.push([]); for (let p = 0; p <= SUB; p++) L[q].push(levelAt(xa + p * s, za + q * s)); }
       for (let q = 0; q < SUB; q++) for (let p = 0; p < SUB; p++) quadT(xa + p * s, za + q * s, xa + (p + 1) * s, za + (q + 1) * s, L[q][p], L[q][p + 1], L[q + 1][p], L[q + 1][p + 1]); }
     const mk = (p, u, mat) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(u, 2)); g.computeVertexNormals(); const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.castShadow = mat === wallMat; scene.add(m); };
@@ -1415,6 +1415,14 @@ function buildAmenities(MAT) {
     prism(PE, Y(109.6), Y(113.2), G.glass); prism(PE, Y(113.2), Y(119.6), G.stoneBig); /* 모형 사진 1 확대: 주민공동시설4 1층은 불 켜진 유리 */ prism(PE, Y(119.6), Y(123.2), G.brickLit, G.roof); prism(PE, Y(123.2), Y(124.1), G.para); /* 모형 사진 1 확대: 동쪽은 1층 갈색(유리) → 2·3층 회색 석재 상자(큰 짙은 창) → 4층 갈색 띠 → 물러난 회색 맨 위층 */
     const QE = shrink(PE, 2.2); prism(QE, Y(123.2), Y(128.6), G.stone, G.roof); prism(QE, Y(128.6), Y(129.5), G.para);
     for (const Pp of [PW, PE]) { const cx2 = Pp.reduce((s2, p) => s2 + p[0], 0) / Pp.length, cz2 = Pp.reduce((s2, p) => s2 + p[1], 0) / Pp.length; for (let k = 0; k < Pp.length; k++) { const a2 = Pp[k], b2 = Pp[(k + 1) % Pp.length], mx = (a2[0] + b2[0]) / 2, mz = (a2[1] + b2[1]) / 2, dl = Math.hypot(mx - cx2, mz - cz2); extraTrees.push([mx + (cx2 - mx) / dl * 1.2, Y(Pp === PW ? 125.4 : 123.2), mz + (cz2 - mz) / dl * 1.2, .8, 3]); } } }
+  /* 11-16 사용자 지적: 데크 면을 건물 자리에서 뺀 대신, 데크(해발 130)가 지붕보다 높은 가장자리에는 지붕 높이~데크 높이 난간벽(지붕 위로 데크 잔디가 넘어와 보이지 않게) */
+  { const deckFace = (P, yr) => { for (let k = 0; k < P.length; k++) { const a = P[k], b = P[(k + 1) % P.length], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz); if (L < .5) continue;
+        let nx = -dz / L, nz = dx / L; if (polyDist(P, (a[0] + b[0]) / 2 + nx * .5, (a[1] + b[1]) / 2 + nz * .5) < 0) { nx = -nx; nz = -nz; } /* 바깥쪽 법선 */
+        const yo = p => { const x = p[0] + nx * .6, z = p[1] + nz * .6; return inPoly(SITE, x, z) && !AMEN_POLYS.some(A2 => polyDist(A2, x, z) < 0) ? levelAt(x, z) + .03 : -1e9; };
+        const n = Math.max(1, Math.ceil(L)); for (let i = 0; i < n; i++) { const t0 = i / n, t1 = (i + 1) / n, p = [a[0] + dx * t0 + nx * .05, a[1] + dz * t0 + nz * .05], q = [a[0] + dx * t1 + nx * .05, a[1] + dz * t1 + nz * .05], yp = yo(p), yq = yo(q);
+          if (yp < yr + .15 && yq < yr + .15) continue; const ya = Math.max(yp, yr), yb = Math.max(yq, yr), l = L / n;
+          G.para.quad([p[0], yr, p[1]], [q[0], yr, q[1]], [q[0], yb, q[1]], [p[0], ya, p[1]], [-nx, 0, -nz], [i * l / 6, 0, (i + 1) * l / 6, 0, (i + 1) * l / 6, (yb - yr) / 3.6, i * l / 6, (ya - yr) / 3.6]); } } };
+    deckFace(AMEN_POLYS[0], Y(127.2)); deckFace([[-119.69, 55.95], [-92, 38.35], [-100.2, 25.55], [-127.3, 42.81]], Y(125.4)); deckFace([[-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-100.2, 25.55]], Y(123.2)); }
   /* 하부외부계단 1(모형 VE10·사진: 정문 옆 도로 모퉁이의 낮은 밝은 회색 상자, 2개 층) */
   { const v = [.501, .866], w = [.866, -.501], c = [-123.5 + w[0] * 2.1 + v[0] * 2.6, 49.4 + w[1] * 2.1 + v[1] * 2.6], ST = { gb: G.stone, uv: uvTile(6, 3.6) }, GL = { gb: G.glass, uv: uvTile(6, 3.6) };
     obox(c[0], c[1], v[0], v[1], 10, 4.6, Y(109.6), Y(117.8), { front: ST, back: GL, left: ST, right: ST, top: { gb: G.roof } }); obox(c[0], c[1], v[0], v[1], 10.4, 5, Y(117.8), Y(118.6), { front: { gb: G.para }, back: { gb: G.para }, left: { gb: G.para }, right: { gb: G.para }, top: { gb: G.para } }); }
