@@ -381,11 +381,12 @@ function buildRoads() {
     walk: mkTex(64, 256, (g, w, h) => { g.fillStyle = '#bdb7ab'; g.fillRect(0, 0, w, h); g.fillStyle = 'rgba(0,0,0,.08)'; for (let y = 0; y < h; y += 16) g.fillRect(0, y, w, 1); }),
   };
   const G = { big: [], mid: [], small: [], walk: [] }, U = { big: [], mid: [], small: [], walk: [] }, Rmax = LOW ? 1500 : 2200;
-  const ribbon = (pts, w, k, lift) => { const P = G[k], UV = U[k]; let acc = 0;
+  const MZ0 = CUT.M.length ? CUT.M[0][1] - 1 : 0, MZ1 = CUT.M.length ? CUT.M[CUT.M.length - 1][1] : 0, mDist = (x, z) => { let b = 1e9; for (let i = 0; i < CUT.M.length - 1; i++) b = Math.min(b, pathDist([CUT.M[i], CUT.M[i + 1]], x, z)); return b; }, inCorr = (x, z) => z > MZ0 && z < MZ1 && mDist(x, z) < CUT.HW + 9; /* 11-16: 터널 깎기 구간 통로 */
+  const ribbon = (pts, w, k, lift, main = false) => { const P = G[k], UV = U[k]; let acc = 0;
     for (let i = 0; i < pts.length - 1; i++) { const [x0, z0] = pts[i], [x1, z1] = pts[i + 1], L = Math.hypot(x1 - x0, z1 - z0); if (L < .1) continue;
       const n = Math.max(1, Math.ceil(L / 6)), nx = -(z1 - z0) / L * w / 2, nz = (x1 - x0) / L * w / 2;
       for (let s = 0; s < n; s++) { const t0 = s / n, t1 = (s + 1) / n, ax = x0 + (x1 - x0) * t0, az = z0 + (z1 - z0) * t0, bx = x0 + (x1 - x0) * t1, bz = z0 + (z1 - z0) * t1;
-        if ((polyDist(SITE, ax, az) < -8 && polyDist(SITE, bx, bz) < -8) || inTunnel(ax, az) || inTunnel(bx, bz) || (k === 'big' && overTunnel(ax, az) && overTunnel(bx, bz)) || (k !== 'big' && nwZone(ax, az) && nwZone(bx, bz))) { acc += L / n; continue; } /* 단지 안쪽 깊은 곳·갱구 안 터널 구간은 생략 */
+        if ((main && inCorr((ax + bx) / 2, (az + bz) / 2)) || (polyDist(SITE, ax, az) < -8 && polyDist(SITE, bx, bz) < -8) || inTunnel(ax, az) || inTunnel(bx, bz) || (k === 'big' && overTunnel(ax, az) && overTunnel(bx, bz)) || (k !== 'big' && nwZone(ax, az) && nwZone(bx, bz))) { acc += L / n; continue; } /* 단지 안쪽 깊은 곳·갱구 안 터널 구간은 생략 */
         const inS = polyDist(SITE, ax, az) < 0 || polyDist(SITE, bx, bz) < 0;
         const hA = inS ? groundAt(ax, az) : heightAt(ax, az), hB = inS ? groundAt(bx, bz) : heightAt(bx, bz), ya = hA + lift, yb = hB + lift, va = acc / 12, vb = (acc + L / n) / 12; acc += L / n;
         P.push(ax + nx, ya, az + nz, bx - nx, yb, bz - nz, ax - nx, ya, az - nz, ax + nx, ya, az + nz, bx + nx, yb, bz + nz, bx - nx, yb, bz - nz); /* 위를 보는 면 */
@@ -393,8 +394,10 @@ function buildRoads() {
   for (const r of env.roads) { if (r.t === 1) continue; let near = false; for (const p of r.p) if (Math.hypot(p[0], p[1] - 15) < Rmax) { near = true; break; } if (!near) continue;
     const path = /^(footway|path|steps|cycleway|pedestrian|track)$/.test(r.k);
     if (path) { ribbon(r.p, Math.max(1.6, r.w), 'walk', .32); continue; }
-    if (r.w >= 12) ribbon(r.p, r.w + 6, 'walk', .3);
-    ribbon(r.p, r.w, r.w >= 16 ? 'big' : r.w >= 10 ? 'mid' : 'small', r.w >= 16 ? .42 : r.w >= 10 ? .4 : .38); }
+    const main = CUT.M.length && r.w >= 14 && [r.p[0], r.p[r.p.length - 1]].some(q => Math.hypot(q[0] - CUT.M[0][0], q[1] - CUT.M[0][1]) < 25);
+    if (r.w >= 12) ribbon(r.p, r.w + 6, 'walk', .3, main); /* 깎기 구간에서는 보도 띠도 생략(가장자리가 높은 지면에 걸려 바닥 위로 떠 보이던 것) */
+    ribbon(r.p, r.w, r.w >= 16 ? 'big' : r.w >= 10 ? 'mid' : 'small', r.w >= 16 ? .42 : r.w >= 10 ? .4 : .38, main); }
+  if (CUT.M.length > 1) ribbon(CUT.M, CUT.HW * 2 - .4, 'big', .42); /* 11-16 사용자 요청(터널 진입 도로 반듯하게): 깎기 구간은 OSM 두 차도(각 16m, 옹벽 밖으로 비스듬히 걸침) 대신 터널 중심선을 따라 옹벽 안쪽에 딱 맞는 한 줄(4차로) */
   /* 자동차: 11-16 서 있던 상자 → buildTraffic()에서 도로를 따라 달리게 */
   for (const k in G) { if (!G[k].length) continue; const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(G[k], 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(U[k], 2)); g.computeVertexNormals();
     const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: TX[k], polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: k === 'walk' ? -2 : -6 })); m.receiveShadow = true; m.renderOrder = 2; scene.add(m); }
