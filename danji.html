@@ -1316,7 +1316,19 @@ function buildEntrance() {
         const t = tn(bi), nx = -t[1] * sd, nz = t[0] * sd, oc = (o0 + o1) / 2, c = [Q[bi][0] + nx * oc, Q[bi][1] + nz * oc], tw = [ENT.n[0], ENT.n[1]], s1 = Math.sign(tw[0] * t[0] + tw[1] * t[1]) || 1, ax = [t[0] * s1, t[1] * s1];
         const TP = sc => [[-6, -1.6], [6, -1.6], [2.6, 1.6], [-2.6, 1.6]].map(([a, b]) => [c[0] + ax[0] * a * sc + nx * b * sc, c[1] + ax[1] * a * sc + nz * b * sc]), P = TP(1);
         const oh = mkT(g2 => { g2.fillStyle = '#4c4f54'; g2.fillRect(0, 0, 256, 256); g2.strokeStyle = '#e8804a'; g2.lineWidth = 13; for (let x = -256; x < 512; x += 44) { g2.beginPath(); g2.moveTo(x, 0); g2.lineTo(x + 256, 256); g2.stroke(); } });
-        const OL2 = new THREE.MeshLambertMaterial({ color: '#e8804a', ...off(-10, -20) }); for (const sc of [1, .64, .3]) { const Pq = TP(sc); for (let k = 0; k < 4; k++) flatP(strip(Pq[k], Pq[(k + 1) % 4], .2), OL2, (x, z) => heightAt(x, z) + .65, 8); } } } } /* 모형 WE3: 빗금 없이 주황 사다리꼴 테두리 세 겹 */
+        const OL2 = new THREE.MeshLambertMaterial({ color: '#e8804a', ...off(-10, -20) }); for (const sc of [1, .64, .3]) { const Pq = TP(sc); for (let k = 0; k < 4; k++) flatP(strip(Pq[k], Pq[(k + 1) % 4], .2), OL2, (x, z) => heightAt(x, z) + .65, 8); } }
+      /* 모형 WE5·WE6: 근린생활시설 옆 두 차로에 정문(북쪽)으로 향하는 흰 ← 화살표, 근린생활시설 남쪽 끝에 노랑·흰 줄무늬 고원식 횡단보도 */
+      { const near = z0 => { let bi = 0, bd = 1e9; Q.forEach((p, i) => { const dd = Math.abs(p[1] - z0); if (dd < bd) { bd = dd; bi = i; } }); return bi; };
+        const WH = new THREE.MeshLambertMaterial({ color: '#efefe9', ...off(-10, -20) }), yH = (x, z) => heightAt(x, z) + .66;
+        { const i = near(82), t = tn(i), nx = -t[1] * sd, nz = t[0] * sd, fw = [-t[0], -t[1]];
+          for (const o of [o0 + 1.6, o1 - 1.6]) { const c = [Q[i][0] + nx * o, Q[i][1] + nz * o];
+            flatP([[-2.5, -.16], [.8, -.16], [.8, -.55], [2.5, 0], [.8, .55], [.8, .16], [-2.5, .16]].map(([u, v]) => [c[0] + fw[0] * u + nx * v, c[1] + fw[1] * u + nz * v]), WH, yH, 8); } }
+        { const i = near(104), t = tn(i), nx = -t[1] * sd, nz = t[0] * sd, p = Q[i], C = [[o0, -1.5], [o1, -1.5], [o1, 1.5], [o0, 1.5]].map(([o, a2]) => [p[0] + nx * o + t[0] * a2, p[1] + nz * o + t[1] * a2]);
+          const yt = mkT(g2 => { for (let x = 0; x < 256; x += 64) { g2.fillStyle = '#f0c63e'; g2.fillRect(x, 0, 32, 256); g2.fillStyle = '#f2f1ec'; g2.fillRect(x + 32, 0, 32, 256); } });
+          const gg = new THREE.BufferGeometry(), P3 = C.map(q => [q[0], heightAt(q[0], q[1]) + .72, q[1]]);
+          gg.setAttribute('position', new THREE.Float32BufferAttribute([...P3[0], ...P3[1], ...P3[2], ...P3[0], ...P3[2], ...P3[3]], 3)); const L = (o1 - o0) / 4;
+          gg.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, L, 0, L, 1, 0, 0, L, 1, 0, 1], 2)); gg.computeVertexNormals();
+          const ym = new THREE.Mesh(gg, new THREE.MeshLambertMaterial({ map: yt, side: THREE.DoubleSide, ...off(-11, -22) })); ym.renderOrder = 4; scene.add(ym); } } } } /* 모형 WE3: 빗금 없이 주황 사다리꼴 테두리 세 겹 */
   /* 단지 경계 바깥 보도(도로 가장자리 ~ 경계): 맨땅 대신 보도블록 */
   { const road = z => { const t = (z - 1) / 134; return [-157 + 74 * t + .876 * 3.7, z - .484 * 3.7]; };
     drapePoly([road(26), road(104), [-97.5, 94.7], [-105.7, 78.2], [-116.7, 59], [-127.7, 39.7], [-132, 31]], new THREE.MeshLambertMaterial({ map: pav, ...off(-3, -6) }), .5, 2.5); }
