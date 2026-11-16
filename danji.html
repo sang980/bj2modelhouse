@@ -71,6 +71,7 @@ body.unit #top,body.unit #bar,body.unit #help,body.unit #note,body.unit #card{di
 #loading p{margin:0;font-size:14px;color:var(--muted)}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (max-width:900px){#help,#note{display:none}}
+@media (min-width:901px) and (max-width:1500px){#help{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 64px)}}
 #attr{position:fixed;right:8px;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 60px);font-size:10px;color:var(--muted);background:var(--panel);padding:2px 7px;border-radius:6px;pointer-events:none}
 @media (min-width:901px){#attr{display:none}}
 body.unit #attr{display:none}
@@ -111,7 +112,7 @@ body.unit #attr{display:none}
   <div class="chip panel"><div class="ct"><b id="uv-t"></b><span id="uv-s"></span></div><button id="uv-x">← 조감도로</button></div>
   <p class="uvnote panel">드래그해서 둘러보기 · 주변 건물은 개략 표현이라 실제 전망과 다를 수 있습니다</p>
 </div>
-<div id="help" class="panel">드래그 회전 · 휠 확대 · 우클릭 드래그 이동<br><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 비행 · <kbd>Q</kbd><kbd>E</kbd> 높이 · <kbd>Shift</kbd> 빠르게 · 건물 클릭 정보</div>
+<div id="help" class="panel">드래그 회전 · 휠 확대 · 우클릭 드래그 이동<br><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 드론 이동 · <kbd>Q</kbd><kbd>E</kbd> 높이 · <kbd>←</kbd><kbd>→</kbd> 회전 · <kbd>Shift</kbd> 빠르게 · 건물 클릭 정보</div>
 <div id="note" class="panel">단지는 배치도 기준 · 주변 건물·도로 © OpenStreetMap 기여자(ODbL) · 지형 고도 AWS Terrain Tiles(SRTM) · 외벽 재질은 참고 표현입니다.</div>
 <div id="attr">© OpenStreetMap 기여자 · 고도 AWS Terrain Tiles</div>
 <div id="loading"><div class="box"><div class="spin"></div><p>조감도를 불러오는 중… <span id="lp">0%</span></p></div></div>
@@ -1881,7 +1882,9 @@ $('#fly').addEventListener('click', () => setFly(!fly));
 $('#lbl').addEventListener('click', e => { e.currentTarget.classList.toggle('on'); });
 $('#env').addEventListener('click', e => { const on = !e.currentTarget.classList.contains('on'); e.currentTarget.classList.toggle('on', on); envMeshes.forEach(m => m.visible = on); renderer.shadowMap.needsUpdate = true; });
 const keys = {};
-addEventListener('keydown', e => { if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT' || unit) return; keys[e.code] = true; if (/^(KeyW|KeyA|KeyS|KeyD|KeyQ|KeyE)$/.test(e.code)) { setFly(false); if (tween && !tween.done) tween = null; } });
+addEventListener('keydown', e => { if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || unit || e.ctrlKey || e.metaKey || e.altKey) return; keys[e.code] = true;
+  if (/^(KeyW|KeyA|KeyS|KeyD|KeyQ|KeyE|ArrowUp|ArrowDown|ArrowLeft|ArrowRight)$/.test(e.code)) { setFly(false); if (tween && !tween.done) tween = null; if (e.code.startsWith('Arrow')) e.preventDefault(); } });
+canvas.addEventListener('pointerdown', () => { const a = document.activeElement; if (a && /^(SELECT|INPUT|TEXTAREA)$/.test(a.tagName)) a.blur(); }); /* 화면을 누르면 키보드(WASD)가 다시 드론으로 */
 addEventListener('keyup', e => { keys[e.code] = false; });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
 
@@ -1914,7 +1917,7 @@ function select(d, fly2) {
 }
 $('#card .x').addEventListener('click', () => select(null));
 const sel = $('#dong'); DONG.forEach(D => { const o = document.createElement('option'); o.value = D.d; o.textContent = D.d + '동'; sel.appendChild(o); });
-sel.addEventListener('change', () => select(sel.value ? +sel.value : null, true));
+sel.addEventListener('change', () => { select(sel.value ? +sel.value : null, true); sel.blur(); }); /* 고른 뒤 바로 WASD로 움직일 수 있게 */
 
 /* ---------- 동·호수 → 거실 전망 ----------
    호수 = 층×100 + 라인(예: 1003 = 10층 3호). 라인은 동쪽 끝이 1호, ㄱ자 동은 북쪽 날개 1·2호, 서쪽 날개 3·4호.
@@ -1958,7 +1961,7 @@ $('#cd-ho').addEventListener('submit', e => { e.preventDefault(); const d = +$('
 window.__danji = { BLD, TZ, SITE, polyDist, groundAt, levelAt, unitView, enterUnit, exitUnit, scene, camera, controls, goTo, select, heightAt, renderer, look: enterUnit };
 
 /* ---------- 루프 ---------- */
-const clock = new THREE.Clock(), fwd = new THREE.Vector3(), rgt = new THREE.Vector3(), mv = new THREE.Vector3();
+const clock = new THREE.Clock(), fwd = new THREE.Vector3(), rgt = new THREE.Vector3(), mv = new THREE.Vector3(), vel = new THREE.Vector3(), want = new THREE.Vector3(), YAX = new THREE.Vector3(0, 1, 0);
 function loop() {
   requestAnimationFrame(loop);
   const dt = Math.min(.05, clock.getDelta());
@@ -1966,10 +1969,16 @@ function loop() {
   if (fly) { flyT += dt * .055; flyBlend = Math.min(1, flyBlend + dt / 2.5); const R = 470 + 70 * Math.sin(flyT * 1.7), y = 210 + 60 * Math.sin(flyT * 1.3 + 1);
     const p = new THREE.Vector3(Math.sin(flyT) * R, y, 15 + Math.cos(flyT) * R), t = new THREE.Vector3(0, 18, 15); const e = ease(flyBlend);
     camera.position.lerpVectors(flyFrom.p, p, e); controls.target.lerpVectors(flyFrom.t, t, e); }
-  const kx = (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0), kz = (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0), ky = (keys.KeyE ? 1 : 0) - (keys.KeyQ ? 1 : 0);
-  if ((kx || kz || ky) && !unit) { camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize(); rgt.crossVectors(fwd, camera.up).normalize();
-    const sp = Math.min(700, Math.max(18, camera.position.y * .9)) * (keys.ShiftLeft || keys.ShiftRight ? 3 : 1) * dt;
-    mv.set(0, 0, 0).addScaledVector(fwd, kz * sp).addScaledVector(rgt, kx * sp); mv.y = ky * sp * .7; camera.position.add(mv); controls.target.add(mv); }
+  /* PC 드론 조종: W·S 앞뒤, A·D 옆, Q·E 내려가기·올라가기, ←·→ 제자리 회전, ↑·↓도 앞뒤, Shift 빠르게 — 부드럽게 가속·감속 */
+  const kx = (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0), kz = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0), ky = (keys.KeyE ? 1 : 0) - (keys.KeyQ ? 1 : 0), kr = (keys.ArrowLeft ? 1 : 0) - (keys.ArrowRight ? 1 : 0);
+  if (unit) vel.set(0, 0, 0);
+  else {
+    if (kx || kz || ky) { camera.getWorldDirection(fwd); fwd.y = 0; if (fwd.lengthSq() < 1e-4) { fwd.set(0, 1, 0).applyQuaternion(camera.quaternion); fwd.y = 0; } fwd.normalize(); rgt.crossVectors(fwd, YAX).normalize();
+      const sp = Math.min(700, Math.max(18, camera.position.y * .9)) * (keys.ShiftLeft || keys.ShiftRight ? 3 : 1);
+      want.set(0, 0, 0).addScaledVector(fwd, kz * sp).addScaledVector(rgt, kx * sp); want.y = ky * sp * .7; } else want.set(0, 0, 0);
+    vel.lerp(want, 1 - Math.exp(-dt * 6));
+    if (vel.lengthSq() > .04) { mv.copy(vel).multiplyScalar(dt); camera.position.add(mv); controls.target.add(mv); } else vel.set(0, 0, 0);
+    if (kr) { mv.subVectors(controls.target, camera.position).applyAxisAngle(YAX, kr * dt * (keys.ShiftLeft || keys.ShiftRight ? 1.8 : 1.1)); controls.target.copy(camera.position).add(mv); } }
   if (tween) camera.lookAt(controls.target); else controls.update(); /* 이동 중에는 거리 제한(min/maxDistance)이 끼어들지 않게 */
   const gy = polyDist(SITE, camera.position.x, camera.position.z) < 0 ? levelAt(camera.position.x, camera.position.z) + .8 : heightAt(camera.position.x, camera.position.z) + 4; /* 단지 안은 그 단(해발고) 위 */ if (camera.position.y < gy) { const d = gy - camera.position.y; camera.position.y += d; }
   sky.position.copy(camera.position);
