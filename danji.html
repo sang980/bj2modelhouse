@@ -1371,7 +1371,7 @@ function buildTrees(planData, PW, PH, PK) {
     if (polyDist(SITE, jx, jz) > -2.5) continue;
     const px = Math.round((jx / S + OX) / PK), py = Math.round((jz / S + OY) / PK); if (px < 0 || py < 0 || px >= PW || py >= PH) continue;
     const k = (py * PW + px) * 4, r = planData[k], g = planData[k + 1], b = planData[k + 2];
-    if (!(g > r + 10 && g > b + 4 && g < 170 && r < 140)) continue; /* 잔디(옅은 초록)에도 나무 */
+    if (!(g > r + 10 && g > b + 4 && r < 150 && (g < 170 || (g < 205 && rand() < .45)))) continue; /* 모형 사진 1: 데크 잔디 위에도 작은 나무가 촘촘 — 옅은 잔디 픽셀에도 일부 */ /* 잔디(옅은 초록)에도 나무 */
     if (inBld(jx, jz) || AMEN_POLYS.some(P => polyDist(P, jx, jz) < 2) || polyDist(YARD.court, jx, jz) < 2 || polyDist(YARD.teal, jx, jz) < 1 || polyDist(YARD.sand, jx, jz) < 1.5 || polyDist(YARD.sandN, jx, jz) < 1.5 || polyDist(YARD.sandW, jx, jz) < 1.5 || inPoly(ENT.PZ, jx, jz) || pathDist(YARD.path, jx, jz) < 2.2 || WALKS.some(([P, Q, w]) => pathDist([P, Q], jx, jz) < w + 1) || pathDist(YARD.ring, jx, jz) < 2.4 || YARD.branches.some(b => pathDist(b, jx, jz) < 1.8)) continue; /* 마당 시설은 비워 둠 */
     if (rand() < .18) pts.push([jx, levelAt(jx, jz), jz, .75 + rand() * .55, 2]); else pts.push([jx, levelAt(jx, jz), jz, .9 + rand() * .8, 0]); /* 모형 VE17: 데크 나무는 작음 */ /* 모형: 작고 짙은 조경수 + 원뿔형 침엽수 섞임 */
   }
