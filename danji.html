@@ -685,7 +685,7 @@ async function build() {
         const tP = Math.max(yin(P), yout(P)) + .02, tQ = Math.max(yin(Q), yout(Q)) + .02, bP = Math.min(yin(P), yout(P)) - 1.5, bQ = Math.min(yin(Q), yout(Q)) - 1.5, l = L / n;
         const east = (nx2 > .4 && (P[0] + Q[0]) / 2 > 115 && (P[1] + Q[1]) / 2 > -60) || (nz2 < -.35 && (P[0] + Q[0]) / 2 > -60), dP = yin(P) - yout(P), dQ = yin(Q) - yout(Q);
         const mxw = (P[0] + Q[0]) / 2, mzw = (P[1] + Q[1]) / 2, sT = nx2 < -.2 && mxw > -60 && mxw < -34 && mzw > 92 && mzw < 127; /* 모형 사진 1·VE02·VE04: 남쪽 마당의 주차1 쪽(서쪽) 옹벽은 2단 + 사이 나무 화단, 학교 쪽(남쪽)은 VE00처럼 한 단 */
-        if ((east || sT) && dP > 4.5 && dQ > 4.5) { const nt = sT ? 2 : Math.min(3, Math.ceil(Math.max(dP, dQ) / 3.8)), off = sT ? 4.2 : 3.4, GT = sT ? gp : gt;
+        if ((east || sT) && dP > 4.5 && dQ > 4.5) { const nt = 2, off = sT ? 4.2 : 3.8, GT = sT ? gp : gt; /* 모형 VE30·VE31·VE32: 동쪽 바깥 옹벽도 2단 + 사이 화단 */
           for (let j = 0; j < nt; j++) { const o = j * off, tPj = yin(P) - dP * j / nt + .02, tQj = yin(Q) - dQ * j / nt + .02, bPj = yin(P) - dP * (j + 1) / nt - (j === nt - 1 ? 1.5 : 0), bQj = yin(Q) - dQ * (j + 1) / nt - (j === nt - 1 ? 1.5 : 0);
             const P2 = [P[0] + nx2 * o, P[1] + nz2 * o], Q2 = [Q[0] + nx2 * o, Q[1] + nz2 * o];
             GT.quad([P2[0], bPj, P2[1]], [Q2[0], bQj, Q2[1]], [Q2[0], tQj, Q2[1]], [P2[0], tPj, P2[1]], [nx2, 0, nz2], [s / 6, bPj / 3, (s + L / n) / 6, bQj / 3, (s + L / n) / 6, tQj / 3, s / 6, tPj / 3]);
