@@ -1929,6 +1929,21 @@ addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
 /* 선택 */
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(); let down = null, hl = null;
 canvas.addEventListener('pointerdown', e => { down = [e.clientX, e.clientY]; if (fly) setFly(false); if (tween && !tween.done) tween = null; });
+/* 11-16 사용자 요청: 회전(드래그)·이동·확대는 항상 지금 화면 한가운데 보이는 지점을 중심으로 — 화면 중심으로 시선을 쏴서 처음 닿는 동 건물 상자 또는 땅·데크 면, 없으면(하늘) 높이에 맞춘 거리. 카메라 위치·방향은 그대로라 화면이 튀지 않음 */
+const _pv = new THREE.Vector3();
+function pivotDist() { camera.getWorldDirection(_pv); const o = camera.position, dx = _pv.x, dy = _pv.y, dz = _pv.z; let best = Infinity;
+  for (const k in BLD) for (const p of BLD[k].pieces) { const hx = p.L / 2 + .5, hz = DEP * .65, yo = p.yF1 || 0, y0 = yo - 12, y1 = p.H + yo + 1.5, rx = o.x - p.cx, rz = o.z - p.cz;
+    const lx = rx * p.ux + rz * p.uz, lz = -rx * p.uz + rz * p.ux, ldx = dx * p.ux + dz * p.uz, ldz = -dx * p.uz + dz * p.ux; let t0 = 0, t1 = best;
+    for (const [oo, dd, lo, hi] of [[lx, ldx, -hx, hx], [lz, ldz, -hz, hz], [o.y, dy, y0, y1]]) { if (Math.abs(dd) < 1e-9) { if (oo < lo || oo > hi) { t0 = Infinity; break; } continue; } let a = (lo - oo) / dd, b = (hi - oo) / dd; if (a > b) { const c = a; a = b; b = c; } t0 = Math.max(t0, a); t1 = Math.min(t1, b); if (t0 > t1) break; }
+    if (t0 <= t1 && t0 > 0 && t0 < best) best = t0; } /* 동 건물(상자 근사) */
+  const gy = (x, z) => polyDist(SITE, x, z) < 0 ? levelAt(x, z) : heightAt(x, z); let t = 0, prev = 0, step = Math.max(1, Math.abs(o.y - gy(o.x, o.z)) * .02);
+  while (t < Math.min(best, 6000)) { t += step; const x = o.x + dx * t, y = o.y + dy * t, z = o.z + dz * t; if (y <= gy(x, z)) { let a = prev, b = t; for (let i = 0; i < 14; i++) { const m = (a + b) / 2; if (o.y + dy * m <= gy(o.x + dx * m, o.z + dz * m)) b = m; else a = m; } best = Math.min(best, b); break; } prev = t; step = Math.min(30, step * 1.1 + .3); } /* 땅·데크 */
+  if (best === Infinity) best = Math.min(1500, Math.max(150, (o.y - gy(o.x, o.z)) * 3)); /* 하늘·지평선 */
+  return best; }
+function setPivot() { if (unit || (tween && !tween.done)) return; const dd = pivotDist(); if (!(dd > 0) || !isFinite(dd)) return; camera.getWorldDirection(_pv);
+  controls.target.copy(camera.position).addScaledVector(_pv, Math.max(controls.minDistance + 1, Math.min(dd, controls.maxDistance * .9))); }
+addEventListener('pointerdown', e => { if (e.target === canvas) setPivot(); }, true); /* OrbitControls보다 먼저 */
+{ let lastW = 0; addEventListener('wheel', e => { if (e.target !== canvas) return; const now = performance.now(); if (now - lastW > 400) setPivot(); lastW = now; }, { capture: true, passive: true }); } /* 휠을 굴리기 시작할 때 */
 canvas.addEventListener('pointerup', e => { if (!down || unit || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return; down = null;
   ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
   const hit = ray.intersectObjects([...pickables, ...labels.filter(l => l.visible)], false)[0]; if (hit) select(hit.object.userData.dong); else select(null); });
