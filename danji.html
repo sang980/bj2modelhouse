@@ -1349,7 +1349,7 @@ function buildNW() {
     for (let i = 0; i < C.length - 1; i++) { const a = C[i], b = C[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.ceil(L / 1); for (let k = 0; k < n; k++) { const p = [a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n], q = [a[0] + (b[0] - a[0]) * (k + 1) / n, a[1] + (b[1] - a[1]) * (k + 1) / n]; if (skip((p[0] + q[0]) / 2, (p[1] + q[1]) / 2)) continue; drapePoly(band([p, q], -.08, .08), W, .5, 2); } } } /* 주황 중앙선 */
   /* 터널 위 교차로(모형 VN08·VE12): 아스팔트 + D자 회색 교통섬(주황 테두리) + 횡단보도 */
   { const J = [[-196, -16], [-176, -12], [-158, -3], [-153, 8], [-158, 14], [-170, 16], [-186, 8], [-200, -4]];
-    drapePoly(J, new THREE.MeshLambertMaterial({ map: asp, ...off(-5, -10) }), .44, 2.5);
+    drapePoly(J, new THREE.MeshLambertMaterial({ map: asp, ...off(-5, -10) }), .44, 2.5, (x, z) => { const h = heightAt(x, z), h2 = heightAt(x, z - 2.5); return h < h2 - .9 ? h2 - .45 : h; }); /* 11-17: 남쪽 끝이 터널 깎기 구간 시작에 걸려 6m 꺼지고 그 자리로 땅이 뾰족하게 튀어나오던 것 — 깎기 위는 바로 북쪽 높이로 */
     drapePoly([[-184.4, -29.5], [-203.4, -21.1], [-199, -12], [-190, -12], [-176, -10.5], [-175, -14], [-180.5, -23], [-182.5, -28.5]], new THREE.MeshLambertMaterial({ map: asp, ...off(-4, -8) }), .38, 2.5); /* 11-17 사용자 지적: 부출입구 길과 서쪽 큰길 사이 맨땅 → 아스팔트로 이어 붙임(서쪽 큰길 북쪽 가장자리를 곧게 연장하면 부출입구 길 끝과 만남) */
     drapePoly([[-184.4, -29.5], [-185.6, -32.24], [-204.6, -23.84], [-203.4, -21.1]], new THREE.MeshLambertMaterial({ map: pav, ...off(-3, -6) }), .5, 2); /* 그 바깥 보도(서쪽 큰길 보도와 한 줄) */
     drapePoly([[-188, 6.5], [-176, 12.6], [-176.2, 14.6], [-182.4, 18.0]], new THREE.MeshLambertMaterial({ map: asp, ...off(-5, -10) }), .44, 2); /* 11-16 사용자 사진: 교차로에서 서쪽 2차로로 이어지는 입구(전엔 맨땅) */
@@ -1433,7 +1433,7 @@ function buildEntrance() {
     flatP(PZ, new THREE.MeshLambertMaterial({ map: pav, ...off(-3, -6) }), Yp + .05); } /* 진입로 오르막 자리는 비움 */
   /* 아스팔트: 진입로(7m), 회전교차로 링, 지하주차장 쪽(6.5m), 남쪽 진입로(6m) */
   const aM = new THREE.MeshLambertMaterial({ map: asp, ...off(-5, -10) });
-  flatP(strip(ENT.at(25), ENT.at(9.6), 7.2), aM, gY(.08), 8); flatP(strip(ENT.at(9.6), ENT.R, 7.2), aM, Yp + .08, 8); { const M = ENT_MOUTH, pos = [], uv = [], idx = [], NT = 12, NO = 6; for (let i = 0; i <= NT; i++) { const t = M.t0 + (M.t1 + .15 - M.t0) * i / NT; for (let j = 0; j <= NO; j++) { const o = -M.w + 2 * M.w * j / NO, p = M.L(t, o); pos.push(p[0], M.y(Math.min(t, M.t1), o), p[1]); uv.push(p[0] / 8, -p[1] / 8); } }
+  flatP(strip(ENT.at(25), ENT.at(9.6), 7.2), aM, gY(.08), 8); flatP(strip(ENT.at(9.6), ENT.R, 7.2), aM, Yp + .08, 8); { const M = ENT_MOUTH, pos = [], uv = [], idx = [], NT = 12, NO = 6; for (let i = 0; i <= NT; i++) { const t = M.t0 + (M.t1 + .5 - M.t0) * i / NT; /* 진입 차로 안쪽 주황 가장자리 선은 입구 앞에서 끊김(모형 WE6) */ for (let j = 0; j <= NO; j++) { const o = -M.w + 2 * M.w * j / NO, p = M.L(t, o); pos.push(p[0], M.y(Math.min(t, M.t1), o), p[1]); uv.push(p[0] / 8, -p[1] / 8); } }
     for (let i = 0; i < NT; i++) for (let j = 0; j < NO; j++) { const a = i * (NO + 1) + j, b = a + NO + 1; idx.push(a, b, a + 1, a + 1, b, b + 1); }
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ map: asp, side: THREE.DoubleSide, ...off(-7, -14) })); m.receiveShadow = true; m.renderOrder = 3; scene.add(m); } /* 11-17 모형 WE6: 정문 지붕 앞 ~ 진입 차로까지 이어진 입구 아스팔트(오르막 끝 높이 → 진입 차로 높이) */
   /* 진입로 오르막: 양옆 1m 보도 + 옹벽(광장 높이까지) + 낮은 턱 */
@@ -1792,8 +1792,8 @@ function buildAmenities(MAT) {
    신흥초: 부지 GL 106.3, 북쪽 ㄷ자 4층 교사(연노랑+주황·흰 띠, 초록 지붕), 동쪽 체육관(파란 지붕 + 태양광), 흙 운동장, 무지개색 담장
    성남여중: 부지 GL 100.6, 붉은 벽돌 4층 본관(공원로변), 파란 지붕 체육관(새 건물), 줄무늬 지붕 부속동, 흙 운동장 */
 /* 지형을 따라 덮는 다각형 바닥(삼각형을 3m 이하로 잘게 나눠 높이를 따라감) */
-function drapePoly(P, mat, lift, maxE = 3) { const out = [], uv = [];
-  const H = (x, z) => heightAt(x, z) + lift, push = (a, b, c) => { const cr = (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]); const T = cr >= 0 ? [a, b, c] : [a, c, b]; for (const v of T) { out.push(v[0], H(v[0], v[2]), v[2]); uv.push(v[0] / 8, -v[2] / 8); } };
+function drapePoly(P, mat, lift, maxE = 3, hf = null) { const out = [], uv = [];
+  const H = (x, z) => (hf ? hf(x, z) : heightAt(x, z)) + lift, push = (a, b, c) => { const cr = (b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]); const T = cr >= 0 ? [a, b, c] : [a, c, b]; for (const v of T) { out.push(v[0], H(v[0], v[2]), v[2]); uv.push(v[0] / 8, -v[2] / 8); } };
   const split = (a, b, c, d) => { const e = [[a, b], [b, c], [c, a]].map(([p, q]) => Math.hypot(p[0] - q[0], p[2] - q[2])), m = Math.max(...e); if (m <= maxE || d > 9) { push(a, b, c); return; }
     const k = e.indexOf(m), [p, q, r] = k === 0 ? [a, b, c] : k === 1 ? [b, c, a] : [c, a, b], mid = [(p[0] + q[0]) / 2, 0, (p[2] + q[2]) / 2]; split(p, mid, r, d + 1); split(mid, q, r, d + 1); };
   for (const [i0, i1, i2] of THREE.ShapeUtils.triangulateShape(P.map(p => new THREE.Vector2(p[0], p[1])), [])) split([P[i0][0], 0, P[i0][1]], [P[i1][0], 0, P[i1][1]], [P[i2][0], 0, P[i2][1]], 0);
