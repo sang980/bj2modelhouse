@@ -724,7 +724,7 @@ async function build() {
   const G = {}; for (const k of ['vent', 'sideB', 'sideT', 'path', 'grille', 'sideP', 'podium', 'podiumL', 'terr', 'tdeck', 'tdeckL', 'rail', 'front', 'frontDk', 'frontLt', 'back', 'side', 'bfront', 'bback', 'bside', 'core', 'roof', 'white', 'fin', 'green', 'brick']) G[k] = new GB();
   for (const D of DONG) buildDong(D, G, MAT);
   for (const k in G) { if (!G[k].i.length) continue; const m = new THREE.Mesh(G[k].build(), MAT[k]); m.castShadow = true; m.receiveShadow = true; scene.add(m); }
-  T_GREEN_REF.t = T.green; buildAmenities(MAT); buildYard(); buildEntrance(); if (GEO.ok) { buildNW(); buildCut(); }
+  T_GREEN_REF.t = T.green; buildAmenities(MAT); buildYard(); buildEntrance(); if (GEO.ok) { buildNW(); buildCut(); } buildModelSigns();
   prog(62); await tick();
 
   /* ===== 주변 건물: 실제 데이터(OSM 윤곽·층수)가 있으면 그것으로, 없으면 개략 생성 ===== */
@@ -1224,6 +1224,21 @@ function buildEntrance() {
     for (const [x, z] of [[-82, 69], [-77, 71.5], [-79.5, 74], [-70, 50], [-66, 55]]) extraTrees.push([x, Yp + .05, z, 2.2 + rand() * .8, 3]); }
 }
 
+/* 모형처럼 시설 이름 사인(짙은 회색 판 + 흰 글씨, 가는 기둥) — 모형 VE10·VE13·VE32·사진 1 */
+function buildModelSigns() {
+  const mat = new Map(), post = new GB();
+  const one = (t1, t2, x, z, y, h = 2.2) => { const c = cnv(512, t2 ? 176 : 128), g = c.getContext('2d'); g.fillStyle = '#4b4a47'; g.fillRect(0, 0, 512, c.height); g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(0, 0, 512, 6); g.fillStyle = '#f3f2ee'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = '800 64px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText(t1, 256, t2 ? 66 : 66); if (t2) { g.font = '600 38px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText(t2, 256, 136); }
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const w = 5, hh = w * c.height / 512, m = new THREE.Mesh(new THREE.PlaneGeometry(w, hh), new THREE.MeshStandardMaterial({ map: t, roughness: .6, side: THREE.DoubleSide }));
+    const yS = y + h + hh / 2; m.position.set(x, yS, z); m.lookAt(x - .4, yS, z + .92); scene.add(m);
+    obox(x, z, 1, 0, .1, .1, y, yS - hh / 2, { front: { gb: post }, back: { gb: post }, left: { gb: post }, right: { gb: post } }); };
+  one('주민공동시설1', '(어린이집)', -109.8, 40.7, 131.3 - Y0, 1.2);
+  one('경비실(주)', '(어린이승하차장)', -108.6, 58.2, 114.2 - Y0, .9);
+  one('근린생활시설', '', -94.9, 85.5, 114.4 - Y0, .9);
+  one('주민운동시설3', '', -12, 84, levelAt(-12, 84), 2.4);
+  { const P = YARD.sand, x = P.reduce((a, p) => a + p[0], 0) / 4, z = P.reduce((a, p) => a + p[1], 0) / 4; one('어린이놀이터2', '', x - 6, z + 4, levelAt(x, z), 2.4); }
+  one('외부계단5', '', 176, 31, levelAt(166, 34) + 3.2, .9);
+  scene.add(new THREE.Mesh(post.build(), new THREE.MeshStandardMaterial({ color: '#d9d9d5', roughness: .5 }))); }
 /* ---------- 부대시설(주민공동시설·근린생활시설·경비실) ---------- */
 const AMEN_POLYS = [[[-150.46, 0.5], [-116.5, -1], [-116.2, 32.3], [-129.32, 39.25]], [[-119.69, 55.95], [-91.13, 39.7], [-67.33, 24.35], [-76.4, 10.2], [-127.3, 42.81]], [[-115.1, 54.1], [-105.6, 51.9], [-104.6, 60.5], [-114.1, 62.7]], [[-108.8, 73.9], [-96.2, 68], [-80.6, 96.5], [-93.9, 103.7]]]; /* 나무가 지붕을 뚫지 않게 */
 function buildAmenities(MAT) {
