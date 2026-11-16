@@ -462,13 +462,13 @@ function texBack(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (
   g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(0, 250, 1024, 6);
   return tex(c, true); }
 /* 측벽(남색 판넬 없는 동, 모형 VE30 110동·VE32 109동): 밝은 회색 + 가는 짙은 세로 슬릿 + 층마다 작은 창 */
-function texSideP() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#b3b0aa', .03, 1400);
+function texSideP() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#c2bdb6', .03, 1400); /* 11-16 모형 VN12·VE23 측벽(157~169) */
   g.fillStyle = 'rgba(40,40,40,.14)'; for (let x = 14; x < 1024; x += 22) g.fillRect(x, 0, 2.5, 256);
   for (const x of [130, 250, 370, 640, 760, 880]) { g.fillStyle = '#3a3734'; g.fillRect(x, 0, 30, 256); } /* 모형 사진 1(107·108동 측벽): 밝은 회색 + 굵은 짙은 세로 줄 여러 개 */
   for (const x of [470, 530]) { g.fillStyle = '#e4e2dc'; g.fillRect(x, 92, 30, 56); glass(g, x + 3, 95, 24, 50, 3); }
   g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, 250, 1024, 6); return tex(c); }
 /* 측벽(모형 동영상 VE30·VN18): 밝은 회색 + 고른 가는 세로 홈 + 가운데 남색 유리 기둥 */
-function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, '#b0ada7', .03, 1400);
+function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (brick) paintBrown(g, 1024, 256); else noiseFill(g, 1024, 256, '#beb9b2', .03, 1400);
   g.fillStyle = brick ? '#6c3a2b' : '#d8d5cf'; g.fillRect(0, 0, 1024, 12);
   if (!brick) { g.fillStyle = 'rgba(40,40,40,.16)'; for (let x = 14; x < 1024; x += 22) if (x < 174 || x > 850) g.fillRect(x, 0, 2.5, 256); g.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 17; x < 1024; x += 22) if (x < 174 || x > 850) g.fillRect(x, 0, 1.5, 256); } /* 모형 동영상: 측벽은 밝은 회색 + 고른 가는 세로 홈 */
   /* 모형: 측벽 가운데 짙은 남색 유리 세로 띠(지붕까지) */
@@ -476,12 +476,12 @@ function texSide(brick) { const c = cnv(1024, 256), g = c.getContext('2d'); if (
   else { g.fillStyle = '#252b36'; g.fillRect(180, 0, 664, 256); /* 모형 사진 1(104동 서측 51,46,39)·영상 VE08·VE17(43,49,57 · 27,32,43): 거의 검은 짙은 유리 판 */ g.fillStyle = 'rgba(255,255,255,.04)'; g.fillRect(180, 0, 664, 128); /* 모형 VE08·VE26: 측벽 폭의 약 65% 청록·남색 유리 판넬 + 층마다 밝은 창 */
     for (let x = 214; x < 820; x += 66) { g.fillStyle = '#33373d'; g.fillRect(x, 92, 26, 62); g.fillStyle = 'rgba(85,90,98,.4)'; g.fillRect(x, 120, 26, 3); } g.fillStyle = '#1a1d21'; g.fillRect(180, 248, 664, 8); }
   return tex(c); }
-function texSideTop() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#b4b1ab', .03, 1400); g.fillStyle = 'rgba(40,40,40,.15)'; for (let x = 14; x < 1024; x += 22) g.fillRect(x, 0, 2.5, 256); for (const x of [470, 530]) { g.fillStyle = '#e4e2dc'; g.fillRect(x, 92, 30, 56); glass(g, x + 3, 95, 24, 50, 4); } g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(0, 250, 1024, 6); return tex(c); } /* 북쪽 줄 측벽 맨 위 2개 층: 밝은 회색 + 가는 홈 */
+function texSideTop() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#c2bdb6', .03, 1400); g.fillStyle = 'rgba(40,40,40,.15)'; for (let x = 14; x < 1024; x += 22) g.fillRect(x, 0, 2.5, 256); for (const x of [470, 530]) { g.fillStyle = '#e4e2dc'; g.fillRect(x, 92, 30, 56); glass(g, x + 3, 95, 24, 50, 4); } g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(0, 250, 1024, 6); return tex(c); } /* 북쪽 줄 측벽 맨 위 2개 층: 밝은 회색 + 가는 홈 */
 /* 측벽 회색 띠(모형 VE08: 남색 판넬 아래 2개 층 — 회색 벽 + 층마다 가운데 짙은 가로 판) */
 function texSideB() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#9b968f', .03, 1200); g.fillStyle = 'rgba(40,40,40,.14)'; for (let x = 14; x < 1024; x += 22) if (x < 174 || x > 850) g.fillRect(x, 0, 2.5, 256);
   g.fillStyle = '#c9c5be'; g.fillRect(180, 0, 664, 256); g.fillStyle = '#3a3836'; g.fillRect(196, 40, 632, 176); g.fillStyle = 'rgba(255,255,255,.06)'; g.fillRect(196, 40, 632, 60); return tex(c); }
 /* 북쪽 줄 동 측벽(모형 VE26 113·114동): 밝은 회색 + 청록 유리 판넬(폭 약 70%) + 층마다 밝은 창 2개씩 */
-function texSideT() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#b0ada7', .03, 1400); g.fillStyle = '#d8d5cf'; g.fillRect(0, 0, 1024, 12);
+function texSideT() { const c = cnv(1024, 256), g = c.getContext('2d'); noiseFill(g, 1024, 256, '#beb9b2', .03, 1400); g.fillStyle = '#d8d5cf'; g.fillRect(0, 0, 1024, 12);
   g.fillStyle = 'rgba(40,40,40,.16)'; for (let x = 14; x < 1024; x += 22) if (x < 150 || x > 874) g.fillRect(x, 0, 2.5, 256);
   g.fillStyle = '#3b5560'; g.fillRect(156, 0, 712, 256); /* 모형 VE28: 채도 낮은 청회색 판(52,66,73) */ g.fillStyle = 'rgba(255,255,255,.06)'; g.fillRect(156, 0, 712, 120);
   for (const x of [240, 330, 700, 790]) { g.fillStyle = '#e8e2d2'; g.fillRect(x, 96, 30, 58); } g.fillStyle = '#304750'; g.fillRect(156, 248, 712, 8); return tex(c); }
