@@ -893,19 +893,19 @@ function buildDong(D, G, MAT) {
       obox(ex, ez, ux, uz, 4.4, 2.4, yBackR - .1, yBackR + 3.3, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } });
       obox(ex - fx * 1.22, ez - fz * 1.22, ux, uz, 2.2, .04, yBackR, yBackR + 2.5, { back: { gb: G.fin } }); }
     /* 테라스(56T): 테라스 층 앞 포디움(낮은 단 ~ 테라스 바닥) — 앞 옹벽까지, 위는 옥상정원 */
-    if (t) { const dep0 = Math.max(3.8, (dW || DEP / 2 + 3.8) - DEP / 2), dep = t === 1 ? Math.min(dep0, 4.6) : dep0, ox = DEP / 2 + dep / 2, F = (gb, uv) => ({ gb, uv }); /* 모형 VE04: 한 줄 56T 테라스는 폭 약 4.5m(그 앞은 낮은 화단 띠) */
+    if (t) { const TB = [111, 112, 113].includes(D.d) ? G.white : G.brick; /* 모형 VE27·VN17: 111~113동 테라스 난간·처마는 밝은 회색 */ const dep0 = Math.max(3.8, (dW || DEP / 2 + 3.8) - DEP / 2), dep = t === 1 ? Math.min(dep0, 4.6) : dep0, ox = DEP / 2 + dep / 2, F = (gb, uv) => ({ gb, uv }); /* 모형 VE04: 한 줄 56T 테라스는 폭 약 4.5m(그 앞은 낮은 화단 띠) */
       /* 도장 옹벽(아래 단 ~ 테라스 바닥) + 테라스 바닥 */
       { const PD = [111, 112, 113].includes(D.d) ? G.podiumL : G.podium; obox(cx + fx * (ox + .1), cz + fz * (ox + .1), ux, uz, L - .2, dep + .2, Math.min(yl - yF1, 0) - .4, .12, { front: F(PD, uvTile(20, 10)), left: F(PD, uvTile(20, 10)), right: F(PD, uvTile(20, 10)), top: { gb: t === 2 ? G.tdeckL : G.tdeck } });
         if (dep0 > dep + .5) { const o2 = DEP / 2 + dep + (dep0 - dep) / 2 + .1; obox(cx + fx * o2, cz + fz * o2, ux, uz, L - .2, dep0 - dep, Math.min(yl - yF1, 0) - .4, -.25, { front: F(PD, uvTile(20, 10)), left: F(PD, uvTile(20, 10)), right: F(PD, uvTile(20, 10)), top: { gb: G.green, uv: true, uvTop: uvPlanar(4) } });
           for (let k = 0; k < L / 3; k++) extraTrees.push([cx + ux * (-L / 2 + 1.5 + k * 3) + fx * o2, yF1 - .25, cz + uz * (-L / 2 + 1.5 + k * 3) + fz * o2, .55 + rand() * .3, 3]); } } /* 모형 VE04: 테라스 앞(갈색 옹벽 위) 낮은 관목 화단 띠 */
       /* 테라스 앞 가장자리: 모형 VE09 확대 — 갈색 도장 난간벽(밝은 회색 바닥 위) */
-      obox(cx + fx * (DEP / 2 + dep - .25), cz + fz * (DEP / 2 + dep - .25), ux, uz, L - .4, .45, .12, 1.05, { front: F(G.brick), back: F(G.brick), left: F(G.brick), right: F(G.brick), top: F(G.brick) });
+      obox(cx + fx * (DEP / 2 + dep - .25), cz + fz * (DEP / 2 + dep - .25), ux, uz, L - .4, .45, .12, 1.05, { front: F(TB), back: F(TB), left: F(TB), right: F(TB), top: F(TB) });
       /* 세대 사이 칸막이·테라스 위 처마: 모형처럼 갈색 도장 */
       for (let k = 0; k <= n; k++) { const s = -L / 2 + tw * k, ex = Math.max(-L / 2 + .2, Math.min(L / 2 - .2, s)); obox(cx + ux * ex + fx * ox, cz + uz * ex + fz * ox, fx, fz, dep, .35, .12, 1.6, { front: F(G.white), back: F(G.white), left: F(G.white), right: F(G.white), top: F(G.white) }); } /* 모형 VE04: 세대 사이 칸막이는 밝은 회색 */
       if (t === 2) { const s2 = Math.min(3.2, dep - 1.2), o2 = DEP / 2 + s2 / 2, TU = { gb: G.terr, uv: uvTile(tw, FH) }; /* 모형 사진 1(122동): 56T 두 줄은 계단식 — 1층 세대가 앞으로 나오고 그 지붕이 2층 테라스 */
         obox(cx + fx * o2, cz + fz * o2, ux, uz, L - .3, s2, .12, FH, { front: TU, left: TU, right: TU, top: { gb: G.tdeckL } });
-        obox(cx + fx * (DEP / 2 + s2 - .22), cz + fz * (DEP / 2 + s2 - .22), ux, uz, L - .5, .4, FH, FH + 1, { front: F(G.brick), back: F(G.brick), left: F(G.brick), right: F(G.brick), top: F(G.brick) }); }
-      obox(cx + fx * (DEP / 2 + .9), cz + fz * (DEP / 2 + .9), ux, uz, L, 1.8, yT - .35, yT + .05, { front: { gb: G.brick }, back: { gb: G.brick }, top: { gb: G.brick } }); }
+        obox(cx + fx * (DEP / 2 + s2 - .22), cz + fz * (DEP / 2 + s2 - .22), ux, uz, L - .5, .4, FH, FH + 1, { front: F(TB), back: F(TB), left: F(TB), right: F(TB), top: F(TB) }); }
+      obox(cx + fx * (DEP / 2 + .9), cz + fz * (DEP / 2 + .9), ux, uz, L, 1.8, yT - .35, yT + .05, { front: { gb: TB }, back: { gb: TB }, top: { gb: TB } }); }
     /* 측벽 동 번호 사인(모형: 저층부 바로 위) */
     if (wi === 0 || D.w.length > 1) for (const e of (D.w.length > 1 ? (wi === 0 ? [-1] : [1]) : [-1, 1])) { const sx = cx + ux * e * (L / 2 + .06) + fx * DEP * .27, sz = cz + uz * e * (L / 2 + .06) + fz * DEP * .27, m = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8), signMat(D.d)); /* 측벽 가운데 짙은 띠를 피해 앞쪽 */
       const yS = yF1 + Math.min(base + 1.7 + (D.d === 108 ? 3 * FH : 0), H - 3.2); /* 108동은 갈색이 더 높아 번호도 그 위(모형 사진 2) */ m.position.set(sx, yS, sz); m.lookAt(sx + ux * e, yS, sz + uz * e); scene.add(m); } /* 모형: 동 번호는 갈색 저층부 바로 위 측벽 */
