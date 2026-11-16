@@ -1243,7 +1243,7 @@ function buildAmenities(MAT) {
     const LV = { gb: G.gateL, uv: uvTile(6, 1.6) }; obox(gc[0], gc[1], A[0], A[1], 17.4, 6.5, gy + 4.8, gy + 6.4, { front: LV, back: LV, left: LV, right: LV, top: { gb: G.roof } });
     obox(gc[0], gc[1], A[0], A[1], 16.2, 5.3, gy + 4.75, gy + 4.8, { front: { gb: G.para }, back: { gb: G.para } });
     for (const a of [-8.1, 8.1]) obox(gc[0] + A[0] * a, gc[1] + A[1] * a, A[0], A[1], 1.2, 6.5, gy - .3, gy + 4.8, W4); }
-  { const P = [[-108.8, 73.9], [-96.2, 68], [-80.6, 96.5], [-93.9, 103.7]]; prism(P, Y(105.4), Y(109.8), G.glass); prism(P, Y(109.8), Y(113.6), G.stone, G.roof); prism(P, Y(113.6), Y(114.4), G.para); } /* 근린생활시설(도로 GL≈106, 2층): 도로 쪽 면을 경계선 0.8m 바깥으로(1층 유리 상점이 보도에 바로 면함) + 2층 밝은 회색 석재, 회색 지붕 */
+  { const P = [[-108.8, 73.9], [-96.2, 68], [-80.6, 96.5], [-93.9, 103.7]]; prism(P, Y(105.4), Y(109.8), G.glass); prism(P, Y(109.8), Y(113.6), G.white, G.roof); prism(P, Y(113.6), Y(114.4), G.para); } /* 모형 VE07: 2층도 큰 짙은 창(회색 석재 판) */ /* 근린생활시설(도로 GL≈106, 2층): 도로 쪽 면을 경계선 0.8m 바깥으로(1층 유리 상점이 보도에 바로 면함) + 2층 밝은 회색 석재, 회색 지붕 */
   const m = (gb, mat) => { const x = new THREE.Mesh(gb.build(), mat); x.castShadow = x.receiveShadow = true; scene.add(x); };
   { const am = (draw) => { const c = cnv(512, 256), g = c.getContext('2d'); draw(g); const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughnessMap: roughFrom(t), roughness: 1, envMapIntensity: .7 }); };
     const aB = am(g => { paintBrown(g, 512, 256); g.fillStyle = 'rgba(30,18,12,.45)'; for (let y = 14; y < 60; y += 7) g.fillRect(0, y, 512, 2); /* 모형 VE10: 갈색 벽 + 가로 루버 띠 + 넓은 가로창(푸른빛 조명) */
