@@ -775,6 +775,7 @@ async function build() {
       for (let i = 0, N2 = PW * PH; i < N2; i++) { const r = id[i * 4], g = id[i * 4 + 1], b = id[i * 4 + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), lum = .299 * r + .587 * g + .114 * b, p = id[i * 4 + 3] > 200 && lum > 150 && lum < 250 && mx - mn < 34 && g - Math.max(r, b) < 6 ? 255 : 0; /* 배치도 포장은 밝은 베이지 + 짙은 점무늬: 점까지 포장으로 잡아야 광장이 잔디로 안 바뀜 */ o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = p; o[i * 4 + 3] = 255; }
       g1.putImageData(out, 0, 0); const m2 = cnv(PW, PH), g2 = m2.getContext('2d'); g2.filter = 'blur(8px)'; g2.drawImage(m1, 0, 0);
       const bd = g2.getImageData(0, 0, PW, PH), d = bd.data; for (let i = 0; i < d.length; i += 4) { const v = d[i] > 120 ? 255 : 0; /* 포장 안 나무 기호 구멍을 메워 매끈한 경계 */ d[i] = d[i + 1] = d[i + 2] = v; } g2.putImageData(bd, 0, 0);
+      straightenMask(g2, PW, PH); /* 11-16 사용자 요청: 길 경계를 선으로 따라 0.4m 안쪽 출렁임을 직선으로 */
       const m3 = cnv(PW, PH), g3 = m3.getContext('2d'); g3.filter = 'blur(1.2px)'; g3.drawImage(m2, 0, 0); const t = new THREE.CanvasTexture(m3); t.colorSpace = THREE.NoColorSpace; t.anisotropy = ANISO; return t; })();
     detailDeck(deckMat, pathMask); mk(fp, fu, deckMat); mk(wp, wu, wallMat);
     if (lp.length) { const c = cnv(256, 128), g = c.getContext('2d'); noiseFill(g, 256, 128, '#c9cac7', .03, 600); g.fillStyle = 'rgba(0,0,0,.06)'; g.fillRect(0, 0, 256, 3); const t = tex(c); const lm = new THREE.MeshStandardMaterial({ map: t, roughness: .9, side: THREE.DoubleSide }); mk(lp, lu, lm); } }
@@ -1064,6 +1065,33 @@ function signMat(d) { if (SIGNS[d]) return SIGNS[d]; const c = cnv(256, 128), g 
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 
 /* ---------- 데크 바닥 디테일: 배치도 색으로 길(밝은 회색)엔 보도블록 줄눈, 잔디(녹색)엔 잔디 결을 얹어 가까이서도 또렷하게(모형의 보도블록·잔디) ---------- */
+/* 11-16 사용자 요청(단지 안쪽 길 반듯하게): 0/1 마스크의 경계를 마칭 스퀘어로 따라가 닫힌 선으로 만들고, 더글러스-포이커로 출렁임(0.4m 이하)을 펴서 다시 칠함 — 좁은 길은 깎이지 않음 */
+function straightenMask(g, W0, H0, f = 2, eps = 2.5) {
+  const d = g.getImageData(0, 0, W0, H0).data, W = Math.ceil(W0 / f), H = Math.ceil(H0 / f), GW = W + 2, GH = H + 2, B = new Uint8Array(GW * GH);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) B[(y + 1) * GW + x + 1] = d[((Math.min(H0 - 1, y * f)) * W0 + Math.min(W0 - 1, x * f)) * 4] > 127 ? 1 : 0;
+  const SA = [], SB = [], adj = new Map(), K = (X, Y) => X * 131072 + Y, add = (ax, ay, bx, by) => { const i = SA.length; SA.push(K(ax, ay)); SB.push(K(bx, by)); for (const k of [SA[i], SB[i]]) { const l = adj.get(k); if (l) l.push(i); else adj.set(k, [i]); } };
+  for (let y = 0; y < GH - 1; y++) for (let x = 0; x < GW - 1; x++) {
+    const c = B[y * GW + x] << 3 | B[y * GW + x + 1] << 2 | B[(y + 1) * GW + x + 1] << 1 | B[(y + 1) * GW + x]; if (c === 0 || c === 15) continue;
+    const T = [2 * x + 1, 2 * y], R = [2 * x + 2, 2 * y + 1], Bo = [2 * x + 1, 2 * y + 2], L = [2 * x, 2 * y + 1];
+    const S = [[], [[L, Bo]], [[Bo, R]], [[L, R]], [[T, R]], [[T, R], [L, Bo]], [[T, Bo]], [[T, L]], [[T, L]], [[T, Bo]], [[T, L], [Bo, R]], [[T, R]], [[L, R]], [[R, Bo]], [[L, Bo]]][c];
+    for (const [p, q] of S) add(p[0], p[1], q[0], q[1]); }
+  const used = new Uint8Array(SA.length), loops = [];
+  for (let s0 = 0; s0 < SA.length; s0++) { if (used[s0]) continue; used[s0] = 1; const st = SA[s0]; let cur = SB[s0]; const pts = [st, cur];
+    for (let guard = 0; guard < 4e6 && cur !== st; guard++) { const l = adj.get(cur); let nx = -1; for (const i of l) if (!used[i]) { nx = i; break; } if (nx < 0) break; used[nx] = 1; cur = SA[nx] === cur ? SB[nx] : SA[nx]; pts.push(cur); }
+    if (pts.length > 6) loops.push(pts.map(k => [(Math.floor(k / 131072) / 2 - 1) * f + .5, ((k % 131072) / 2 - 1) * f + .5])); }
+  const dp = (P, e) => { const keep = new Uint8Array(P.length); keep[0] = keep[P.length - 1] = 1; const st = [[0, P.length - 1]];
+    while (st.length) { const [i0, i1] = st.pop(), a = P[i0], b = P[i1], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; let m = -1, md = e;
+      for (let i = i0 + 1; i < i1; i++) { const dd = Math.abs((P[i][0] - a[0]) * dy - (P[i][1] - a[1]) * dx) / l; if (dd > md) { md = dd; m = i; } }
+      if (m > 0) { keep[m] = 1; st.push([i0, m], [m, i1]); } } return P.filter((_, i) => keep[i]); };
+  const AX = Math.atan2(-.4985, .86689), SN = Math.PI / 12; /* 동 축(U) 방향, 15° 안쪽이면 축에 맞춤 */
+  const squareUp = Q => { const n = Q.length - 1, L = []; for (let i = 0; i < n; i++) { const a = Q[i], b = Q[i + 1], dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy); let an = Math.atan2(dy, dx); const rel = ((an - AX) % (Math.PI / 2) + Math.PI / 2) % (Math.PI / 2), dl = rel > Math.PI / 4 ? rel - Math.PI / 2 : rel;
+      if (Math.abs(dl) < SN && len > 2 * f) an -= dl; L.push({ m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], d: [Math.cos(an), Math.sin(an)] }); }
+    const out = []; for (let i = 0; i < n; i++) { const p = L[(i - 1 + n) % n], q = L[i], cr = p.d[0] * q.d[1] - p.d[1] * q.d[0]; if (Math.abs(cr) < .25) { out.push(Q[i]); continue; }
+      const t = ((q.m[0] - p.m[0]) * q.d[1] - (q.m[1] - p.m[1]) * q.d[0]) / cr, X = [p.m[0] + p.d[0] * t, p.m[1] + p.d[1] * t]; out.push(Math.hypot(X[0] - Q[i][0], X[1] - Q[i][1]) < 4 * f ? X : Q[i]); } out.push(out[0]); return out; }; /* 꼭짓점 = 이웃 두 변의 교점(너무 멀면 원래 점) */
+  const E = eps * f; g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.filter = 'none'; g.fillStyle = '#000'; g.fillRect(0, 0, W0, H0); g.beginPath();
+  for (const P of loops) { let far = 0, fd = -1; for (let i = 1; i < P.length; i++) { const dd = (P[i][0] - P[0][0]) ** 2 + (P[i][1] - P[0][1]) ** 2; if (dd > fd) { fd = dd; far = i; } }
+    const A = dp(P.slice(0, far + 1), E), Bq = dp(P.slice(far), E), Q0 = A.concat(Bq.slice(1)); if (Q0.length < 4) continue; const Q = squareUp(Q0); if (Q.length < 3) continue; g.moveTo(Q[0][0], Q[0][1]); for (let i = 1; i < Q.length; i++) g.lineTo(Q[i][0], Q[i][1]); g.closePath(); }
+  g.fillStyle = '#fff'; g.fill('evenodd'); g.restore(); }
 function detailDeck(mat, maskTex) {
   const mk = draw => { const c = cnv(256, 256), g = c.getContext('2d'); draw(g); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = ANISO; return t; };
   const pav = mk(g => { g.fillStyle = '#7a7a7a'; g.fillRect(0, 0, 256, 256); for (let r = 0; r < 8; r++) for (let k = -1; k < 5; k++) { const x = k * 64 + (r & 1) * 32, y = r * 32, v = 200 + (rand() - .5) * 46 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x + 2, y + 2, 60, 28); } }); /* 2m 칸에 50×25cm 보도블록 */
