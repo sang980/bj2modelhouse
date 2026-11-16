@@ -1786,6 +1786,12 @@ function buildTrees(planData, PW, PH, PK) {
     if (rand() < .18) pts.push([jx, levelAt(jx, jz), jz, .75 + rand() * .55, 2]); else pts.push([jx, levelAt(jx, jz), jz, nwc ? .55 + rand() * .45 : .9 + rand() * .8, 0]);
     if (!nwc && rand() < (wz ? 1 : .7)) { if (wz) for (let k2 = 0; k2 < 2; k2++) { const an = rand() * 6.283, r2 = .8 + rand() * 1.2, sx = jx + Math.cos(an) * r2, sz = jz + Math.sin(an) * r2; if (polyDist(SITE, sx, sz) < -2.5 && !inBld(sx, sz) && !AMEN_POLYS.some(P2 => polyDist(P2, sx, sz) < 2) && Math.abs(levelAt(sx, sz) - levelAt(jx, jz)) < .3) pts.push([sx, levelAt(sx, sz), sz, .4 + rand() * .3, rand() < .25 ? 2 : 0]); } const an = rand() * 6.283, r2 = .9 + rand() * .7, sx = jx + Math.cos(an) * r2, sz = jz + Math.sin(an) * r2; if (polyDist(SITE, sx, sz) < -2.5 && !inBld(sx, sz) && !AMEN_POLYS.some(P2 => polyDist(P2, sx, sz) < 2) && Math.abs(levelAt(sx, sz) - levelAt(jx, jz)) < .3) pts.push([sx, levelAt(sx, sz), sz, .42 + rand() * .3, 0]); } /* 11-16: 나무 곁 작은 관목(모형처럼 빽빽한 하층) */ /* 모형 VE17: 데크 나무는 작음 */ /* 모형: 작고 짙은 조경수 + 원뿔형 침엽수 섞임 */
   }
+  /* 11-16 모형 VE08: 101·104동 사이 데크는 가운데 포장길 양쪽 잔디에 나무가 줄지어 섬(우리는 한쪽만 드문드문) */
+  { const A = BLD['101'] && BLD['101'].pieces[0], B = BLD['104'] && BLD['104'].pieces[0]; if (A && B) { const u = [A.ux, A.uz], f = [-A.uz, A.ux], dAB = (B.cx - A.cx) * f[0] + (B.cz - A.cz) * f[1];
+    for (let fo = 10; fo <= dAB - 10.5; fo += 3.2) for (let s0 = -21; s0 <= 21; s0 += 3.4) { const j = hash2(s0 * 10 | 0, fo * 10 | 0) - .5, x = A.cx + u[0] * (s0 + j * 1.2) + f[0] * (fo + j * .8), z = A.cz + u[1] * (s0 + j * 1.2) + f[1] * (fo + j * .8);
+      const px = Math.round((x / S + OX) / PK), py = Math.round((z / S + OY) / PK); if (px < 0 || py < 0 || px >= PW || py >= PH) continue; const k4 = (py * PW + px) * 4, r = planData[k4], g = planData[k4 + 1], bl = planData[k4 + 2]; if (!(g > r + 6 && g > bl)) continue; /* 배치도에서 잔디(초록)인 자리만 — 가운데 포장길은 비움 */
+      if (polyDist(SITE, x, z) > -2 || inBld(x, z) || WALKS.some(([P, Q, w]) => pathDist([P, Q], x, z) < w + .8) || DA.some(([wx, wz]) => Math.hypot(x - wx, z - wz) < 3.2) || FZ.some(([wx, wz]) => Math.hypot(x - wx, z - wz) < 6.5) || pts.some(t => Math.hypot(t[0] - x, t[2] - z) < 2.2)) continue;
+      pts.push([x, levelAt(x, z), z, 1.5 + (j + .5) * .8, 3]); } } }
   /* 숲: 단지 주변 1.2km */
   const nF = LOW ? 5000 : 16000, R = LOW ? 800 : 1250; let tries = 0, made = 0;
   while (made < nF && tries < nF * 6) { tries++;
