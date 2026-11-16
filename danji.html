@@ -651,6 +651,7 @@ async function build() {
     for (let j = 0; j < gz; j++) for (let i = 0; i < gx; i++) { const x = x0 + i * st, z = z0 + j * st; Y[j * gx + i] = levelAt(x, z); IN[j * gx + i] = inPoly(SITE, x, z) ? 1 : 0; }
     const fp = [], fu = [], wp = [], wu = [], lp = [], lu = []; /* lp: 3.5m 미만 낮은 단 벽(모형: 무늬 없는 밝은 회색) */
     const tri = (ax, az, ay, bx, bz, by, cx, cz, cy) => { const mx = (ax + bx + cx) / 3, mz = (az + bz + cz) / 3; if (!inPoly(SITE, mx, mz)) return;
+      if (Math.max(ay, by, cy) - Math.min(ay, by, cy) >= .6) { const yM = Math.max(ay, by, cy); for (const z2 of TZ) { const dd = polyDist(z2.P, mx, mz); if (dd > -1.4 && dd < 1.4 && yM <= z2.h - Y0 + .3) return; } } /* 테라스 포디움 앞면 옹벽이 이 단 벽을 대신함(톱니 조각이 포디움 밖으로 삐져나오지 않게) */
       if (Math.max(ay, by, cy) - Math.min(ay, by, cy) < .6) { fp.push(ax, ay, az, bx, by, bz, cx, cy, cz); for (const [x, z] of [[ax, az], [bx, bz], [cx, cz]]) { const u = planUV(x, z); fu.push(u[0], u[1]); } }
       else if (Math.max(ay, by, cy) - Math.min(ay, by, cy) < 3.5) { lp.push(ax, ay, az, bx, by, bz, cx, cy, cz); lu.push((ax + az) / 6, ay / 3, (bx + bz) / 6, by / 3, (cx + cz) / 6, cy / 3); }
       else { wp.push(ax, ay, az, bx, by, bz, cx, cy, cz); wu.push((ax + az) / 20, ay / 10, (bx + bz) / 20, by / 10, (cx + cz) / 20, cy / 10); } };
