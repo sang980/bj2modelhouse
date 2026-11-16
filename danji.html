@@ -975,7 +975,7 @@ function buildYard() {
   /* 연못(모형 VE04: 둥근 청록 수면 + 가운데를 건너는 다리) */
   { const T = YARD.teal, cx = T.reduce((s, p) => s + p[0], 0) / 4, cz = T.reduce((s, p) => s + p[1], 0) / 4, P = [];
     for (let k = 0; k < 40; k++) { const a = k / 40 * Math.PI * 2, r = 1 / Math.pow(Math.pow(Math.abs(Math.cos(a)), 4) + Math.pow(Math.abs(Math.sin(a)), 4), .25), lx = Math.cos(a) * r * 9.5, lz = Math.sin(a) * r * 6; P.push([cx + YU[0] * lx - YU[1] * lz, cz + YU[1] * lx + YU[0] * lz]); }
-    const yw = flat(P, new THREE.MeshStandardMaterial({ color: '#2c5a52', roughness: .35, metalness: .1, envMapIntensity: .5, ...off }), .1); /* 물: 하늘이 비치게 */
+    const yw = flat(P, new THREE.MeshStandardMaterial({ color: '#2a4c44', roughness: .75, metalness: 0, envMapIntensity: .15, ...off }), .1); /* 모형 사진 1: 하늘빛 반사 없는 짙은 청록 판 */
     { const rim = new GB(); for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length], L = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]); obox((a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2, (b2[0] - a2[0]) / L, (b2[1] - a2[1]) / L, L + .1, .35, yw - .05, yw + .28, { front: { gb: rim }, back: { gb: rim }, top: { gb: rim } }); }
       scene.add(new THREE.Mesh(rim.build(), new THREE.MeshStandardMaterial({ color: '#cfccc4', roughness: .9 }))); } /* 연못 가장자리 돌 테두리 */
     const Q = []; for (const [lx, lz] of [[-2, -6.5], [1.2, -6.5], [1.2, 6.5], [-2, 6.5]]) Q.push([cx + YU[0] * lx - YU[1] * lz, cz + YU[1] * lx + YU[0] * lz]); flat(Q, new THREE.MeshStandardMaterial({ color: '#d9d4c8', roughness: .9, polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -12 }), .42);
