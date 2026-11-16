@@ -1792,6 +1792,14 @@ function buildTrees(planData, PW, PH, PK) {
       const px = Math.round((x / S + OX) / PK), py = Math.round((z / S + OY) / PK); if (px < 0 || py < 0 || px >= PW || py >= PH) continue; const k4 = (py * PW + px) * 4, r = planData[k4], g = planData[k4 + 1], bl = planData[k4 + 2]; if (!(g > r + 6 && g > bl)) continue; /* 배치도에서 잔디(초록)인 자리만 — 가운데 포장길은 비움 */
       if (polyDist(SITE, x, z) > -2 || inBld(x, z) || WALKS.some(([P, Q, w]) => pathDist([P, Q], x, z) < w + .8) || DA.some(([wx, wz]) => Math.hypot(x - wx, z - wz) < 3.2) || FZ.some(([wx, wz]) => Math.hypot(x - wx, z - wz) < 6.5) || pts.some(t => Math.hypot(t[0] - x, t[2] - z) < 2.2)) continue;
       pts.push([x, levelAt(x, z), z, 1.5 + (j + .5) * .8, 3]); } } }
+  /* 11-16 모형 VE16: 서쪽 데크(116~118동 사이·정문 뒤) 산책로 양옆 잔디에 낮은 관목 무리 — 배치도에서 포장 바로 옆 잔디 자리 */
+  { const pix = (x, z) => { const px = Math.round((x / S + OX) / PK), py = Math.round((z / S + OY) / PK); if (px < 0 || py < 0 || px >= PW || py >= PH) return null; const k4 = (py * PW + px) * 4; return [planData[k4], planData[k4 + 1], planData[k4 + 2]]; },
+      nearBody = (x, z) => { for (const k in BLD) for (const p of BLD[k].pieces) { const dx = x - p.cx, dz = z - p.cz, s2 = dx * p.ux + dz * p.uz, t2 = dx * -p.uz + dz * p.ux; if (Math.abs(s2) < p.L / 2 + 1.2 && t2 > -(DEP / 2 + CORE_D + 1.2) && t2 < DEP / 2 + (BLD[k].D.t ? 6 : 1.2)) return true; } return false; }, /* 낮은 관목은 동 몸체·계단실에서 1.2m만 띄움 */
+      lawn = c => c && c[1] > c[0] + 10 && c[1] > c[2] + 4, pave = c => { if (!c) return false; const mx = Math.max(...c), mn = Math.min(...c), lum = .299 * c[0] + .587 * c[1] + .114 * c[2]; return lum > 150 && lum < 250 && mx - mn < 34 && c[1] - Math.max(c[0], c[2]) < 6; };
+    for (let z = -62; z < 12; z += 1.9) for (let x = -142; x < -78; x += 1.9) { const jx = x + (hash2(x * 5 | 0, z * 5 | 0) - .5) * 1.2, jz = z + (hash2(z * 5 | 0, x * 5 | 0) - .5) * 1.2;
+      if (polyDist(SITE, jx, jz) > -2.5 || !lawn(pix(jx, jz)) || ![[2.2, 0], [-2.2, 0], [0, 2.2], [0, -2.2]].some(([dx, dz]) => pave(pix(jx + dx, jz + dz)))) continue;
+      if (hash2(jx * 3 | 0, jz * 3 | 0) > .6 || nearBody(jx, jz) || AMEN_POLYS.some(P => polyDist(P, jx, jz) < 2) || inPoly(ENT.PZ, jx, jz) || DA.some(([wx, wz]) => Math.hypot(jx - wx, jz - wz) < 3.2) || FZ.some(([wx, wz]) => Math.hypot(jx - wx, jz - wz) < 6.5) || pathDist(NWRAMP, jx, jz) < 2.2 || pts.some(t => Math.hypot(t[0] - jx, t[2] - jz) < 1.5)) continue;
+      pts.push([jx, levelAt(jx, jz), jz, .5 + hash2(jx * 7 | 0, jz * 7 | 0) * .4, 0]); } }
   /* 11-16 모형 VE32: 동남쪽 청록 운동마당 둘레 잔디에 나무·관목(우리는 넓은 잔디만) */
   { const C = TEALE.reduce((q, p) => [q[0] + p[0] / 4, q[1] + p[1] / 4], [0, 0]); for (let k = 0; k < 36; k++) { const an = k / 36 * 6.283 + hash2(k, 7) * .3, rr = 8 + hash2(k, 11) * 9, x = C[0] + Math.cos(an) * rr, z = C[1] + Math.sin(an) * rr;
       if (polyDist(SITE, x, z) > -3 || polyDist(TEALE, x, z) < 2.5 || inBld(x, z) || pts.some(t => Math.hypot(t[0] - x, t[2] - z) < 2.4)) continue;
