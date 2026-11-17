@@ -2440,7 +2440,7 @@ canvas.addEventListener('pointermove', e => {
   if (!look || e.pointerId !== look.id) return;
   const dx = e.clientX - look.x, dy = e.clientY - look.y; look.x = e.clientX; look.y = e.clientY;
   const s = isTouch ? .006 : .0042;
-  player.yaw += dx * s; player.pitch = Math.max(-1.1, Math.min(1.0, player.pitch + dy * s * .8)); /* 드래그 방향 반대(끌어당기는 방식) */
+  player.yaw -= dx * s; player.pitch = Math.max(-1.1, Math.min(1.0, player.pitch - dy * s * .8)); /* 드래그 방향: 11-17 사용자 요청으로 다시 원래대로(9a2fb2c 되돌림) */
 });
 const lookEnd = e => { if (look && e.pointerId === look.id) look = null; };
 canvas.addEventListener('pointerup', lookEnd); canvas.addEventListener('pointercancel', lookEnd);
