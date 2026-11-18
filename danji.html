@@ -1674,10 +1674,7 @@ function buildModelSigns() {
   { const P = YARD.sandW, x = P.reduce((a, p) => a + p[0], 0) / 4, z = P.reduce((a, p) => a + p[1], 0) / 4; one('유아놀이터', '', x - 7, z + 3, levelAt(x - 7, z + 3), 2.4); } /* 모형 VE10: 122동 옆 놀이터 표지판 */
   one('외부계단5', '', 145.5, -28.8, levelAt(138, -24) + 3.2, .9);
   one('외부계단2', '', -60.57, 39.89, 121 - Y0 + 3.4, .6); one('외부계단3', '', 72.1, 49.1, 121 - Y0 + 3.1, .6); /* 모형 VE09·사진 2: 계단탑 위 사인 */
-  if (GEO.ok) { const c = cnv(1024, 300), g = c.getContext('2d'); g.fillStyle = '#4b4a47'; g.fillRect(0, 0, 1024, 300); g.strokeStyle = '#e9e8e3'; g.lineWidth = 6; g.strokeRect(14, 14, 996, 272); g.fillStyle = '#f3f2ee'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '700 54px "IBM Plex Sans KR", "Noto Sans KR", sans-serif';
-    g.fillText('근린공원 내 산책로 조성 예정으로,', 512, 82); g.fillText('단지 동측 외부계단 및 공원 내 산책로를 통해', 512, 150); g.fillText('직접 외부로의 진출입이 가능합니다.', 512, 218); /* 모형 VE31·VE32·VN20: 동쪽 잔디 위 안내판 */
-    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const pm = new THREE.MeshStandardMaterial({ map: t, roughness: .6, side: THREE.DoubleSide });
-    for (const [x, z, lx, lz] of [[158, -24, 1.6, .2], [96, -127, 1, -1.1]]) { const y = heightAt(x, z) + 1.2, m = new THREE.Mesh(new THREE.PlaneGeometry(9, 2.64), pm); m.position.set(x, y, z); m.lookAt(x + lx, y + 1.1, z + lz); scene.add(m); } } /* 11-16 모형 VE27: 112·113동 북동쪽 언덕에도 같은 안내판 */
+  /* (11-18 사용자 요청: 동쪽 잔디·112·113동 북동쪽 언덕의 '근린공원 내 산책로 조성 예정…' 안내판 2개 없앰) */
   scene.add(new THREE.Mesh(post.build(), new THREE.MeshStandardMaterial({ color: '#d9d9d5', roughness: .5 }))); }
 /* ---------- 부대시설(주민공동시설·근린생활시설·경비실) ---------- */
 /* 11-16 모형 WE2·WE4·VE10: 하부외부계단1 — 주민공동시설1(북)과 2(정문 옆) 사이 틈의 도로 쪽 9m를 도로 높이~데크(130) 계단실이 메우고, 그 위로 파란 창 2개짜리 회색 상자 */
@@ -1914,8 +1911,8 @@ function buildSchools() {
   /* (가상) 공공 복합건물: 도서관 + 수영장 — 공공청사용지, 부지 FH 96 */
   { const y = 96 - Y0, v = [Math.cos(-.9), Math.sin(-.9)];
     obox(196, 76, v[0], v[1], 40, 22, y - .6, TOPN, { front: { gb: G.lib, uv: uvTile(13, 3.6) }, back: { gb: G.lib, uv: uvTile(13, 3.6) }, left: { gb: G.lib, uv: uvTile(13, 3.6) }, right: { gb: G.lib, uv: uvTile(13, 3.6) }, top: { gb: G.roofW } }); /* 도서관 4층 */
-    obox(196, 76, v[0], v[1], 30, 14, TOPN, TOPN + .15, { top: { gb: G.solar } });
-    obox(186, 104, v[0], v[1], 38, 26, y - .6, TOPN, { front: { gb: G.pool, uv: uvTile(13, 3.6) }, back: { gb: G.pool, uv: uvTile(13, 3.6) }, left: { gb: G.pool, uv: uvTile(13, 3.6) }, right: { gb: G.pool, uv: uvTile(13, 3.6) }, top: { gb: G.poolR, uv: true, uvTop: uvPlanar(6) } }); /* 수영장동 */
+    /* (11-18 사용자: 지붕 하얗게 정리 — 도서관 지붕 위 태양광 판 없앰) */
+    obox(186, 104, v[0], v[1], 38, 26, y - .6, TOPN - .4, { front: { gb: G.pool, uv: uvTile(13, 3.6) }, back: { gb: G.pool, uv: uvTile(13, 3.6) }, left: { gb: G.pool, uv: uvTile(13, 3.6) }, right: { gb: G.pool, uv: uvTile(13, 3.6) }, top: { gb: G.roofW } }); /* 수영장동 — 11-18: 줄무늬 지붕 → 흰 지붕, 도서관 지붕과 겹치는 곳이 같은 높이라 깜빡이던 것 → 0.4m 낮춤 */
     pad(96, [[170, 60], [206, 40], [222, 70], [186, 92]]); }
   for (const [txt, x, h, z] of [['성남여중', -8, 100.6 + 22, 150], ['신흥초', 66, 106.3 + 22, 124]]) { /* 11-16 사용자 요청: 학교 이름표 — 동 번호와 같은 파란 말머리 */
     const c = cnv(256, 96), g = c.getContext('2d'); g.fillStyle = '#1f5a96'; roundRect(g, 4, 8, 248, 80, 22); g.fill(); g.fillStyle = '#fff'; g.font = '700 50px "Noto Sans KR", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, 128, 50);
@@ -2522,9 +2519,26 @@ async function capHome(spec) {
     camera.position.copy(eye); camera.up.copy(u); camera.lookAt(eye.x + d.x, eye.y + d.y, eye.z + d.z); camera.updateMatrixWorld();
     sky.position.copy(eye); scene.fog.density = .000205 * (1 - .55 * smooth(350, 1800, eye.y)); scene.traverse(o => { if (o.isSprite) o.visible = false; });
     renderer.render(scene, camera); faces.push(renderer.domElement.toDataURL('image/jpeg', .86)); await wait(30); }
+  /* 일조용 가림 높이각: 거실 창 바로 바깥(테라스는 그 자리)에서 주변 건물·산을 흰색(하늘은 검정)으로 찍어, 방위(북=0) 1°마다
+     지평선에서부터 끊기지 않고 솟은 가림의 꼭대기 각도(위에 떠 있는 우리 동 지붕 난간 등은 빼고) — 옆 4면(위로 약 35~45°까지) */
+  const hzA = new Array(360).fill(-2);
+  try { const S = 256, rt = new THREE.WebGLRenderTarget(S, S), buf = new Uint8Array(S * S * 4), white = new THREE.MeshBasicMaterial({ color: 0xffffff }), bg = scene.background, fg = scene.fog, sv = sky.visible, v3 = new THREE.Vector3();
+    const me = v.fl > 0 ? eye.clone().add(new THREE.Vector3(v.fx, 0, v.fz).multiplyScalar(2.8)) : eye.clone(); /* 일반 층: 눈(거실 안 2.5m) → 창 밖 0.3m */
+    scene.background = new THREE.Color(0); scene.fog = null; sky.visible = false; scene.overrideMaterial = white; camera.near = .25; camera.updateProjectionMatrix();
+    for (const F of CAP_FACES.slice(0, 4)) { const d = rot(F[0], F[1], F[2]), u = rot(F[3], F[4], F[5]);
+      camera.position.copy(me); camera.up.copy(u); camera.lookAt(me.x + d.x, me.y + d.y, me.z + d.z); camera.updateMatrixWorld();
+      renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene, camera); renderer.readRenderTargetPixels(rt, 0, 0, S, S, buf); renderer.setRenderTarget(null);
+      for (let x = 0; x < S; x++) { const xn = (x + .5) / S * 2 - 1, k = Math.sqrt(1 + xn * xn), row = e => Math.max(0, Math.min(S - 1, Math.floor((Math.tan(e * Math.PI / 180) * k + 1) / 2 * S))), W = y => buf[(y * S + x) * 4] > 127;
+        v3.set(xn, 0, .5).unproject(camera).sub(camera.position); const b = Math.round(((Math.atan2(v3.x, -v3.z) * 180 / Math.PI) + 360) % 360) % 360;
+        let y = row(-2); const y2 = row(2); while (y <= y2 && !W(y)) y++; if (y > y2) continue; /* 지평선이 트임 */
+        let top = y, gap = 0; for (; y < S; y++) { if (W(y)) { top = y; gap = 0; } else if (++gap > 2) break; }
+        const e = Math.atan2(((top + 1) / S * 2 - 1), k) * 180 / Math.PI; if (e > hzA[b]) hzA[b] = e; } }
+    scene.overrideMaterial = null; scene.background = bg; scene.fog = fg; sky.visible = sv; rt.dispose(); white.dispose();
+  } catch (e) { console.warn('hz', e); scene.overrideMaterial = null; }
   camera.up.set(0, 1, 0); camera.near = 2; camera.updateProjectionMatrix();
   let nearOut = null; if (NEAR) { try { nearOut = capNear(eye, a, RC); } catch (e) { console.warn('near', e); } }
-  post({ faces, near: nearOut, info: { fl: v.fl, f: v.f, facing: v.facing, asl: Math.round(v.asl), eyeRel: v.eyeRel } });
+  const brg = Math.round(((Math.atan2(v.fx, -v.fz) * 180 / Math.PI) + 360) % 360 * 10) / 10; /* 거실 창 바깥 방위(북=0, 시계방향) */
+  post({ faces, near: nearOut, info: { fl: v.fl, f: v.f, facing: v.facing, asl: Math.round(v.asl), eyeRel: v.eyeRel, brg, hz: hzA.map(e => Math.round(e * 10) / 10) } });
 }
 
 (async () => {
