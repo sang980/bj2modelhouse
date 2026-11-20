@@ -103,7 +103,7 @@ body.unit #attr{display:none}
   <h2 id="cd-t"></h2>
   <p class="sub" id="cd-s"></p>
   <dl id="cd-d"></dl>
-  <form class="ho" id="cd-ho"><input id="cd-hoin" inputmode="numeric" autocomplete="off" placeholder="호수 입력 (예: 1003)" aria-label="호수"><button type="submit">거실 전망</button></form>
+  <form class="ho" id="cd-ho"><input id="cd-hoin" inputmode="numeric" autocomplete="off" placeholder="호수 입력 (예: 1003)" aria-label="호수"><button type="submit">들어가기</button></form>
   <p class="hint" id="cd-hint" hidden></p>
   <p class="err" id="cd-err"></p>
   <div class="links" id="cd-l"></div>
@@ -2413,8 +2413,44 @@ function exitUnit() {
 }
 $('#uv-x').addEventListener('click', exitUnit);
 addEventListener('keydown', e => { if (e.key === 'Escape' && unit) exitUnit(); });
-$('#cd-ho').addEventListener('submit', e => { e.preventDefault(); const d = +$('#dong').value; const ho = parseInt(($('#cd-hoin').value || '').replace(/[^0-9]/g, ''), 10);
-  const raw = ($('#cd-hoin').value || '').trim(), isB = /^(b|지하)/i.test(raw), ho2 = isB ? -ho : ho; const err = !ho || ho < 101 ? '호수를 숫자로 입력해 주세요. 예: 1003 = 10층 3호, 테라스 세대는 B101' : enterUnit(d, ho2); $('#cd-err').textContent = err || ''; });
+/* ---------- 동·호수 → 그 세대 1인칭 인테리어(메인 '우리 집 들어가기'와 같은 화면) ----------
+   타입·층 범위는 메인 화면(index.html)과 같은 동·호배치도 표: 라인별 [최저층, 최고층, 타입], 테라스층 T{층}(T1이 가장 낮음): 라인(모두 56T) */
+const U_A = '55A', U_B = '55B', U_C = '55C', UL4 = (lo, hi, t = U_A) => ({ 1: [lo, hi, t], 2: [lo, hi, t], 3: [lo, hi, t], 4: [lo, hi, t] }), UL2 = (lo, hi, t = U_A) => ({ 1: [lo, hi, t], 2: [lo, hi, t] });
+const UNITS = {
+  101: { L: UL4(1, 11) }, 102: { L: UL4(1, 11) }, 103: { L: UL2(1, 12) },
+  104: { L: UL4(1, 10), T: { 1: [1, 2, 3, 4] } }, 105: { L: UL4(1, 10), T: { 1: [1, 2, 3, 4] } },
+  106: { L: UL2(1, 10) }, 107: { L: UL2(1, 10) }, 108: { L: UL2(1, 8), T: { 1: [1, 2] } },
+  109: { L: { 1: [1, 10, U_A], 2: [1, 10, U_A], 3: [1, 10, U_B], 4: [2, 10, U_A] }, T: { 1: [1, 2] } },
+  110: { L: { 1: [1, 9, U_A], 2: [1, 9, U_A], 3: [1, 13, U_B], 4: [2, 13, U_A] }, T: { 1: [1, 2] } },
+  111: { L: { 1: [1, 10, U_C], 2: [1, 10, U_A], 3: [1, 13, U_B], 4: [2, 13, U_A] }, T: { 1: [2] } },
+  112: { L: { 1: [1, 10, U_C], 2: [1, 10, U_A], 3: [1, 13, U_B], 4: [2, 13, U_A] }, T: { 1: [2], 2: [2] } },
+  113: { L: { 1: [1, 12, U_C], 2: [2, 12, U_B], 3: [2, 14, U_A], 4: [1, 14, U_A] }, T: { 1: [1] } },
+  114: { L: { 1: [2, 17, U_A], 2: [1, 17, U_A] } }, 115: { L: UL4(1, 18) },
+  116: { L: { 1: [4, 17, U_A], 2: [4, 17, U_A], 3: [3, 16, U_A], 4: [3, 16, U_A] } },
+  117: { L: { 1: [2, 15, U_A], 2: [1, 15, U_A] } }, 118: { L: UL2(1, 11) }, 119: { L: UL4(1, 11) },
+  120: { L: UL2(1, 15), T: { 1: [1, 2] } }, 121: { L: UL4(1, 15), T: { 1: [1, 2, 3, 4], 2: [1, 2, 3, 4] } },
+  122: { L: UL4(1, 10), T: { 1: [1, 2, 3, 4], 2: [1, 2, 3, 4] } },
+};
+function unitHome(d, raw) {
+  const U = UNITS[d], s = String(raw || '').trim(), num = parseInt(s.replace(/[^0-9]/g, ''), 10), pad = n => String(n).padStart(2, '0');
+  if (!U) return { err: `${d}동은 이 단지에 없습니다. 101~122동 중에서 골라 주세요.` };
+  if (!num || num < 101) return { err: '호수를 숫자로 입력해 주세요. 예: 1003 = 10층 3호' + (U.T ? ', 테라스 세대는 B101' : '') };
+  const n = Math.floor(num / 100), line = num % 100, isB = /^(b|지하)/i.test(s), isT = /^t/i.test(s);
+  if (isB || isT) { /* 테라스(56T): B101 = 1층 바로 아래 테라스층(가장 높은 T층), T101 = 메인 화면 표기(T1이 가장 낮음) */
+    if (!U.T) return { err: `${d}동은 테라스 세대가 없습니다.` };
+    const tN = Object.keys(U.T).length, k = isT ? n : tN - n + 1, ok = U.T[k];
+    if (!ok) return { err: `${d}동 테라스층은 ${tN === 1 ? 'B1' : 'B1~B' + tN}층입니다. 예: B1${pad(U.T[tN][0])}` };
+    if (!ok.includes(line)) return { err: `${d}동 B${tN - k + 1}층 테라스 세대는 ${ok.map(l => 'B' + (tN - k + 1) + pad(l)).join('·')}호입니다.` };
+    return { home: `${d}-T${k}${pad(line)}`, type: '56T' };
+  }
+  const L = U.L[line]; if (!L) return { err: `${d}동은 ${Object.keys(U.L).map(Number).sort((a, b) => a - b).join('·')}호 라인입니다. 예: 1003 = 10층 3호` };
+  if (n < L[0] || n > L[1]) return { err: `${d}동 ${line}호 라인은 ${L[0]}~${L[1]}층입니다.` + (L[0] > 1 ? ' (그 아래는 필로티·PIT라 세대 없음)' : '') + (U.T ? ' 테라스 세대는 B를 붙여 입력' : '') };
+  return { home: `${d}-${n}${pad(line)}`, type: L[2] };
+}
+$('#cd-ho').addEventListener('submit', e => { e.preventDefault(); const d = +$('#dong').value, r = unitHome(d, $('#cd-hoin').value);
+  if (r.err) { $('#cd-err').textContent = r.err; return; } $('#cd-err').textContent = '';
+  try { localStorage.setItem('mh:home', r.home); } catch (er) {} /* 메인 화면의 마지막 고른 동·호도 같이 */
+  location.href = TYPE_PAGE[r.type] + '?home=' + r.home; });
 window.__danji = { BLD, TZ, SITE, polyDist, groundAt, levelAt, unitView, enterUnit, exitUnit, scene, camera, controls, goTo, select, heightAt, renderer, look: enterUnit };
 
 /* ---------- 루프 ---------- */
