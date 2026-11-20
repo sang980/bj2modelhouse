@@ -1167,15 +1167,17 @@ function detailDeck(mat, maskTex) {
   const pav = mk(g => { g.fillStyle = '#7a7a7a'; g.fillRect(0, 0, 256, 256); for (let r = 0; r < 8; r++) for (let k = -1; k < 5; k++) { const x = k * 64 + (r & 1) * 32, y = r * 32, v = 200 + (rand() - .5) * 46 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x + 2, y + 2, 60, 28); } }); /* 2m 칸에 50×25cm 보도블록 */
   const grs = mk(g => { g.fillStyle = '#9a9a9a'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 9000; i++) { const v = 90 + rand() * 140 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(rand() * 256, rand() * 256, 1.2, 2.5 + rand() * 3); } });
   const dot = mk(g => { g.fillStyle = '#ffffff'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 70; i++) { const v = rand() * 60 | 0; g.fillStyle = `rgb(${v},${v},${v})`; g.beginPath(); g.arc(rand() * 256, rand() * 256, 1.6 + rand() * 1.6, 0, 7); g.fill(); } }); /* 11-16 360 사진 WF3·WG4: 데크 길은 밝은 바탕 + 흩어진 짙은 점 */
-  mat.onBeforeCompile = sh => { sh.uniforms.tPav = { value: pav }; sh.uniforms.tGrs = { value: grs }; sh.uniforms.tMask = { value: maskTex }; sh.uniforms.tDot = { value: dot };
+  const blot = mk(g => { g.fillStyle = '#808080'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 70; i++) { const x = rand() * 256, y = rand() * 256, r = 14 + rand() * 42, v = rand() < .5 ? 255 : 0; for (const ox of [-256, 0, 256]) for (const oy of [-256, 0, 256]) { const gr = g.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, r); gr.addColorStop(0, `rgba(${v},${v},${v},.2)`); gr.addColorStop(1, `rgba(${v},${v},${v},0)`); g.fillStyle = gr; g.fillRect(x + ox - r, y + oy - r, 2 * r, 2 * r); } } }); /* 11-21: 잔디 얼룩(큰 무늬) — 가는 풀 무늬는 멀리서 평균돼 한 가지 색 판처럼 보였음 */
+  mat.onBeforeCompile = sh => { sh.uniforms.tPav = { value: pav }; sh.uniforms.tGrs = { value: grs }; sh.uniforms.tMask = { value: maskTex }; sh.uniforms.tDot = { value: dot }; sh.uniforms.tBlot = { value: blot };
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; uniform sampler2D tPav; uniform sampler2D tGrs; uniform sampler2D tMask; uniform sampler2D tDot;').replace('#include <map_fragment>', `#include <map_fragment>
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; uniform sampler2D tPav; uniform sampler2D tGrs; uniform sampler2D tMask; uniform sampler2D tDot; uniform sampler2D tBlot;').replace('#include <map_fragment>', `#include <map_fragment>
       { vec3 c = diffuseColor.rgb; float gn = c.g - max(c.r, c.b), mx = max(c.r, max(c.g, c.b)), sat = mx - min(c.r, min(c.g, c.b)), lum = dot(c, vec3(.299, .587, .114));
         float pv = smoothstep(.3, .7, texture2D(tMask, vMapUv).r); /* 길 마스크 */
         float asph = (1. - smoothstep(.16, .26, lum)) * (1. - smoothstep(.06, .12, sat)); /* 어두운 무채색 = 차로 */
         float gr = 1. - pv; /* 단지 안에는 지상 차로가 없음(모형): 길 아닌 곳은 모두 잔디 */ /* 나머지는 모형처럼 고른 잔디 */
         float P = texture2D(tPav, vWP.xz * .5).r, G = texture2D(tGrs, vWP.xz / 3.).r;
         vec3 pathC = vec3(.657, .59, .50) * (.86 + .2 * P) /* 11-16 모형 VE08·VE17 데크 길(186~192, r−b≈18) */, grassC = vec3(.143, .176, .053) * (.82 + .3 * G); /* 11-16: 모형 영상 녹지 전체 평균(98,113,66)·사진 1(89,102,55)에 맞춰 더 어둡고 덜 노랗게. 모형 영상 VE08·VE17·VE20·VE22 열린 잔디(91~132,106~153,30~73) — 사진 1은 나무 그늘이라 더 어두움 */
+        float B = texture2D(tBlot, vWP.xz / 18.).r * .6 + texture2D(tBlot, vWP.xz / 47. + .37).r * .4; grassC *= .84 + .32 * B; grassC = mix(grassC, grassC * vec3(1.1, 1.05, .82), smoothstep(.52, .68, B)); /* 11-21: 밝은 얼룩은 살짝 연두 쪽 */
         pathC = mix(pathC * 1.08, vec3(.30, .28, .26), (1. - texture2D(tDot, vWP.xz / 4.).r) * .85); diffuseColor.rgb = mix(mix(c, grassC, gr), pathC, pv); }`); };
 }
 
