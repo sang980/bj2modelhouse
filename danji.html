@@ -1773,7 +1773,8 @@ function buildAmenities(MAT) {
     /* 11-16 모형 WE3·WE5·WE6: 도로(서쪽) 면 가운데는 2개 층 높이 파란 유리 커튼월(4칸×2단, 회색 멀리언), 양끝 회색 석재, 남쪽 끝 짙은 세로 홈 */
     { const a = P[0], b = P[3], L = Math.hypot(b[0] - a[0], b[1] - a[1]), u = [(b[0] - a[0]) / L, (b[1] - a[1]) / L], fo = [-u[1], u[0]], at = (sf, o) => [a[0] + u[0] * L * sf + fo[0] * o, a[1] + u[1] * L * sf + fo[1] * o];
       const c1 = at(.43, .07), CW = { gb: G.cw, uv: () => [0, 0, 1, 0, 1, 1, 0, 1] }; obox(c1[0], c1[1], u[0], u[1], L * .62, .1, Y(105.6), Y(115.45), { front: CW, left: { gb: G.fas }, right: { gb: G.fas } });
-      const c2 = at(.86, .05), SL = { gb: G.slot }; obox(c2[0], c2[1], u[0], u[1], 1.4, .08, Y(105.6), Y(116.3), { front: SL, left: SL, right: SL }); }
+      const FS2 = { gb: G.fas }; for (const [s0, s1] of [[0, .12], [.74, 1]]) { const cc = at((s0 + s1) / 2, .05); obox(cc[0], cc[1], u[0], u[1], L * (s1 - s0), .06, Y(105.6), Y(115.45), { front: FS2, left: FS2, right: FS2 }); } /* 11-21 모형 WE6 확대: 커튼월 밖 도로 면은 1층도 유리가 아니라 밝은 회색 석재(남쪽 40%는 막힌 벽 + 짙은 세로 홈) */
+      const c2 = at(.86, .1), SL = { gb: G.slot }; obox(c2[0], c2[1], u[0], u[1], 1.4, .08, Y(105.6), Y(116.3), { front: SL, left: SL, right: SL }); }
     { const a2 = P[2], b2 = P[3], L2 = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]), u2 = [(b2[0] - a2[0]) / L2, (b2[1] - a2[1]) / L2], m2 = [(a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2], o2 = [-u2[1], u2[0]], sd2 = polyDist(P, m2[0] + o2[0], m2[1] + o2[1]) > 0 ? 1 : -1, CH = { gb: G.char, uv: uvTile(6, 4.2) };
       obox(m2[0] + o2[0] * sd2 * .07, m2[1] + o2[1] * sd2 * .07, u2[0], u2[1], L2 + .12, .12, Y(105.6), Y(115.6), { front: CH, back: CH, left: CH, right: CH }); } /* 11-16 360 사진 WG3·WG4: 남쪽 끝 면은 짙은 차콜 + 작은 창 */ } /* 모형 VE05·VE07: 근린생활시설 지붕은 회색 자갈 + 가운데 낮은 기계실 상자(나무는 지붕이 아니라 옆 광장 화단) */ /* 모형 VE07: 2층도 큰 짙은 창(회색 석재 판) */ /* 근린생활시설(도로 GL≈106, 2층): 도로 쪽 면을 경계선 0.8m 바깥으로(1층 유리 상점이 보도에 바로 면함) + 2층 밝은 회색 석재, 회색 지붕 */
   const m = (gb, mat) => { const x = new THREE.Mesh(gb.build(), mat); x.castShadow = x.receiveShadow = true; scene.add(x); };
@@ -1795,9 +1796,9 @@ function buildAmenities(MAT) {
     m(G.stoneBig, am(g => { stoneBase(g); for (const [x, y, w, h] of WB) darkWin(g, x, y, w, h); })); /* 2층: 밝은 석재 + 큰 짙은 창 */
     m(G.brickLit, amE(g => { paintBrown(g, 512, 256); g.fillStyle = 'rgba(255,235,220,.10)'; g.fillRect(0, 196, 512, 8); for (const [x, y, w, h] of W3) litWin(g, x, y, w, h); }, W3)); /* 갈색 띠 + 불 켜진 창 3개/6m */
     m(G.cw, (() => { const c = cnv(512, 256), g = c.getContext('2d'); g.fillStyle = '#a3a7aa'; g.fillRect(0, 0, 512, 256);
-      for (let bx = 0; bx < 4; bx++) for (let r = 0; r < 2; r++) { const x0 = bx * 128 + 7, y0 = r * 128 + 8, w = 114, h = 112, gr = g.createLinearGradient(0, y0, 0, y0 + h); gr.addColorStop(0, '#9cc0e6'); gr.addColorStop(1, '#5f8bc2'); g.fillStyle = gr; g.fillRect(x0, y0, w, h);
+      for (let bx = 0; bx < 4; bx++) for (let r = 0; r < 2; r++) { const x0 = bx * 128 + 14, y0 = r * 128 + 16, w = 100, h = 96, gr = g.createLinearGradient(0, y0, 0, y0 + h); gr.addColorStop(0, '#86aee0'); gr.addColorStop(1, '#4b74ad'); /* 11-21 모형 WE6: 더 짙은 파랑 + 굵은 회색 기둥·층 띠 */ g.fillStyle = gr; g.fillRect(x0, y0, w, h);
         g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(x0 + 10, y0, 16, h); g.fillStyle = '#a3a7aa'; g.fillRect(x0 + w / 2 - 2, y0, 4, h); }
-      const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughness: .25, metalness: .1, emissive: new THREE.Color('#2b4f7c'), emissiveIntensity: .35 }); })()); /* 모형 WE6: 불 켜진 듯 밝은 파란 유리 */
+      const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughness: .45, metalness: 0, envMapIntensity: .45, emissive: new THREE.Color('#2b4f7c'), emissiveIntensity: .3 }); })()); /* 모형 WE6: 불 켜진 듯 밝은 파란 유리 */
     m(G.fas, new THREE.MeshStandardMaterial({ color: '#cfcdc7', roughness: .8 }));
     m(G.big2, am(g => { noiseFill(g, 512, 256, '#b6b2aa', .03, 900); g.fillStyle = 'rgba(70,66,60,.08)'; for (let x = 0; x < 512; x += 64) g.fillRect(x, 0, 2, 256); for (const x of [45, 200]) darkWin(g, x, 66, 108, 122); })); /* 23m에 큰 짙은 창 둘(WG3) */
     { const B3 = [[110, 70, 252, 120]]; m(G.brickLit2, amE(g => { paintBrown(g, 512, 256); g.fillStyle = 'rgba(255,235,220,.10)'; g.fillRect(0, 214, 512, 8); for (const [x, y, w, h] of B3) litWin(g, x, y, w, h); darkWin(g, 440, 96, 26, 70); }, B3)); /* 7.5m마다 넓은 불 켜진 창 + 좁은 짙은 창 */
