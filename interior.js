@@ -5,7 +5,9 @@
 export function initInterior(o) {
   if (window.__interior) return window.__interior;
   const { THREE: T, RoundedBoxGeometry: RBG, scene, renderer, canvas, furn, fixed, movables, rooms, WX, WZ } = o;
-  const KEY = 'mh:interior:' + o.type;
+  /* 저장: '우리 집 들어가기'(동·호)로 들어온 집만 — 옵션 선택 + 가구 배치를 그 동·호 이름으로 이 브라우저에 저장(타입 둘러보기는 저장 안 함) */
+  const KEY = o.home ? 'mh:home:' + o.home : null; let restoring = false;
+  try { localStorage.removeItem('mh:interior:' + o.type); } catch (e) {} /* 예전(타입별) 저장은 정리 */
 
   /* ───── 재질·무늬 ───── */
   const cv = (w, h, f) => { const c = document.createElement('canvas'); c.width = w; c.height = h; f(c.getContext('2d'), w, h); const t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; t.wrapS = t.wrapT = T.RepeatWrapping; t.anisotropy = 4; return t; };
@@ -183,17 +185,22 @@ export function initInterior(o) {
   function restore(g) { g.visible = true; if (!movables.includes(g)) movables.push(g); gone.splice(gone.indexOf(g), 1); o.select(g); changed(); }
   function resetAll() { for (const g of added.slice()) { furn.remove(g); disposeG(g); const i = movables.indexOf(g); if (i >= 0) movables.splice(i, 1); } added.length = 0;
     for (const g of gone.slice()) { g.visible = true; if (!movables.includes(g)) movables.push(g); } gone.length = 0;
-    for (const g of base) { g.position.x = g.userData.home.x; g.position.z = g.userData.home.z; g.rotation.y = g.userData.home.r; } o.select(null); try { localStorage.removeItem(KEY); } catch (e) {} changed(true); }
-  function save() { try { const mv = {}; base.forEach((g, i) => { const h = g.userData.home; if (Math.abs(g.position.x - h.x) > .001 || Math.abs(g.position.z - h.z) > .001 || Math.abs(g.rotation.y - h.r) > .001) mv[i] = [+g.position.x.toFixed(3), +g.position.z.toFixed(3), +g.rotation.y.toFixed(4)]; });
-    const data = { v: 1, add: added.map(g => ({ k: g.userData.cat, p: [+g.position.x.toFixed(3), +g.position.y.toFixed(3), +g.position.z.toFixed(3), +g.rotation.y.toFixed(4)], st: g.userData.st })), del: gone.map(g => base.indexOf(g)).filter(i => i >= 0), mv };
-    if (!data.add.length && !data.del.length && !Object.keys(mv).length) localStorage.removeItem(KEY); else localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {} }
+    for (const g of base) { g.position.x = g.userData.home.x; g.position.z = g.userData.home.z; g.rotation.y = g.userData.home.r; } o.select(null);
+    if (KEY && o.applyPreset) { restoring = true; try { o.applyPreset(); } finally { restoring = false; } for (const g of base) { g.position.x = g.userData.home.x; g.position.z = g.userData.home.z; g.rotation.y = g.userData.home.r; } } /* 우리 집: 옵션도 견본주택 구성으로 */
+    try { if (KEY) localStorage.removeItem(KEY); } catch (e) {} changed(true); }
+  function save() { if (!KEY || restoring) return; try { const mv = {}; base.forEach((g, i) => { const h = g.userData.home; if (Math.abs(g.position.x - h.x) > .001 || Math.abs(g.position.z - h.z) > .001 || Math.abs(g.rotation.y - h.r) > .001) mv[i] = [+g.position.x.toFixed(3), +g.position.z.toFixed(3), +g.rotation.y.toFixed(4)]; });
+    const data = { v: 2, opts: o.sel ? Object.assign({}, o.sel) : null, at: Date.now(), add: added.map(g => ({ k: g.userData.cat, p: [+g.position.x.toFixed(3), +g.position.y.toFixed(3), +g.position.z.toFixed(3), +g.rotation.y.toFixed(4)], st: g.userData.st })), del: gone.map(g => base.indexOf(g)).filter(i => i >= 0), mv };
+    localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {} }
   function changed(noSave) { if (!noSave) save(); o.rebuildFurnColliders(); renderer.shadowMap.needsUpdate = true; o.queueBake(); refresh(); }
-  /* 저장된 배치 되살리기 */
-  try { const d = JSON.parse(localStorage.getItem(KEY) || 'null'); if (d && d.v === 1) {
+  /* 저장된 우리 집 되살리기: 옵션 먼저(옵션에 따라 가구 기본 자리가 바뀜) → 옮긴 자리·치운 가구·추가 가구 */
+  let loaded = null; restoring = true;
+  try { const d = KEY ? JSON.parse(localStorage.getItem(KEY) || 'null') : null; if (d && d.v === 2) { loaded = d;
+    if (d.opts && o.sel && o.applyOptions) { for (const k in o.sel) o.sel[k] = k in d.opts ? d.opts[k] : null; o.applyOptions(); }
     for (const [i, p] of Object.entries(d.mv || {})) { const g = base[+i]; if (g) { g.position.x = p[0]; g.position.z = p[1]; g.rotation.y = p[2]; } }
     for (const i of d.del || []) { const g = base[i]; if (g) { g.visible = false; gone.push(g); const j = movables.indexOf(g); if (j >= 0) movables.splice(j, 1); } }
     for (const a of d.add || []) if (BY[a.k]) add(a.k, a.st, a.p, true);
-    o.rebuildFurnColliders(); renderer.shadowMap.needsUpdate = true; } } catch (e) {}
+    o.rebuildFurnColliders(); renderer.shadowMap.needsUpdate = true; o.queueBake(); } } catch (e) { console.warn('home load', e); }
+  restoring = false; window.__homeSave = () => save(); /* 옵션을 바꿀 때마다(페이지의 applyOptions 끝에서) 저장 */
 
   /* ───── 화면: 왼쪽 인테리어 목록 + 아래 도구 버튼 ───── */
   const css = document.createElement('style'); css.textContent = `
@@ -202,6 +209,8 @@ export function initInterior(o) {
 #intPanel .ih{display:flex;align-items:center;gap:8px;padding:12px 12px 8px 14px;border-bottom:1px solid var(--line)}
 #intPanel .ih h2{font:600 15px var(--display,var(--body));margin:0;flex:1}
 #intPanel .ih button{border:0;background:transparent;color:var(--muted);font-size:14px;width:28px;height:28px;border-radius:8px;cursor:pointer}
+.ihelp b{color:var(--ink)}
+#homeToast{left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);padding:9px 14px;font-size:12.5px;color:var(--ink);z-index:7;transition:opacity .4s;max-width:calc(100vw - 32px)}
 #intPanel .ihelp{font-size:11.5px;color:var(--muted);line-height:1.45;padding:8px 14px 4px}
 #intList{overflow:auto;padding:4px 8px 10px;flex:1}
 #intList h3{font:600 12px var(--body);color:var(--muted);margin:10px 6px 4px;letter-spacing:.02em}
@@ -225,9 +234,10 @@ export function initInterior(o) {
   #intPanel{left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));width:auto;top:calc(60px + env(safe-area-inset-top,0px));bottom:auto;max-height:calc(100% - 300px)}
 }`;
   document.head.appendChild(css);
+  const homeName = o.home ? o.home.replace(/^(\d+)-(T?\d+)$/i, '$1동 $2호') : '';
   const P = document.createElement('div'); P.id = 'intPanel'; P.className = 'panel'; P.hidden = true; P.setAttribute('role', 'region'); P.setAttribute('aria-label', '인테리어');
   P.innerHTML = `<div class="ih"><h2>인테리어</h2><button type="button" id="intClose" aria-label="인테리어 목록 닫기" title="닫기">✕</button></div>
-  <div class="ihelp">[추가]를 누르면 알맞은 방에 놓여요. 놓인 가구는 눌러서 끌어 옮기고, 아래 도구로 회전·삭제해요.</div><div id="intList"></div>`;
+  <div class="ihelp">[추가]를 누르면 알맞은 방에 놓여요. 놓인 가구는 눌러서 끌어 옮기고, 아래 도구로 회전·삭제해요.<br>${KEY ? `<b>${homeName}</b>의 옵션·가구 배치는 이 브라우저에 자동 저장돼 다음에 열면 그대로 나와요.` : '타입 둘러보기는 저장되지 않아요 — ‘우리 집 들어가기’로 들어오면 동·호별로 저장돼요.'}</div><div id="intList"></div>`;
   (document.getElementById('stage') || document.body).appendChild(P);
   const list = P.querySelector('#intList'), imgs = {};
   const groups = [...new Set(CAT.map(c => c.g))];
@@ -235,7 +245,7 @@ export function initInterior(o) {
     let h = ''; for (const gname of groups) { h += `<h3>${gname}</h3>`; for (const C of CAT.filter(c => c.g === gname)) h += `<div class="icard"><img data-k="${C.k}" alt="" ${imgs[C.k] ? `src="${imgs[C.k]}"` : ''}><div class="it"><b>${C.name}</b><small title="${C.model} · ${C.size}">${C.model}<br>${C.size}</small></div><button class="add" type="button" data-add="${C.k}" aria-label="${C.name} 추가">추가</button></div>`; }
     if (added.length) { h += `<h3>추가한 가구 ${added.length}</h3>`; added.forEach((g, i) => { h += `<div class="irow"><span data-sel="a${i}" title="선택">${g.userData.name}</span><button type="button" data-del="a${i}">삭제</button></div>`; }); }
     if (gone.length) { h += `<h3>치운 기존 가구 ${gone.length}</h3>`; gone.forEach((g, i) => { h += `<div class="irow"><span>${g.userData.name}</span><button type="button" data-res="${i}">되돌리기</button></div>`; }); }
-    h += `<button class="ireset" type="button" id="intReset">처음 상태로(추가 가구 빼고, 치운 가구·자리 되돌림)</button>`;
+    h += `<button class="ireset" type="button" id="intReset">${KEY ? '처음 상태로(견본주택 옵션·가구로, 저장 지움)' : '처음 상태로(추가 가구 빼고, 치운 가구·자리 되돌림)'}</button>`;
     list.innerHTML = h;
   }
   list.addEventListener('click', e => { const b = e.target.closest('[data-add],[data-del],[data-res],[data-sel],#intReset'); if (!b) return;
@@ -243,9 +253,10 @@ export function initInterior(o) {
     else if (b.dataset.del) remove(added[+b.dataset.del.slice(1)]);
     else if (b.dataset.res) restore(gone[+b.dataset.res]);
     else if (b.dataset.sel) o.select(added[+b.dataset.sel.slice(1)]);
-    else if (b.id === 'intReset') { if (confirm('추가한 가구를 모두 빼고, 치운 가구와 옮긴 자리를 처음대로 되돌릴까요?')) resetAll(); } });
+    else if (b.id === 'intReset') { if (confirm(KEY ? homeName + '의 저장된 옵션·가구 배치를 지우고 견본주택 구성으로 되돌릴까요?' : '추가한 가구를 모두 빼고, 치운 가구와 옮긴 자리를 처음대로 되돌릴까요?')) resetAll(); } });
   P.querySelector('#intClose').addEventListener('click', () => { P.hidden = true; userClosed = true; });
   refresh();
+  if (loaded) { const t = document.createElement('div'); t.id = 'homeToast'; t.className = 'panel'; t.setAttribute('role', 'status'); const n = loaded.add ? loaded.add.length : 0; t.textContent = `${homeName} — 저장해 둔 옵션·가구 배치를 불러왔어요` + (n ? ` (추가 가구 ${n}개)` : ''); (document.getElementById('stage') || document.body).appendChild(t); setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 4500); }
 
   /* 미리보기 그림: 따로 작은 렌더러로 한 번만 */
   let thumbsDone = false;
