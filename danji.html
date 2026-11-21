@@ -2398,13 +2398,14 @@ function buildOSM() {
     if (kind === 6 && Math.hypot(cx - 250, cz - 114) < 25) { tk = 'gov'; GOV.push({ P, gavg, fh, top }); } if (kind === 6 && Math.hypot(cx - 642.3, cz - 541.3) < 6) tk = 'lib'; if (kind === 6 && Math.hypot(cx - 480, cz - 75) < 8) tk = 'cmty'; if (kind === 6 && Math.hypot(cx - 638.5, cz - 231.6) < 8) tk = 'youth'; /* 11-21 수정유스센터(빌라로 그려지던 것) */ if (kind === 6 && Math.hypot(cx + 877, cz + 94) < 8) tk = 'schoolBrick'; /* 11-21 성남시 중앙도서관(사진: 붉은 벽돌) */ if (kind === 3 && Math.hypot(cx + 329, cz - 740.6) < 8) { tk = 'hosp'; HOSP.push({ P, top }); } /* 11-21 성남시의료원 */ /* 11-21 희망대공원 안 경기성남교육도서관 */ /* 11-21 수정구청(빌라로 그려지던 것) */
     if (kind === 4 && Math.hypot(cx - 119.4, cz - 207.6) < 6) { tk = 'stone'; CHURCH.push({ P, top }); }
     if (kind === 3 && Math.hypot(cx - 516, cz - 434) < 15) tk = 'schoolBrick'; /* 11-21 희망대초등학교(빙 이미지 사진: 붉은 벽돌 교사) */ /* 11-21 새로남교회(신흥초 정문 맞은편) */
+    const foLow = kind === 0 && lv <= 5 && inForestia(cx, cz); if (foLow) tk = 'forestia'; /* 11-21 스카이뷰: 포레스티아 137~139동(4층 테라스동)이 빌라(초록 지붕·벽돌)로 그려지던 것 → 포레스티아 외관 — 빌라였을 때의 rand() 소비는 아래에서 그대로 흉내(다른 건물 배치 유지) */
     const isApt = /^(apt|aptK|aptModern|forestia|xi|xiB)$/.test(tk); if ((tk === 'xi' || tk === 'xiB') && dist < 1600) XI_B.push(P);
     const rd = !/^(shop|pub|ind|schoolBrick|gov|lib|hosp|pav|cmty|youth)$/.test(tk) && lv <= 9 && dist < 2600 ? roadDist(cx, cz) : 1e9, shopG = rd < 16 && lv >= 2;
     const wc = WALL[tk][(rand() * WALL[tk].length) | 0], rc = ROOF[tk][(rand() * ROOF[tk].length) | 0], tw = OSM_TILE[tk];
     let A = 0; for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np]; A += a[0] * b[1] - b[0] * a[1]; }
     const sg = A > 0 ? 1 : -1; let s = 0;
     let fbl = 0, fux = 1, fuz = 0; const foSigns = []; if (tk === 'forestia' || tk === 'xiB') for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L > fbl) { fbl = L; fux = (b[0] - a[0]) / L; fuz = (b[1] - a[1]) / L; } }
-    const yShop = gavg + Math.min(4.2, fh * 1.3), pil = !shopG && /^villa/.test(tk) && lv >= 4 && dist < 1500 && rand() < .55; /* 4층 이상 빌라 절반은 1층 필로티 */
+    const yShop = gavg + Math.min(4.2, fh * 1.3), pil = !shopG && (/^villa/.test(tk) || foLow) && lv >= 4 && dist < 1500 && rand() < .55 && !foLow; /* 4층 이상 빌라 절반은 1층 필로티 */
     for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz); if (L < .05) continue;
       const nx = dz / L * sg, nz = -dx / L * sg, [p, q, sp, sq] = sg < 0 ? [a, b, s, s + L] : [b, a, s + L, s];
       const quad = (gb, y0, y1, u0, u1, v0, v1, col) => gb.quad([p[0], y0, p[1]], [q[0], y0, q[1]], [q[0], y1, q[1]], [p[0], y1, p[1]], [nx, 0, nz], [u0, v0, u1, v0, u1, v1, u0, v1], col);
@@ -2431,6 +2432,7 @@ function buildOSM() {
     for (const [a, b, c] of tris) { const A3 = [P[a][0], top, P[a][1]], B3 = [P[b][0], top, P[b][1]], C3 = [P[c][0], top, P[c][1]], cr = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]);
       if (cr >= 0) R.tri(A3, B3, C3, [0, 1, 0], rc); else R.tri(A3, C3, B3, [0, 1, 0], rc); }
     /* 옥상 구조물: 아파트 기계실(1.8km 안), 빌라 계단실(1.1km 안) */
+    if (foLow && dist < 1100 && rand() < .5) { rand(); if (rand() < .55) rand(); } /* 빌라 옥탑·물탱크 rand 소비 흉내 */
     if ((isApt && lv >= 8 && dist < 1800) || (/^villa/.test(tk) && dist < 1100 && rand() < .5)) {
       let bl = 0, ux = 1, uz = 0; for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L > bl) { bl = L; ux = (b[0] - a[0]) / L; uz = (b[1] - a[1]) / L; } }
       const fo = tk === 'forestia', col = { gb: R, col: vc(fo ? '#d5d8da' : '#e4e4e0') }, colT = { gb: R, col: vc('#cfcfca') }, F = { front: col, back: col, left: col, right: col, top: colT };
