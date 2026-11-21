@@ -2267,7 +2267,7 @@ function kitchenProps(k) {
     { const glass = std(0xf4f8fa, .05, 0, { transparent: true, opacity: .25, depthWrite: false }), names = ['고춧가루', '바질', '강황']; /* 11-21: 유리 양념병 — 속 내용물 + 검은 뚜껑 + 글자 라벨 */
       for (let i = 0; i < 3; i++) { const jx = cx - .1 + i * .045, jz = cz + .02; at(CY(.017, .017, .07, 16), std(lbl[i], .95), jx, T + .039, jz); at(CY(.0203, .0203, .028, 20, 1, true), labelMat(names[i]), jx, T + .052, jz).rotation.y = Math.PI / 3; at(CY(.02, .02, .092, 20, 1, true), glass, jx, T + .05, jz); at(CY(.0212, .0212, .022, 20), blk, jx, T + .107, jz); } }
     at(CY(.0505, .0505, .085, 28, 1, true), labelMat('oil'), cx - .05, T + .104, cz - .08).rotation.y = Math.PI / 3; at(CY(.006, .011, .03, 12), chrome, cx - .05, T + .349, cz - .08); /* 오일병 라벨 + 크롬 따르개 */
-    at(new THREE.SphereGeometry(.035, 24, 16), chrome, cx + .03, T + .039, cz + .1);
+    at(lathe([[0, 0], [.025, 0], [.027, .003], [.045, .022], [.055, .038], [.0575, .041], [.0548, .0412], [.052, .037], [.042, .021], [.025, .0065], [0, .006]], 36), std(0xc9cdd0, .22, .9), cx + .03, T + .004, cz + .1); /* 11-22: VR 메모의 '은색 볼'은 그릇 — 크롬 공(구) → 속 빈 스테인리스 볼(테 말림) */
     at(lathe([[0, 0], [.04, 0], [.06, .02], [.09, .07], [.1, .1], [.094, .1], [.085, .075], [.05, .03], [0, .03]], 32), M.whiteGloss, cx + .07, T, cz - .03);
     const p = tablePlant(k, WX(cx + .07), T - .01, WZ(cz - .03)); p.children[0].visible = false; p.scale.setScalar(1.1); }
 }
