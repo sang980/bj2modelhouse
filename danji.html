@@ -2108,7 +2108,7 @@ function buildSchools() {
     for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length], dx = b2[0] - a2[0], dz = b2[1] - a2[1], L = Math.hypot(dx, dz); if (L < .5) continue; obox((a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2, dx / L, dz / L, L, .3, y1, y1 + .9, { front: { gb: G.roofW }, back: { gb: G.roofW }, top: { gb: G.roofW } }); } }; /* 옥상 난간 */
   const shDetail = (P, yb, top, wk = 'sh', ek = 'shEnd') => { /* 11-21 신흥초: 층마다 흰 슬래브 턱(벽 그림의 흰 띠와 같은 높이, 0.5m 내밀어 그림자), 옥상 계단실 2곳·실외기(스카이뷰 옥상 흰 상자들) — 난수 대신 hash2 */
     for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length], dx = b2[0] - a2[0], dz = b2[1] - a2[1], L = Math.hypot(dx, dz); if (L < 1) continue;
-      for (let f = 1; f <= 3; f++) obox((a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2, dx / L, dz / L, L + .5, .55, yb + f * 3.6 - .03, yb + f * 3.6 + .3, { front: { gb: G.ledge }, back: { gb: G.ledge }, left: { gb: G.ledge }, right: { gb: G.ledge }, top: { gb: G.ledge }, bottom: { gb: G.ledge } }); }
+      for (let f = 1; f <= Math.floor((top - yb) / 3.6 - .3); f++) obox((a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2, dx / L, dz / L, L + .5, .55, yb + f * 3.6 - .03, yb + f * 3.6 + .3, { front: { gb: G.ledge }, back: { gb: G.ledge }, left: { gb: G.ledge }, right: { gb: G.ledge }, top: { gb: G.ledge }, bottom: { gb: G.ledge } }); }
     let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const p of P) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); z0 = Math.min(z0, p[1]); z1 = Math.max(z1, p[1]); }
     const pts = []; for (let gx = x0; gx <= x1; gx += 2.2) for (let gz = z0; gz <= z1; gz += 2.2) { const d = polyDist(P, gx, gz); if (d < -1.6) pts.push([gx, gz, d]); }
     const pens = [], fw = { gb: G[wk], uv: uvTile(13, 3.6) }, fe = { gb: G[ek], uv: uvTile(13, 3.6) };
@@ -2195,6 +2195,7 @@ function buildSchools() {
   { const y = 102 - Y0; pad(102, [[128, 120], [150, 110], [158, 138], [138, 148]]);
     box('sh', [140, 98], 46, 13, y - .6, TOPN, 'roofG', 'shEnd');
     obox(158, 120, -uz, ux, 34, 12, y - .6, TOPN, { front: { gb: G.sh, uv: uvTile(13, 3.6) }, back: { gb: G.sh, uv: uvTile(13, 3.6) }, left: { gb: G.shEnd, uv: uvTile(13, 3.6) }, right: { gb: G.shEnd, uv: uvTile(13, 3.6) }, top: { gb: G.roofG } });
+    { const rq = (cx, cz, vx, vz, L, D) => [[cx - vx * L / 2 + vz * D / 2, cz - vz * L / 2 - vx * D / 2], [cx + vx * L / 2 + vz * D / 2, cz + vz * L / 2 - vx * D / 2], [cx + vx * L / 2 - vz * D / 2, cz + vz * L / 2 + vx * D / 2], [cx - vx * L / 2 - vz * D / 2, cz - vz * L / 2 + vx * D / 2]]; shDetail(rq(140, 98, ux, uz, 46, 13), y - .6, TOPN); shDetail(rq(158, 120, -uz, ux, 34, 12), y - .6, TOPN); } /* 11-21 증축 교사도 신흥초와 같은 층 턱·옥상 설비 */
     box('shEnd', [124, 112], 10, 10, y - .6, TOPN + 1.2, 'roofW'); /* 계단실 */ }
   /* (가상) 공공 복합건물: 도서관 + 수영장 — 공공청사용지, 부지 FH 96 */
   { const y = 96 - Y0, v = [Math.cos(-.9), Math.sin(-.9)];
