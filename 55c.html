@@ -2389,7 +2389,7 @@ const dining = diningS; // (예전 코드 호환용)
   for (const s of [-1, 1]) { /* VR(55C): 양쪽마다 뒤 큰 베이지 베개 → 세운 흰 베개 → 앞 작은 베이지 쿠션(모서리 뾰족한 사각 베개, 서로 겹치지 않게) */
     const a = mesh(sqPillowG(.66, .6, .22), pb, s * .4, .82, -L / 2 + .29, b); a.rotation.set(-.14, -s * .04, 0);
     const w = mesh(sqPillowG(.6, .5, .18), pw, s * .37, .76, -L / 2 + .5, b); w.rotation.set(-.3, s * .14, s * .05);
-    const c = mesh(sqPillowG(.46, .44, .15), pb, s * .3, .73, -L / 2 + .72, b); c.rotation.set(-.55, -s * .16, -s * .04); }
+    const c = mesh(sqPillowG(.46, .44, .15), pb, s * .3, .73, -L / 2 + .72, b); c.rotation.set(-.55, -s * .16, -s * .04); sqPipe(c, .46, .44, std(0xb9a284, .9)); } /* 11-21: 앞 작은 베이지 쿠션 솔기에 한 톤 진한 파이핑 */
   } /* 55A와 같은 흰 프레임 — 헤드보드는 벽판 */
 rug(10.55, 6.45, Math.PI / 2); /* VR 55C: 침대 아래 흰 털 러그 */
 sideTable(9.14, 7.6, true);

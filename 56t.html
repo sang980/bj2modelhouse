@@ -2381,7 +2381,7 @@ await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
   for (const px of [-.39, .39]) { const p = mesh(sqPillowG(.72, .54, .22), wl, px, .81, -L / 2 + .22, b); p.rotation.set(-.2, -px * .1, 0); } /* VR: 뒤 줄 = 큰 흰 사각 베개 2 */
   const band = toTex((() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#f7f6f2'; x.fillRect(0, 0, 64, 64); x.fillStyle = '#d6c7ad'; x.fillRect(0, 22, 64, 20); x.fillStyle = 'rgba(0,0,0,.08)'; x.fillRect(0, 22, 64, 1); x.fillRect(0, 41, 64, 1); return c; })());
   const bm = std(0xffffff, .95, 0, { map: band });
-  for (const [px, ry] of [[-.33, .1], [.33, -.1]]) { const p = mesh(sqPillowG(.52, .46, .16), bm, px, .74, -L / 2 + .46, b); p.rotation.set(-.32, ry, 0); const bt = mesh(CY(.026, .026, .008, 24), std(0xf6f5f1, .35), 0, 0, .079, p, { cast: false }); bt.rotation.x = Math.PI / 2; } } /* VR: 앞 줄 = 베이지 띠 흰 쿠션 2, 납작한 흰 원형 단추 */
+  for (const [px, ry] of [[-.33, .1], [.33, -.1]]) { const p = mesh(sqPillowG(.52, .46, .16), bm, px, .74, -L / 2 + .46, b); p.rotation.set(-.32, ry, 0); sqPipe(p, .52, .46, std(0xd6c7ad, .9)); /* 11-21: 띠 색 파이핑 */ const bt = mesh(CY(.026, .026, .008, 24), std(0xf6f5f1, .35), 0, 0, .079, p, { cast: false }); bt.rotation.x = Math.PI / 2; } } /* VR: 앞 줄 = 베이지 띠 흰 쿠션 2, 납작한 흰 원형 단추 */
 rug(10.35, 6.6, Math.PI / 2); // VR: 침대 아래 회색 털 러그
 // (VR: 침대 옆 협탁 없음) sideTable(9.22, 5.42, true);
 // sideTable(9.22, 7.78, false);
