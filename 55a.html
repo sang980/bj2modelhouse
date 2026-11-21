@@ -821,7 +821,7 @@ function makeDecorPieces() { const V = new THREE.Vector3(), B = new THREE.Box3()
     if (d.direct) { const g = d.direct; if (!g.parent) continue; g.userData = Object.assign({}, g.userData, { name: d.name, movable: true, solid: d.solid, decor: true, home: { x: g.position.x, z: g.position.z, r: g.rotation.y } }); movables.push(g); continue; }
     const objs = d.objs.filter(o => o && o.parent); if (!objs.length) continue;
     B.makeEmpty(); for (const o of objs) { o.updateWorldMatrix(true, true); if (!o.isLight) B.expandByObject(o); } if (B.isEmpty()) continue; B.getCenter(V);
-    const pp = [...new Set(objs.map(o => o.parent))].filter(q => q !== scene), p0 = pp[0], par = pp.length === 1 ? p0 : fixed; if (!p0) continue; /* 고정 장식은 fixed에 두어 '가구 숨기기'와 무관, 충돌도 fixed 묶음 규칙을 따름 */
+    const pp = [...new Set(objs.map(o => o.parent))].filter(q => q !== scene), p0 = pp[0]; if (!p0) continue; let par = p0; const under = (q, a) => { for (let t = q; t; t = t.parent) if (t === a) return true; return false; }; while (par && par !== scene && !pp.every(q => under(q, par))) par = par.parent; if (!par || par === scene) par = fixed; /* 부모가 여럿이면 가장 가까운 공통 상위 묶음(옵션 묶음이면 옵션 표시·숨김을 그대로 따름) */ /* 고정 장식은 fixed에 두어 '가구 숨기기'와 무관, 충돌도 fixed 묶음 규칙을 따름 */
     { let a = p0; while (a && !(a.userData && a.userData.movable)) a = a.parent; if (a) continue; } /* 이미 가구(움직이는 묶음) 안의 액자는 그 가구와 함께 */
     const g = new THREE.Group(); par.add(g); par.updateWorldMatrix(true, false); g.position.copy(par.worldToLocal(new THREE.Vector3(V.x, B.min.y, V.z))); g.position.y = 0; g.updateMatrixWorld(true);
     for (const o of objs) g.attach(o);
@@ -1464,12 +1464,12 @@ ceilingPanel(2.4, 2.9, 2.7, 3.2, .9, 2.6);
 await phase('침실을 꾸미는 중', 61);
 // ── 침실1: 루버 헤드보드 + LED, 침대 옆 블랙 펜던트, 평판등, 커튼 ──
 // 평면도 방향: 헤드보드는 서쪽 벽(x=8.88), 침실 문(북서쪽) 바로 남쪽부터
-pbox(8.88, 8.92, 0, 1.15, 5.32, 7.7, M.fluted, fixed).material = M.fluted; /* 문 옆 스위치·온도조절기(z ~5.18)가 벽판에 묻히지 않게 5.32부터 */
+decorStart('헤드보드 벽판'); /* 11-21 사용자: 안방 벽 장식도 지울 수 있게 */ pbox(8.88, 8.92, 0, 1.15, 5.32, 7.7, M.fluted, fixed).material = M.fluted; /* 문 옆 스위치·온도조절기(z ~5.18)가 벽판에 묻히지 않게 5.32부터 */
 M.fluted.bumpMap.repeat.set(3, 1); M.fluted.map.repeat.set(3, 1);
 pbox(8.88, 8.94, 1.15, 1.19, 5.32, 7.7, M.black, fixed);
 pbox(8.94, 8.95, 1.12, 1.15, 5.37, 7.65, M.ledStrip, fixed, { cast: false });
 pbox(8.88, 8.9, 1.19, H, 5.32, 7.7, std(0xffffff, .8, 0, { map: toTex(grooveCanvas('#e9e6e0', 3)) }), fixed);
-ledRectWall(8.97, 1.6, 6.45, 2.5, .8, 1, 0, 0xffdcb0, .5, 1.6);
+ledRectWall(8.97, 1.6, 6.45, 2.5, .8, 1, 0, 0xffdcb0, .5, 1.6); decorEnd();
 let _pendBlk = null, _pendBrass = null;
 for (const z of [5.3, 7.6]) { const x = 9.17, y = 1.15; decorStart('침대 옆 펜던트');
   /* 11-21 소품 퀄리티업: 무광 검정 금속 원통 갓(둥근 어깨) + 천장 받침·코드 고정구 + 안쪽 놋쇠 반사면 + 살짝 들어간 발광면 + 아래 테 */
@@ -3208,7 +3208,7 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
   for (const [y, h] of [[1.42, .14], [1.2, .12]]) { cab(g, 1.66, 1.78, y, y + h, z0, z0 + .014, wp); cab(g, 1.68, 1.76, y + h - .06, y + h - .02, z0 + .014, z0 + .016, scr); }
   cab(g, 1.68, 1.76, .25, .37, z0, z0 + .012, wp); for (const y of [.285, .335]) mesh(CY(.012, .012, .004, 16), std(0xe6e6e3, .5), WX(1.72), y, WZ(z0 + .014), g, { cast: false }).rotation.x = Math.PI / 2; }
   // 침대 뒤 하늘색 벽판(서쪽 벽, 허리 높이)
-  cab(item('b2unit', '침실2 하늘색 벽판', false), .11, .126, .1, .95, 5.9, 8.1, std(0xa9c0d2, .6)); // 충돌 없음(붙박이장 충돌 상자가 침대 쪽으로 늘어나지 않게)
+  { const g = item('b2unit', '침실2 하늘색 벽판', false); cab(g, .11, .126, .1, .95, 5.9, 8.1, std(0xa9c0d2, .6)); decorGroup('하늘색 벽판', g.children.slice()); } /* 11-21 사용자: 지울 수 있게 */ // 충돌 없음(붙박이장 충돌 상자가 침대 쪽으로 늘어나지 않게)
 /* VR: 알파룸 서쪽 벽 큰 파란 추상화(흰 액자) — 통합형(1-1)이면 벽이 없어 숨김 */
 { const g = item('a-alphaart', '파란 추상화', false);
   /* VR: 파란 그림 — 가로 붓질이 층층이 쌓인 세로 덩어리 */
@@ -3878,7 +3878,7 @@ const PLATE = (() => {
     const [w, hh] = sizes[kind], dep = kind === 'pad' ? .014 : .007; const m = mesh(BX(w, hh, dep), mat(kind), 0, 0, 0, fixed, { cast: false });
     m.position.copy(h.point).addScaledVector(n, dep / 2 + .0005); m.lookAt(m.position.clone().add(n));
     const RB = []; for (const [ox, oy, bw, bh] of ROCKERS[kind] || []) { const r = mesh(BX(bw, bh, .0035), ROCK, 0, 0, 0, fixed, { cast: false }); r.quaternion.copy(m.quaternion); r.position.copy(m.position).add(new THREE.Vector3(ox, oy, dep / 2 + .00175).applyQuaternion(m.quaternion)); RB.push(r); }
-    for (let p = h.object.parent; p && p !== scene; p = p.parent) if ((p.name && tagGroups[p.name] === p) || (p.name && OG[p.name] === p)) { p.attach(m); for (const r of RB) p.attach(r); break; } // 옵션 벽이면 함께 숨김
+    for (let p = h.object.parent; p && p !== scene; p = p.parent) if ((p.name && tagGroups[p.name] === p) || (p.name && OG[p.name] === p)) { p.attach(m); for (const r of RB) p.attach(r); break; } for (let q = h.object; q && q !== scene; q = q.parent) { const de = DECOR.find(d => d.objs && d.objs.includes(q)); if (de) { de.objs.push(m, ...RB); break; } } /* 11-21: 지울 수 있는 벽판(헤드보드 등) 위 판은 그 벽판과 함께 움직이고 지워짐 */ // 옵션 벽이면 함께 숨김
     m.updateMatrixWorld(true); if (wcache) addCache(m); (window.__plates || (window.__plates = [])).push({ kind, p: m.position.clone(), n: n.clone(), w, h: hh }); // 다음 판이 겹쳐 붙지 않게 검사 목록에 추가(+점검용 기록)
     return m;
   };
