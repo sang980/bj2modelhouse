@@ -1683,8 +1683,10 @@ function longUmbrella(par, x, y, z, col, lean = 0, ry = 0) { const g = new THREE
 function foldUmbrella(par, x, y, z, col, ry = 0) { const u = mesh(CY(.028, .028, .25, 18), std(col, .8), x, y + .028, z, par); u.rotation.set(0, ry, Math.PI / 2); }
 function shoeBox(par, x, y, z, w, h, d, col, ry = 0) { const b = mesh(RB(w, h, d, .006, 2), std(col, .85), x, y + h / 2, z, par); b.rotation.y = ry; const l = mesh(BX(w + .004, .008, d + .004), std(col, .75), x, y + h - .02, z, par); l.rotation.y = ry; }
 let _rattan = null; const rattanMat = () => _rattan || (_rattan = std(0xffffff, .9, 0, { map: toTex((() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#b48b5c'; x.fillRect(0, 0, 64, 64); x.strokeStyle = 'rgba(80,55,30,.45)'; x.lineWidth = 2; for (let i = 0; i < 64; i += 6) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 64); x.stroke(); } for (let j = 0; j < 64; j += 4) { x.strokeStyle = j % 8 ? 'rgba(235,205,160,.35)' : 'rgba(80,55,30,.3)'; x.beginPath(); x.moveTo(0, j); x.lineTo(64, j); x.stroke(); } return c; })(), { rep: [3, 2] }) }));
-function diffuser(par, x, y, z) { mesh(CY(.03, .034, .1, 20), std(0xe4eef0, .05, 0, { transparent: true, opacity: .45 }), x, y + .05, z, par, { cast: false }); mesh(CY(.012, .012, .02, 12), M.black, x, y + .11, z, par);
-  for (let i = 0; i < 6; i++) { const r = mesh(CY(.0018, .0018, .26, 5), std(0x2b2420, .7), x + (i - 2.5) * .005, y + .23, z, par, { cast: false }); r.rotation.set((i % 2 - .5) * .3, 0, (i - 2.5) * .08); } }
+function diffuser(par, x, y, z) { /* 11-22 소품 퀄리티업: 신발장 디퓨저 — 가운데를 축으로 기울어 병을 뚫고 위 칸 선반까지 닿던 막대 → 병 입구에서 부채꼴로 퍼지는 검은 리드 7(위 칸 아래까지), 어깨선 있는 연기빛 유리병 + 속 갈색 향 액체 + 크림 띠 라벨 + 검은 목 테 */
+  mesh(new THREE.LatheGeometry([[0, 0], [.032, 0], [.034, .004], [.034, .074], [.027, .088], [.012, .095], [.012, .103], [0, .103]].map(([a, b]) => new THREE.Vector2(a, b)), 24), std(0x3c4044, .05, 0, { transparent: true, opacity: .5, depthWrite: false }), x, y, z, par, { cast: false });
+  mesh(CY(.0305, .0305, .046, 20), std(0x6b4628, .15), x, y + .027, z, par, { cast: false }); mesh(new THREE.CylinderGeometry(.0347, .0347, .028, 24, 1, true), std(0xefeae0, .75), x, y + .045, z, par, { cast: false }); mesh(CY(.0132, .0132, .012, 14), M.black, x, y + .099, z, par, { cast: false });
+  const Y = new THREE.Vector3(0, 1, 0), rd = std(0x1f1d1b, .7); for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2 + .7, tl = .12 + (i % 3) * .05, d = new THREE.Vector3(Math.sin(tl) * Math.cos(a), Math.cos(tl), Math.sin(tl) * Math.sin(a)), L = .17 + (i % 2) * .01, r = mesh(CY(.0016, .0016, L, 5), rd, x + d.x * L / 2, y + .09 + d.y * L / 2, z + d.z * L / 2, par, { cast: false }); r.quaternion.setFromUnitVectors(Y, d); } }
 // 신발장: axis 'z'(앞면이 z=front인 판) | 'x'(앞면이 x=front), back 뒤판 위치, a0..a1 폭, 문 n짝(바깥쪽 경첩, 앞면 쪽으로 열림)
 //   칸 연출(VR·견본주택처럼 비워 두는 칸도): 마지막 칸 아래 두 단은 비워 장우산을 세움
 function shoeCabinet({ parent, axis, front, back, a0, a1, y0 = .1, y1 = 2.3, n = 3, mat = M.kdoor, body = M.kdoor, frame = false, name = '신발장 문' }) {
@@ -1707,7 +1709,10 @@ function shoeCabinet({ parent, axis, front, back, a0, a1, y0 = .1, y1 = 2.3, n =
   // 맨 위 두 단: 신발 상자·라탄 바구니
   { const l5 = lv[Math.min(5, lv.length - 1)], l6 = lv[lv.length - 1], bw = Math.min(.3, cw - .06);
     { const [x, z] = P(cu(0), mid); shoeBox(parent, x, l5, z, bw, .11, .19, 0xc9a77c, ry); shoeBox(parent, x, l5 + .11, z, bw * .9, .1, .18, 0xf0eee8, ry + .05); }
-    { const [x, z] = P(cu(1), mid); const bk = mesh(RB(bw, .15, .22, .02, 2), rattanMat(), x, l6 + .075, z, parent); bk.rotation.y = ry; }
+    { const [x, z] = P(cu(1), mid), bg = new THREE.Group(), rm = rattanMat(), rim = std(0x8a6236, .8), slot = std(0x2a2018, .9), D = .22, W = bw, H = .15; bg.position.set(x, l6, z); bg.rotation.y = ry; parent.add(bg); /* 11-22 소품 퀄리티업: 꽉 찬 라탄 상자 → 속이 빈 라탄 바구니(바닥 + 네 벽) + 짙은 등나무 테두리 + 양 옆 손잡이 구멍 + 안에 접은 리넨 */
+      mesh(BX(W, .012, D), rm, 0, .006, 0, bg, { cast: false }); for (const s2 of [-1, 1]) { mesh(BX(W, H, .012), rm, 0, H / 2, s2 * (D / 2 - .006), bg); mesh(BX(.012, H, D - .024), rm, s2 * (W / 2 - .006), H / 2, 0, bg);
+        mesh(BX(W + .006, .012, .016), rim, 0, H + .004, s2 * (D / 2 - .006), bg, { cast: false }); mesh(BX(.016, .012, D - .026), rim, s2 * (W / 2 - .006), H + .004, 0, bg, { cast: false }); mesh(BX(.0165, .026, .085), slot, s2 * (W / 2 - .006), H - .035, 0, bg, { cast: false }); }
+      mesh(RB(W - .05, .032, D - .07, .012, 2), std(0xe6dccb, .95), 0, .028, 0, bg, { cast: false }); mesh(BX(W - .052, .002, .012), std(0xcfc3ae, .95), 0, .045, -(D - .07) / 2 + .02, bg, { cast: false }); }
     if (n > 2) { const [x, z] = P(cu(n - 1), mid); shoeBox(parent, x, l5, z, bw, .12, .2, 0x2b2b2d, ry); } }
   const lt = .02, lw = (a1 - a0) / n - .006, lh = y1 - y0 - .006;
   for (let c = 0; c < n; c++) { const u0 = a0 + (a1 - a0) * c / n + .003, u1 = u0 + lw, left = c < n / 2;
