@@ -787,6 +787,15 @@ function placeSet(g, px, y, pz, r) { const P = placeGeo(), f = Math.abs(pz) > .0
   { const [x, z] = at(-(r + .055), 0); const n = mesh(P.napkin, P.linen, x, y0 + .0025, z, g, { cast: false }); n.rotation.y = ry; const fk = mesh(P.fork, P.silver, x, y0 + .0065, z, g, { cast: false }); fk.rotation.y = ry; }
   { const [x, z] = at(r + .035, 0); const k = mesh(P.knife, P.silver, x, y0 + .0015, z, g, { cast: false }); k.rotation.y = ry; }
   { const [x, z] = at(r + .03, r + .07); mesh(P.gbase, P.glassM, x, y0 + .003, z, g, { cast: false }); mesh(P.glass, P.glassM, x, y0 + .0585, z, g, { cast: false }); } }
+/* 11-21 사용자: 주방 소품 퀄리티업 — 병·통 라벨 그림(한 바퀴에 2장 반복, 어느 쪽에서 봐도 보이게) */
+const LBL_C = {}; function labelMat(kind) { if (LBL_C[kind]) return LBL_C[kind]; const N = kind === 'wine' ? 2 : 3, c = mkCanvas(256 * N, 128), x = c.getContext('2d'); x.textAlign = 'center'; x.textBaseline = 'middle'; /* 세운 병·통은 3장(어느 방향에서도 글자가 정면 근처) */
+  for (let ox = 0; ox < 256 * N; ox += 256) { x.save(); x.translate(ox, 0);
+    if (kind === 'wine') { x.fillStyle = '#efe6d2'; x.fillRect(0, 0, 256, 128); x.strokeStyle = '#b08d4a'; x.lineWidth = 3; x.strokeRect(18, 10, 220, 108); x.lineWidth = 1; x.strokeRect(24, 16, 208, 96); x.fillStyle = '#7a2230'; x.beginPath(); x.arc(128, 42, 13, 0, 7); x.fill(); x.fillStyle = '#efe6d2'; x.font = 'bold 14px serif'; x.fillText('R', 128, 43); x.fillStyle = '#2b2420'; x.font = 'bold 20px serif'; x.fillText('RESERVE', 128, 76); x.font = '15px serif'; x.fillText('2019', 128, 98); }
+    else if (kind === 'oil') { x.fillStyle = '#e9dfc4'; x.fillRect(0, 0, 256, 128); x.fillStyle = '#4f6b2e'; x.fillRect(0, 0, 256, 18); x.fillRect(0, 110, 256, 18); x.fillStyle = '#3d4f22'; x.font = 'bold 26px serif'; x.fillText('OLIVE OIL', 128, 56); x.font = '15px sans-serif'; x.fillText('EXTRA VIRGIN', 128, 86); x.fillStyle = '#6f8f3a'; x.beginPath(); x.ellipse(40, 64, 9, 5, -.5, 0, 7); x.ellipse(216, 64, 9, 5, .5, 0, 7); x.fill(); }
+    else { x.fillStyle = '#fbfaf6'; x.fillRect(0, 0, 256, 128); x.strokeStyle = '#2a2a2a'; x.lineWidth = 2; x.strokeRect(10, 14, 236, 100); x.fillStyle = '#1e1e1e'; x.font = 'bold 34px sans-serif'; x.fillText(kind, 128, 64); }
+    x.restore(); }
+  const m = std(0xffffff, .75, 0, { map: toTex(c) }); m.userData.lbl = 1; return (LBL_C[kind] = m); }
+const LBL_M = new Map(); function mirLbl(m) { if (!LBL_M.has(m)) { const t = m.map.clone(); t.repeat.x = -1; t.needsUpdate = true; const n = m.clone(); n.map = t; LBL_M.set(m, n); } return LBL_M.get(m); } /* 좌우 반전된 묶음(주방) 안의 라벨은 그림을 다시 뒤집어 글자가 바로 읽히게 */
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -1532,7 +1541,7 @@ function waveWineRack(parent, x, y, z, ry = 0) { const g = new THREE.Group(); g.
 function wineBottle(parent, x, y, z) { const geo = new THREE.LatheGeometry([[0, 0], [.034, 0], [.035, .19], [.03, .23], [.013, .26], [.013, .3], [0, .3]].map(([a, b]) => new THREE.Vector2(a, b)), 28);
   const b = mesh(geo, std(0x1c2a22, .12, .25), x, y, z - .15, parent); b.rotation.x = Math.PI / 2; // 병목이 앞(+z)
   const c = mesh(CY(.0145, .0145, .045, 16), std(0x5a1420, .4, .3), x, y, z + .13, parent); c.rotation.x = Math.PI / 2;
-  const l = mesh(CY(.0352, .0352, .07, 24, 1, true), std(0xefe6d2, .7), x, y, z - .05, parent); l.rotation.x = Math.PI / 2; }
+  const l = mesh(CY(.0352, .0352, .07, 24, 1, true), labelMat('wine'), x, y, z - .05, parent); l.rotation.set(Math.PI / 2, Math.PI / 2, 0); /* 라벨 글자가 위(보이는 쪽)로 */ } /* 11-21: 인쇄 라벨 */
 function wineGlass(parent, x, y, z) { const geo = new THREE.LatheGeometry([[0, 0], [.034, 0], [.035, .003], [.005, .008], [.004, .095], [.022, .105], [.038, .14], [.04, .175], [.036, .2], [.034, .2], [.036, .175], [.034, .14], [.02, .11], [0, .108]].map(([a, b]) => new THREE.Vector2(a, b)), 32);
   mesh(geo, std(0xf2f6f7, .03, 0, { transparent: true, opacity: .32, side: THREE.DoubleSide, depthWrite: false }), x, y, z, parent, { cast: false }); }
 // 흰 가리비(연꽃) 모양 도자기 볼: 회전체의 반지름을 꽃잎 수만큼 물결지게
@@ -2917,6 +2926,7 @@ const indRing = std(0x8a8c90, .3);
 // 주방 본체·쿡탑·냉장고장 옆 유닛을 평면도 방향으로 좌우 반전 (주방 중심 x=6.95 기준)
 // → 냉장고장·키큰장·쿡탑 코너가 동쪽 벽, 발코니 문이 있는 서쪽 벽은 비워 둠
 for (const g of [k, OG.o5base, OG['o5-1'], OG['o5-2'], OG.o6base, OG['o6-1'], OG['o6-2']]) { g.scale.x = -1; g.position.x = 2 * WX(6.95); }
+scene.updateMatrixWorld(true); scene.traverse(o => { if (o.isMesh && o.material && o.material.userData && o.material.userData.lbl && o.matrixWorld.determinant() < 0) o.material = mirLbl(o.material); }); /* 11-21 라벨 반전 보정 */
 // 7-1 침실1 드레스룸 — 경량벽(z=2.5)에 블랙 프레임 유리 양여닫이 + 앞쪽은 파우더 공간
 wall(10.75, 2.5, 12.32, 2.5, TI, [{ from: 10.95, to: 11.75, y1: 2.15, kind: 'open' }], 'dress71');
 { const g = og('o7-1'); // 블랙 프레임 유리 양여닫이 — 드레스룸 쪽(북쪽)으로 열림, 클릭으로 열고 닫기
