@@ -1863,6 +1863,13 @@ await phase('욕실과 발코니를 꾸미는 중', 61);
     mesh(RB(.66, .86, .7, .03), std(c, .35), 0, .51, 0, w); washerDetail(w, c, nm === '건조기', .51); }
   pbox(8.45, 10.0, 1.55, 1.57, .91, 1.3, shelfMatB, g); pbox(8.45, 10.0, 1.9, 1.92, .91, 1.3, shelfMatB, g);
   jugProp(g, WX(8.66), 1.57, WZ(1.1), 0); softenerProp(g, WX(8.86), 1.57, WZ(1.1)); towelsProp(g, WX(9.62), 1.57, WZ(1.1), 0); towelsProp(g, WX(9.2), 1.92, WZ(1.1), .1); /* 11-21: 선반 위 세제통·섬유유연제·수건 */
+  { const bx = WX(9.62), bz = WZ(1.33), by = .945, hh = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }; /* 11-22 세탁실 소품: 건조기 위 라탄 빨래 바구니(엮은 결·두꺼운 테·손잡이 구멍) + 위로 볼록 쌓인 빨래(회색·흰·남색·베이지 천) */
+    const c = mkCanvas(256, 64), x = c.getContext('2d'); x.fillStyle = '#b38c5c'; x.fillRect(0, 0, 256, 64); for (let r = 0; r < 8; r++) for (let k = 0; k < 32; k++) { const v = hh(r, k); x.fillStyle = (r + k) % 2 ? 'rgba(255,230,190,' + (.18 + v * .12).toFixed(3) + ')' : 'rgba(70,45,20,' + (.18 + v * .12).toFixed(3) + ')'; x.fillRect(k * 8, r * 8, 8, 8); } x.strokeStyle = 'rgba(60,38,15,.45)'; x.lineWidth = 1; for (let r = 0; r <= 8; r++) { x.beginPath(); x.moveTo(0, r * 8); x.lineTo(256, r * 8); x.stroke(); }
+    const wv = std(0xffffff, .85, 0, { map: toTex(c, { rep: [3, 1] }), side: THREE.DoubleSide }), rim = std(0x8f6a3f, .7);
+    const bw = mesh(new THREE.CylinderGeometry(.23, .2, .26, 36, 1, true), wv, bx, by + .13, bz, g); bw.scale.set(1, 1, .72); mesh(CY(.2, .2, .012, 32), rim, bx, by + .006, bz, g).scale.set(1, 1, .72);
+    { const t = mesh(new THREE.TorusGeometry(.231, .013, 8, 48), rim, bx, by + .26, bz, g); t.rotation.x = Math.PI / 2; t.scale.set(1, .72, 1); }
+    for (const sd of [-1, 1]) { const hdl = mesh(RB(.012, .03, .085, .01, 2), std(0x2a2118, .9), bx + sd * .228, by + .21, bz, g, { cast: false }); hdl.rotation.z = sd * .14; }
+    for (const [dx, dy, dz, r, col] of [[-.08, .25, .01, .12, 0xb9bcc0], [.07, .26, .03, .11, 0xf2f1ec], [0, .28, -.04, .1, 0x2f3d5c], [.11, .24, -.05, .085, 0xd9cbb0], [-.12, .245, -.06, .08, 0xf2f1ec]]) { const cl = mesh(new THREE.SphereGeometry(r, 16, 10), std(col, .95, 0, { map: M.linen.map }), bx + dx, by + dy, bz + dz, g, { cast: false }); cl.scale.set(1, .42, .78); cl.rotation.y = dx * 9; } }
 }
 await phase('침실을 꾸미는 중', 66);
 // ── 알파룸: 화이트 백라이트 책장(북쪽 벽, 칸마다 막대형 LED) ──
