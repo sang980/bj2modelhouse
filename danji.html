@@ -3112,7 +3112,7 @@ function capNear(E, a, RC) {
 async function capHome(spec) {
   const [dS, hS] = String(spec).split('-'), v = capSpot(+dS, hS), post = m => { const msg = Object.assign({ type: 'danji-cap', cap: spec }, m); window.__capOut = msg; try { parent.postMessage(msg, '*'); } catch (e) {} };
   if (v.err) { post({ err: v.err }); return; }
-  const NEAR = /[?&]near=1/.test(location.search), RC = LOW ? 45 : 60, N = LOW ? 768 : 1024, wait = ms => new Promise(r => setTimeout(r, ms)), eye = new THREE.Vector3(v.x, v.y, v.z), a = Math.atan2(v.fx, v.fz), ca = Math.cos(a), sa = Math.sin(a);
+  const NEAR = /[?&]near=1/.test(location.search), RC = LOW ? 45 : 60, GLc = renderer.getContext(), N = Math.min(LOW ? 1536 : 2048, renderer.capabilities.maxTextureSize, GLc.getParameter(GLc.MAX_RENDERBUFFER_SIZE), GLc.getParameter(GLc.MAX_VIEWPORT_DIMS)[0]), /* 11-21 사용자: 우리 집 창밖 사진 해상도 2배(PC 2048, 폰 1536) */ wait = ms => new Promise(r => setTimeout(r, ms)), eye = new THREE.Vector3(v.x, v.y, v.z), a = Math.atan2(v.fx, v.fz), ca = Math.cos(a), sa = Math.sin(a);
   const rot = (x, y, z) => new THREE.Vector3(x * ca + z * sa, y, -x * sa + z * ca);
   setFly(false); camera.position.copy(eye); controls.target.set(eye.x + v.fx, eye.y, eye.z + v.fz); controls.update(); await wait(700); /* 주변 LOD·그림자가 그 자리에 맞게 몇 프레임 */
   renderer.setPixelRatio(1); renderer.setSize(N, N, false); camera.fov = 90; camera.aspect = 1; camera.near = NEAR ? RC : .25; camera.updateProjectionMatrix(); /* 주변 3D를 따로 보낼 때는 사진에서 그 안쪽을 잘라 냄 */

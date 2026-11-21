@@ -308,7 +308,7 @@ const homeCap = !HOME ? null : (() => { if (!HOME_NEAR) try { const c = sessionS
   return new Promise(res => { const fr = document.createElement('iframe'); fr.src = 'danji.html?cap=' + encodeURIComponent(HOME) + (HOME_NEAR ? '&near=1' : ''); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
     fr.style.cssText = 'position:fixed;left:-3000px;top:0;width:600px;height:600px;border:0;opacity:0;pointer-events:none';
     let fin = false; const done = d => { if (fin) return; fin = true; removeEventListener('message', on); fr.remove(); res(d); };
-    const on = e => { if (e.source !== fr.contentWindow || !e.data || e.data.type !== 'danji-cap') return; if (e.data.faces && !e.data.near) { try { sessionStorage.setItem('homecap:' + HOME, JSON.stringify(e.data)); } catch (er) {} } done(e.data); };
+    const on = e => { if (e.source !== fr.contentWindow || !e.data || e.data.type !== 'danji-cap') return; if (e.data.faces && !e.data.near) { const K = 'homecap:' + HOME, V = JSON.stringify(e.data); try { sessionStorage.setItem(K, V); } catch (er) { try { Object.keys(sessionStorage).filter(k => k.startsWith('homecap:')).forEach(k => sessionStorage.removeItem(k)); sessionStorage.setItem(K, V); } catch (er2) {} } } /* 2배 사진(한 집 약 3MB)은 저장소에 한두 집만 들어가므로 넘치면 예전 집을 지우고 지금 집을 남김 */ done(e.data); };
     addEventListener('message', on); setTimeout(() => done({ err: 'timeout' }), 120000); document.body.appendChild(fr); }); })();
 
 /* ───────── renderer / scene ───────── */
@@ -513,12 +513,13 @@ function artCanvas() {
 }
 
 /* sky / outside view */
-const skyCanvas = LOWMEM ? mkCanvas(2048, 512) : mkCanvas(4096, 1024);
-function paintSky(evening) {
+const SKYW = (LOWMEM ? 2048 : 4096) * (HOME ? 1 : 2), SKYT = Math.max(1, Math.ceil(SKYW / 2048)), skyTiles = Array.from({ length: SKYT }, () => mkCanvas(SKYW / SKYT, SKYW / 4)), skyCanvas = mkCanvas(1024, 256); /* 11-21 사용자: 거실 창밖 그림 해상도 2배(PC 8192×2048, 폰 4096×1024) — 한 장이면 기기 텍스처 한계에 걸릴 수 있어 폭 2048px 조각(PC 4장·폰 2장)에 나눠 그려 원통 조각으로 이어 붙임(같은 씨앗값이라 이음매 없음). skyCanvas는 색 읽기용 작은 전체 그림. 우리 집(?home)은 이 원통 대신 찍은 사진을 쓰므로 그대로 */
+function paintSky(evening) { for (let ti = 0; ti <= SKYT; ti++) paintSkyOne(evening, ti < SKYT ? skyTiles[ti] : skyCanvas, ti < SKYT ? ti : -1); }
+function paintSkyOne(evening, cv, ti) {
   seed = 99;
   // 작은 캔버스(휴대폰)도 같은 그림이 되도록 4096×1024 논리 좌표로 그리고 축소
-  const x = skyCanvas.getContext('2d'), w = 4096, h = 1024, hz = h * 0.47;
-  x.setTransform(skyCanvas.width / w, 0, 0, skyCanvas.height / h, 0, 0);
+  const x = cv.getContext('2d'), w = 4096, h = 1024, hz = h * 0.47;
+  x.setTransform((ti < 0 ? cv.width : SKYW) / w, 0, 0, cv.height / h, ti < 0 ? 0 : -ti * cv.width, 0); /* 조각 ti: 전체 그림에서 자기 칸만 */
   const lite = LOWMEM; // 저사양: 나무·창문 점을 줄여 그리기 시간 단축
   const g = x.createLinearGradient(0, 0, 0, hz);
   if (evening) { g.addColorStop(0, '#1b2440'); g.addColorStop(.6, '#5a4f72'); g.addColorStop(1, '#e19a62'); }
@@ -561,9 +562,9 @@ function paintSky(evening) {
 }
 await phase('하늘과 바깥 풍경을 그리는 중', 6);
 paintSky(false);
-const skyTex = toTex(skyCanvas);
-skyTex.wrapT = THREE.ClampToEdgeWrapping;
-const sky = new THREE.Mesh(new THREE.CylinderGeometry(70, 70, 90, 64, 1, true), new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, toneMapped: false, fog: false }));
+const skyTexs = skyTiles.map(c => { const t = toTex(c); t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping; return t; }), skySync = () => skyTexs.forEach(t => { t.needsUpdate = true; });
+const skyPart = i => new THREE.Mesh(new THREE.CylinderGeometry(70, 70, 90, Math.round(64 / SKYT), 1, true, i * 2 * Math.PI / SKYT, 2 * Math.PI / SKYT), new THREE.MeshBasicMaterial({ map: skyTexs[i], side: THREE.BackSide, toneMapped: false, fog: false }));
+const sky = skyPart(0), skyParts = [sky]; for (let i = 1; i < SKYT; i++) { const m = skyPart(i); sky.add(m); skyParts.push(m); }
 sky.position.y = -1; scene.add(sky);
 const skyFloor = new THREE.Mesh(new THREE.CircleGeometry(70, 48), new THREE.MeshBasicMaterial({ color: 0x8a9a7c, toneMapped: false }));
 skyFloor.rotation.x = -Math.PI / 2; skyFloor.position.y = -46; scene.add(skyFloor);
@@ -577,7 +578,7 @@ if (homeCap) { /* 우리 집: 그린 하늘 원통 대신 조감도에서 찍은
       const m = new THREE.Mesh(new THREE.PlaneGeometry(2 * D, 2 * D), new THREE.MeshBasicMaterial({ map: t, toneMapped: false, fog: false, depthWrite: false }));
       m.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(r, u, d.clone().negate())); m.position.copy(d).multiplyScalar(D); m.renderOrder = -10; m.frustumCulled = false; homeSky.add(m); });
     const ER = (cap.info && cap.info.eyeRel) || null; window.__homeEye = ER ? new THREE.Vector3(ER[0], ER[1], WZ(11.25) + ER[2]) : null; window.__homeNear = cap.near || null;
-    if (ER) homeSky.position.set(window.__homeEye.x, window.__homeEye.y + 1, window.__homeEye.z); else homeSky.position.set(WX(3.875), 1.53 + 1, WZ(11.25 - 2.5)); sky.add(homeSky); window.__homeSky = homeSky; window.__homeInfo = cap.info || null; sky.material.visible = false; skyFloor.material.visible = false; /* 하늘 원통의 자식이라 전체 보기에서 함께 숨음 */
+    if (ER) homeSky.position.set(window.__homeEye.x, window.__homeEye.y + 1, window.__homeEye.z); else homeSky.position.set(WX(3.875), 1.53 + 1, WZ(11.25 - 2.5)); sky.add(homeSky); window.__homeSky = homeSky; window.__homeInfo = cap.info || null; skyParts.forEach(m => { m.material.visible = false; }); skyFloor.material.visible = false; /* 하늘 원통의 자식이라 전체 보기에서 함께 숨음 */
     const I = cap.info || {}; if (bb) bb.textContent = hd + '동 ' + hh + '호 · ' + bb.textContent.replace(/^신혼희망타운\s*/, '');
     if (bs) bs.textContent = (I.fl > 0 ? I.fl + '층' : '테라스층') + (I.f ? '(최고 ' + I.f + '층)' : '') + (I.facing ? ' · 거실 ' + I.facing : '') + ' · 창밖은 3D 조감도의 실제 풍경';
   } else if (bs) bs.textContent = hd + '동 ' + hh + '호 — 창밖 풍경을 불러오지 못해 기본 하늘로 보여 줍니다';
@@ -3130,7 +3131,7 @@ function setTimeMode(t) {
 document.querySelectorAll('#timeSeg button').forEach(b => b.addEventListener('click', () => setTimeMode(b.dataset.time)));
 
 function setTime(eve) {
-  paintSky(eve); skyTex.needsUpdate = true;
+  paintSky(eve); skySync();
   scene.background.set(eve ? 0x1b2236 : 0xcfdbe6);
   skyFloor.material.color.set(eve ? 0x161c1c : 0x8a9a7c);
   sun.intensity = eve || tier >= 2 ? 0 : 3.4; sun.castShadow = tier < 2; /* 그림자가 꺼진 단계(가벼움 이하)에서 햇빛을 켜 두면 벽을 뚫고 방 안 벽·침대를 비춤 → 해는 끄고 주변광으로 보충 */ // 저녁에도 그림자 설정은 그대로(빛만 0) — 바꾸면 모든 셰이더를 다시 만들어 멈춤
@@ -3752,7 +3753,7 @@ window.__mhLoaded = true;
 
 /* 일조 시뮬레이션(sun.js): 날짜·시각별 해·달·하늘 + 창으로 드는 햇빛 */
 import('./sun.js').then(m => m.initSun({ THREE, scene, renderer, sun, hemi, sky, skyFloor, rectLights, state, southWindows, isTouch, getTier: () => tier, getMode: () => mode,
-  simTime: eve => { if ((state.time === 'eve') === eve) return; state.time = eve ? 'eve' : 'day'; setTime(eve); paintSky(false); skyTex.needsUpdate = true; applyLighting(); renderer.toneMappingExposure = BASE_EXPOSURE * (eve ? 1.1 : 1) * (mode === 'doll' ? .72 : 1); document.querySelectorAll('#timeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.time === state.time))); }, /* 밤엔 집 안 조명만 저녁 모드로(하늘은 낮 그림에 색을 곱함) */
+  simTime: eve => { if ((state.time === 'eve') === eve) return; state.time = eve ? 'eve' : 'day'; setTime(eve); paintSky(false); skySync(); applyLighting(); renderer.toneMappingExposure = BASE_EXPOSURE * (eve ? 1.1 : 1) * (mode === 'doll' ? .72 : 1); document.querySelectorAll('#timeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.time === state.time))); }, /* 밤엔 집 안 조명만 저녁 모드로(하늘은 낮 그림에 색을 곱함) */
   restore: t => { setTimeMode(t); applyTier(tier); } })).catch(e => console.warn('sun', e));
 /* 인테리어 메뉴(interior.js): 전체 보기 왼쪽 목록에서 실제 제품 가구 추가 · 기존·추가 가구 선택해 옮기기·회전·삭제 */
 import('./interior.js').then(m => m.initInterior({ THREE, RoundedBoxGeometry, scene, renderer, canvas, furn, fixed, movables, rooms, WX, WZ, type: '55b', home: HOME, sel, applyOptions, applyPreset, getMode: () => mode, getSelected: () => selected, select, rebuildFurnColliders, queueBake })).catch(e => console.warn('interior', e));
