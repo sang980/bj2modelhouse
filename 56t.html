@@ -2400,9 +2400,18 @@ await yieldUI();
   pbox(7.21, 8.31, 0, .1, 2.9, 3.38, M.black, g);
   pbox(7.15, 8.35, .86, .9, 2.84, 3.44, M.counter, g);
   { const rc = new THREE.Group(); rc.position.set(WX((n0 + n1) / 2), ny, WZ((2.86 + nb) / 2)); rc.rotation.y = Math.PI; g.add(rc); const wm = std(0xf4f3ef, .25); /* 흰 전기밥솥(앞면이 주방 쪽) */
-    mesh(CY(.1, .104, .012, 32), std(0x8d8f92, .5), 0, .006, 0, rc); mesh(CY(.108, .1, .15, 40), wm, 0, .087, 0, rc);
-    const lid = mesh(new THREE.SphereGeometry(.106, 40, 10, 0, Math.PI * 2, 0, Math.PI / 2), wm, 0, .16, 0, rc); lid.scale.y = .42;
-    mesh(RB(.09, .045, .012, .006, 2), std(0x2c2f33, .2, .1), 0, .1, .1, rc).rotation.x = -.18; mesh(BX(.05, .012, .02), std(0xc9cbcd, .4, .5), 0, .19, .07, rc); }
+    const L = (pts, n) => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), n), dk = std(0x55585c, .5); /* 11-22 주방 소품 퀄리티업: 전기밥솥 — 둥근 어깨 몸통 + 뚜껑 이음선, 납작한 돔 뚜껑 + 뒤쪽 증기 배출구(구멍 셋), 앞 뚜껑 열림 버튼, 앞면 곡면 검은 유리 조작판(LCD 시각·메뉴 글자·버튼 그림) + 둥근 취사 버튼 */
+    mesh(CY(.1, .104, .012, 32), std(0x8d8f92, .5), 0, .006, 0, rc); mesh(L([[0, 0], [.1, 0], [.106, .01], [.109, .04], [.109, .13], [.105, .148], [.1015, .153], [0, .153]], 48), wm, 0, .012, 0, rc);
+    mesh(new THREE.TorusGeometry(.1015, .0018, 6, 56), dk, 0, .1655, 0, rc).rotation.x = Math.PI / 2;
+    mesh(L([[0, 0], [.103, 0], [.1045, .006], [.1, .022], [.088, .036], [.06, .045], [0, .048]], 48), wm, 0, .166, 0, rc);
+    { const vy = .166 + .046; mesh(L([[0, 0], [.021, 0], [.022, .006], [.018, .012], [0, .013]], 24), std(0xdedcd6, .35), 0, vy - .003, -.052, rc); for (const dx of [-.007, 0, .007]) mesh(new THREE.CircleGeometry(.0024, 10), dk, dx, vy + .0102, -.052, rc, { cast: false }).rotation.x = -Math.PI / 2; }
+    { const b = mesh(RB(.052, .014, .03, .006, 2), std(0xe4e2dc, .3), 0, .166 + .036, .083, rc); b.rotation.x = .38; mesh(BX(.03, .002, .012), dk, 0, .166 + .043, .086, rc, { cast: false }).rotation.x = .38; }
+    { const c = mkCanvas(400, 240), x = c.getContext('2d'); x.fillStyle = '#17191c'; x.fillRect(0, 0, 400, 240); const gr = x.createLinearGradient(0, 0, 0, 240); gr.addColorStop(0, 'rgba(255,255,255,.08)'); gr.addColorStop(.5, 'rgba(255,255,255,0)'); x.fillStyle = gr; x.fillRect(0, 0, 400, 240);
+      x.fillStyle = '#0c171b'; x.fillRect(40, 34, 190, 96); x.fillStyle = '#86e3ff'; x.font = 'bold 66px monospace'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('12:30', 135, 84);
+      x.font = '22px sans-serif'; x.fillStyle = '#d9dde0'; ['백미', '잡곡', '쾌속', '보온'].forEach((t, i) => x.fillText(t, 300, 44 + i * 30)); x.fillStyle = '#86e3ff'; x.beginPath(); x.arc(262, 44, 5, 0, 7); x.fill();
+      x.strokeStyle = '#c9ced2'; x.lineWidth = 3; x.font = '18px sans-serif'; x.fillStyle = '#c9ced2'; ['메뉴', '예약', '취소'].forEach((t, i) => { x.beginPath(); x.arc(70 + i * 80, 178, 20, 0, 7); x.stroke(); x.fillText(t, 70 + i * 80, 218); });
+      const tx = toTex(c), pm = std(0xffffff, .12, .05, { map: tx, emissive: 0xffffff, emissiveMap: tx, emissiveIntensity: .35 }); mesh(new THREE.CylinderGeometry(.1094, .1094, .062, 24, 1, true, -.46, .92), pm, 0, .095, 0, rc, { cast: false });
+      const bt = mesh(CY(.0125, .0125, .005, 24), std(0xe9e7e2, .3), .03, .082, .1105, rc, { cast: false }); bt.rotation.x = Math.PI / 2; mesh(new THREE.TorusGeometry(.0128, .0012, 6, 24), std(0x2b9fd8, .3, 0, { emissive: 0x2b9fd8, emissiveIntensity: .6 }), .03, .082, .1112, rc, { cast: false }); } }
   for (const x of [7.55, 7.95]) pbox(x - .0015, x + .0015, .1, .86, 3.42, 3.424, seamMat, g); /* 거실 쪽(남면) 문 이음선 */
   mesh(new THREE.LatheGeometry([[0, 0], [.08, 0], [.11, .06], [.11, .22], [.06, .3], [.05, .34], [0, .34]].map(([a, b]) => new THREE.Vector2(a, b)), 28), M.whiteGloss, WX(8.1), .9, WZ(3.14), g);
 }
