@@ -1401,7 +1401,9 @@ kInner(5.6, 6.22, 2.15, H, 2.12, 3.94, M.kdoor);         // 상부 브리지장
 // 냉장고장 양 끝 측판: 줄눈 없는 매끈한 판(사진)
 { const panel = std(0xf4f3ef, .62); kInner(5.6, 6.22, 0, 2.15, 2.12, 2.17, panel); kInner(5.6, 6.22, 0, 2.15, 3.91, 3.94, panel); }
 { const fx = 6.2; // 냉장고: 화이트 글라스 4도어 — 앞면 x=fx
-  const fWhite = std(0xf1f0ec, .18, .05), fGap = std(0x9a9893, .7);
+  const fWhite = std(0xffffff, .16, .05, { map: toTex((() => { const c = mkCanvas(256, 512), x = c.getContext('2d'); x.fillStyle = '#eeede9'; x.fillRect(0, 0, 256, 512); /* 11-21 주방 소품 퀄리티업: 흰 유리 냉장고 문 — 은은한 사선 반사광 + 가장자리 살짝 어둡게 */
+    for (const [v, w, a] of [[120, 70, .55], [230, 26, .4]]) { const g2 = x.createLinearGradient(0, v, 0, v + w); g2.addColorStop(0, 'rgba(255,255,255,0)'); g2.addColorStop(.5, `rgba(255,255,255,${a})`); g2.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g2; x.beginPath(); x.moveTo(0, v + 60); x.lineTo(256, v); x.lineTo(256, v + w); x.lineTo(0, v + w + 60); x.fill(); }
+    const e = x.createLinearGradient(0, 0, 256, 0); e.addColorStop(0, 'rgba(0,0,0,.05)'); e.addColorStop(.06, 'rgba(0,0,0,0)'); e.addColorStop(.94, 'rgba(0,0,0,0)'); e.addColorStop(1, 'rgba(0,0,0,.05)'); x.fillStyle = e; x.fillRect(0, 0, 256, 512); return c; })()) }), fGap = std(0x9a9893, .7);
   kInner(5.64, fx - .02, 0, 1.85, 2.82, 3.9, std(0xe4e2dd, .5));
   for (const [y0, y1] of [[1.0, 1.85], [.05, .98]]) for (const [z0, z1] of [[2.83, 3.35], [3.37, 3.89]]) kInner(fx - .02, fx, y0, y1, z0, z1, fWhite);
   kInner(fx - .022, fx - .018, .98, 1.0, 2.83, 3.89, fGap); kInner(fx - .022, fx - .018, .05, 1.85, 3.35, 3.37, fGap);
