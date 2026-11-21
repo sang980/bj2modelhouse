@@ -3069,7 +3069,12 @@ let b6door = null;
   const zc = (z0 + .03 + cz1) / 2;
   cab(g, cin + .02, cin + .19, y0 + .01, y0 + .26, zc - .1, zc - .065, std(0x1f7a8c, .7)); cab(g, cin + .02, cin + .19, y0 + .01, y0 + .24, zc - .065, zc - .03, std(0x2a8ea0, .7));
   cab(g, cin + .03, cin + .17, 1.24, 1.34, zc - .06, zc + .07, std(0xf2f2f0, .8, 0, { map: toTex((() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#f4f4f2'; x.fillRect(0, 0, 64, 64); x.fillStyle = '#1b1b1b'; for (let i = 0; i < 40; i++) { x.beginPath(); x.arc(rnd() * 64, rnd() * 64, 2 + rnd() * 4, 0, 7); x.fill(); } return c; })()) }));
-  mesh(new THREE.SphereGeometry(.035, 16, 12), std(0x3b4a6b, .4), WX(cin + .11), 1.6, WZ(zc), g);
+  { const X = WX(cin + .11), Z = WZ(zc), yb = 1.56, V3 = THREE.Vector3; /* 11-22 소품 퀄리티업: 오픈칸의 남색 공 → 남색 유약 도자기 꽃병(둥근 몸통·가는 목·입술, 유약 흘러내린 아래 띠는 맨 흙색) + 토끼꼬리풀 마른 꽃 3대(가는 줄기 끝 보송한 연베이지 이삭) */
+    mesh(new THREE.LatheGeometry([[0, 0], [.022, 0], [.03, .012], [.036, .04], [.034, .065], [.022, .085], [.011, .1], [.01, .115], [.0135, .12], [.009, .121], [.0075, .11], [0, .108]].map(([a, b]) => new THREE.Vector2(a, b)), 28), std(0x2f3e60, .18, .05), X, yb, Z, g);
+    mesh(new THREE.CylinderGeometry(.0302, .0222, .012, 28, 1, true), std(0xc9b49a, .85), X, yb + .006, Z, g, { cast: false });
+    const sm = std(0xb9a77e, .8), hm = std(0xefe5cf, 1, 0, { map: M.linen.map }), HG = new THREE.SphereGeometry(.011, 12, 10);
+    for (const [dx, dz, h, lean] of [[-.012, .004, .22, -.16], [.006, -.006, .26, .05], [.014, .008, .19, .2]]) { const b0 = new V3(X, yb + .1, Z), tp = new V3(X + dx + Math.sin(lean) * .07, yb + h, Z + dz + Math.cos(lean * 3) * .01), cv = new THREE.QuadraticBezierCurve3(b0, new V3(X + dx * .5, yb + h * .6, Z + dz * .5), tp);
+      mesh(new THREE.TubeGeometry(cv, 10, .0011, 4), sm, 0, 0, 0, g, { cast: false }); const hd = mesh(HG, hm, tp.x, tp.y + .014, tp.z, g, { cast: false }); hd.scale.set(.85, 1.9, .85); hd.rotation.z = -lean * .6; } }
   // 문 옆 벽: 온도조절기 2개 + 아래 콘센트(사진)
   { const g = item('b8', '침실2 스위치', false); // 충돌 없음(벽 장식)
   const wp = std(0xf7f7f5, .45), scr = new THREE.MeshStandardMaterial({ color: 0x111316, emissive: 0x22303a, emissiveIntensity: .4, roughness: .2 });
