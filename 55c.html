@@ -786,6 +786,24 @@ let _wvMat = null; function wvMat() { if (_wvMat) return _wvMat; const c = mkCan
   for (let r = 6, k = 0; r < 120; r += 4.5, k++) { x.strokeStyle = k % 2 ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.16)'; x.lineWidth = 2.4; x.beginPath(); x.arc(128, 128, r, 0, 7); x.stroke(); }
   x.strokeStyle = 'rgba(0,0,0,.18)'; x.lineWidth = 1; for (let i = 0; i < 96; i++) { const a = i / 96 * Math.PI * 2; x.beginPath(); x.moveTo(128 + Math.cos(a) * 10, 128 + Math.sin(a) * 10); x.lineTo(128 + Math.cos(a) * 118, 128 + Math.sin(a) * 118); x.stroke(); }
   x.strokeStyle = '#5b5d61'; x.lineWidth = 7; x.beginPath(); x.arc(128, 128, 123, 0, 7); x.stroke(); return (_wvMat = std(0xffffff, .85, 0, { map: toTex(c) })); }
+/* 11-22 소품 퀄리티업(55C 식탁): 납작한 갈색 판 매트 → 둥근 모서리 가죽 매트(가죽 결·짙은 가장자리 마감·안쪽 박음질), 주황 상자 냅킨 → 세 겹 접힌 리넨 냅킨(접힌 단·리넨 결) + 노끈 매듭 + 유칼립투스 한 가지 — 무늬는 결정적 값 */
+let LTH_S = null; function leatherSet() { if (LTH_S) return LTH_S; const hq = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); };
+  const W = .425, D = .28, r = .03, sh = new THREE.Shape(); sh.moveTo(-W / 2 + r, -D / 2); sh.lineTo(W / 2 - r, -D / 2); sh.quadraticCurveTo(W / 2, -D / 2, W / 2, -D / 2 + r); sh.lineTo(W / 2, D / 2 - r); sh.quadraticCurveTo(W / 2, D / 2, W / 2 - r, D / 2); sh.lineTo(-W / 2 + r, D / 2); sh.quadraticCurveTo(-W / 2, D / 2, -W / 2, D / 2 - r); sh.lineTo(-W / 2, -D / 2 + r); sh.quadraticCurveTo(-W / 2, -D / 2, -W / 2 + r, -D / 2);
+  const mat = new THREE.ExtrudeGeometry(sh, { depth: .004, bevelEnabled: false, curveSegments: 6 }); mat.rotateX(-Math.PI / 2); { const uv = mat.attributes.uv, pa = mat.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, (pa.getX(i) + W / 2) / W, (pa.getZ(i) + D / 2) / D); }
+  const c = mkCanvas(512, 336), x = c.getContext('2d'); x.fillStyle = '#82613f'; x.fillRect(0, 0, 512, 336);
+  for (let i = 0; i < 2600; i++) { const d = hq(i, 1) < .55; x.fillStyle = d ? `rgba(60,38,20,${.08 + hq(i, 2) * .12})` : `rgba(190,150,105,${.05 + hq(i, 2) * .08})`; x.beginPath(); x.ellipse(hq(i, 3) * 512, hq(i, 4) * 336, .8 + hq(i, 5) * 2.2, .6 + hq(i, 6) * 1.2, hq(i, 7) * 3, 0, 7); x.fill(); }
+  const rr = (m, rad) => { x.beginPath(); x.roundRect(m, m, 512 - 2 * m, 336 - 2 * m, rad); }; x.strokeStyle = 'rgba(62,40,22,.55)'; x.lineWidth = 12; rr(4, 34); x.stroke(); x.strokeStyle = 'rgba(62,40,22,.25)'; x.lineWidth = 6; rr(12, 28); x.stroke();
+  x.strokeStyle = '#dcc7a3'; x.lineWidth = 2.6; x.setLineDash([9, 6]); rr(20, 22); x.stroke(); x.setLineDash([]);
+  const lc = mkCanvas(128, 128), q = lc.getContext('2d'); q.fillStyle = '#d9822b'; q.fillRect(0, 0, 128, 128); for (let k = 0; k < 128; k += 2) { q.fillStyle = `rgba(120,60,15,${.05 + hq(k, 11) * .1})`; q.fillRect(0, k, 128, 1); q.fillStyle = `rgba(255,210,150,${.04 + hq(k, 13) * .08})`; q.fillRect(k, 0, 1, 128); }
+  for (let i = 0; i < 60; i++) { q.fillStyle = 'rgba(110,55,15,.18)'; q.fillRect(hq(i, 17) * 128, hq(i, 19) * 128, 3 + hq(i, 23) * 6, 1); }
+  LTH_S = { mat, mm: std(0xffffff, .6, 0, { map: toTex(c) }), layer: RB(.13, .0034, 1, .0016, 2), lin: std(0xffffff, .92, 0, { map: toTex(lc, { rep: [2, 2] }) }), twine: std(0xcdb48a, .95), leaf: std(0x7f9c8c, .75, 0, { side: THREE.DoubleSide }), stem: std(0x6d6a4e, .8) }; return LTH_S; }
+function leatherMat(g, x, y, z) { mesh(leatherSet().mat, LTH_S.mm, x, y - .002, z, g, { cast: false }); }
+function napkinFold(g, x, y, z, ry) { const N = leatherSet(), t = new THREE.Group(); t.position.set(x, y - .005, z); t.rotation.y = ry; g.add(t);
+  for (let k = 0; k < 3; k++) { const d = .07 - k * .009; mesh(N.layer, N.lin, 0, .0017 + k * .0033, k * .0045, t, { cast: false }).scale.z = d; } /* 접힌 단이 앞쪽(−z)으로 계단처럼 */
+  const ty = .0115; mesh(BX(.006, .0014, .056), N.twine, .028, ty, .009, t, { cast: false }); mesh(new THREE.SphereGeometry(.0042, 10, 6), N.twine, .028, ty + .002, .009, t, { cast: false }).scale.set(1, .6, 1);
+  for (const s of [-1, 1]) { const e = mesh(CY(.0011, .0011, .026, 5), N.twine, .028 + s * .009, ty + .001, .009 + .008, t, { cast: false }); e.rotation.set(Math.PI / 2, 0, s * .5); }
+  const st = mesh(CY(.0011, .0009, .1, 5), N.stem, .005, ty + .0035, .006, t, { cast: false }); st.rotation.set(0, 0, Math.PI / 2 + .03); st.rotation.y = .12;
+  for (let i = 0; i < 9; i++) { const u = -.04 + i * .011, sd = i % 2 ? 1 : -1, lf = mesh(new THREE.CircleGeometry(.0065 - i * .0002, 10), N.leaf, .005 + u, ty + .0045 + i * .0002, .006 - u * .12 + sd * .0075, t, { cast: false }); lf.rotation.set(-Math.PI / 2 + sd * .25, 0, 0); lf.scale.set(1, .85, 1); } }
 function placeSet(g, px, y, pz, r) { const P = placeGeo(), f = Math.abs(pz) > .05 ? [0, -Math.sign(pz)] : [px < 0 ? 1 : -1, 0], rt = [-f[1], f[0]], y0 = y - .01, ry = Math.atan2(f[0], f[1]), at = (u, v) => [px + rt[0] * u + f[0] * v, pz + rt[1] * u + f[1] * v];
   placePlate(g, px, y, pz, r); const sp = mesh(P.plate, M.whiteGloss, px, y0 + .0065, pz, g, { cast: false }); sp.scale.set(.68 * r / .1, 1, .68 * r / .1);
   { const [x, z] = at(-(r + .055), 0); const n = mesh(P.napkin, P.linen, x, y0 + .0025, z, g, { cast: false }); n.rotation.y = ry; const fk = mesh(P.fork, P.silver, x, y0 + .0065, z, g, { cast: false }); fk.rotation.y = ry; }
@@ -2307,9 +2325,9 @@ function diningSmall() {
   for (const x of [-.04, -L + .04]) for (const z of [-W / 2 + .04, W / 2 - .04]) mesh(BX(.025, .727, .025), M.black, x, .3635, z, g);
   // 복도 쪽(회전 π 후 로컬 -z) 의자는 식탁 밑으로 밀어 넣음
   for (const x of [-.3, -.8]) { diningChair(g, x, -.56, 0); diningChair(g, x, .56, Math.PI); } /* 요청: 서쪽 의자도 밀어 넣지 않고 동쪽과 같은 간격 */
-  for (const x of [-.3, -.8]) for (const pz of [-.2, .2]) { const m = mesh(BX(.34, .004, .28), std(0x8b6b4f, .85), x, .758, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); placeSet(g, x, .768, pz, .11); }
+  for (const x of [-.3, -.8]) for (const pz of [-.2, .2]) { leatherMat(g, x, .758, pz); placeSet(g, x, .768, pz, .11); }
   tableRunner(g, L, .26, .7525, true); /* VR: 베이지 린넨 러너(양 끝은 상판 모서리에서 접혀 늘어짐) */
-  for (const x of [-.3, -.8]) for (const pz of [-.2, .2]) { const n = mesh(BX(.13, .01, .07), std(0xd9822b, .9), x + .01, .784, pz, g, { cast: false }); n.rotation.y = .5; } /* 접은 주황 냅킨 */
+  for (const x of [-.3, -.8]) for (const pz of [-.2, .2]) napkinFold(g, x + .01, .784, pz, .5); /* 접은 주황 냅킨 */
   tablePlant(g, -.55, .7555, 0);
   g.userData.len = L; return g;
 }
@@ -2325,9 +2343,9 @@ function diningLarge() {
   const cx = [-.33, -.975, -1.62];
   for (const [k, x, z, r] of [['n1', cx[0], -.4, 0], ['n2', cx[1], -.4, 0], ['n3', cx[2], -.4, 0], ['s1', cx[0], .66, Math.PI], ['s2', cx[1], .66, Math.PI], ['s3', cx[2], .66, Math.PI]])
     g.userData.chairs[k] = diningChair(g, x, z, r);
-  for (const px of cx) for (const pz of [-.24, .24]) { const m = mesh(BX(.34, .004, .28), std(0x8b6b4f, .85), px, .758, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); placeSet(g, px, .768, pz, .1); }
+  for (const px of cx) for (const pz of [-.24, .24]) { leatherMat(g, px, .758, pz); placeSet(g, px, .768, pz, .1); }
   tableRunner(g, L, .28, .7525, true); /* VR: 베이지 린넨 러너(양 끝은 상판 모서리에서 접혀 늘어짐) */
-  for (const px of cx) for (const pz of [-.24, .24]) { const n = mesh(BX(.13, .01, .07), std(0xd9822b, .9), px + .01, .784, pz, g, { cast: false }); n.rotation.y = .5; } /* 접은 주황 냅킨 */
+  for (const px of cx) for (const pz of [-.24, .24]) napkinFold(g, px + .01, .784, pz, .5); /* 접은 주황 냅킨 */
   tablePlant(g, -.975, .7555, 0);
   g.userData.len = L; return g;
 }
