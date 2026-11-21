@@ -792,6 +792,38 @@ const LBL_C = {}; function labelMat(kind) { if (LBL_C[kind]) return LBL_C[kind];
     x.restore(); }
   const m = std(0xffffff, .75, 0, { map: toTex(c) }); m.userData.lbl = 1; return (LBL_C[kind] = m); }
 const LBL_M = new Map(); function mirLbl(m) { if (!LBL_M.has(m)) { const t = m.map.clone(); t.repeat.x = -1; t.needsUpdate = true; const n = m.clone(); n.map = t; LBL_M.set(m, n); } return LBL_M.get(m); } /* 좌우 반전된 묶음(주방) 안의 라벨은 그림을 다시 뒤집어 글자가 바로 읽히게 */
+/* 11-21 사용자: 세탁기·보일러·세탁실 선반 소품 퀄리티업(55B·56T용 공용 도우미 — 55A·55C와 같은 앞면·드럼 그림) */
+const WF_C = {}; function washerFace(tint, dryer) { const key = tint + (dryer ? 'd' : 'w'); if (WF_C[key]) return WF_C[key]; /* 앞면 그림(1px = 1mm, 600×820): 세제 서랍·조작부 화면·문 둘레 그늘·아래 덮개 */
+  const c = mkCanvas(600, 820), x = c.getContext('2d'), col = '#' + new THREE.Color(tint).getHexString(), rr = (a, b, w, h, r) => { x.beginPath(); if (x.roundRect) x.roundRect(a, b, w, h, r); else x.rect(a, b, w, h); };
+  { const g = x.createLinearGradient(0, 0, 0, 820); g.addColorStop(0, col); g.addColorStop(1, '#' + new THREE.Color(tint).multiplyScalar(.93).getHexString()); x.fillStyle = g; x.fillRect(0, 0, 600, 820); }
+  x.fillStyle = 'rgba(0,0,0,.08)'; x.fillRect(0, 118, 600, 3); x.fillStyle = 'rgba(255,255,255,.6)'; x.fillRect(0, 121, 600, 2);
+  if (!dryer) { x.strokeStyle = 'rgba(0,0,0,.16)'; x.lineWidth = 3; rr(18, 16, 190, 90, 8); x.stroke(); x.fillStyle = 'rgba(0,0,0,.28)'; rr(70, 82, 86, 12, 6); x.fill(); } /* 세제 서랍 + 손잡이 홈 */
+  else { x.fillStyle = 'rgba(0,0,0,.1)'; for (let i = 0; i < 6; i++) rr(30 + i * 28, 40, 16, 50, 4), x.fill(); } /* 건조기: 물통 쪽 틈 무늬 */
+  x.fillStyle = '#20252b'; rr(232, 22, 190, 78, 10); x.fill(); x.fillStyle = '#8fd3ff'; x.font = 'bold 44px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(dryer ? '0:58' : '1:25', 327, 56); x.fillStyle = '#5fd17a'; for (let i = 0; i < 4; i++) { x.beginPath(); x.arc(254 + i * 46, 88, 3.5, 0, 7); x.fill(); } /* 조작부 화면 */
+  x.fillStyle = 'rgba(0,0,0,.35)'; x.font = '16px sans-serif'; for (const [i, t] of ['표준', '불림', '헹굼', '탈수'].entries()) x.fillText(t, 254 + i * 46, 112);
+  x.fillStyle = 'rgba(0,0,0,.4)'; x.font = '15px sans-serif'; x.textAlign = 'right'; x.fillText(dryer ? '건조 20kg' : '세탁 25kg', 585, 140);
+  { const g = x.createRadialGradient(300, 470, 210, 300, 470, 290); g.addColorStop(0, 'rgba(0,0,0,.12)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(300, 470, 290, 0, 7); x.fill(); } /* 문 둘레 그늘 */
+  x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(0, 770, 600, 3); x.strokeStyle = 'rgba(0,0,0,.14)'; x.lineWidth = 2; rr(470, 782, 100, 26, 4); x.stroke(); /* 아래 덮개 + 배수 필터 문 */
+  const t = toTex(c); return (WF_C[key] = std(0xffffff, .35, 0, { map: t })); }
+let DRUM_M = null; function drumMat() { if (DRUM_M) return DRUM_M; const c = mkCanvas(256, 256), x = c.getContext('2d'), g = x.createRadialGradient(128, 128, 20, 128, 128, 128); g.addColorStop(0, '#5a5f66'); g.addColorStop(1, '#2a2d31'); x.fillStyle = g; x.fillRect(0, 0, 256, 256);
+  x.fillStyle = 'rgba(0,0,0,.45)'; for (let r = 30; r < 124; r += 9) for (let k = 0; k < Math.floor(r * .55); k++) { const a = k / Math.floor(r * .55) * Math.PI * 2; x.beginPath(); x.arc(128 + Math.cos(a) * r, 128 + Math.sin(a) * r, 1.6, 0, 7); x.fill(); } /* 드럼 타공 */
+  x.fillStyle = '#9aa0a8'; for (let k = 0; k < 3; k++) { x.save(); x.translate(128, 128); x.rotate(k * Math.PI * 2 / 3); x.fillRect(-9, 40, 18, 82); x.restore(); } /* 리프터 3개 */
+  return (DRUM_M = std(0xffffff, .5, .4, { map: toTex(c) })); }
+function washerDetail(w, tint, dryer, cy) { const dy = cy - .06; /* 몸통 앞면(z .35)에 앞면 그림·문 테·고무 테·드럼·볼록 유리·손잡이·다이얼 */
+  mesh(new THREE.PlaneGeometry(.6, .82), washerFace(tint, dryer), 0, cy, .3505, w, { cast: false });
+  mesh(new THREE.TorusGeometry(.245, .022, 14, 56), std(0xc9ccd0, .2, .85), 0, dy, .362, w, { cast: false }); mesh(new THREE.TorusGeometry(.205, .013, 10, 48), std(0x33363b, .45, .2), 0, dy, .368, w, { cast: false });
+  mesh(new THREE.CircleGeometry(.205, 40), drumMat(), 0, dy, .3, w, { cast: false }); const dome = mesh(new THREE.SphereGeometry(.4, 40, 8, 0, Math.PI * 2, 0, .553), std(0x34414d, .04, .2, { transparent: true, opacity: .42, depthWrite: false }), 0, dy, .02, w, { cast: false }); dome.rotation.x = Math.PI / 2;
+  mesh(RB(.022, .1, .016, .006), std(0x8d9299, .35, .6), .228, dy, .372, w, { cast: false }); const d = mesh(CY(.032, .032, .022, 28), M.chrome, .17, cy + .35, .36, w, { cast: false }); d.rotation.x = Math.PI / 2;
+  if (!dryer) mesh(new THREE.TorusGeometry(.042, .003, 6, 32), std(0x8fd3ff, .3, 0, { emissive: 0x6fc3ff, emissiveIntensity: .6 }), .17, cy + .35, .352, w, { cast: false }); }
+let BF_M = null; function boilerFaceMat() { if (BF_M) return BF_M; const c = mkCanvas(400, 800), x = c.getContext('2d'), rr = (a, b, w, h, r) => { x.beginPath(); if (x.roundRect) x.roundRect(a, b, w, h, r); else x.rect(a, b, w, h); }; x.fillStyle = '#f7f7f5'; x.fillRect(0, 0, 400, 800);
+  x.fillStyle = 'rgba(0,0,0,.06)'; x.fillRect(0, 560, 400, 3); x.fillStyle = 'rgba(0,0,0,.18)'; for (let i = 0; i < 8; i++) rr(52 + i * 38, 700, 22, 46, 4), x.fill();
+  x.fillStyle = '#d9dbdc'; rr(70, 200, 260, 180, 14); x.fill(); x.fillStyle = '#1d2329'; rr(90, 218, 220, 100, 8); x.fill(); x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#ffb36b'; x.font = 'bold 42px sans-serif'; x.fillText('45°', 145, 262); x.fillStyle = '#8fd3ff'; x.fillText('50°', 255, 262); x.fillStyle = '#c9ced4'; x.font = '16px sans-serif'; x.fillText('난방', 145, 298); x.fillText('온수', 255, 298);
+  for (const [i, cc] of ['#5fd17a', '#f2c14e', '#e8734a'].entries()) { x.fillStyle = cc; x.beginPath(); x.arc(140 + i * 60, 348, 7, 0, 7); x.fill(); } x.fillStyle = 'rgba(0,0,0,.35)'; x.font = '15px sans-serif'; x.fillText('콘덴싱 가스보일러', 200, 140);
+  return (BF_M = std(0xffffff, .3, 0, { map: toTex(c) })); }
+let LJ_T = null; function jugProp(g, x, y, z, ry) { if (!LJ_T) { const c = mkCanvas(256, 320), q = c.getContext('2d'); q.fillStyle = '#2f6fb3'; q.fillRect(0, 0, 256, 320); q.fillStyle = '#ffffff'; q.beginPath(); q.ellipse(128, 170, 104, 92, 0, 0, 7); q.fill(); q.fillStyle = '#2f6fb3'; q.textAlign = 'center'; q.textBaseline = 'middle'; q.font = 'bold 40px sans-serif'; q.fillText('세탁', 128, 150); q.font = 'bold 30px sans-serif'; q.fillText('세제', 128, 196); q.fillStyle = '#8fd3ff'; for (let i = 0; i < 5; i++) { q.beginPath(); q.arc(40 + i * 44, 290, 9, 0, 7); q.fill(); } LJ_T = toTex(c); }
+  const p = new THREE.Group(); p.position.set(x, y, z); p.rotation.y = ry; g.add(p); mesh(RB(.14, .22, .09, .02), std(0x2f6fb3, .35), 0, .11, 0, p); mesh(new THREE.PlaneGeometry(.12, .15), std(0xffffff, .4, 0, { map: LJ_T }), 0, .1, .0455, p, { cast: false }); mesh(CY(.026, .026, .035, 18), std(0xf4f4f2, .4), -.03, .2375, 0, p); const h = mesh(new THREE.TorusGeometry(.03, .009, 8, 16, Math.PI), std(0x2f6fb3, .35), .045, .2, 0, p, { cast: false }); h.rotation.y = Math.PI / 2; return p; } /* 세제통 */
+function softenerProp(g, x, y, z) { mesh(new THREE.LatheGeometry([[0, 0], [.045, 0], [.05, .02], [.05, .15], [.035, .19], [.02, .2], [0, .2]].map(([a, b2]) => new THREE.Vector2(a, b2)), 24), std(0xf2b7c8, .3), x, y, z, g); mesh(CY(.022, .022, .03, 18), std(0xffffff, .4), x, y + .215, z, g); mesh(CY(.0505, .0505, .07, 24, 1, true), labelMat('섬유유연제'), x, y + .09, z, g, { cast: false }).rotation.y = Math.PI / 3; } /* 섬유유연제 */
+function towelsProp(g, x, y, z, ry) { for (const [i, col] of [[0, 0xf3f2ee], [1, 0xc9ccd0], [2, 0xe4d8c0]]) { const t = mesh(RB(.21, .045, .16, .02), std(col, .95), x, y + .0225 + i * .046, z, g); t.rotation.y = ry + (i - 1) * .04; } } /* 개어 둔 수건 3장 */
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -1716,15 +1748,14 @@ await yieldUI();
 { const g = fixed;
   pbox(.11, .86, 0, .08, 7.67, 9.56, std(0xb9aa98, .7, 0, { map: M.balc.map }), g); pbox(.84, .862, 0, .082, 7.668, 9.562, std(0x8d8478, .6), g); // 세탁기 단(가장자리 띠는 단보다 2mm 크게 — 같은 면이면 깜빡임)
   for (const [z, c, nm] of [[8.07, 0xd9d2c6, '세탁기'], [8.79, 0xeeece8, '건조기']]) { const w = piece(nm, .47, z, Math.PI / 2, { movable: false });
-    mesh(RB(.68, .9, .7, .03), std(c, .35), 0, .53, 0, w);
-    mesh(CY(.23, .23, .03, 40), std(0x9a9da2, .25, .7), 0, .52, .36, w).rotation.x = Math.PI / 2; mesh(CY(.19, .19, .032, 40), std(0x23252a, .1, .3), 0, .52, .37, w).rotation.x = Math.PI / 2;
-    mesh(BX(.6, .1, .02), std(c, .3), 0, .9, .35, w); mesh(BX(.16, .04, .006), std(0x1e2024, .2), .12, .9, .362, w); mesh(CY(.03, .03, .02, 20), std(0xf4f4f2, .3), -.2, .9, .36, w).rotation.x = Math.PI / 2; }
+    mesh(RB(.68, .9, .7, .03), std(c, .35), 0, .53, 0, w); washerDetail(w, c, nm === '건조기', .53); }
   pbox(.11, .45, .98, 1.18, 9.16, 9.54, std(0xf2f2f0, .5), g);                     // 보일러 받침함
   pbox(.11, .42, 1.2, 1.9, 9.19, 9.54, std(0xf6f6f4, .45), g);                     // 벽걸이 보일러
-  pbox(.42, .425, 1.75, 1.8, 9.29, 9.44, std(0x2a2c30, .4), g); for (let i = 0; i < 4; i++) pbox(.12, .41, 1.25 + i * .14, 1.255 + i * .14, 9.186, 9.54, std(0xd8d8d6, .5), g, { cast: false }); // 앞쪽 줄이 보일러 앞면보다 4mm 나오게
+  { const f = mesh(new THREE.PlaneGeometry(.35, .7), boilerFaceMat(), WX(.4215), 1.55, WZ(9.365), g, { cast: false }); f.rotation.y = Math.PI / 2; const ga = mesh(CY(.024, .024, .012, 28), M.chrome, WX(.426), 1.27, WZ(9.47), g, { cast: false }); ga.rotation.z = Math.PI / 2; const gf = mesh(CY(.019, .019, .002, 28), std(0xffffff, .4), WX(.433), 1.27, WZ(9.47), g, { cast: false }); gf.rotation.z = Math.PI / 2;
+    const gas = std(0xe9c12c, .45, .1); mesh(CY(.012, .012, 1.2, 12), gas, WX(.28), 1.6, WZ(9.15), g); mesh(BX(.016, .016, .05), std(0xd8432c, .5), WX(.3), 1.1, WZ(9.15), g, { cast: false }); } /* 11-21: 보일러 조작판·압력계·노란 가스관 + 빨간 중간밸브 */ // 앞쪽 줄이 보일러 앞면보다 4mm 나오게
   for (const y of [1.3, 1.72]) pbox(.11, .4, y, y + .025, 8.37, 9.12, std(0xf4f3ef, .45), g);  // 선반 2단
   for (const z of [8.44, 9.05]) { pbox(.11, .14, 1.15, 1.95, z - .015, z + .015, std(0x9a9da2, .3, .7), g); for (const y of [1.3, 1.72]) pbox(.14, .38, y - .05, y, z - .012, z + .012, std(0x9a9da2, .3, .7), g); }
-  pbox(.17, .34, 1.745, 1.92, 8.52, 8.77, std(0xf6f6f4, .5), g); mesh(new THREE.SphereGeometry(.1, 12, 8), M.plant, WX(.25), 1.86, WZ(8.92), g);
+  jugProp(g, WX(.25), 1.745, WZ(8.55), Math.PI / 2); softenerProp(g, WX(.25), 1.745, WZ(8.74)); mesh(new THREE.SphereGeometry(.1, 12, 8), M.plant, WX(.25), 1.86, WZ(8.92), g); towelsProp(g, WX(.25), 1.325, WZ(8.66), Math.PI / 2); /* 11-21: 세제통·섬유유연제·수건 */
 }
 // (실외기실 문: 예전 진회색 루버 문 → 사진대로 흰 여닫이 문(위 wall 정의). 검은 루버는 실외기실 바깥 벽에만)
 await phase('침실을 꾸미는 중', 66);
