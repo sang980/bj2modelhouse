@@ -2054,12 +2054,22 @@ function drapePoly(P, mat, lift, maxE = 3, hf = null) { const out = [], uv = [];
 function buildSchools() {
   const mk = draw => { const c = cnv(512, 256), g = c.getContext('2d'); draw(g); const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughnessMap: roughFrom(t), roughness: 1, envMapIntensity: .6 }); };
   const M = {
-    sh: mk(g => { g.fillStyle = '#efe6cf'; g.fillRect(0, 0, 512, 256); g.fillStyle = '#e59a52'; g.fillRect(0, 0, 512, 22); g.fillRect(0, 234, 512, 22); for (let k = 0; k < 4; k++) { win(g, 18 + k * 124, 64, 100, 120, 3, 6, '#ffffff', 2); g.fillStyle = '#f6b26b'; g.fillRect(18 + k * 124, 196, 100, 10); } g.fillStyle = '#d7cdb4'; g.fillRect(0, 22, 6, 212); }),
+    sh: (() => { /* 11-21 사용자: 단지 거실에서 내려다보는 신흥초 품질 — 한 층(13m×3.6m)을 1024×512로: 교실 창 2개(흰 알루미늄 틀·창살·위 고정창·블라인드·창턱·둘레 그늘), 기둥, 주황 띠 + 흰 슬래브 띠(실제 턱과 같은 높이) */
+      const c = cnv(1024, 512), g = c.getContext('2d'); g.fillStyle = '#efe5cc'; g.fillRect(0, 0, 1024, 512);
+      for (let i = 0; i < 900; i++) { g.fillStyle = hash2(i, 41) < .5 ? 'rgba(255,255,255,.06)' : 'rgba(120,100,60,.045)'; g.fillRect(hash2(i, 17) * 1024, hash2(i, 29) * 512, 2 + hash2(i, 53) * 6, 2 + hash2(i, 67) * 6); }
+      g.fillStyle = '#e4d6b4'; g.fillRect(482, 0, 60, 452); g.fillStyle = 'rgba(0,0,0,.06)'; g.fillRect(538, 0, 4, 452);
+      for (const x0 of [56, 546]) { const W = 422, top = 118, bot = 398; g.fillStyle = '#d6c9a8'; g.fillRect(x0 - 12, top - 12, W + 24, bot - top + 24); g.fillStyle = '#f5f6f6'; g.fillRect(x0 - 6, top - 6, W + 12, bot - top + 12); glass(g, x0, top, W, bot - top, 0);
+        for (let q = 0; q < 4; q++) { const hb = hash2(x0 + q, 7); if (hb < .6) { g.fillStyle = hb < .3 ? 'rgba(246,241,229,.93)' : 'rgba(232,229,220,.88)'; g.fillRect(x0 + q * W / 4 + 4, top + 8, W / 4 - 8, (bot - top - 8) * (.15 + hb * .55)); } }
+        g.fillStyle = '#f5f6f6'; for (let q = 1; q < 4; q++) g.fillRect(x0 + q * W / 4 - 4, top, 8, bot - top); g.fillRect(x0, top + 66, W, 7);
+        g.fillStyle = '#bdb7aa'; g.fillRect(x0 - 14, bot + 6, W + 28, 10); g.fillStyle = 'rgba(0,0,0,.13)'; g.fillRect(x0 - 14, bot + 16, W + 28, 5); }
+      g.fillStyle = '#e8954f'; g.fillRect(0, 450, 1024, 16); g.fillStyle = '#f6f3ec'; g.fillRect(0, 466, 1024, 46); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, 466, 1024, 3);
+      const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughnessMap: roughFrom(t), roughness: 1, envMapIntensity: .6 }); })(),
+    ledge: new THREE.MeshStandardMaterial({ color: '#f3f1ea', roughness: .8 }), acu: new THREE.MeshStandardMaterial({ color: '#cdd1d4', roughness: .55, metalness: .25 }),
     shEnd: mk(g => { g.fillStyle = '#f2a65c'; g.fillRect(0, 0, 512, 256); g.fillStyle = '#ffffff'; for (let x = 0; x < 512; x += 64) g.fillRect(x, 0, 10, 256); win(g, 200, 70, 110, 110, 2, 6, '#ffffff', 2); }),
     brick: mk(g => { brickFill(g, 512, 256); g.fillStyle = '#e8e2d8'; g.fillRect(0, 0, 512, 16); g.fillRect(0, 240, 512, 16); for (let k = 0; k < 4; k++) win(g, 20 + k * 124, 60, 96, 128, 2, 7, '#f1efea', 1); }),
     gym: mk(g => { g.fillStyle = '#e9ecee'; g.fillRect(0, 0, 512, 256); g.fillStyle = '#c9d0d6'; for (let x = 0; x < 512; x += 16) g.fillRect(x, 0, 2, 256); glass(g, 20, 150, 472, 60, 1); g.fillStyle = '#8fa3b3'; g.fillRect(0, 0, 512, 18); }),
-    gymR: new THREE.MeshStandardMaterial({ color: '#3f6fa6', roughness: .55, metalness: .2 }),
-    roofG: new THREE.MeshStandardMaterial({ color: '#5f9a78', roughness: .9 }), roofB: new THREE.MeshStandardMaterial({ color: '#6e4636', roughness: .85 }), roofW: new THREE.MeshStandardMaterial({ color: '#d9d9d4', roughness: .9 }),
+    gymR: (() => { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#3f6fa6'; g.fillRect(0, 0, 256, 256); for (let x = 0; x < 256; x += 16) { g.fillStyle = 'rgba(255,255,255,.16)'; g.fillRect(x, 0, 3, 256); g.fillStyle = 'rgba(0,20,50,.2)'; g.fillRect(x + 9, 0, 4, 256); } g.fillStyle = 'rgba(0,20,50,.25)'; g.fillRect(0, 126, 256, 4); return new THREE.MeshStandardMaterial({ map: tex(c), roughness: .5, metalness: .25 }); })(), /* 11-21 체육관 파란 지붕: 금속 골판 줄(스카이뷰), 학교 축 방향 평면 UV 4m */
+    roofG: (() => { const c = cnv(512, 512), g = c.getContext('2d'); g.fillStyle = '#41775a'; g.fillRect(0, 0, 512, 512); for (let i = 0; i < 160; i++) { g.fillStyle = hash2(i, 13) < .5 ? 'rgba(255,255,255,.018)' : 'rgba(0,30,15,.03)'; g.beginPath(); g.arc(hash2(i, 3) * 512, hash2(i, 5) * 512, 20 + hash2(i, 9) * 50, 0, 7); g.fill(); } g.fillStyle = 'rgba(20,52,34,.4)'; for (let k = 0; k <= 512; k += 128) { g.fillRect(k - 1, 0, 2, 512); g.fillRect(0, k - 1, 512, 2); } return new THREE.MeshStandardMaterial({ map: tex(c), roughness: .85 }); })(), /* 우레탄 방수 초록 옥상: 이음줄 1.5m·얼룩(평면 UV 6m) */ roofB: new THREE.MeshStandardMaterial({ color: '#6e4636', roughness: .85 }), roofW: new THREE.MeshStandardMaterial({ color: '#d9d9d4', roughness: .9 }),
     stripe: mk(g => { const C = ['#f0f0ee', '#e98a52', '#f0f0ee', '#9db7cf']; for (let x = 0; x < 512; x += 32) { g.fillStyle = C[(x / 32) % 4]; g.fillRect(x, 0, 32, 256); } }),
     solar: new THREE.MeshStandardMaterial({ map: (() => { const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#2a3f5f'; g.fillRect(0, 0, 256, 256); g.strokeStyle = '#7e93ad'; g.lineWidth = 2; for (let x = 0; x <= 256; x += 32) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 256); g.stroke(); } for (let y = 0; y <= 256; y += 20) { g.beginPath(); g.moveTo(0, y); g.lineTo(256, y); g.stroke(); } return tex(c); })(), roughness: .3, metalness: .4 }),
     dirt: new THREE.MeshLambertMaterial({ color: '#c8ad86' }),
@@ -2078,10 +2088,18 @@ function buildSchools() {
       G[wk].quad([p[0], y0, p[1]], [q[0], y0, q[1]], [q[0], y1, q[1]], [p[0], y1, p[1]], [nx, 0, nz], [sp / 13, 0, sq / 13, 0, sq / 13, (y1 - y0) / 3.6, sp / 13, (y1 - y0) / 3.6]); s += L; }
     for (const [i0, i1, i2] of THREE.ShapeUtils.triangulateShape(P.map(p => new THREE.Vector2(p[0], p[1])), [])) { const A3 = [P[i0][0], y1, P[i0][1]], B3 = [P[i1][0], y1, P[i1][1]], C3 = [P[i2][0], y1, P[i2][1]], cr = (B3[2] - A3[2]) * (C3[0] - A3[0]) - (B3[0] - A3[0]) * (C3[2] - A3[2]); cr >= 0 ? G[rk].tri(A3, B3, C3, [0, 1, 0]) : G[rk].tri(A3, C3, B3, [0, 1, 0]); }
     for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length], dx = b2[0] - a2[0], dz = b2[1] - a2[1], L = Math.hypot(dx, dz); if (L < .5) continue; obox((a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2, dx / L, dz / L, L, .3, y1, y1 + .9, { front: { gb: G.roofW }, back: { gb: G.roofW }, top: { gb: G.roofW } }); } }; /* 옥상 난간 */
+  const shDetail = (P, yb, top, wk = 'sh', ek = 'shEnd') => { /* 11-21 신흥초: 층마다 흰 슬래브 턱(벽 그림의 흰 띠와 같은 높이, 0.5m 내밀어 그림자), 옥상 계단실 2곳·실외기(스카이뷰 옥상 흰 상자들) — 난수 대신 hash2 */
+    for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length], dx = b2[0] - a2[0], dz = b2[1] - a2[1], L = Math.hypot(dx, dz); if (L < 1) continue;
+      for (let f = 1; f <= 3; f++) obox((a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2, dx / L, dz / L, L + .5, .55, yb + f * 3.6 - .03, yb + f * 3.6 + .3, { front: { gb: G.ledge }, back: { gb: G.ledge }, left: { gb: G.ledge }, right: { gb: G.ledge }, top: { gb: G.ledge }, bottom: { gb: G.ledge } }); }
+    let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const p of P) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); z0 = Math.min(z0, p[1]); z1 = Math.max(z1, p[1]); }
+    const pts = []; for (let gx = x0; gx <= x1; gx += 2.2) for (let gz = z0; gz <= z1; gz += 2.2) { const d = polyDist(P, gx, gz); if (d < -1.6) pts.push([gx, gz, d]); }
+    const pens = [], fw = { gb: G[wk], uv: uvTile(13, 3.6) }, fe = { gb: G[ek], uv: uvTile(13, 3.6) };
+    for (const q of pts) { if (q[2] > -4.4 || pens.length >= 2 || hash2(q[0] * 3 | 0, q[1] * 5 | 0) > .3 || pens.some(o => Math.hypot(o[0] - q[0], o[1] - q[1]) < 26)) continue; pens.push(q); obox(q[0], q[1], ux, uz, 7, 5, top, top + 3.4, { front: fw, back: fw, left: fe, right: fe, top: { gb: G.roofW } }); }
+    let n = 0; for (const q of pts) { if (n >= 36 || hash2(q[0] * 7 | 0, q[1] * 11 | 0) > .17 || pens.some(o => Math.hypot(o[0] - q[0], o[1] - q[1]) < 6.5)) continue; n++; const A = { gb: G.acu }; obox(q[0], q[1], ux, uz, 1.1, .75, top, top + .95, { front: A, back: A, left: A, right: A, top: A }); } };
   for (const b of SCHOOL_BLD) { const sp = SCHOOL_PADS.find(q => inPoly(q.p, b.cx, b.cz)) || SCHOOL_PADS[0], y = sp.h - Y0, xs = b.P.map(p => p[0]), zs = b.P.map(p => p[1]), area = (Math.max(...xs) - Math.min(...xs)) * (Math.max(...zs) - Math.min(...zs));
     if (b.np === 4 && sp.n === '성남여중' && area > 900) ext(b.P, y - .6, y + 12.5, 'gym', 'gymR');
-    else if (sp.n === '신흥초') ext(b.P, y - .6, y + 4 * 3.6, 'sh', 'roofG');
-    else ext(b.P, y - .6, y + 4 * 3.6, 'brick', 'roofB'); }
+    else if (sp.n === '신흥초') { ext(b.P, y - .6, y + 4 * 3.6, 'sh', 'roofG'); shDetail(b.P, y - .6, y + 4 * 3.6); }
+    else { ext(b.P, y - .6, y + 4 * 3.6, 'brick', 'roofB'); shDetail(b.P, y - .6, y + 4 * 3.6, 'brick', 'brick'); } } /* 성남여중 벽돌 교사도 층 턱(벽돌 그림의 흰 띠 높이)·옥상 계단실·실외기 */
   /* 신흥초: 흙 운동장 + 태양광 지붕 강당(스카이뷰 동쪽) + 무지개 담장 */
   { const y = 106.3 - Y0; pad(106.3, [[56, 122], [96, 114], [104, 156], [64, 164]]);
     box('gym', [111, 138], 28, 40, y - .6, y + 15.2, 'roofW'); obox(111, 138, ux, uz, 25, 37, y + 15.25, y + 15.3, { top: { gb: G.solar } }); /* 새나리관(체육관, 위성사진: 지붕 전체 태양광) — 높이 신흥초 교사와 비슷하게 */
@@ -2176,6 +2194,8 @@ function buildSchools() {
   { const y = 100.6 - Y0; pad(100.6, [[-24, 160], [14, 150], [26, 186], [-12, 198]]);
     const v = [.494, .870], ac = [-26.14, 201.46], yb = y - .6; /* 11-17 로드뷰·위성사진: 운동장 가장자리 얇은(5.5m) 부속동 — 비탈 위 마당에 */ /* 11-17 사용자 지적(길 침범)·카카오 위성사진: 줄무늬 지붕 부속동은 운동장 서남서 변을 따라 나란히(본선 중심에서 약 19m, 보도 밖) — 전엔 본선 쪽으로 비스듬히 뻗어 보도·차로에 닿음 */ obox(ac[0], ac[1], v[0], v[1], 36, 5.5, yb, y + 2 * 3.6, { front: { gb: G.brick, uv: uvTile(13, 3.6) }, back: { gb: G.brick, uv: uvTile(13, 3.6) }, left: { gb: G.brick, uv: uvTile(13, 3.6) }, right: { gb: G.brick, uv: uvTile(13, 3.6) } });
     obox(ac[0], ac[1], v[0], v[1], 36.6, 6.1, y + 2 * 3.6, y + 2 * 3.6 + .1, { top: { gb: G.stripe, uv: true, uvTop: uvPlanar(8) } }); }
+  { const R = G.roofG, p = R.p; R.u = []; for (let i = 0; i < p.length; i += 3) R.u.push(p[i] / 6, p[i + 2] / 6); } /* 초록 옥상 무늬: 평면 UV */
+  { const R = G.gymR, p = R.p; R.u = []; for (let i = 0; i < p.length; i += 3) R.u.push((p[i] * ux + p[i + 2] * uz) / 4, (-p[i] * uz + p[i + 2] * ux) / 4); }
   for (const k in G) { if (!G[k].i.length) continue; const m = new THREE.Mesh(G[k].build(), M[k]); m.castShadow = m.receiveShadow = true; scene.add(m); }
   SCHOOL_SKIP = [[-80, 85, 140, 200]];
 }
