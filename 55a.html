@@ -3276,9 +3276,13 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
       const f = mesh(BX(w, h, .022), M.black, x, y, 0, d.pivot); f.userData.door = d; doorMeshes.push(f); } } // 얇은 블랙 테
   // 오픈 선반 소품: 화분 + 디퓨저
   tablePlant(g, WX(nx0 + .12), cnt, WZ(nb + .18)).scale.setScalar(.6); /* 위 선반(거울장 바닥)을 잎이 뚫지 않게 */
-  { const dx = nx1 - .12, dz = nb + .2;
-    mesh(new THREE.LatheGeometry([[0, 0], [.035, 0], [.04, .03], [.035, .08], [.012, .1], [.01, .12], [0, .12]].map(([x, y]) => new THREE.Vector2(x, y)), 20), M.glass, WX(dx), cnt, WZ(dz), g, { cast: false });
-    for (let i = 0; i < 5; i++) { const s = mesh(CY(.0018, .0018, .17, 5), M.black, WX(dx), cnt + .18, WZ(dz), g, { cast: false }); s.rotation.set(Math.cos(i * 1.3) * .2, 0, Math.sin(i * 1.3) * .2); } }
+  { const dx = nx1 - .12, dz = nb + .2, X = WX(dx), Z = WZ(dz); /* 11-22 소품 퀄리티업: 선반 디퓨저 — 가운데를 축으로 기울어 병 옆구리를 뚫던 검은 막대 5 → 병 입구에서 부채꼴로 퍼지는 라탄 리드 7(위 선반 아래까지), 맑은 두꺼운 유리병 속 연호박 향 액체 + 바닥 두께, 금색 목 테 + 크림 띠 라벨 */
+    const LP = a => a.map(([x, y]) => new THREE.Vector2(x, y));
+    mesh(new THREE.LatheGeometry(LP([[0, 0], [.035, 0], [.04, .03], [.035, .08], [.012, .1], [.01, .12], [0, .12]]), 28), std(0xe3ebe8, .02, 0, { transparent: true, opacity: .16, depthWrite: false }), X, cnt, Z, g, { cast: false });
+    mesh(new THREE.LatheGeometry(LP([[0, .012], [.031, .012], [.0355, .03], [.0335, .062], [0, .062]]), 24), std(0xc07f34, .12, 0), X, cnt, Z, g, { cast: false });
+    mesh(new THREE.CylinderGeometry(.0373, .0392, .022, 28, 1, true), std(0xf1ece2, .75), X, cnt + .052, Z, g, { cast: false }); mesh(new THREE.CylinderGeometry(.0371, .0374, .003, 28, 1, true), std(0x3a3a3a, .6), X, cnt + .052, Z, g, { cast: false });
+    mesh(CY(.0122, .0128, .014, 18), std(0xc9a64a, .25, .9), X, cnt + .113, Z, g, { cast: false });
+    const Y = new THREE.Vector3(0, 1, 0), rd = std(0x7a5a3a, .8); for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2 + .4, tl = .14 + (i % 3) * .05, d = new THREE.Vector3(Math.sin(tl) * Math.cos(a), Math.cos(tl), Math.sin(tl) * Math.sin(a)), L = .155 + (i % 2) * .012, r = mesh(CY(.0016, .0016, L, 5), rd, X + d.x * L / 2, cnt + .1 + d.y * L / 2, Z + d.z * L / 2, g, { cast: false }); r.quaternion.setFromUnitVectors(Y, d); } }
   // 문 쪽 기둥(x 1.37–1.6): 앞은 막힘, 옆구리(문 쪽)에 벽 쪽으로 좁은 오픈칸 4칸
   const cx0 = 1.37, cx1 = 1.6, cin = 1.39, cz1 = 5.37, y0 = .9, y1 = 2.2;
   cab(g, cx0, cin, .06, top, z0, z1, body); cab(g, cin, cx1, .06, top, cz1, z1, body);
