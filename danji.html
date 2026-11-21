@@ -1018,11 +1018,22 @@ function paintTerrain(N, E) {
     for (const q of woods) { fg2.beginPath(); q.p.forEach((p, i) => { const X = (p[0] + E) / (2 * E) * H, Z = (p[1] + E) / (2 * E) * H; i ? fg2.lineTo(X, Z) : fg2.moveTo(X, Z); }); fg2.closePath(); fg2.fill(); }
     const up = cnv(M, M), ug = up.getContext('2d'); ug.imageSmoothingEnabled = true; ug.drawImage(fc, 0, 0, M, M); const d = ug.getImageData(0, 0, M, M).data; oF = new Float32Array(M * M); for (let i = 0; i < M * M; i++) oF[i] = d[i * 4 + 3] / 255; }
   GEO.fmask = { M, E, a: new Float32Array(M * M) };
+  /* 11-21 OSM에 숲 윤곽이 빠진 산(동쪽 남한산성 줄기 등 — 3km 보기에서 맨흙·회색으로 보이던 것): 건물(45m)·토지이용·도로(폭+30m)가 없는 경사지(7%↑)·높은 곳(해발 160m↑)은 숲 색. 나무 배치용 fmask는 그대로 */
+  let urb = null; if (GEO.bld) { const H = M >> 1, uc = cnv(H, H), ug2 = uc.getContext('2d'), S = H / (2 * E), pth = (P2, close) => { ug2.beginPath(); P2.forEach((p, k) => { const X = (p[0] + E) * S, Z = (p[1] + E) * S; k ? ug2.lineTo(X, Z) : ug2.moveTo(X, Z); }); if (close) ug2.closePath(); };
+    ug2.fillStyle = ug2.strokeStyle = '#fff'; ug2.lineCap = ug2.lineJoin = 'round'; const B = GEO.bld; let bi = 0;
+    while (bi < B.length) { const np = B[bi + 4]; bi += 5; let cx = 0, cz = 0; for (let k = 0; k < np; k++) { cx += B[bi] * .2; cz += B[bi + 1] * .2; bi += 2; } ug2.beginPath(); ug2.arc((cx / np + E) * S, (cz / np + E) * S, 45 * S, 0, 7); ug2.fill(); }
+    for (const l of (GEO.env && GEO.env.land) || []) if (l.k !== 'military') { pth(l.p, true); ug2.fill(); }
+    for (const r of (GEO.env && GEO.env.roads) || []) if (r.w >= 7 && r.t !== 1) { ug2.lineWidth = (r.w + 30) * S; pth(r.p, false); ug2.stroke(); }
+    const rc2 = cnv(H, H), rg2 = rc2.getContext('2d'); rg2.fillStyle = rg2.strokeStyle = '#fff'; rg2.lineCap = 'round'; /* 길·건물 밀도(약 150m 평균): 건물 없는 바둑판 골목(재개발 빈터 등)은 숲이 아님, 산을 지나는 길 한 줄은 그대로 숲 */
+    for (const r of (GEO.env && GEO.env.roads) || []) if (r.t !== 1 && !/^(footway|path|steps|cycleway|pedestrian|track)$/.test(r.k)) { rg2.lineWidth = (r.w + 10) * S; rg2.beginPath(); r.p.forEach((p, k) => { const X = (p[0] + E) * S, Z = (p[1] + E) * S; k ? rg2.lineTo(X, Z) : rg2.moveTo(X, Z); }); rg2.stroke(); }
+    let dc = rc2; for (let w = H >> 1; w >= 64; w >>= 1) { const c4 = cnv(w, w), g4 = c4.getContext('2d'); g4.imageSmoothingEnabled = true; g4.imageSmoothingQuality = 'high'; g4.drawImage(dc, 0, 0, w, w); if (dc !== rc2) dc.width = dc.height = 1; dc = c4; }
+    const up2 = cnv(M, M), ug3 = up2.getContext('2d'); ug3.imageSmoothingEnabled = true; ug3.drawImage(uc, 0, 0, M, M); const d3 = ug3.getImageData(0, 0, M, M).data; ug3.clearRect(0, 0, M, M); ug3.drawImage(dc, 0, 0, M, M); const d4 = ug3.getImageData(0, 0, M, M).data;
+    urb = new Float32Array(M * M); for (let k = 0; k < M * M; k++) urb[k] = Math.max(d3[k * 4 + 3] / 255, smooth(.15, .3, d4[k * 4 + 3] / 255)); uc.width = uc.height = up2.width = up2.height = rc2.width = rc2.height = dc.width = dc.height = 1; }
   for (let j = 0; j < M; j++) for (let i = 0; i < M; i++) {
     const x = -E + (i + .5) / M * 2 * E, z = -E + (j + .5) / M * 2 * E, k = (j * M + i) * 4;
-    const f = oF ? oF[j * M + i] * (polyDist(SITE, x, z) < 0 ? 0 : 1) : smooth(-12, 18, -polyDist(FOREST, x, z)), n = fbm(x / 260, z / 260), n2 = fbm(x / 1400 + 5, z / 1400);
+    let f = oF ? oF[j * M + i] * (polyDist(SITE, x, z) < 0 ? 0 : 1) : smooth(-12, 18, -polyDist(FOREST, x, z)), n = fbm(x / 260, z / 260), n2 = fbm(x / 1400 + 5, z / 1400);
     GEO.fmask.a[j * M + i] = f;
-    const hgt = heightAt(x, z);
+    const hgt = heightAt(x, z), sl = urb ? Math.hypot(heightAt(x + 15, z) - heightAt(x - 15, z), heightAt(x, z + 15) - heightAt(x, z - 15)) / 30 : 0, fT = urb && polyDist(SITE, x, z) > 60 ? (1 - urb[j * M + i]) * Math.max(smooth(.07, .16, sl), smooth(25, 60, hgt)) : 0; f = Math.max(f, fT * .92); /* 색만 숲(위 fmask는 이미 기록) */
     let r = 166 + 26 * (n - .5), gg = 161 + 22 * (n - .5), b = 151 + 16 * (n - .5);
     const parky = oF ? 0 : smooth(.62, .7, n2) * (1 - f); r += (112 - r) * parky * .7; gg += (138 - gg) * parky * .7; b += (92 - b) * parky * .7;
     const alt = smooth(80, 330, hgt);
