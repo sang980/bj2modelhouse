@@ -2361,9 +2361,9 @@ function diningWhiteT(L = 1.4, per = 2) { /* per: 한쪽 의자 수(2 → 4인, 
   for (const sz of zs) { diningChair(g, -(W / 2 + .12), sz, Math.PI / 2); diningChair(g, W / 2 + .12, sz, -Math.PI / 2); }
 
   // VR: 자리마다 매트 + 흰 접시 + 주황 그릇 + 젓가락
-  const bowlGeo = new THREE.LatheGeometry([[0, 0], [.03, 0], [.034, .004], [.058, .035], [.062, .05], [.058, .05], [.03, .012], [0, .012]].map(([a, b]) => new THREE.Vector2(a, b)), 32), orange = std(0xd9822f, .3), chop = std(0x2b2523, .5);
+  const bowlGeo = new THREE.LatheGeometry([[0, 0], [.03, 0], [.034, .004], [.058, .035], [.062, .05], [.058, .05], [.03, .012], [0, .012]].map(([a, b]) => new THREE.Vector2(a, b)), 32), orange = std(0xd9822f, .3), chop = std(0x2b2523, .5), glazeGeo = new THREE.LatheGeometry([[.0575, .0497], [.0335, .0173], [.03, .0127], [0, .0127]].map(([a, b]) => new THREE.Vector2(a, b)), 32), glaze = std(0xf3ead6, .22); /* 11-21 소품 퀄리티업: 그릇 안쪽 크림색 유약 */
   for (const [px, pz] of zs.flatMap(z => [[-.2, z], [.2, z]])) { mesh(BX(.28, .004, .36), std(0xdcd3c4, .9), px, .76, pz, g, { cast: false }); placePlate(g, px, .772, pz, .1);
-    mesh(bowlGeo, orange, px, .782, pz, g); for (const dz of [-.008, .008]) { const c = mesh(CY(.0025, .0035, .22, 6), chop, px + Math.sign(px) * .13, .766, pz + dz, g, { cast: false }); c.rotation.x = Math.PI / 2; } }
+    mesh(bowlGeo, orange, px, .782, pz, g); mesh(glazeGeo, glaze, px, .782, pz, g, { cast: false }); for (const dz of [-.008, .008]) { const c = mesh(CY(.0025, .0035, .22, 6), chop, px + Math.sign(px) * .13, .766, pz + dz, g, { cast: false }); c.rotation.x = Math.PI / 2; } }
   { const bot = new THREE.LatheGeometry([[0, 0], [.036, 0], [.037, .2], [.03, .245], [.014, .275], [.014, .315], [0, .315]].map(([a, b]) => new THREE.Vector2(a, b)), 28), gm = std(0x1f2b22, .12, .25), foil = std(0x5a1420, .4, .3); /* VR: 와인병 2 + 와인잔 */
     for (const [x, z] of [[-.04, -.06], [.05, .04]]) { mesh(bot, gm, x, .757, z, g); mesh(CY(.0155, .0155, .045, 16), foil, x, .757 + .3, z, g); mesh(CY(.0375, .0375, .075, 24, 1, true), std(0xefe6d2, .7), x, .757 + .1, z, g); }
     for (const [x, z] of [[-.2, 0], [.2, -.08]]) wineGlass(g, x, .757, z);
