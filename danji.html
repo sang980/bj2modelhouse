@@ -205,6 +205,7 @@ async function loadGeo() {
     if (GEO.env) for (const r of GEO.env.roads || []) if (r.k === 'residential' && r.w === 7 && r.p.length === 3 && Math.hypot(r.p[0][0] - 524, r.p[0][1] - 87) < 2 && Math.hypot(r.p[1][0] - 643, r.p[1][1] - 186) < 2 && Math.hypot(r.p[2][0] - 750, r.p[2][1] - 79) < 2) r.w = 13; /* 11-21 로드뷰 (582,131): 수정로306번길 북서쪽(자이 2xx–4xx)·성남북초 교차로 남서 길도 4차로(≈13m) */
     if (GEO.env) for (const r of GEO.env.roads || []) if (r.k === 'residential' && r.w === 7 && r.p.length === 2 && Math.hypot(r.p[0][0] - 480, r.p[0][1] - 44) < 2 && Math.hypot(r.p[1][0] - 524, r.p[1][1] - 87) < 2) r.w = 13; /* 11-21 로드뷰 (491,53): 수정로306번길 수정로 쪽 첫 구간도 4차로·전폭 붉음 */
     if (GEO.env && GEO.env.roads) GEO.env.roads.push({ k: 'residential', w: 10, p: [[840, 361], [884, 310], [928, 258]], t: 0 }); /* 11-21 카카오 스카이뷰: 희망로507번길(자이 303동 옆 수정로306번길 ↔ 희망로)이 OSM에 없음 */
+    if (GEO.env && GEO.env.land) GEO.env.land = GEO.env.land.filter(l => !(l.k === 'pitch' && Math.hypot(l.p.reduce((a, v) => a + v[0], 0) / l.p.length + 658.4, l.p.reduce((a, v) => a + v[1], 0) / l.p.length - 522.3) < 6)); /* 11-22 카카오 스카이뷰(같은 틀): 태평동 남서쪽 OSM 운동장(−658,522) 자리는 이미 빌라 — 빈 초록 사각형 대신 빌라로 채워지게 */
     if (GEO.bld && GEO.env) synthPlanned();
     if (GEO.env) buildRoadFlat();
     GEO.ok = true;
@@ -388,6 +389,8 @@ function synthPlanned() {
           { const sB = s0 + dp + 2.6; for (const d2 of [12, 10, 8]) { let fb = true; for (let aa = 0; aa <= fw && fb; aa += 1) for (let bb = 0; bb <= d2; bb += 1) { const p = W2(t + aa, sB + bb); if (!free(p[0], p[1])) { fb = false; break; } } if (fb) { const lv2 = LVs[(q + 3) % LVs.length]; push(0, lv2, lv2 * 2.8 + .5, [W2(t, sB), W2(t + fw, sB), W2(t + fw, sB + d2), W2(t, sB + d2)]); n++; nV++; markL(sB, d2); break; } } } /* 블록 안쪽 뒷필지 한 줄 */
           t += fw + 1.2; } } } }
     let fr = 0; for (let k = 0; k < occ.length; k++) fr += occ[k]; console.log('infill villas', nV, 'gap', nG, 'nogap', nNG, 'roads', RD.length, 'occ%', (fr / occ.length * 100).toFixed(1)); }
+  { const Q = [[-647.7, 499.7], [-635.2, 531.9], [-669.0, 544.9], [-681.5, 512.6]], at = (u, v) => [Q[0][0] + (Q[1][0] - Q[0][0]) * u + (Q[3][0] - Q[0][0]) * v + (Q[0][0] - Q[1][0] + Q[2][0] - Q[3][0]) * u * v, Q[0][1] + (Q[1][1] - Q[0][1]) * u + (Q[3][1] - Q[0][1]) * v + (Q[0][1] - Q[1][1] + Q[2][1] - Q[3][1]) * u * v]; /* 11-22 카카오 스카이뷰: 지운 OSM 운동장(−658,522) 자리 = 빌라 4채(2×2 필지, 사이 골목 2m) */
+    let k = 0; for (const [u0, u1] of [[.03, .47], [.53, .97]]) for (const [v0, v1] of [[.03, .47], [.53, .97]]) { const lv = [4, 3, 5, 4][k++]; push(0, lv, lv * 2.8 + .5, [at(u0, v0), at(u1, v0), at(u1, v1), at(u0, v1)]); n++; } }
   if (out.length) { const nb = new Int16Array(B.length + out.length); nb.set(B); nb.set(out, B.length); GEO.bld = nb; }
   console.log('planned/constructed apartments', n);
 }
