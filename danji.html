@@ -2064,7 +2064,15 @@ function buildSchools() {
         g.fillStyle = '#bdb7aa'; g.fillRect(x0 - 14, bot + 6, W + 28, 10); g.fillStyle = 'rgba(0,0,0,.13)'; g.fillRect(x0 - 14, bot + 16, W + 28, 5); }
       g.fillStyle = '#e8954f'; g.fillRect(0, 450, 1024, 16); g.fillStyle = '#f6f3ec'; g.fillRect(0, 466, 1024, 46); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, 466, 1024, 3);
       const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughnessMap: roughFrom(t), roughness: 1, envMapIntensity: .6 }); })(),
-    ledge: new THREE.MeshStandardMaterial({ color: '#f3f1ea', roughness: .8 }), acu: new THREE.MeshStandardMaterial({ color: '#cdd1d4', roughness: .55, metalness: .25 }),
+    ledge: new THREE.MeshStandardMaterial({ color: '#f3f1ea', roughness: .8 }),
+    brickH: (() => { /* 11-21 성남여중 벽돌 교사 고해상도(13m×3.6m를 1024×512): 벽돌(hash2 — 전역 난수 안 씀), 흰 띠(층 턱 높이), 교실 창 2개(흰 틀·창살·블라인드·창턱) */
+      const c = cnv(1024, 512), g = c.getContext('2d'); g.fillStyle = '#6e3b2c'; g.fillRect(0, 0, 1024, 512);
+      for (let y = 0, r = 0; y < 512; y += 16, r++) { const off = (r & 1) * 22; for (let x = -44, k = 0; x < 1068; x += 44, k++) { const v = (hash2(k + 11, r + 5) - .5) * 26; g.fillStyle = `rgb(${140 + v | 0},${76 + v * .6 | 0},${57 + v * .5 | 0})`; g.fillRect(x + off + 2, y + 2, 40, 12); } }
+      for (const x0 of [56, 546]) { const W = 422, top = 118, bot = 398; g.fillStyle = 'rgba(40,20,12,.35)'; g.fillRect(x0 - 12, top - 12, W + 24, bot - top + 24); g.fillStyle = '#f1efea'; g.fillRect(x0 - 6, top - 6, W + 12, bot - top + 12); glass(g, x0, top, W, bot - top, 1);
+        for (let q = 0; q < 4; q++) { const hb = hash2(x0 + q, 19); if (hb < .6) { g.fillStyle = hb < .3 ? 'rgba(246,241,229,.93)' : 'rgba(232,229,220,.88)'; g.fillRect(x0 + q * W / 4 + 4, top + 8, W / 4 - 8, (bot - top - 8) * (.15 + hb * .55)); } }
+        g.fillStyle = '#f1efea'; for (let q = 1; q < 4; q++) g.fillRect(x0 + q * W / 4 - 4, top, 8, bot - top); g.fillRect(x0, top + 66, W, 7); g.fillStyle = '#d9d4ca'; g.fillRect(x0 - 14, bot + 6, W + 28, 10); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(x0 - 14, bot + 16, W + 28, 5); }
+      g.fillStyle = '#e8e2d8'; g.fillRect(0, 466, 1024, 46); g.fillRect(0, 0, 1024, 26); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, 466, 1024, 3);
+      const t = tex(c); return new THREE.MeshStandardMaterial({ map: t, roughnessMap: roughFrom(t), roughness: 1, envMapIntensity: .6 }); })(), acu: new THREE.MeshStandardMaterial({ color: '#cdd1d4', roughness: .55, metalness: .25 }),
     shEnd: mk(g => { g.fillStyle = '#f2a65c'; g.fillRect(0, 0, 512, 256); g.fillStyle = '#ffffff'; for (let x = 0; x < 512; x += 64) g.fillRect(x, 0, 10, 256); win(g, 200, 70, 110, 110, 2, 6, '#ffffff', 2); }),
     brick: mk(g => { brickFill(g, 512, 256); g.fillStyle = '#e8e2d8'; g.fillRect(0, 0, 512, 16); g.fillRect(0, 240, 512, 16); for (let k = 0; k < 4; k++) win(g, 20 + k * 124, 60, 96, 128, 2, 7, '#f1efea', 1); }),
     gym: mk(g => { g.fillStyle = '#e9ecee'; g.fillRect(0, 0, 512, 256); g.fillStyle = '#c9d0d6'; for (let x = 0; x < 512; x += 16) g.fillRect(x, 0, 2, 256); glass(g, 20, 150, 472, 60, 1); g.fillStyle = '#8fa3b3'; g.fillRect(0, 0, 512, 18); }),
@@ -2086,6 +2094,7 @@ function buildSchools() {
     pool: mk(g => { g.fillStyle = '#e4e6e8'; g.fillRect(0, 0, 512, 256); glass(g, 10, 40, 492, 196, 0); g.fillStyle = '#f4f5f6'; for (let x = 10; x <= 502; x += 82) g.fillRect(x - 3, 40, 6, 196); g.fillStyle = '#7fb3c9'; g.fillRect(0, 0, 512, 22); }),
     poolR: mk(g => { g.fillStyle = '#c9d3d8'; g.fillRect(0, 0, 512, 256); for (let x = 0; x < 512; x += 64) { glass(g, x + 8, 8, 48, 240, 0); } }), wallR: mk(g => { const C = ['#e85d5d', '#f39c4a', '#f4d35e', '#7ec27e', '#5aa9e6', '#9b7fd1']; for (let x = 0; x < 512; x += 85) { g.fillStyle = C[(x / 85) % 6]; g.fillRect(x, 0, 85, 256); } }),
   };
+  { const W2 = M.gymW.clone(); W2.map = M.gymW.map.clone(); W2.map.repeat.set(1, 3.6 / 13.1); W2.map.needsUpdate = true; if (W2.roughnessMap) { W2.roughnessMap = M.gymW.roughnessMap.clone(); W2.roughnessMap.repeat.set(1, 3.6 / 13.1); W2.roughnessMap.needsUpdate = true; } M.gymW2 = W2; } /* 성남여중 체육관(13.1m, 층 UV 3.6m): 새나리관 벽 그림을 높이 한 장으로 */
   const G = {}; for (const k in M) G[k] = new GB();
   const a = .52, ux = Math.cos(-a), uz = Math.sin(-a); /* 학교 건물 축: 단지 남쪽 옹벽과 나란 */
   const box = (k, c, L, D, y0, y1, roof = 'roofG', ends) => obox(c[0], c[1], ux, uz, L, D, y0, y1, { front: { gb: G[k], uv: uvTile(13, 3.6, 0) }, back: { gb: G[k], uv: uvTile(13, 3.6, 0) }, left: { gb: G[ends || k], uv: uvTile(13, 3.6) }, right: { gb: G[ends || k], uv: uvTile(13, 3.6) }, top: { gb: G[roof] } });
@@ -2106,9 +2115,9 @@ function buildSchools() {
     for (const q of pts) { if (q[2] > -4.4 || pens.length >= 2 || hash2(q[0] * 3 | 0, q[1] * 5 | 0) > .3 || pens.some(o => Math.hypot(o[0] - q[0], o[1] - q[1]) < 26)) continue; pens.push(q); obox(q[0], q[1], ux, uz, 7, 5, top, top + 3.4, { front: fw, back: fw, left: fe, right: fe, top: { gb: G.roofW } }); }
     let n = 0; for (const q of pts) { if (n >= 36 || hash2(q[0] * 7 | 0, q[1] * 11 | 0) > .17 || pens.some(o => Math.hypot(o[0] - q[0], o[1] - q[1]) < 6.5)) continue; n++; const A = { gb: G.acu }; obox(q[0], q[1], ux, uz, 1.1, .75, top, top + .95, { front: A, back: A, left: A, right: A, top: A }); } };
   for (const b of SCHOOL_BLD) { const sp = SCHOOL_PADS.find(q => inPoly(q.p, b.cx, b.cz)) || SCHOOL_PADS[0], y = sp.h - Y0, xs = b.P.map(p => p[0]), zs = b.P.map(p => p[1]), area = (Math.max(...xs) - Math.min(...xs)) * (Math.max(...zs) - Math.min(...zs));
-    if (b.np === 4 && sp.n === '성남여중' && area > 900) ext(b.P, y - .6, y + 12.5, 'gym', 'gymR');
+    if (b.np === 4 && sp.n === '성남여중' && area > 900) ext(b.P, y - .6, y + 12.5, 'gymW2', 'gymR');
     else if (sp.n === '신흥초') { ext(b.P, y - .6, y + 4 * 3.6, 'sh', 'roofG'); shDetail(b.P, y - .6, y + 4 * 3.6); }
-    else { ext(b.P, y - .6, y + 4 * 3.6, 'brick', 'roofB'); shDetail(b.P, y - .6, y + 4 * 3.6, 'brick', 'brick'); } } /* 성남여중 벽돌 교사도 층 턱(벽돌 그림의 흰 띠 높이)·옥상 계단실·실외기 */
+    else { ext(b.P, y - .6, y + 4 * 3.6, 'brickH', 'roofB'); shDetail(b.P, y - .6, y + 4 * 3.6, 'brickH', 'brickH'); } } /* 성남여중 벽돌 교사도 층 턱(벽돌 그림의 흰 띠 높이)·옥상 계단실·실외기 */
   /* 신흥초: 흙 운동장 + 태양광 지붕 강당(스카이뷰 동쪽) + 무지개 담장 */
   { const y = 106.3 - Y0; pad(106.3, [[56, 122], [96, 114], [104, 156], [64, 164]]);
     { const F = { gb: G.gymW, uv: w => [0, 0, w / 13, 0, w / 13, 1, 0, 1] }; obox(111, 138, ux, uz, 28, 40, y - .6, y + 15.2, { front: F, back: F, left: F, right: F, top: { gb: G.roofW } }); } obox(111, 138, ux, uz, 25, 37, y + 15.25, y + 15.3, { top: { gb: G.solar } }); /* 새나리관(체육관, 위성사진: 지붕 전체 태양광) — 높이 신흥초 교사와 비슷하게 */
