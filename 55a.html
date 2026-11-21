@@ -2226,7 +2226,7 @@ function kitchenProps(k) {
     { const w = at(CY(.005, .005, .17, 8), chrome, cx + .135, T + .12, cz + .07); w.rotation.x = .25; at(CY(.016, .016, .02, 14), blk, cx + .13, T + .235, cz + .03).rotation.z = Math.PI / 2; } /* 오른쪽 스팀 노즐 + 손잡이 */
     at(CY(.036, .03, .03, 20), chrome, cx, T + .162, cz + .14); /* 포터필터 바스켓 */
     at(CY(.014, .014, .02, 16), chrome, cx + .07, T + .25, cz + .13).rotation.x = Math.PI / 2;      // 다이얼
-    at(CY(.032, .028, .07, 20), std(0xffffff, .2), cx, T + .05, cz + .17); }                        // 에스프레소 잔
+    { const ec = std(0xffffff, .2), ey = T + .015; at(new THREE.LatheGeometry([[0, 0], [.022, 0], [.024, .004], [.03, .045], [.032, .06], [.0295, .0605], [.027, .046], [.021, .008], [0, .007]].map(([a, b]) => new THREE.Vector2(a, b)), 26), ec, cx, ey, cz + .17); at(new THREE.CircleGeometry(.0258, 22), std(0x5a3520, .35), cx, ey + .04, cz + .17).rotation.x = -Math.PI / 2; at(new THREE.RingGeometry(.016, .0258, 22), std(0xc6955c, .5), cx, ey + .0402, cz + .17).rotation.x = -Math.PI / 2; at(new THREE.TorusGeometry(.012, .0032, 6, 14, Math.PI * 1.2), ec, cx + .036, ey + .035, cz + .17).rotation.z = -Math.PI * .6; } /* 11-22 주방 소품 퀄리티업: 흰 원기둥 → 속 빈 에스프레소 잔(커피·크레마) + 손잡이 */ }                        // 에스프레소 잔
   // 블랙 펠트 받침 + 전기주전자 (x 6.45)
   { const cx = 6.46, cz = .3, kw = M.whiteGloss, y0 = T + .026; /* 11-21 주방 소품 퀄리티업: 전기주전자 — 둥근 모서리 검은 받침 + 어깨선 있는 몸통, 뚜껑 이음선·검은 꼭지, 앞쪽 물높이 창(눈금), 위로 들린 주둥이, D자 손잡이(검은 그립) + 파란 불 전원 스위치 */
     at(CY(.15, .15, .004, 40), felt, cx, T + .002, cz + .02);
