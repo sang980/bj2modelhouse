@@ -194,6 +194,7 @@ async function loadGeo() {
     if (b.ok) GEO.bld = new Int16Array(await b.arrayBuffer());
     if (e.ok) GEO.env = await e.json();
     if (GEO.bld && GEO.env) synthPlanned();
+    if (GEO.env) buildRoadFlat();
     GEO.ok = true;
   } catch (err) { console.warn('geo', err); }
 }
@@ -270,7 +271,18 @@ let TGRID = null; /* 지형 격자(그려진 지형 면 높이 계산용) */
 function terrTop(x, z) { if (!TGRID) return -1e9; const { xs, zs, nx, tp } = TGRID, bs = (A, v) => { let lo = 0, hi = A.length - 1; if (v <= A[0] || v >= A[hi]) return -1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (A[m] <= v) lo = m; else hi = m; } return lo; }, i = bs(xs, x), j = bs(zs, z); if (i < 0 || j < 0) return -1e9;
   const fx = (x - xs[i]) / (xs[i + 1] - xs[i]), fz = (z - zs[j]) / (zs[j + 1] - zs[j]), H = (a, b) => tp[((j + b) * nx + i + a) * 3 + 1]; return fx + fz <= 1 ? H(0, 0) + (H(1, 0) - H(0, 0)) * fx + (H(0, 1) - H(0, 0)) * fz : H(1, 1) + (H(0, 1) - H(1, 1)) * (1 - fx) + (H(1, 0) - H(1, 1)) * (1 - fz); } /* 11-17: 실제로 그려진 지형 삼각형 높이(5m 격자 면이 길가 꺾임에서 잔디 띠 위로 솟는 곳을 피하려고) */
 let ENT_MOUTH = null; /* 정문 진입로 입구(정문 지붕 앞 ~ 진입 차로) — ENT 정의 뒤에 채움 */
+let RF = null; /* 11-21 도로 바닥 다짐 격자: 성긴 지형 격자(단지에서 멀수록 5→20m)가 비탈길의 한쪽 차로·보도를 덮거나 분리대 가운데 톱니 능선으로 튀어나오던 것 — 도로(6m+, 터널·다리 제외) 폭+보도까지 도로 가운데 높이로, 그 밖 3m는 서서히. 단지 300m 안은 손본 그대로 */
+function buildRoadFlat() { const R = LOW ? 4 : 3, E2 = LOW ? 1300 : 1600, n = Math.ceil(2 * E2 / R), sh = new Float32Array(n * n), sw = new Float32Array(n * n), mw = new Float32Array(n * n), PATHK = /^(footway|path|steps|cycleway|pedestrian|track)$/;
+  for (const r of GEO.env.roads || []) { if (r.t === 1 || r.t === 2 || r.w < 6 || PATHK.test(r.k)) continue; const hw = r.w / 2, full = hw + (r.w >= 12 ? 3.5 : 1.5), fall = full + 3, cr = Math.ceil(fall / R);
+    for (let i = 0; i < r.p.length - 1; i++) { const [ax, az] = r.p[i], [bx, bz] = r.p[i + 1], L = Math.hypot(bx - ax, bz - az); if (L < .1) continue; if (Math.max(Math.abs(ax), Math.abs(bx)) > E2 + 20 && Math.max(Math.abs(az), Math.abs(bz)) > E2 + 20) continue;
+      for (let t = 0; t <= L; t += 1.5) { const cx = ax + (bx - ax) * t / L, cz = az + (bz - az) * t / L; if (Math.abs(cx) > E2 || Math.abs(cz) > E2 || polyDist(SITE, cx, cz) < 300) continue; const h = demRaw(cx, cz) + corrAt(cx, cz) - Y0, ci = Math.floor((cx + E2) / R), cj = Math.floor((cz + E2) / R);
+        for (let j = cj - cr; j <= cj + cr; j++) { if (j < 0 || j >= n) continue; for (let i2 = ci - cr; i2 <= ci + cr; i2++) { if (i2 < 0 || i2 >= n) continue; const d = Math.hypot(-E2 + (i2 + .5) * R - cx, -E2 + (j + .5) * R - cz); if (d > fall) continue; const w = d <= full ? 1 : 1 - smooth(full, fall, d), k = j * n + i2; sh[k] += h * w; sw[k] += w; if (w > mw[k]) mw[k] = w; } } } } }
+  const hh = new Float32Array(n * n), ww = new Uint8Array(n * n); for (let k = 0; k < n * n; k++) if (sw[k] > 0) { hh[k] = sh[k] / sw[k]; ww[k] = Math.round(mw[k] * 255); } RF = { R, E2, n, hh, ww }; }
+function rfAt(x, z) { const F = RF; let fx = (x + F.E2) / F.R - .5, fz = (z + F.E2) / F.R - .5; if (fx < 0 || fz < 0 || fx > F.n - 1.001 || fz > F.n - 1.001) return 0; const i = fx | 0, j = fz | 0, ax = fx - i, az = fz - j, k = j * F.n + i, n = F.n;
+  const w00 = F.ww[k] / 255, w10 = F.ww[k + 1] / 255, w01 = F.ww[k + n] / 255, w11 = F.ww[k + n + 1] / 255, b00 = (1 - ax) * (1 - az), b10 = ax * (1 - az), b01 = (1 - ax) * az, b11 = ax * az, W = w00 * b00 + w10 * b10 + w01 * b01 + w11 * b11; if (W < .002) return 0;
+  const sw2 = w00 * b00 + w10 * b10 + w01 * b01 + w11 * b11; RF.lastH = (F.hh[k] * w00 * b00 + F.hh[k + 1] * w10 * b10 + F.hh[k + n] * w01 * b01 + F.hh[k + n + 1] * w11 * b11) / sw2; return W; }
 function groundAt(x, z) { if (!GEO.ok) return -4; const cd = cutDepth(x, z); let h = demRaw(x, z) + corrAt(x, z) - Y0 - cd;
+  if (!cd && RF) { const w = rfAt(x, z); if (w) h = h * (1 - w) + RF.lastH * w; }
   for (const sp of SCHOOL_PADS) { const d = polyDist(sp.p, x, z); if (d < 12) { const t = smooth(-4, 12, d); h = (sp.h - Y0) * (1 - t) + h * t; } }
   if (!cd) { const d = polyDist(LOT1.pad, x, z); if (d < 3) { const t = smooth(-.3, 3, d); h = (LOT1.h - Y0) * (1 - t) + h * t; } }
   if (!cd) { const a = WSW_L[0], b = WSW_L[1], l = Math.hypot(b[0] - a[0], b[1] - a[1]), ux = (b[0] - a[0]) / l, uz = (b[1] - a[1]) / l, rx = x - a[0], rz = z - a[1], t = rx * ux + rz * uz, d = rx * uz - rz * ux;
