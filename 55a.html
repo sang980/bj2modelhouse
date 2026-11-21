@@ -3205,13 +3205,17 @@ wall(10.75, 2.5, 12.32, 2.5, TI, [{ from: 10.95, to: 11.75, y1: 2.15, kind: 'ope
     const pearl = std(0xf6f2ea, .15, .1), pg = new THREE.SphereGeometry(.007, 10, 8);
     for (let i = 0; i < 36; i++) { const a = i / 36 * Math.PI * 2; mesh(pg, pearl, WX(bx - .03 + Math.cos(a) * .045), T + .007, WZ(bz + .14 + Math.sin(a) * .06), g, { cast: false }); }
     for (let i = 0; i < 10; i++) mesh(pg, pearl, WX(bx - .05 + i * .006), T + .06 + i * .002, WZ(bz + .09 - i * .008), g, { cast: false }); }
-  for (const [x, z, h] of [[11.98, 3.38, .09], [11.93, 3.46, .07]]) {
-    mesh(CY(.022, .026, h, 18), M.glass, WX(x), T + h / 2, WZ(z), g, { cast: false });
-    mesh(CY(.012, .012, .03, 14), std(0xd9b36a, .25, .9), WX(x), T + h + .015, WZ(z), g); }
-  { const dx = 11.99, dz = 3.6;
-    mesh(new THREE.LatheGeometry([[0, 0], [.04, 0], [.045, .03], [.04, .09], [.015, .11], [.012, .13], [0, .13]].map(([x, y]) => new THREE.Vector2(x, y)), 24), std(0x2b2723, .2, .3), WX(dx), T, WZ(dz), g);
-    mesh(CY(.014, .014, .02, 14), std(0xd9b36a, .25, .9), WX(dx), T + .14, WZ(dz), g);
-    for (let i = 0; i < 6; i++) { const s = mesh(CY(.0018, .0018, .26, 5), std(0x3b2c22, .9), WX(dx), T + .25, WZ(dz), g, { cast: false }); s.rotation.set(Math.cos(i * 1.1) * .22, 0, Math.sin(i * 1.1) * .22); } } }
+  { const gold = std(0xd9b36a, .25, .9), clear = std(0xf4f2ec, .03, 0, { transparent: true, opacity: .28, depthWrite: false }); /* 11-22 소품 퀄리티업(화장대): 향수병 — 민무늬 원통 → 맑은 두꺼운 유리(둥근 병 + 납작한 네모 병) 속 장밋빛·호박빛 향수 + 두꺼운 유리 바닥 + 금색 목 테·분사구 + 뚜껑(둥근 병은 금색 공 뚜껑) */
+    for (const [x, z, h, sq, lq] of [[11.98, 3.38, .09, 0, 0xe3a5a0], [11.93, 3.46, .07, 1, 0xd9a24e]]) { const X = WX(x), Z = WZ(z), lh = (h - .018) * .8;
+      if (sq) { mesh(RB(.05, h, .03, .007, 2), clear, X, T + h / 2, Z, g, { cast: false }); mesh(RB(.04, lh, .02, .004, 2), std(lq, .15), X, T + .012 + lh / 2, Z, g, { cast: false }); }
+      else { mesh(new THREE.LatheGeometry([[0, 0], [.025, 0], [.027, .006], [.027, h - .012], [.02, h - .002], [.009, h], [0, h]].map(([a, b]) => new THREE.Vector2(a, b)), 28), clear, X, T, Z, g, { cast: false }); mesh(CY(.0215, .0225, lh, 22), std(lq, .15), X, T + .012 + lh / 2, Z, g, { cast: false }); }
+      mesh(CY(.0095, .0095, .005, 16), gold, X, T + h + .0025, Z, g, { cast: false }); mesh(CY(.0042, .0042, .007, 10), std(0xd8d6d0, .3, .7), X, T + h + .0085, Z, g, { cast: false });
+      if (sq) mesh(RB(.026, .026, .02, .004, 2), gold, X, T + h + .018, Z, g); else mesh(new THREE.SphereGeometry(.0135, 18, 12), gold, X, T + h + .018, Z, g); } }
+  { const dx = 11.99, dz = 3.6, X = WX(dx), Z = WZ(dz); /* 11-22 디퓨저 — 가운데를 축으로 기울어 병 옆구리를 뚫던 막대 → 병 입구에서 부채꼴로 퍼지는 갈색 리드 7, 짙은 호박 유리병 속 향 액체 + 크림 띠 라벨 + 금색 목 테 */
+    mesh(new THREE.LatheGeometry([[0, 0], [.04, 0], [.045, .03], [.04, .09], [.015, .11], [.012, .13], [0, .13]].map(([x, y]) => new THREE.Vector2(x, y)), 28), std(0x5a3a1e, .08, .1, { transparent: true, opacity: .62, depthWrite: false }), X, T, Z, g, { cast: false });
+    mesh(new THREE.LatheGeometry([[0, .01], [.037, .01], [.0415, .03], [.038, .07], [0, .07]].map(([x, y]) => new THREE.Vector2(x, y)), 24), std(0x7a4a22, .15), X, T, Z, g, { cast: false }); mesh(new THREE.CylinderGeometry(.0415, .0434, .03, 28, 1, true), std(0xefe8da, .75), X, T + .052, Z, g, { cast: false });
+    mesh(CY(.014, .014, .02, 14), std(0xd9b36a, .25, .9), X, T + .13, Z, g);
+    const Y = new THREE.Vector3(0, 1, 0), rd = std(0x5a3f28, .85); for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2 + .2, tl = .13 + (i % 3) * .06, d = new THREE.Vector3(Math.sin(tl) * Math.cos(a), Math.cos(tl), Math.sin(tl) * Math.sin(a)), L = .25 + (i % 2) * .02, r = mesh(CY(.0018, .0018, L, 5), rd, X + d.x * L / 2, T + .12 + d.y * L / 2, Z + d.z * L / 2, g, { cast: false }); r.quaternion.setFromUnitVectors(Y, d); } } }
 // 10 침실1 붙박이장
 /* 북쪽 끝은 드레스룸 벽(z 4.06)까지 꽉 채움 — 7-2 슬라이딩 문은 반대쪽(서쪽)으로 열려 겹치지 않음 */
 const wrLong = [], wrShort = [];
