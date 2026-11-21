@@ -2260,7 +2260,7 @@ function buildOSM() {
     const gavg = gs / np, top = (kind === 1 || lv >= 6 ? gmin + .3 : gavg) + h - dupLow, base = gmin - .6 + mh, fh = h / lv; /* 경사지 아파트는 낮은 쪽 지면이 1층 */
     let tk = kind === 1 || lv >= 6 ? 'apt' : kind === 2 ? (lv <= 3 ? 'shop' : 'office') : kind === 3 ? 'pub' : kind === 5 ? 'ind' : 'villa';
     if (tk === 'apt' && kind === 2) tk = 'stone';
-    { const r = rand(); if (tk === 'villa') tk = r < .42 ? 'villaBrick' : r < .62 ? 'villaGray' : r < .8 ? 'villaTile' : 'villa'; /* 태평·신흥동 로드뷰 비율 */ else if (tk === 'apt') tk = lv >= 12 && inForestia(cx, cz) ? 'forestia' : lv >= 24 && cx > 250 && cx < 820 && cz > 100 && cz < 650 ? (rand() < .38 ? 'xiB' : 'xi') : r < .65 ? 'aptK' : 'aptModern'; /* 남동쪽 29층 단지 = 자이푸르지오 계열 외관 */ else if (tk === 'office' && r < .55) tk = 'stone'; }
+    { const r = rand(); if (tk === 'villa') tk = r < .42 ? 'villaBrick' : r < .62 ? 'villaGray' : r < .8 ? 'villaTile' : 'villa'; /* 태평·신흥동 로드뷰 비율 */ else if (tk === 'apt') tk = lv >= 12 && inForestia(cx, cz) ? 'forestia' : lv >= 15 && cx > 250 && cx < 820 && cz > 100 && cz < 650 ? (rand() < .38 ? 'xiB' : 'xi') : r < .65 ? 'aptK' : 'aptModern'; /* 남동쪽 29층 단지 = 자이푸르지오 계열 외관 */ else if (tk === 'office' && r < .55) tk = 'stone'; }
     if (kind === 6 && Math.hypot(cx - 250, cz - 114) < 25) { tk = 'gov'; GOV.push({ P, gavg, fh, top }); } /* 11-21 수정구청(빌라로 그려지던 것) */
     const isApt = /^(apt|aptK|aptModern|forestia|xi|xiB)$/.test(tk); if ((tk === 'xi' || tk === 'xiB') && dist < 1600) XI_B.push(P);
     const rd = !/^(shop|pub|ind)$/.test(tk) && lv <= 9 && dist < 2600 ? roadDist(cx, cz) : 1e9, shopG = rd < 16 && lv >= 2;
