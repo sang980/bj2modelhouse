@@ -1726,7 +1726,9 @@ await phase('거실을 꾸미는 중', 56);
   pbox(x - .034, x - .03, 1.25 - .002, 1.25 + .002, 5.45, 8.09, std(0xbdb5a8, .7), g, { cast: false });
   decorStart('TV·TV장', true); /* 11-21: TV·TV장·소품 한 묶음으로 선택·삭제 */
   pbox(x - .07, x - .03, .98, 1.72, 6.0, 7.55, M.tv, g, { cast: false }); tvScreen(g, WX(x - .0705), 1.35, WZ(6.775), 1.54, .73); /* 11-21 화면 테·반사광·대기등 */
-  const tvw = std(0xf6f5f2, .3), mint = new THREE.MeshStandardMaterial({ color: 0xbfe0d8, roughness: .1, metalness: .1, transparent: true, opacity: .85 });
+  const tvw = std(0xf6f5f2, .3), mint = new THREE.MeshStandardMaterial({ color: 0xbfe0d8, roughness: .1, metalness: .1, transparent: true, opacity: .85, map: toTex((() => { const c = mkCanvas(1024, 128), x = c.getContext('2d'); x.fillStyle = '#e4e8e7'; x.fillRect(0, 0, 1024, 128); /* 11-21 소품 퀄리티업: 민트 유리문 — 은은한 사선 반사광 띠 + 가는 흰 테(문 2짝 가운데 줄눈) */
+    for (const [u, w, a] of [[160, 60, .5], [250, 22, .35], [620, 80, .45], [720, 26, .3]]) { const g2 = x.createLinearGradient(u, 0, u + w, 0); g2.addColorStop(0, 'rgba(255,255,255,0)'); g2.addColorStop(.5, `rgba(255,255,255,${a})`); g2.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g2; x.beginPath(); x.moveTo(u + 30, 0); x.lineTo(u + w + 30, 0); x.lineTo(u + w - 30, 128); x.lineTo(u - 30, 128); x.fill(); }
+    x.strokeStyle = '#ffffff'; x.lineWidth = 6; x.strokeRect(3, 3, 1018, 122); return c; })()) });
   pbox(x - .45, x - .03, .05, .42, 5.6, 7.95, tvw, g); pbox(x - .452, x - .45, .12, .36, 5.7, 7.85, mint, g, { cast: false });
   pbox(x - .454, x - .452, .12, .36, 6.775 - .003, 6.775 + .003, std(0xe6e4df, .4), g, { cast: false });
   decorEnd(); /* 충돌은 TV장 묶음이 맡음(지우면 지나갈 수 있게) */
