@@ -1884,6 +1884,9 @@ function washer(x, name, tint) { const dryer = /건조기/.test(name);
 washer(4.33, '세탁기', 0xf4f4f2); washer(5.0, '건조기', 0xe6e1d9);
 { const g = piece('보일러', 3.72, .36, 0, { movable: false }); /* 서북쪽 코너: 받침장 위 보일러 — 11-21: 앞면 조작판(난방·온수 온도·표시등)·아래 덮개·통풍 틈 + 압력계 + 노란 가스관 */
   mesh(RB(.44, .82, .38, .01), M.whiteGloss, 0, .41, 0, g); mesh(BX(.14, .03, .01), M.black, .05, .62, .19, g);
+  { const c = mkCanvas(220, 400), x = c.getContext('2d'); x.fillStyle = '#f7f7f5'; x.fillRect(0, 0, 220, 400); x.fillStyle = 'rgba(0,0,0,.14)'; x.fillRect(0, 96, 220, 2); x.fillRect(108, 98, 3, 302); x.fillStyle = 'rgba(255,255,255,.7)'; x.fillRect(0, 98, 220, 1); /* 11-21 받침장 앞면: 위 칸·양문 이음선 + 아래 통풍 루버 */
+    for (let i = 0; i < 7; i++) { x.fillStyle = 'rgba(0,0,0,.2)'; x.fillRect(24, 300 + i * 12, 172, 5); x.fillStyle = 'rgba(255,255,255,.5)'; x.fillRect(24, 305 + i * 12, 172, 1); }
+    mesh(new THREE.PlaneGeometry(.42, .78), std(0xffffff, .25, 0, { map: toTex(c) }), 0, .41, .1906, g, { cast: false }); }
   mesh(RB(.44, .7, .34, .02), M.whiteGloss, 0, 1.2, -.02, g);
   { const c = mkCanvas(420, 680), x = c.getContext('2d'), rr = (a, b, w, h, r) => { x.beginPath(); if (x.roundRect) x.roundRect(a, b, w, h, r); else x.rect(a, b, w, h); }; x.fillStyle = '#f7f7f5'; x.fillRect(0, 0, 420, 680);
     x.fillStyle = 'rgba(0,0,0,.06)'; x.fillRect(0, 470, 420, 3); x.fillStyle = 'rgba(0,0,0,.18)'; for (let i = 0; i < 9; i++) rr(60 + i * 34, 600, 20, 40, 4), x.fill(); /* 아래 덮개 + 통풍 틈 */
