@@ -2232,12 +2232,12 @@ function kitchenProps(k) {
     mesh(BX(.31, .205, .006), std(0x3a6b4a, .6), 0, .133, .01, st); }
   /* VR 55C: 전기주전자·벽 레일·도구 없음 */
   // 끝쪽(VR 55C): 흰 머그컵 걸이(기둥 + 가지 3, 흰 머그 3) + 작은 흰 접시
-  { const cx = 5.92, cz = .36, wm = std(0xf5f4f0, .3) /* VR 55C: 쿡탑 쪽 모서리 */, wp = std(0xf2f1ed, .35, .2);
+  { const cx = 5.92, cz = .36, wm = std(0xf5f4f0, .3) /* VR 55C: 쿡탑 쪽 모서리 */, wp = std(0xf2f1ed, .35, .2), MUG_IN = new THREE.LatheGeometry([[.0325, .0425], [.031, .039], [.0285, -.03], [.02, -.035], [0, -.035]].map(([a, b]) => new THREE.Vector2(a, b)), 22), MUG_IM = std(0xe6e2da, .35);
     at(CY(.07, .075, .015, 28), wp, cx, T + .0075, cz); at(CY(.008, .008, .32, 10), wp, cx, T + .175, cz); at(new THREE.SphereGeometry(.014, 12, 8), wp, cx, T + .34, cz);
     for (let i = 0; i < 3; i++) { const a = i / 3 * Math.PI * 2 + .3, y = T + .22 + i * .035, arm = at(CY(.004, .004, .1, 6), wp, cx + Math.cos(a) * .045, y, cz + Math.sin(a) * .045); arm.rotation.order = 'YZX'; arm.rotation.set(0, -a, -(Math.PI / 2 - .35));
       const mg = new THREE.Group(); mg.position.set(WX(cx + Math.cos(a) * .1), y - .07, WZ(cz + Math.sin(a) * .1)); mg.rotation.y = -a; k.add(mg);
-      mesh(new THREE.CylinderGeometry(.034, .03, .085, 22, 1, true), wm, 0, 0, 0, mg); mesh(CY(.03, .03, .004, 22), wm, 0, -.041, 0, mg); { const h = mesh(new THREE.TorusGeometry(.02, .005, 8, 14, Math.PI * 1.4), wm, -.036, .008, 0, mg); h.rotation.z = Math.PI / 2 + .3; } }
-    at(CY(.09, .075, .015, 30), wm, cx + .02, T + .0075, cz + .22); }
+      mesh(new THREE.CylinderGeometry(.034, .03, .085, 22, 1, true), wm, 0, 0, 0, mg); mesh(CY(.03, .03, .004, 22), wm, 0, -.041, 0, mg); mesh(MUG_IN, MUG_IM, 0, 0, 0, mg); mesh(new THREE.TorusGeometry(.0331, .0016, 5, 24), wm, 0, .0425, 0, mg).rotation.x = Math.PI / 2; mesh(new THREE.TorusGeometry(.028, .0014, 5, 22), wm, 0, -.043, 0, mg).rotation.x = Math.PI / 2; /* 11-21 주방 소품 퀄리티업: 머그 안쪽 면(살짝 그늘진 흰 유약) + 입술 테 + 굽 */ { const h = mesh(new THREE.TorusGeometry(.02, .005, 8, 14, Math.PI * 1.4), wm, -.036, .008, 0, mg); h.rotation.z = Math.PI / 2 + .3; } }
+    { const PL = new THREE.LatheGeometry([[0, 0], [.058, 0], [.06, .004], [.072, .007], [.088, .016], [.093, .02], [.09, .021], [.071, .011], [.058, .008], [0, .008]].map(([a, b]) => new THREE.Vector2(a, b)), 36); at(PL, wm, cx + .02, T, cz + .22); at(PL, wm, cx + .02, T + .0085, cz + .22); at(new THREE.TorusGeometry(.0905, .0012, 4, 40), std(0x9aa3a8, .4), cx + .02, T + .0293, cz + .22).rotation.x = Math.PI / 2; } /* 11-21: 납작한 원판 → 테가 올라온 접시 두 장 + 가장자리 회색 선 */ }
 }
 kitchenProps(k);
 /* 55C VR: 욕실2 선반엔 화분 대신 작은 유리병 3 */
