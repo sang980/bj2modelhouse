@@ -447,15 +447,20 @@ function buildRoads() {
   { /* 11-21 큰길 교차로 횡단보도(카카오 스카이뷰: 수정로 등 교차로마다 흰 줄) — 10m+ 길이 다른 길과 꺾여 만나는 노드에서 (상대 길 반폭+3.5m) 떨어진 곳, 차로 폭(분리 차로는 분리대 겹선 안쪽까지)·길이 4m, 줄 45cm/간격 50cm 텍스처 한 장(삼각형 2개). 단지 250m 안(모형 표시)은 제외 */
     const NK = new Map(), key = p => Math.round(p[0] * 10) + ',' + Math.round(p[1] * 10), CP = [], CU = [], SIG = [], RMX = LOW ? 750 : 1300;
     env.roads.forEach((r, ri) => { if (r.t === 1 || PATHK.test(r.k) || r.w < 6) return; r.p.forEach((p, i) => { const k = key(p); if (!NK.has(k)) NK.set(k, []); NK.get(k).push([ri, i]); }); });
+    const along = (r, i, dir, dist) => { let j = i, rem = dist; for (;;) { const k = j + dir; if (k < 0 || k >= r.p.length) return null; const a2 = r.p[j], b2 = r.p[k], L = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]); if (rem <= L && L > 0) return [a2[0] + (b2[0] - a2[0]) * rem / L, a2[1] + (b2[1] - a2[1]) * rem / L]; rem -= L; j = k; } };
     const dirAt = (r, i, dir) => { const j = i + dir; if (j < 0 || j >= r.p.length) return null; const q = r.p[j], p = r.p[i], L = Math.hypot(q[0] - p[0], q[1] - p[1]); return L > .5 ? [(q[0] - p[0]) / L, (q[1] - p[1]) / L, L] : null; };
     for (const L of NK.values()) { if (new Set(L.map(q => q[0])).size < 2) continue;
       for (const [ri, i] of L) { const r = env.roads[ri], p = r.p[i]; if (r.w < 10 || Math.hypot(p[0], p[1] - 15) > RMX || polyDist(SITE, p[0], p[1]) < 250 || inTunnel(p[0], p[1])) continue;
         const myD = [dirAt(r, i, 1), dirAt(r, i, -1)].filter(Boolean); let ow = 0;
         for (const [rj, j] of L) { if (rj === ri) continue; const o = env.roads[rj]; for (const od of [dirAt(o, j, 1), dirAt(o, j, -1)]) if (od && myD.every(m => Math.abs(m[0] * od[0] + m[1] * od[1]) < .85)) ow = Math.max(ow, o.w); } /* 꺾여 들어오는 길만(같은 길이 이어지는 노드 제외) */
         if (!ow) continue; const off = ow / 2 + 3.5;
-        for (const dir of [1, -1]) { const m = dirAt(r, i, dir); if (!m || m[2] < off + 6) continue; const c0 = [p[0] + m[0] * off, p[1] + m[1] * off], c1 = [p[0] + m[0] * (off + 4), p[1] + m[1] * (off + 4)];
-          const A = dir > 0 ? c0 : c1, B = dir > 0 ? c1 : c0, wx = B[0] - A[0], wz = B[1] - A[1], wl = Math.hypot(wx, wz), nx = -wz / wl, nz = wx / wl; /* 길 진행 방향의 왼쪽 법선(띠와 같은 기준) */
-          const dv = r.w >= 16 ? dualSide(ri, A[0], A[1], B[0], B[1]) : 0, sd = Math.sign(dv), hw = r.w / 2, lim = sd ? Math.min(hw, Math.abs(dv) / 2 - .35) - 1.1 : hw - .5, hp = sd > 0 ? lim : hw - .5, hm = sd < 0 ? lim : hw - .5; if (hp < 1 || hm < 1) continue; const CX = (A[0] + B[0]) / 2, CZ = (A[1] + B[1]) / 2; const ux2 = wx / wl, uz2 = wz / wl; if (onOther(ri, CX, CZ, ux2, uz2) || onOther(ri, CX + nx * hp * .9, CZ + nz * hp * .9, ux2, uz2) || onOther(ri, CX - nx * hm * .9, CZ - nz * hm * .9, ux2, uz2)) continue;
+        for (const dir of [1, -1]) { let A = null, B = null, nx = 0, nz = 0, wl = 0, hp = 0, hm = 0, sd = 0; /* 11-21: 첫 자리가 맞은편 차로(교차로 쪽 분리 차로) 위거나 조각이 짧으면 5·10·15m 더 가서 다시 */
+          for (const o of [off, off + 5, off + 10, off + 15]) { const c0 = along(r, i, dir, o), c1 = along(r, i, dir, o + 4); if (!c0 || !c1) break;
+            const A2 = dir > 0 ? c0 : c1, B2 = dir > 0 ? c1 : c0, wx2 = B2[0] - A2[0], wz2 = B2[1] - A2[1], wl2 = Math.hypot(wx2, wz2); if (wl2 < 1) break; const nx2 = -wz2 / wl2, nz2 = wx2 / wl2; /* 길 진행 방향의 왼쪽 법선(띠와 같은 기준) */
+            const dv = r.w >= 16 ? dualSide(ri, A2[0], A2[1], B2[0], B2[1]) : 0, sd2 = Math.sign(dv), hw = r.w / 2, lim = sd2 ? Math.min(hw, Math.abs(dv) / 2 - .35) - 1.1 : hw - .5, hp2 = sd2 > 0 ? lim : hw - .5, hm2 = sd2 < 0 ? lim : hw - .5; if (hp2 < 1 || hm2 < 1) continue;
+            const CX = (A2[0] + B2[0]) / 2, CZ = (A2[1] + B2[1]) / 2, ux2 = wx2 / wl2, uz2 = wz2 / wl2; if (onOther(ri, CX, CZ, ux2, uz2) || onOther(ri, CX + nx2 * hp2 * .9, CZ + nz2 * hp2 * .9, ux2, uz2) || onOther(ri, CX - nx2 * hm2 * .9, CZ - nz2 * hm2 * .9, ux2, uz2)) continue;
+            A = A2; B = B2; nx = nx2; nz = nz2; wl = wl2; hp = hp2; hm = hm2; sd = sd2; break; }
+          if (!A) continue;
           const ya = heightAt(A[0], A[1]) + .5, yb = heightAt(B[0], B[1]) + .5, Q = [[A[0] + nx * hp, ya, A[1] + nz * hp, hp], [A[0] - nx * hm, ya, A[1] - nz * hm, -hm], [B[0] - nx * hm, yb, B[1] - nz * hm, -hm], [B[0] + nx * hp, yb, B[1] + nz * hp, hp]];
           for (const k of [0, 1, 2, 0, 2, 3]) { CP.push(Q[k][0], Q[k][1], Q[k][2]); CU.push(Q[k][3] / .95, k === 2 || k === 3 ? 1 : 0); }
           if (!LOW) { const sg = sd > 0 ? -1 : 1, ho = (sg > 0 ? hp : hm) + 1.3; SIG.push([B[0] + (B[0] - A[0]) / wl * (dir > 0 ? 1.5 : -5.5) + nx * sg * ho, B[1] + (B[1] - A[1]) / wl * (dir > 0 ? 1.5 : -5.5) + nz * sg * ho, -nx * sg, -nz * sg, Math.min(7, hp + hm - 2), ya - .5]); } /* 분리 차로는 바깥(보도) 쪽 */ } } } /* 11-21 신호등: 횡단보도 바깥 보도에 기둥 + 차로 위 팔 + 가로형 4구 신호(데스크톱만) */
