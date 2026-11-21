@@ -2163,6 +2163,10 @@ function sideTable(x, z, withVase) {
   mesh(CY(.22, .22, .025, 40), M.black, 0, .56, 0, g);
   mesh(CY(.02, .02, .55), M.black, 0, .28, 0, g);
   mesh(CY(.16, .16, .015, 40), M.black, 0, .008, 0, g);
+  if (!withVase) { /* 11-21 사용자: 소품 퀄리티업 — 빈 협탁에 천 표지 책 2권(종이 단면) + 호박색 유리 디퓨저(갈대 스틱) */
+    let y = .5725; for (const [col, w, h, ry] of [[0xd9cbb0, .17, .024, .28], [0x51627a, .145, .019, .12]]) { const b = new THREE.Group(); b.position.set(.05, y + h / 2, -.04); b.rotation.y = ry; g.add(b); mesh(RB(w, h, .21, .003), std(col, .85), 0, 0, 0, b); mesh(BX(w - .008, h - .006, .2), std(0xf3efe4, .9), .004, 0, 0, b, { cast: false }); y += h; }
+    mesh(CY(.03, .034, .09, 24), std(0xb7772f, .05, 0, { transparent: true, opacity: .62 }), -.09, .6175, .08, g, { cast: false }); mesh(CY(.012, .012, .02, 16), std(0x1b1b1d, .4), -.09, .672, .08, g, { cast: false });
+    for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2, t = .16 + (i % 3) * .05, s = mesh(CY(.0016, .0016, .26, 5), std(0x3a2b20, .8), -.09 + Math.cos(a) * Math.sin(t) * .13, .68 + Math.cos(t) * .13, .08 + Math.sin(a) * Math.sin(t) * .13, g, { cast: false }); s.rotation.set(Math.sin(a) * t, 0, -Math.cos(a) * t); } }
   if (withVase) {
     mesh(CY(.05, .06, .2, 24), std(0xdfeaf0, .05, 0, { transparent: true, opacity: .45 }), -.06, .675, .03, g, { cast: false });
     for (let i = 0; i < 9; i++) {
