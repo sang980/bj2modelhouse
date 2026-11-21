@@ -631,7 +631,7 @@ Object.assign(M, {
   navy: std(0x3e5f8a, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 30), { rep: [3, 3] }) }),
   check: std(0xffffff, .95, 0, { map: toTex(checkCanvas(), { rep: [2, 2] }) }),
   charcoal: std(0xe3d8c6, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [3, 3] }) }),
-  linen: std(0xf6f5f2, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 14), { rep: [4, 4] }) }),
+  linen: (() => { const lc = linenOn(noiseCanvas([255, 255, 255], 14)); return std(0xf6f5f2, .95, 0, { map: toTex(lc, { rep: [4, 4] }), bumpMap: toTex(lc, { srgb: false, rep: [4, 4] }), bumpScale: .35 }); })(), /* 11-21 리넨 짜임 + 은은한 요철 */
   throwBlue: std(0xcfc3ad, .98, 0, { map: toTex(waffleOn(noiseCanvas([255, 255, 255], 34)), { rep: [5, 5] }), bumpMap: toTex(waffleOn(noiseCanvas([128, 128, 128], 90), true), { srgb: false, rep: [5, 5] }), bumpScale: .8 }),
   rug: std(0xb9b8b4, 1, 0, { map: toTex(noiseCanvas([255, 255, 255], 46), { rep: [8, 8] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 140), { srgb: false, rep: [8, 8] }), bumpScale: 2 }),
 });
@@ -853,6 +853,8 @@ let HD_M = null; function hoodDispMat() { if (HD_M) return HD_M; const c = mkCan
   for (let k = 0; k < 3; k++) { x.globalAlpha = k < 2 ? 1 : .25; x.fillRect(110 + k * 30, 62 - k * 14, 20, 14 + k * 14); } x.globalAlpha = 1;
   x.beginPath(); x.arc(252, 40, 14, 0, 7); x.stroke(); x.fillRect(244, 58, 16, 6); for (let k = 0; k < 5; k++) { const a2 = -Math.PI + k * Math.PI / 4; x.beginPath(); x.moveTo(252 + Math.cos(a2) * 20, 40 + Math.sin(a2) * 20); x.lineTo(252 + Math.cos(a2) * 28, 40 + Math.sin(a2) * 28); x.stroke(); }
   const t = toTex(c); return (HD_M = new THREE.MeshStandardMaterial({ color: 0xffffff, map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: .85, roughness: .15 })); }
+/* 11-21 사용자: 침구 퀄리티업 — 리넨 가는 실 짜임(가로·세로 실, 결정적) 덧그림 */
+function linenOn(c) { const x = c.getContext('2d'), S = c.width; for (let k = 0; k < S; k += 2) { x.fillStyle = k % 4 ? 'rgba(0,0,0,.035)' : 'rgba(0,0,0,.06)'; x.fillRect(0, k, S, 1); x.fillStyle = k % 6 ? 'rgba(0,0,0,.025)' : 'rgba(0,0,0,.05)'; x.fillRect(k, 0, 1, S); } return c; }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
