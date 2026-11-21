@@ -2288,17 +2288,23 @@ const desk2 = piece('책상', 1.66, 1.88, Math.PI / 2);
   mesh(RB(.08, .26, .08, .02), wt, .33, .595, -.08, desk2);
   shellChair(desk2, -.12, .44, Math.PI + .12, terr); }
 // 침실2 소품(VR): 머리판 쪽 사과 무늬 베개 2개 + 판다·곰 인형, 책상 위 노란 책·그림 카드·작은 화분, 골드 선반 위 컵·책·꽃병·액자, 흰 구형 펜던트, 남쪽 벽 토끼 그림
-{ const apple = toTex((() => { const c = mkCanvas(128, 112), x = c.getContext('2d'); x.fillStyle = '#f7f5ef'; x.fillRect(0, 0, 128, 112);
+{ const apple = toTex((() => { const c = mkCanvas(512, 448), x = c.getContext('2d'); x.scale(4, 4); /* 11-21: 4배 해상도 */ x.fillStyle = '#f7f5ef'; x.fillRect(0, 0, 128, 112);
     for (let i = 0; i < 9; i++) { const ax = 16 + (i % 3) * 44 + (i / 3 | 0) % 2 * 10, ay = 18 + (i / 3 | 0) * 36; x.fillStyle = '#7da23f'; x.beginPath(); x.arc(ax - 4, ay, 8, 0, 7); x.arc(ax + 4, ay, 8, 0, 7); x.fill(); x.fillStyle = '#9cc25a'; x.beginPath(); x.arc(ax - 5, ay - 3, 3, 0, 7); x.fill();
       x.strokeStyle = '#5a4030'; x.lineWidth = 2; x.beginPath(); x.moveTo(ax, ay - 7); x.lineTo(ax + 2, ay - 13); x.stroke(); x.fillStyle = '#4f7d2e'; x.beginPath(); x.ellipse(ax + 6, ay - 12, 5, 2.5, -.5, 0, 7); x.fill(); }
     return c; })()), pil = std(0xffffff, .95, 0, { map: apple }), L = 2.0;
   for (const [px, ry] of [[-.25, .03], [.25, -.03]]) { const p = mesh(pillowG(.44, .37, .15), pil, px, .7, -L / 2 + .14, bed2); p.rotation.set(-.28, ry, 0); } /* 두 베개가 서로 겹치지 않게 간격 */
-  const plush = (x, z, ry, body, dark, muzzle, panda) => { const t = new THREE.Group(); t.position.set(x, .5, z); t.rotation.y = ry; bed2.add(t);
-    const sp = (r, m, px, py, pz, sx = 1, sy = 1, sz = 1) => { const s = mesh(new THREE.SphereGeometry(r, 18, 12), m, px, py, pz, t); s.scale.set(sx, sy, sz); return s; };
+  const FUR = {}, fur = m => { const hx = m.color.getHex(); if (FUR[hx]) return FUR[hx]; const c = mkCanvas(256, 256), x = c.getContext('2d'), base = '#' + m.color.getHexString(); x.fillStyle = base; x.fillRect(0, 0, 256, 256); x.lineCap = 'round'; /* 11-21 인형 퀄리티업: 짧은 털 결(결정적 값) */
+    for (let i = 0; i < 2200; i++) { const px = (i * 73 + (i >> 5) * 17) % 256, py = (i * 151 + 41) % 256, a = ((i * 37) % 100) / 100 * Math.PI, l = 3 + (i * 13) % 5; x.strokeStyle = i % 3 === 0 ? 'rgba(0,0,0,.13)' : 'rgba(255,255,255,.18)'; x.lineWidth = 1.4; x.beginPath(); x.moveTo(px, py); x.lineTo(px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke(); }
+    return (FUR[hx] = std(0xffffff, .97, 0, { map: toTex(c, { rep: [2, 2] }) })); };
+  const plush = (x, z, ry, body, dark, muzzle, panda) => { const t = new THREE.Group(); t.position.set(x, .5, z); t.rotation.y = ry; bed2.add(t); const ribbon = std(panda ? 0x3f8f5a : 0xc8323a, .55), muz = muzzle; body = fur(body); dark = fur(dark); muzzle = fur(muzzle);
+    const sp = (r, m, px, py, pz, sx = 1, sy = 1, sz = 1) => { const s = mesh(new THREE.SphereGeometry(r, 24, 16), m, px, py, pz, t); s.scale.set(sx, sy, sz); return s; };
     sp(.075, body, 0, .075, 0, 1, 1.05, .9); sp(.064, body, 0, .19, .012);
     for (const s of [-1, 1]) { sp(.024, dark, s * .046, .245, 0, 1, 1, .6); sp(.026, dark, s * .07, .1, .04, 1, 1.5, 1); sp(.03, dark, s * .045, .022, .062, 1, .75, 1.35);
       if (panda) sp(.017, dark, s * .024, .2, .062, 1, 1.25, .5); sp(.006, std(0x111111, .3), s * .022, .202, .07); }
-    sp(.026, muzzle, 0, .17, .062, 1.2, .85, .7); sp(.008, std(0x161616, .4), 0, .178, .084);
+    sp(.026, muzzle, 0, .17, .062, 1.2, .85, .7); sp(.008, std(0x161616, .25), 0, .178, .084);
+    { const hi = std(0xffffff, .2, 0, { emissive: 0xffffff, emissiveIntensity: .3 }), pad = std(muz.color.getHex(), .9), mo = mesh(new THREE.TorusGeometry(.006, .0013, 4, 10, Math.PI), std(0x161616, .5), 0, .166, .0805, t, { cast: false }); mo.rotation.z = Math.PI; /* 웃는 입 */
+      for (const s of [-1, 1]) { sp(.0024, hi, s * .022 - .003, .206, .0755); sp(.014, pad, s * .046, .245, .013, 1, 1, .35); sp(.018, pad, s * .045, .022, .101, 1, .8, .25); } /* 눈 반짝임·귀 안쪽·발바닥 */
+      for (const s of [-1, 1]) sp(.016, ribbon, s * .019, .136, .056, 1.3, .8, .5); sp(.008, ribbon, 0, .136, .062); } /* 리본 나비넥타이(판다 초록·곰 빨강) */
     return t; };
   plush(.22, -L / 2 + .42, -.35, std(0xf4f2ee, .95), std(0x1c1c1e, .95), std(0xf8f6f2, .95), true);
   plush(-.12, -L / 2 + .46, .25, std(0x8c5b3a, .95), std(0x6e4529, .95), std(0xc9a17c, .95), false);
