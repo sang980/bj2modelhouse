@@ -2961,12 +2961,21 @@ let b6door = null;
   for (let i = -2; i <= 2; i++) pbox(cx - .035, cx + .035, H - .036, H - .034, cz + .09 + i * .015 - .002, cz + .09 + i * .015 + .002, std(0x3b3e44, .5), f, { cast: false });
   pbox(cx - .05, cx + .05, H - .033, H - .031, cz - .04, cz - .02, std(0x9fd1ff, .3, 0, { emissive: 0x9fd1ff, emissiveIntensity: .9 }), f, { cast: false }); }
 // 13 시스템에어컨: 거실·침실1 / 침실2+알파룸 통합형 / 침실2·알파룸 각각
-function acUnit(k, x, z, w, alongX) { const g = item(k, '시스템에어컨', false, ceilingGroup), d = .45, panel = std(0xf6f6f4, .35), slat = std(0xd6d8da, .4), dark = std(0x26282c, .6);
-  const box = (a, b, y0, y1, c, e, m) => alongX ? pbox(x - a, x + a, y0, y1, z + c, z + e, m, g, { cast: false }) : pbox(x + c, x + e, y0, y1, z - a, z + a, m, g, { cast: false });
-  box(w / 2, w / 2, H - .035, H, -d / 2, d / 2, panel);
-  box(w / 2 - .06, w / 2 - .06, H - .038, H - .035, -d / 2 + .04, -d / 2 + .1, dark);                // 토출구
-  for (let i = 0; i < 9; i++) box(w / 2 - .1, w / 2 - .1, H - .039, H - .035, -d / 2 + .15 + i * .028, -d / 2 + .163 + i * .028, slat); // 흡입 루버
-  box(w / 2 - .08, w / 2 - .08, H - .037, H - .035, d / 2 - .06, d / 2 - .055, slat);
+/* 11-21 사용자: 시스템에어컨 퀄리티업 — 1-way 슬림 카세트 아랫면 그림(앞쪽 = 그림 위): 토출구 슬롯, 슬롯 둘레 무풍 미세 타공, 뒤쪽 가는 흡입 그릴, 앞 모서리 표시창(LED 2개) */
+const AC_FACE = {}; function acFaceMat(w, d, s0, s1) { const key = [w, d, s0, s1].map(v => v.toFixed(3)).join('_'); if (AC_FACE[key]) return AC_FACE[key];
+  const W = 1024, Hh = Math.max(64, Math.round(W * d / w / 4) * 4), c = mkCanvas(W, Hh), x = c.getContext('2d'), p = W / w, rr = (a, b, cw, ch, r) => { x.beginPath(); if (x.roundRect) x.roundRect(a, b, cw, ch, r); else x.rect(a, b, cw, ch); };
+  x.fillStyle = '#f6f6f4'; x.fillRect(0, 0, W, Hh); x.strokeStyle = 'rgba(0,0,0,.12)'; x.lineWidth = 3; x.strokeRect(1.5, 1.5, W - 3, Hh - 3); x.strokeStyle = 'rgba(0,0,0,.05)'; x.lineWidth = 2; x.strokeRect(.018 * p, .018 * p, W - .036 * p, Hh - .036 * p);
+  x.fillStyle = 'rgba(0,0,0,.2)'; for (let yy = .02 * p; yy < s0 * p - .008 * p; yy += .0085 * p) for (let xx = .06 * p; xx < W - .06 * p; xx += .0085 * p) { x.beginPath(); x.arc(xx, yy, .0016 * p, 0, 7); x.fill(); } /* 무풍 미세 타공(슬롯 앞) */
+  for (let yy = s1 * p + .012 * p; yy < s1 * p + .055 * p; yy += .0085 * p) for (let xx = .06 * p; xx < W - .2 * p; xx += .0085 * p) { x.beginPath(); x.arc(xx, yy, .0016 * p, 0, 7); x.fill(); } /* 무풍 미세 타공(슬롯 뒤) */
+  x.fillStyle = '#17191c'; rr(.06 * p, s0 * p, W - .12 * p, (s1 - s0) * p, .008 * p); x.fill(); x.fillStyle = 'rgba(255,255,255,.07)'; for (let k = 1; k < 4; k++) x.fillRect(.07 * p, (s0 + (s1 - s0) * k / 4) * p, W - .14 * p, 2); /* 토출구 안 루버 */
+  const g0 = s1 * p + .075 * p, g1 = Hh - .035 * p; x.fillStyle = '#ecece8'; x.fillRect(.05 * p, g0, W - .1 * p, g1 - g0); for (let yy = g0 + 4; yy < g1 - 2; yy += .011 * p) { x.fillStyle = 'rgba(0,0,0,.16)'; x.fillRect(.055 * p, yy, W - .11 * p, Math.max(2, .0028 * p)); x.fillStyle = 'rgba(255,255,255,.8)'; x.fillRect(.055 * p, yy + Math.max(2, .0028 * p), W - .11 * p, 1); } x.strokeStyle = 'rgba(0,0,0,.1)'; x.lineWidth = 2; x.strokeRect(.05 * p, g0, W - .1 * p, g1 - g0); /* 흡입 그릴 */
+  x.fillStyle = '#22262b'; rr(W - .17 * p, s1 * p + .014 * p, .1 * p, .03 * p, .006 * p); x.fill(); x.fillStyle = '#3ea0ff'; x.beginPath(); x.arc(W - .145 * p, s1 * p + .029 * p, .004 * p, 0, 7); x.fill(); x.fillStyle = '#5fd17a'; x.beginPath(); x.arc(W - .12 * p, s1 * p + .029 * p, .004 * p, 0, 7); x.fill(); x.fillStyle = '#9aa3ad'; x.fillRect(W - .105 * p, s1 * p + .025 * p, .025 * p, .008 * p); /* 표시창 */
+  return (AC_FACE[key] = std(0xffffff, .38, 0, { map: toTex(c) })); }
+function acFace(g, w, d, s0, s1, x, z, fx, fz) { const f = mesh(new THREE.PlaneGeometry(w - .008, d - .008), acFaceMat(w, d, s0, s1), WX(x), H - .0356, WZ(z), g, { cast: false }); const wp = new THREE.Vector3(); f.getWorldPosition(wp); f.up.set(fx, 0, fz); f.lookAt(wp.x, wp.y - 1, wp.z); return f; } /* 아래를 보는 판, 그림 위쪽 = 앞(fx,fz) */
+function acUnit(k, x, z, w, alongX) { const g = item(k, '시스템에어컨', false, ceilingGroup), d = .45, panel = std(0xf6f6f4, .35); /* 11-21: 1-way 카세트 — 흰 몸체 + 아랫면 그림(토출구·무풍 타공·흡입 그릴·표시창) + 실제로 열린 바람 날개 */
+  if (alongX) pbox(x - w / 2, x + w / 2, H - .035, H, z - d / 2, z + d / 2, panel, g, { cast: false }); else pbox(x - d / 2, x + d / 2, H - .035, H, z - w / 2, z + w / 2, panel, g, { cast: false });
+  acFace(g, w, d, .04, .1, x, z, alongX ? 0 : -1, alongX ? -1 : 0);
+  const v = alongX ? mesh(BX(w - .14, .004, .058), panel, WX(x), H - .049, WZ(z - d / 2 + .07), g, { cast: false }) : mesh(BX(.058, .004, w - .14), panel, WX(x - d / 2 + .07), H - .049, WZ(z), g, { cast: false }); if (alongX) v.rotation.x = .55; else v.rotation.z = -.55;
 }
 acUnit('ac-liv', 3.85, 8.2, 1.05, true); acUnit('ac-bed1', 7.4, 10.55, 1.05, true); /* 침실1: 커튼박스에 묻히지 않게 */
 acUnit('ac-merged', 2.4, 2.75, .9, false); acUnit('ac-bed2', 2.0, 1.4, .9, false); acUnit('ac-alpha', 2.0, 3.9, .9, false);

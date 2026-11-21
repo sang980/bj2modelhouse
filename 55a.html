@@ -3155,11 +3155,20 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
   for (let i = -3; i <= 3; i++) mesh(BX(.26, .004, .012), M.metalDark, WX(.95), H - .027, WZ(3.9 + i * .035), g, { cast: false });
   mesh(BX(.04, .004, .02), M.ledStrip, WX(1.08), H - .028, WZ(3.76), g, { cast: false }); }
 // 15 시스템에어컨 (천장 카세트)
-function acCassette(k, x, z, w = 1.05) { const g = item(k, '시스템에어컨', false, ceilingGroup); // 사진: 창 위 1-way 슬림 카세트
-  mesh(BX(w, .035, .4), M.white, WX(x), H - .017, WZ(z), g, { cast: false });
-  mesh(BX(w - .12, .004, .07), std(0x202225, .6), WX(x), H - .036, WZ(z + .1), g, { cast: false });
-  for (let i = 0; i < 8; i++) mesh(BX(.01, .004, .05), M.white, WX(x - (w - .2) / 2 + i * (w - .2) / 7), H - .037, WZ(z + .1), g, { cast: false });
-  mesh(BX(w - .2, .004, .16), std(0xe6e6e2, .6), WX(x), H - .036, WZ(z - .08), g, { cast: false }); }
+/* 11-21 사용자: 시스템에어컨 퀄리티업 — 1-way 슬림 카세트 아랫면 그림(앞쪽 = 그림 위): 토출구 슬롯, 슬롯 둘레 무풍 미세 타공, 뒤쪽 가는 흡입 그릴, 앞 모서리 표시창(LED 2개) */
+const AC_FACE = {}; function acFaceMat(w, d, s0, s1) { const key = [w, d, s0, s1].map(v => v.toFixed(3)).join('_'); if (AC_FACE[key]) return AC_FACE[key];
+  const W = 1024, Hh = Math.max(64, Math.round(W * d / w / 4) * 4), c = mkCanvas(W, Hh), x = c.getContext('2d'), p = W / w, rr = (a, b, cw, ch, r) => { x.beginPath(); if (x.roundRect) x.roundRect(a, b, cw, ch, r); else x.rect(a, b, cw, ch); };
+  x.fillStyle = '#f6f6f4'; x.fillRect(0, 0, W, Hh); x.strokeStyle = 'rgba(0,0,0,.12)'; x.lineWidth = 3; x.strokeRect(1.5, 1.5, W - 3, Hh - 3); x.strokeStyle = 'rgba(0,0,0,.05)'; x.lineWidth = 2; x.strokeRect(.018 * p, .018 * p, W - .036 * p, Hh - .036 * p);
+  x.fillStyle = 'rgba(0,0,0,.2)'; for (let yy = .02 * p; yy < s0 * p - .008 * p; yy += .0085 * p) for (let xx = .06 * p; xx < W - .06 * p; xx += .0085 * p) { x.beginPath(); x.arc(xx, yy, .0016 * p, 0, 7); x.fill(); } /* 무풍 미세 타공(슬롯 앞) */
+  for (let yy = s1 * p + .012 * p; yy < s1 * p + .055 * p; yy += .0085 * p) for (let xx = .06 * p; xx < W - .2 * p; xx += .0085 * p) { x.beginPath(); x.arc(xx, yy, .0016 * p, 0, 7); x.fill(); } /* 무풍 미세 타공(슬롯 뒤) */
+  x.fillStyle = '#17191c'; rr(.06 * p, s0 * p, W - .12 * p, (s1 - s0) * p, .008 * p); x.fill(); x.fillStyle = 'rgba(255,255,255,.07)'; for (let k = 1; k < 4; k++) x.fillRect(.07 * p, (s0 + (s1 - s0) * k / 4) * p, W - .14 * p, 2); /* 토출구 안 루버 */
+  const g0 = s1 * p + .075 * p, g1 = Hh - .035 * p; x.fillStyle = '#ecece8'; x.fillRect(.05 * p, g0, W - .1 * p, g1 - g0); for (let yy = g0 + 4; yy < g1 - 2; yy += .011 * p) { x.fillStyle = 'rgba(0,0,0,.16)'; x.fillRect(.055 * p, yy, W - .11 * p, Math.max(2, .0028 * p)); x.fillStyle = 'rgba(255,255,255,.8)'; x.fillRect(.055 * p, yy + Math.max(2, .0028 * p), W - .11 * p, 1); } x.strokeStyle = 'rgba(0,0,0,.1)'; x.lineWidth = 2; x.strokeRect(.05 * p, g0, W - .1 * p, g1 - g0); /* 흡입 그릴 */
+  x.fillStyle = '#22262b'; rr(W - .17 * p, s1 * p + .014 * p, .1 * p, .03 * p, .006 * p); x.fill(); x.fillStyle = '#3ea0ff'; x.beginPath(); x.arc(W - .145 * p, s1 * p + .029 * p, .004 * p, 0, 7); x.fill(); x.fillStyle = '#5fd17a'; x.beginPath(); x.arc(W - .12 * p, s1 * p + .029 * p, .004 * p, 0, 7); x.fill(); x.fillStyle = '#9aa3ad'; x.fillRect(W - .105 * p, s1 * p + .025 * p, .025 * p, .008 * p); /* 표시창 */
+  return (AC_FACE[key] = std(0xffffff, .38, 0, { map: toTex(c) })); }
+function acFace(g, w, d, s0, s1, x, z, fx, fz) { const f = mesh(new THREE.PlaneGeometry(w - .008, d - .008), acFaceMat(w, d, s0, s1), WX(x), H - .0356, WZ(z), g, { cast: false }); const wp = new THREE.Vector3(); f.getWorldPosition(wp); f.up.set(fx, 0, fz); f.lookAt(wp.x, wp.y - 1, wp.z); return f; } /* 아래를 보는 판, 그림 위쪽 = 앞(fx,fz) */
+function acCassette(k, x, z, w = 1.05) { const g = item(k, '시스템에어컨', false, ceilingGroup); /* 사진: 창 위 1-way 슬림 카세트 — 11-21: 아랫면 그림 + 실제로 열린 바람 날개 */
+  mesh(BX(w, .035, .4), M.white, WX(x), H - .017, WZ(z), g, { cast: false }); acFace(g, w, .4, .065, .135, x, z, 0, 1);
+  const v = mesh(BX(w - .14, .004, .058), M.white, WX(x), H - .049, WZ(z + .1), g, { cast: false }); v.rotation.x = -.55; }
 acCassette('ac-liv', 6.97, 7.35, 1.15); /* 거실: 우물천장 테두리·간접등에 묻히지 않게 방 안쪽으로 */ acCassette('ac-bed1', 10.65, 7.62); acCassette('ac-bed2', 1.4, 7.62, .9); acCassette('ac-alpha', 3.95, 7.55, .9); acCassette('ac-merged', 2.56, 7.62);
 // 우물천장(거실) — 테두리 내림 + 16 간접조명
 { const g = og('well', ceilingGroup); const t = .09, b = .42;
