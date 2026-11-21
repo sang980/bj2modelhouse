@@ -2152,9 +2152,19 @@ function kitchenPropsT() {
     const spice = [0xb5402a, 0xd9a43a, 0x6b4a2e, 0x8a9a3c, 0xc9763a, 0x4a3a2c], SPN = ['파프리카', '강황', '후추', '바질', '시나몬', '커민']; /* 11-21 양념병 이름 라벨 */ for (let i = 0; i < 6; i++) { const x = rx - .075 + (i % 3) * .075, y = (i < 3 ? T + .015 : T + .1425); at(CY(.019, .019, .06, 16), std(spice[i], .8), x, y + .033, rz); at(lathe([[0, 0], [.022, 0], [.022, .075], [0, .075]], 18), glass, x, y, rz); at(CY(.0224, .0224, .024, 18, 1, true), labelMat(SPN[i]), x, y + .036, rz).rotation.y = Math.PI / 3; at(CY(.023, .023, .015, 16), blk, x, y + .082, rz); }
     const wp = std(0xf7f6f2, .25); for (let i = 0; i < 4; i++) at(lathe([[0, 0], [.07, 0], [.11, .012], [.112, .016], [0, .016]], 32), wp, 6.0, T + i * .014, 1.13); at(lathe([[0, 0], [.04, 0], [.075, .045], [.073, .05], [0, .05]], 28), wp, 6.0, T + .058, 1.13); }
   // ② 싱크와 쿡탑 사이: 도기 수저통(나무 주걱 3) + 벽에 기대 세운 원목 도마 2장(손잡이)
-  { const cx = 6.95, cz = .95; at(lathe([[0, 0], [.055, 0], [.06, .02], [.058, .16], [.062, .17], [0, .17]], 28), std(0xd9d2c4, .5), cx, T, cz);
-    for (let i = 0; i < 3; i++) { const sp = at(CY(.006, .006, .3, 8), wood, cx + (i - 1) * .02, T + .25, cz + (i % 2) * .015); sp.rotation.set((i - 1) * .12, 0, (i - 1) * .15); at(new THREE.SphereGeometry(.028, 12, 8), wood, cx + (i - 1) * .045, T + .41, cz + (i % 2) * .015 + (i - 1) * .018).scale.set(.8, 1.3, .25); }
-    for (const [x, w, h, a] of [[7.29, .24, .38, -.16], [7.35, .2, .3, -.1]]) { const b = at(RB(w, h, .02, .012, 2), wood, x, T + h / 2 * Math.cos(a) + .005, .86 - Math.sin(a) * h / 2); b.rotation.x = a; } }
+  { const cx = 6.95, cz = .95; /* 11-21 주방 소품 퀄리티업: 막힌 원통이던 수저통 → 속이 빈 도기 통(안쪽 그늘 + 윗단 회청색 유약 띠), 주걱 머리가 손잡이 끝에 붙게(나무 숟가락·납작 뒤집개·둥근 주걱), 도마는 손잡이 탭 + 걸이 구멍 */
+    at(lathe([[0, 0], [.055, 0], [.06, .02], [.058, .16], [.062, .17], [.057, .173], [.052, .162], [.052, .014], [0, .014]], 28), std(0xd9d2c4, .55), cx, T, cz);
+    at(new THREE.CylinderGeometry(.0622, .0592, .034, 28, 1, true), std(0x5f7180, .22, .05), cx, T + .152, cz); at(CY(.051, .051, .004, 24), std(0x6b655c, .9), cx, T + .016, cz);
+    for (let i = 0; i < 3; i++) { const u = new THREE.Group(); u.position.set(WX(cx + (i - 1) * .018), T + .02, WZ(cz + (i % 2) * .014 - .006)); u.rotation.set((i - 1) * .12, (i - 1) * .5, -(i - 1) * .16); g.add(u);
+      mesh(CY(.0055, .0065, .3, 10), wood, 0, .15, 0, u);
+      if (i === 0) mesh(new THREE.SphereGeometry(.026, 16, 10), wood, 0, .325, 0, u).scale.set(.85, 1.35, .28);
+      else if (i === 1) mesh(RB(.052, .078, .006, .014, 2), wood, 0, .335, 0, u);
+      else { mesh(CY(.032, .032, .006, 24), wood, 0, .33, 0, u).rotation.x = Math.PI / 2; } }
+    for (const [x, w, h, a] of [[7.29, .24, .38, -.16], [7.35, .2, .3, -.1]]) { const bh = h * .8, tw = w * .38, sh = new THREE.Shape(), r = .015;
+      sh.moveTo(-w / 2 + r, 0); sh.lineTo(w / 2 - r, 0); sh.quadraticCurveTo(w / 2, 0, w / 2, r); sh.lineTo(w / 2, bh - r); sh.quadraticCurveTo(w / 2, bh, w / 2 - r, bh); sh.lineTo(tw / 2, bh); sh.lineTo(tw / 2, h - tw / 2); sh.absarc(0, h - tw / 2, tw / 2, 0, Math.PI, false); sh.lineTo(-tw / 2, bh); sh.lineTo(-w / 2 + r, bh); sh.quadraticCurveTo(-w / 2, bh, -w / 2, bh - r); sh.lineTo(-w / 2, r); sh.quadraticCurveTo(-w / 2, 0, -w / 2 + r, 0);
+      const hole = new THREE.Path(); hole.absarc(0, h - tw / 2, .013, 0, Math.PI * 2, true); sh.holes.push(hole);
+      const bg = new THREE.ExtrudeGeometry(sh, { depth: .02, bevelEnabled: false, curveSegments: 10 }); bg.translate(0, 0, -.01); { const uv = bg.attributes.uv; for (let k = 0; k < uv.count; k++) uv.setXY(k, uv.getX(k) * 2.5, uv.getY(k) * 2.5); }
+      const b = at(bg, wood, x, T + .005, .86 - Math.sin(a) * h); b.rotation.x = a; } }
   /* ⑤ VR: 수저통과 도마 사이 유리 보관병 2(꿀·파스타, 나무 뚜껑) */
   for (const [x, z, h, r, c] of [[7.08, 1.0, .14, .042, 0xd99a2b], [7.17, .94, .2, .038, 0xe8d6a8]]) { at(CY(r - .004, r - .004, h * .72, 24), std(c, .5), x, T + h * .36 + .004, z); at(lathe([[0, 0], [r, 0], [r, h], [0, h]], 28), glass, x, T, z); at(CY(r + .003, r + .003, .022, 24), wood, x, T + h + .011, z); }
   // ③ 쿡탑 앞쪽 왼쪽 화구 위 스테인리스 냄비 — 가스(그릴 위)·하이라이트/인덕션(상판 위) 높이가 달라 옵션 묶음마다 하나씩
