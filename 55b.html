@@ -3052,10 +3052,15 @@ function systemShelf(g, x0, x1, z0, z1, alongZ, { chest = false, chestStart = fa
 // 바퀴 달린 흰색 하드 캐리어(드레스룸 바닥)
 function suitcase(g, x, z, rot) {
   const s = new THREE.Group(); s.position.set(WX(x), 0, WZ(z)); s.rotation.y = rot; g.add(s);
-  const w = std(0xf3f3f1, .3);
-  mesh(RB(.4, .6, .24, .03), w, 0, .34, 0, s); for (const xx of [-.12, -.04, .04, .12]) mesh(BX(.012, .54, .25), std(0xe6e6e3, .35), xx, .34, 0, s);
-  for (const [xx, zz] of [[-.17, -.09], [.17, -.09], [-.17, .09], [.17, .09]]) mesh(CY(.022, .022, .03, 12), M.black, xx, .03, zz, s).rotation.x = Math.PI / 2;
-  mesh(BX(.2, .02, .03), std(0xd8d8d5, .4), 0, .66, 0, s); for (const xx of [-.09, .09]) mesh(BX(.015, .05, .025), std(0xd8d8d5, .4), xx, .645, 0, s);
+  const w = std(0xf3f3f1, .25), rib = std(0xe8e8e5, .28), dk = std(0x2a2b2d, .5), al = std(0xc9ccd0, .3, .8); /* 11-22 소품 퀄리티업: 흰 상자 + 관통 막대 → 앞뒤 두 쪽 하드 셸(세로 골 돌출) + 가운데 지퍼 띠, 모서리 보호대, 바퀴 집 + 겹바퀴 넷, 뒤쪽 접힌 알루미늄 손잡이, 위·옆 손잡이, TSA 자물쇠, 노란 이름표 */
+  for (const sz of [-1, 1]) { mesh(RB(.4, .6, .115, .035, 3), w, 0, .34, sz * .0625, s); for (const xx of [-.12, -.04, .04, .12]) mesh(RB(.016, .52, .012, .005, 2), rib, xx, .34, sz * .1205, s, { cast: false }); }
+  mesh(RB(.406, .606, .012, .033, 3), dk, 0, .34, 0, s, { cast: false });
+  for (const xx of [-.185, .185]) for (const sz of [-1, 1]) mesh(RB(.04, .05, .05, .014, 2), dk, xx, .07, sz * .1, s, { cast: false });
+  for (const [xx, zz] of [[-.17, -.09], [.17, -.09], [-.17, .09], [.17, .09]]) { mesh(RB(.05, .03, .05, .012, 2), dk, xx, .05, zz, s, { cast: false }); for (const dx of [-.009, .009]) mesh(CY(.019, .019, .011, 14), M.black, xx + dx, .02, zz, s, { cast: false }).rotation.z = Math.PI / 2; }
+  for (const xx of [-.07, .07]) mesh(CY(.008, .008, .05, 10), al, xx, .655, -.085, s, { cast: false }); mesh(RB(.17, .024, .032, .01, 2), dk, 0, .683, -.085, s);
+  mesh(RB(.14, .02, .03, .009, 2), dk, 0, .672, .035, s); for (const xx of [-.06, .06]) mesh(BX(.016, .03, .026), dk, xx, .655, .035, s, { cast: false });
+  mesh(RB(.022, .032, .12, .01, 2), dk, .208, .42, 0, s, { cast: false }); mesh(BX(.05, .03, .012), dk, .12, .57, .126, s, { cast: false }); mesh(BX(.012, .008, .004), al, .12, .575, .1325, s, { cast: false });
+  { const t = mesh(BX(.04, .06, .003), std(0xe9b934, .6), .045, .615, .056, s, { cast: false }); t.rotation.set(-.2, .3, .15); }
   return s;
 }
 function wardrobe(g, x0, x1, z0, z1, faceAxis, panels = 3) { // sliding-door built-in
