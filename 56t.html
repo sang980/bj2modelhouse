@@ -855,6 +855,26 @@ let HD_M = null; function hoodDispMat() { if (HD_M) return HD_M; const c = mkCan
   const t = toTex(c); return (HD_M = new THREE.MeshStandardMaterial({ color: 0xffffff, map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: .85, roughness: .15 })); }
 /* 11-21 사용자: 침구 퀄리티업 — 리넨 가는 실 짜임(가로·세로 실, 결정적) 덧그림 */
 function linenOn(c) { const x = c.getContext('2d'), S = c.width; for (let k = 0; k < S; k += 2) { x.fillStyle = k % 4 ? 'rgba(0,0,0,.035)' : 'rgba(0,0,0,.06)'; x.fillRect(0, k, S, 1); x.fillStyle = k % 6 ? 'rgba(0,0,0,.025)' : 'rgba(0,0,0,.05)'; x.fillRect(k, 0, 1, S); } return c; }
+/* 11-21 사용자: '빈 방 만들기' — 기본 장식(액자·TV·TV장·선반·조명·화분·책장 등)도 가구처럼 선택해 옮기기·삭제.
+   장식 블록을 decorStart/decorEnd로 감싸 그 사이 fixed·scene(면광원)·지정 묶음에 추가된 것을 모아 두었다가, 정적 병합 직전에
+   움직일 수 있는 묶음으로 옮김(가구 목록 맨 뒤에 붙여 기존 저장 번호 유지). 옵션 묶음 안의 장식은 그 묶음 안에 두어 옵션 표시·숨김을 따름 */
+const DECOR = [], DECOR_G = []; let _dmark = null; /* DECOR_G: 만든 장식 묶음 — 정적 병합 대상(휴대폰 그리기 횟수 그대로) */
+function decorStart(name, solid = false, extra = [], join = false) { const ps = [fixed, scene, ...extra]; _dmark = { name, solid, join, ps, n: ps.map(p => p.children.length) }; }
+function decorEnd() { const m = _dmark; _dmark = null; if (!m) return; const objs = []; m.ps.forEach((p, i) => { for (const o of p.children.slice(m.n[i])) objs.push(o); });
+  if (!objs.length) return; const e = m.join && DECOR.find(d => d.name === m.name && !d.direct); if (e) e.objs.push(...objs); else DECOR.push({ name: m.name, solid: m.solid, objs }); }
+function decorGroup(name, objs, solid = false) { if (_dmark) return; DECOR.push({ name, solid, objs: [].concat(objs) }); }
+function decorDirect(name, g, solid = false) { DECOR.push({ name, solid, direct: g }); } /* 이미 제자리 기준점이 있는 묶음(옵션이 위치를 정함)은 감싸지 않고 그대로 가구로 */
+function makeDecorPieces() { const V = new THREE.Vector3(), B = new THREE.Box3();
+  for (const d of DECOR) {
+    if (d.direct) { const g = d.direct; if (!g.parent) continue; g.userData = Object.assign({}, g.userData, { name: d.name, movable: true, solid: d.solid, decor: true, home: { x: g.position.x, z: g.position.z, r: g.rotation.y } }); movables.push(g); continue; }
+    const objs = d.objs.filter(o => o && o.parent); if (!objs.length) continue;
+    B.makeEmpty(); for (const o of objs) { o.updateWorldMatrix(true, true); if (!o.isLight) B.expandByObject(o); } if (B.isEmpty()) continue; B.getCenter(V);
+    const pp = [...new Set(objs.map(o => o.parent))].filter(q => q !== scene), p0 = pp[0], par = pp.length === 1 ? p0 : fixed; if (!p0) continue; /* 고정 장식은 fixed에 두어 '가구 숨기기'와 무관, 충돌도 fixed 묶음 규칙을 따름 */
+    { let a = p0; while (a && !(a.userData && a.userData.movable)) a = a.parent; if (a) continue; } /* 이미 가구(움직이는 묶음) 안의 액자는 그 가구와 함께 */
+    const g = new THREE.Group(); par.add(g); par.updateWorldMatrix(true, false); g.position.copy(par.worldToLocal(new THREE.Vector3(V.x, B.min.y, V.z))); g.position.y = 0; g.updateMatrixWorld(true);
+    for (const o of objs) g.attach(o);
+    g.userData = { name: d.name, movable: true, solid: d.solid, decor: true, home: { x: g.position.x, z: g.position.z, r: 0 } }; movables.push(g); DECOR_G.push(g); }
+  DECOR.length = 0; }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -876,6 +896,7 @@ function afArtTex(art, iw, ih, mat, matColor, fit = 'cover') { /* 매트 + 그�
 function wallArt(parent, o) {
   const { cx, cy, cz, nx = 0, nz = 1, w, h, fw = .025, d = .03, frame = null, mat = 0, matColor = '#f6f4ef', art, glass = true, shadow = true, edge = 0xf2f1ed, tilt = 0, fit = 'cover', shadowOp = .3 } = o;
   const g = new THREE.Group(); g.position.set(WX(cx), cy, WZ(cz)); g.rotation.order = 'YXZ'; g.rotation.y = Math.atan2(nx, nz); g.rotation.x = -tilt; parent.add(g); /* 로컬: x 벽 따라, y 위, z 벽에서 방 쪽 */
+  decorGroup(o.name || (parent.userData && parent.userData.name) || '액자', g); /* 11-21: 액자는 따로 감싸지 않은 곳이면 자동으로 선택·삭제 가능 */
   if (shadow) { const sp = mesh(new THREE.PlaneGeometry(w * 1.16 + .03, h * 1.14 + .03), new THREE.MeshBasicMaterial({ map: afShadowTex(), transparent: true, opacity: shadowOp, depthWrite: false, toneMapped: false, color: 0x000000 }), .004, -.012 - h * .015, .0015, g, { cast: false, recv: false }); sp.renderOrder = 1; }
   if (!frame) { /* 테 없는 캔버스 그림: 앞면 그림 + 옆면(캔버스 감싼 색) */
     const sideM = std(edge, .85), front = std(0xffffff, .78, 0, { map: afArtTex(art, w, h, 0, matColor, fit) });
@@ -1676,11 +1697,12 @@ await phase('거실을 꾸미는 중', 56);
   pbox(x - .03, x, 0, H, 5.45, 8.09, panel, g);                     // 침실1 문(4.45~5.35) 문틀 뒤에서 시작
   for (let z = 5.45 + .53; z < 8.05; z += .53) pbox(x - .034, x - .03, 0, H, z - .002, z + .002, std(0xbdb5a8, .7), g, { cast: false });
   pbox(x - .034, x - .03, 1.25 - .002, 1.25 + .002, 5.45, 8.09, std(0xbdb5a8, .7), g, { cast: false });
+  decorStart('TV·TV장', true); /* 11-21: TV·TV장·소품 한 묶음으로 선택·삭제 */
   pbox(x - .07, x - .03, .98, 1.72, 6.0, 7.55, M.tv, g, { cast: false }); tvScreen(g, WX(x - .0705), 1.35, WZ(6.775), 1.54, .73); /* 11-21 화면 테·반사광·대기등 */
   const tvw = std(0xf6f5f2, .3), mint = new THREE.MeshStandardMaterial({ color: 0xbfe0d8, roughness: .1, metalness: .1, transparent: true, opacity: .85 });
   pbox(x - .45, x - .03, .05, .42, 5.6, 7.95, tvw, g); pbox(x - .452, x - .45, .12, .36, 5.7, 7.85, mint, g, { cast: false });
   pbox(x - .454, x - .452, .12, .36, 6.775 - .003, 6.775 + .003, std(0xe6e4df, .4), g, { cast: false });
-  wallBoxes.push({ minX: WX(x - .45), maxX: WX(x), minZ: WZ(5.6), maxZ: WZ(7.95) });
+  decorEnd(); /* 충돌은 TV장 묶음이 맡음(지우면 지나갈 수 있게) */
   // TV장 소품은 화분 함수들이 정의된 뒤(아래 '거실 소품(VR)')에서 배치
   // 우물천장(테두리 내림) + 숨은 간접등
   const t = .09, b = .4, X0 = 5.25, X1 = 8.75, Z0 = 4.6, Z1 = 8.07;
@@ -1696,11 +1718,11 @@ await phase('거실을 꾸미는 중', 56);
   pbox(5.2, 8.75, 2.3, H, 7.85, 8.09, M.ceil, fixed, { cast: false });
 }
 // ── 복도: 백라이트 액자(현관에서 들어오며 보이는 벽 — 침실2·알파룸 문 사이) ──
-{ const g = fixed, z = 5.26;
+decorStart('복도 그림'); { const g = fixed, z = 5.26;
   const art = toTex((() => { const c = mkCanvas(810, 768), c2 = c.getContext('2d'); c2.scale(3, 3); c2.fillStyle = '#f2efe8'; /* 3배 해상도 */ c2.fillRect(0, 0, 270, 256); c2.fillStyle = '#a77a4c'; c2.beginPath(); c2.moveTo(0, 150); c2.lineTo(0, 200); c2.lineTo(120, 170); c2.lineTo(150, 60); c2.lineTo(270, 70); c2.lineTo(270, 30); c2.lineTo(140, 25); c2.lineTo(105, 140); c2.fill(); return c; })());
   wallArt(g, { cx: 3.575, cy: 1.5, cz: z, nx: 0, nz: -1, w: .95, h: 1.0, fw: .03, d: .036, frame: std(0xc8a57a, .5), mat: 0, art, glass: false, shadow: false }); /* 원목 테(턱 있는 단면) — 뒤 간접광은 그대로 */
   ledRectWall(3.575, 1.5, z - .05, .9, 1.0, 0, -1, 0xffe2bd, .3, .8);
-}
+} decorEnd();
 // ── 현관(VR): 신발장(서쪽, 문은 현관 쪽) — 블랙 테 전신거울 문 3짝 + 평판등 ──
 { const g = fixed, x = 2.28, a = 2.6, b = 4.12, w3 = (b - a) / 3; /* 욕실1 벽(면 1.90)을 따라 0.08 */
   pbox(1.94, x - .04, 0, .1, a + .02, b - .02, M.black, g);
@@ -2258,7 +2280,7 @@ M.shag = (() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillSt
 { const art = toTex((() => { const c = mkCanvas(1536, 900), x = c.getContext('2d'); x.scale(3, 3); x.fillStyle = '#f7f7f3'; x.fillRect(0, 0, 512, 300); // VR: 연두색 점이 소용돌이처럼 퍼지는 그림
     for (let i = 0; i < 900; i++) { const a = i * .23, r = 4 + i * .2; const px = 150 + Math.cos(a) * r * 1.2 + (i > 500 ? (i - 500) * .45 : 0), py = 150 + Math.sin(a) * r * .55; if (px < 30 || px > 482 || py < 25 || py > 275) continue;
       x.fillStyle = ['#b8d23a', '#d6e27a', '#9cbf3a', '#e9eda6'][i % 4]; x.beginPath(); x.arc(px, py, 1.6 + (i % 3) * .8, 0, 7); x.fill(); } return c; })());
-  wallArt(fixed, { cx: 5.21, cy: 1.55, cz: 6.75, nx: 1, nz: 0, w: 1.5, h: .7, fw: .022, d: .04, frame: std(0xc9cbcd, .3, .7), mat: 0, art }); } /* 은색 테 + 유리 + 벽 그림자 */
+  wallArt(fixed, { name: '소파 위 그림', cx: 5.21, cy: 1.55, cz: 6.75, nx: 1, nz: 0, w: 1.5, h: .7, fw: .022, d: .04, frame: std(0xc9cbcd, .3, .7), mat: 0, art }); } /* 은색 테 + 유리 + 벽 그림자 */
 // VR 커피테이블: 두꺼운 흰 타원 상판 + 그 아래 연노랑 층 + 흰 받침, 위에 노란 화병 둥근 잎 화분 · 검은 책 2권 + 흰 커피잔
 function coffeeOvalT(x, z) { const g = piece('커피테이블', x, z, 0), w = std(0xf7f6f3, .3);
   const top = mesh(CY(.5, .5, .07, 56), w, 0, .37, 0, g); top.scale.set(.7, 1, 1.1);
@@ -2274,14 +2296,14 @@ function coffeeOvalT(x, z) { const g = piece('커피테이블', x, z, 0), w = st
   return g; }
 coffeeOvalT(6.9, 6.85);
 // TV장 소품(VR): 오른쪽(창 쪽) 흰 돌 링 + 노란 타원 링이 엇갈린 조형물, 왼쪽 흰 질감 화병 2개 + 큰 잎 열대식물
-{ const g = fixed, cx = 8.79 - .24, top = .42;
+decorStart('TV·TV장', true, [], true); { const g = fixed, cx = 8.79 - .24, top = .42;
   const ceramic = std(0xf3f1ec, .55);
   const wr = new THREE.Mesh(new THREE.TorusGeometry(.105, .046, 18, 44), ceramic); wr.scale.set(1, 1.12, .72); wr.rotation.y = Math.PI / 2 - .25; wr.position.set(WX(cx + .02), top + .165, WZ(7.62)); wr.castShadow = true; g.add(wr);
   const yr = new THREE.Mesh(new THREE.TorusGeometry(.072, .021, 14, 40), std(0xe5b33a, .28)); yr.scale.set(1, 1.38, .85); yr.rotation.set(0, Math.PI / 2 + .55, .32); yr.position.set(WX(cx - .02), top + .12, WZ(7.51)); yr.castShadow = true; g.add(yr);
   const v1 = new THREE.Mesh(texturedVaseGeo(.36, .052), ceramic); v1.position.set(WX(cx + .05), top, WZ(5.76)); v1.castShadow = true; g.add(v1);
   const v2 = new THREE.Mesh(texturedVaseGeo(.5, .062), ceramic); v2.position.set(WX(cx - .02), top, WZ(5.93)); v2.castShadow = true; g.add(v2);
   const tp = tropicalPlantGeo(9, .7), pl = new THREE.Group(); pl.position.set(WX(cx - .04), top + .48, WZ(5.93)); pl.scale.x = .5; g.add(pl); // 벽 쪽(동쪽)으로는 잎을 절반만 — 벽을 뚫고 침실1에 보이지 않게
-  const lv = new THREE.Mesh(tp.leaves, plantLeafMat); lv.castShadow = true; pl.add(lv); pl.add(new THREE.Mesh(tp.stems, plantStemMat)); }
+  const lv = new THREE.Mesh(tp.leaves, plantLeafMat); lv.castShadow = true; pl.add(lv); pl.add(new THREE.Mesh(tp.stems, plantStemMat)); } decorEnd();
 await yieldUI();
 // 주방 아일랜드(옵션 3-1·3-3, 고정식) — 상판과 나란히, 식탁은 아일랜드 남쪽에 붙임
 { const g = item('b3isl', '아일랜드식탁');
@@ -2326,7 +2348,7 @@ function diningWhiteT(L = 1.4, per = 2) { /* per: 한쪽 의자 수(2 → 4인, 
 }
 const diningT = diningWhiteT(), diningT6 = diningWhiteT(1.95, 3); /* 기본형(아일랜드 없음)은 6인 긴 식탁 */
 // VR: 식탁 옆 벽 파스텔 레시피 카드 4장(2×2, 21cm, 촘촘히) — 연두·민트 바탕에 식기·음식 그림
-{ const cols = ['#dfe98f', '#bfe3dd', '#c6e8d3', '#e4ec9a'];
+decorStart('그림 카드 4장'); { const cols = ['#dfe98f', '#bfe3dd', '#c6e8d3', '#e4ec9a'];
   const draw = (i, x) => { x.strokeStyle = '#4a4f46'; x.fillStyle = '#4a4f46'; x.lineWidth = 2.2; x.lineCap = 'round';
     if (i === 0) { x.beginPath(); x.moveTo(44, 26); x.lineTo(44, 92); x.moveTo(36, 26); x.lineTo(36, 46); x.moveTo(52, 26); x.lineTo(52, 46); x.moveTo(36, 46); x.quadraticCurveTo(44, 56, 52, 46); x.stroke(); x.beginPath(); x.moveTo(80, 26); x.quadraticCurveTo(94, 50, 82, 58); x.lineTo(82, 92); x.stroke(); }
     if (i === 1) { x.beginPath(); x.ellipse(64, 40, 9, 13, 0, 0, 7); x.stroke(); x.beginPath(); x.moveTo(64, 53); x.lineTo(64, 92); x.stroke(); x.beginPath(); x.ellipse(64, 104, 30, 6, 0, 0, Math.PI); x.stroke(); }
@@ -2335,12 +2357,13 @@ const diningT = diningWhiteT(), diningT6 = diningWhiteT(1.95, 3); /* 기본형(�
     x.globalAlpha = .55; for (let k = 0; k < 3; k++) x.fillRect(22, 100 + k * 7 - (i === 2 ? 0 : 4), 50 - k * 12, 3); x.globalAlpha = 1; };
   for (let i = 0; i < 4; i++) { const r = i >> 1, c = i & 1, z = 3.33 + c * .222 + (i === 1 ? .004 : 0), y = 1.63 - r * .222 + (i === 1 ? .012 : 0); // 다용도실 문틀에서 떨어진 벽 가운데
     const t = toTex((() => { const cv = mkCanvas(384, 384), x = cv.getContext('2d'); x.scale(3, 3); x.fillStyle = cols[i]; x.fillRect(0, 0, 128, 128); draw(i, x); return cv; })());
-    wallArt(fixed, { cx: 8.35, cy: y, cz: z, nx: -1, nz: 0, w: .21, h: .21, d: .012, frame: null, art: t, edge: 0xf4f2ec, shadowOp: .22 }); } } /* 두꺼운 카드(흰 옆면) + 벽 그림자 */
+    wallArt(fixed, { cx: 8.35, cy: y, cz: z, nx: -1, nz: 0, w: .21, h: .21, d: .012, frame: null, art: t, edge: 0xf4f2ec, shadowOp: .22 }); } } decorEnd(); /* 두꺼운 카드(흰 옆면) + 벽 그림자 */
 diningB.position.set(WX(6.05), 0, WZ(3.1)); diningB.rotation.y = Math.PI; diningB.userData.home = { x: diningB.position.x, z: diningB.position.z, r: Math.PI };
 const diningPendB = new THREE.Group(); { const p = diningPendB; p.position.set(WX(7.0), 0, WZ(3.1)); fixed.add(p); // 식탁 펜던트
   // VR: 흰 돔(반구) 펜던트
   mesh(CY(.004, .004, .62, 6), M.black, 0, H - .31, 0, p, { cast: false }); { const sh = mesh(new THREE.SphereGeometry(.24, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), std(0xf8f8f6, .35, 0, { emissive: 0xfff6ea, emissiveIntensity: .18 }), 0, 1.6, 0, p, { cast: false }); sh.material.side = THREE.DoubleSide; } /* VR: 흰 돔이 회색으로 죽지 않게 은은한 자체광 */
   mesh(CY(.05, .05, .06, 20), M.white, 0, 1.86, 0, p, { cast: false }); mesh(CY(.2, .2, .004, 32), M.ledWarm, 0, 1.6, 0, p, { cast: false }); }
+decorDirect('식탁 펜던트', diningPendB); /* 11-21: 선택·삭제 가능 */
 await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
 // 침실1: 머리는 서쪽 벽(헤드보드 벽판), 양옆 협탁
 { const b = bed(10.03, 6.6, Math.PI / 2, 1.6, 2.1, '침대'); /* VR(56T 침실1): 흰 침구(담요 없음), 뒤 베이지 베개 + 앞 베이지 띠·흰 단추 흰 쿠션 2 */
@@ -2401,7 +2424,7 @@ const kidBed = piece('원목 아이 침대', 4.0, 7.48, Math.PI / 2); // 창 쪽
   mesh(BX(.05, .05, L * .7), pine, W / 2 + .03, .75, -L * .1, g); for (let i = 0; i < 7; i++) mesh(BX(.03, .32, .03), pine, W / 2 + .03, .58, -L * .43 + i * .2, g);
   for (const px of [-.22, .22]) { const p = mesh(pillowG(.48, .15, .34), std(0xf8f7f3, .95, 0, { map: M.linen.map }), px, .6, -L / 2 + .3, g); p.rotation.x = -.3; } /* 푹신한 흰 베개 2 + 연두 베개 */
   { const p = mesh(pillowG(.42, .32, .14), std(0xa6d23f, .95), .26, .7, -L / 2 + .16, g); p.rotation.set(-.25, -.15, 0); } }
-const dartG = new THREE.Group(); fixed.add(dartG); // 다트판: 기본(분리)일 때만 — 1-1 통합·1-2 꺾음이면 뺌
+const dartG = new THREE.Group(); fixed.add(dartG); decorGroup('다트판', dartG); // 다트판: 기본(분리)일 때만 — 1-1 통합·1-2 꺾음이면 뺌
 const alphaPosters = {};
 { const poster = (bg, draw) => toTex((() => { const c = mkCanvas(576, 768), x = c.getContext('2d'); x.scale(3, 3); x.fillStyle = bg; x.fillRect(0, 0, 192, 256); draw(x); return c; })());
   const ell = (x, cx, cy, rx, ry, col) => { x.fillStyle = col; x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 7); x.fill(); };
@@ -3054,7 +3077,7 @@ function applyOptions() {
   { const L = diningB.userData.len || 1.95;
     diningB.visible = false; diningT.visible = true; diningT6.visible = false; /* 4인 식탁: 아일랜드 있으면 아일랜드 남쪽 면에 / 없으면 세탁실 문(z 0.96~2.84) 바로 아래 주방 안쪽(거실 통로 침범 없이) */
     const t = diningT, [tx, tz] = island ? [7.6, 4.14] : [7.5, 3.62]; /* 의자 등받이가 동쪽 벽(x 8.35)·냉장고 앞(x 5.86+0.9)에 닿지 않게 */
-    t.position.set(WX(tx), 0, WZ(tz)); t.userData.home = { x: t.position.x, z: t.position.z, r: 0 }; diningPendB.position.set(WX(tx), 0, WZ(tz));
+    t.position.set(WX(tx), 0, WZ(tz)); t.userData.home = { x: t.position.x, z: t.position.z, r: 0 }; diningPendB.position.set(WX(tx), 0, WZ(tz)); if (diningPendB.userData.home) Object.assign(diningPendB.userData.home, { x: diningPendB.position.x, z: diningPendB.position.z });
     diningB.position.set(WX(6.05), 0, WZ(3.1)); diningB.rotation.y = Math.PI;
     diningB.userData.home = { x: diningB.position.x, z: diningB.position.z, r: diningB.rotation.y }; }
   show('b4base', !s['4']); show('b4-1', s['4'] === '4-1'); show('b4-2', s['4'] === '4-2');
@@ -3661,11 +3684,12 @@ await yieldUI();
     if ((r.x1 - r.x0) * (r.z1 - r.z0) > 9) { const [lx, lz] = used[used.length - 1], cx = (r.x0 + r.x1) / 2, cz = (r.z0 + r.z1) / 2, d = ([a, b]) => Math.hypot(cx + a * (r.x1 - r.x0) / 2 - lx, cz + b * (r.z1 - r.z0) / 2 - lz); place(r, ringB.concat(ringA).sort((a, b) => d(b) - d(a)), sprinkler); } // 넓은 방(거실·주방)은 첫 헤드와 먼 쪽에 하나 더
   }
 }
+makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
 // 정적 메시 병합도 묶음마다 양보(한 번에 하면 느린 기기에서 수백 ms 멈춤). 진단용 ?nomerge: 병합 안 함(겹침 검사용)
 const mergeStats = [];
-if (!new URLSearchParams(location.search).has('nomerge')) for (const grp of [structure, fixed, ceilingGroup, ...Object.values(tagGroups)]) { mergeStats.push(await mergeStatic(grp)); await yieldUI(); } // 진단용 ?nomerge: 병합 안 함(겹침 검사용)
+if (!new URLSearchParams(location.search).has('nomerge')) for (const grp of [structure, fixed, ceilingGroup, ...Object.values(tagGroups), ...DECOR_G]) { mergeStats.push(await mergeStatic(grp)); await yieldUI(); } // 진단용 ?nomerge: 병합 안 함(겹침 검사용)
 console.info('[56T] merged static meshes', mergeStats.reduce((a, [b, c]) => [a[0] + b, a[1] + c], [0, 0]));
 // 그림자맵은 옵션·시간대·가구 이동 때만 다시 그림(베이크)
 renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;
