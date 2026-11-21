@@ -1724,7 +1724,7 @@ await yieldUI();
   // (위 거울장 밑면과 띄우려고 전체 높이 15cm 이내)
   const pumpBottle = (x, y, z, col, h = .15, r = .03, ry = 0, glass = false, label = false) => { const b = new THREE.Group(); b.position.set(WX(x), y, WZ(z)); b.rotation.y = ry; g.add(b); /* 펌프병: 어깨 있는 병 + 칼라 + 펌프 머리 + 노즐 */
     mesh(new THREE.LatheGeometry([[0, 0], [r * .9, 0], [r, .008], [r, h * .7], [r * .86, h * .79], [r * .42, h * .85], [r * .4, h * .9], [0, h * .9]].map(([a, c]) => new THREE.Vector2(a, c)), 28), glass ? std(col, .1, 0, { transparent: true, opacity: .88 }) : std(col, .35, .05), 0, 0, 0, b);
-    if (label) mesh(new THREE.CylinderGeometry(r + .0012, r + .0012, h * .34, 28, 1, true), std(0x1f1f20, .6), 0, h * .38, 0, b, { cast: false });
+    if (label) { const lm = mesh(new THREE.CylinderGeometry(r + .0012, r + .0012, h * .34, 28, 1, true), typeof label === 'string' ? labelMat(label) : std(0x1f1f20, .6), 0, h * .38, 0, b, { cast: false }); lm.rotation.y = Math.PI / 3; } /* 11-21: 글자 라벨(문자열이면) */
     const k = std(0x1d1d1f, .4); mesh(CY(r * .46, r * .46, .012, 16), k, 0, h * .9 + .006, 0, b); mesh(CY(.005, .005, .028, 8), k, 0, h * .9 + .026, 0, b); mesh(RB(.02, .013, .016, .004, 1), k, 0, h * .9 + .045, 0, b); mesh(CY(.0035, .0035, .032, 8), k, 0, h * .9 + .045, .022, b, { cast: false }).rotation.x = Math.PI / 2; return b; };
   const dispenser = (x, y, z, col, ry = 0) => pumpBottle(x, y, z, col, .12, .028, ry); /* 위 거울장 밑면과 띄우려고 전체 높이 16cm 이내 */
   let _slp = null; const slipperPair = (cx, cz, col, ry = 0, gap = .18) => { /* 슬리퍼 한 켤레: 발 모양 바닥(흰 밑창 + 천) + 앞쪽 아치 끈 */
