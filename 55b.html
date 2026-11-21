@@ -2126,11 +2126,12 @@ function kitchenPropsB() {
   const g = fixed, T = .9, at = (geo, mat, x, y, z, par = g) => mesh(geo, mat, WX(x), y, WZ(z), par);
   const lathe = (pts, seg = 28) => new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x, y)), seg);
   const glass = std(0xe4eef0, .05, 0, { transparent: true, opacity: .3 }), wood = std(0xffffff, .55, 0, { map: M.oak.map }), blk = std(0x18191b, .45), pasta = std(0xe8c46a, .7);
+  const GRN = new Map(), grainMat = f => { if (GRN.has(f)) return GRN.get(f); const c = mkCanvas(128, 128), x = c.getContext('2d'), col = f.color, hh = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }; /* 11-22 주방 소품 퀄리티업: 유리병 속 곡물·파스타 — 단색 → 낟알 점무늬(결정적 값) */ x.fillStyle = '#' + col.clone().multiplyScalar(.78).getHexString(); x.fillRect(0, 0, 128, 128); for (let i = 0; i < 900; i++) { const h = hh(i, GRN.size + 3), k = .8 + hh(i, 17) * .45; x.fillStyle = '#' + col.clone().multiplyScalar(Math.min(1.25, k)).getHexString(); x.beginPath(); x.ellipse(hh(i, 5) * 128, hh(i, 9) * 128, 2.2 + h * 1.6, 1.5 + h, hh(i, 13) * 3.1, 0, 7); x.fill(); } const m = std(0xffffff, .8, 0, { map: toTex(c, { rep: [2, 1] }) }); GRN.set(f, m); return m; };
   // ① 싱크 줄 남쪽 끝: 원목 2단 스탠드 + 파스타·곡물 유리병 + 검은 'olive' 칠판
   { const cx = .38, cz = 7.03;
     for (const y of [T + .012, T + .19]) at(CY(.13, .13, .018, 32), wood, cx, y, cz); at(CY(.008, .008, .2, 10), wood, cx, T + .1, cz);
     for (const [dx, dz, h, f, y0] of [[-.06, -.05, .12, pasta, T + .021], [.06, -.04, .1, std(0xc98a4a, .7), T + .021], [0, .07, .11, std(0xf0e6cf, .8), T + .021], [-.04, 0, .1, pasta, T + .199], [.05, .03, .08, std(0xb5402c, .6), T + .199]]) {
-      at(CY(.032, .032, h, 20), glass, cx + dx, y0 + h / 2, cz + dz); at(CY(.029, .029, h * .7, 20), f, cx + dx, y0 + h * .35, cz + dz); at(CY(.034, .034, .012, 20), wood, cx + dx, y0 + h + .006, cz + dz); }
+      at(CY(.032, .032, h, 20), glass, cx + dx, y0 + h / 2, cz + dz); at(CY(.029, .029, h * .7, 20), grainMat(f), cx + dx, y0 + h * .35, cz + dz); at(CY(.034, .034, .012, 20), wood, cx + dx, y0 + h + .006, cz + dz); }
     const sign = toTex((() => { const c = mkCanvas(512, 384), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#1d1f1c'; x.fillRect(0, 0, 128, 96); x.fillStyle = '#f2efe6'; x.font = 'bold 30px serif'; x.textAlign = 'center'; x.fillText('olive', 64, 58); x.strokeStyle = '#c9a76a'; x.lineWidth = 6; x.strokeRect(3, 3, 122, 90); return c; })());
     const s = at(BX(.012, .14, .19), std(0xffffff, .8, 0, { map: sign }), .17, T + .07, cz + .02); s.rotation.z = -.12; }
   // ② 모서리: 머스터드 화병 + 고사리, 앞쪽 흰 레트로 토스터
