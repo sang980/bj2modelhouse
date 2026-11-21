@@ -1293,7 +1293,7 @@ M.woodPanel = std(0xffffff, .62, 0, { map: toTex(woodCanvas([214, 206, 194], 6))
 M.marbleW = std(0xffffff, .2, 0, { map: toTex(marbleCanvas()) });
 M.curtainGrey = new THREE.MeshStandardMaterial({ color: 0x9a968f, roughness: 1, side: THREE.DoubleSide, map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [6, 3] }) });
 M.ledWarm = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffd9a8, emissiveIntensity: 5 });
-M.panelLED = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xf4f7ff, emissiveIntensity: 3 });
+M.panelLED = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xf4f7ff, emissiveIntensity: 3 }); M.panelRev = std(0x9fa2a6, .6); /* 11-21: 평판등 패널 둘레 회색 줄눈 */
 M.whiteGloss = std(0xf6f5f2, .3);
 M.fridgeBeige = std(0xead8cf, .35, .05);
 M.fridgeGlass = std(0x1b1d22, .08, .3);
@@ -1310,6 +1310,7 @@ function ledRectWall(cx, cy, cz, w, h, nx, nz, color, day, eve, opt = null) { //
 }
 function ceilingPanel(x0, x1, z0, z1, day = 1.2, eve = 3.2) { // 평판 LED 등 (발광면 + 아래로 비추는 면광원)
   pbox(x0 - .03, x1 + .03, H - .035, H - .002, z0 - .03, z1 + .03, M.white, ceilingGroup, { cast: false });
+  pbox(x0 - .008, x1 + .008, H - .0368, H - .0352, z0 - .008, z1 + .008, M.panelRev, ceilingGroup, { cast: false }); /* 11-21 설비 퀄리티업: 발광 패널과 흰 테 사이 8mm 회색 줄눈(매입 패널처럼) */
   pbox(x0, x1, H - .04, H - .035, z0, z1, M.panelLED, ceilingGroup, { cast: false });
   ledRect(x0, x1, z0, z1, H - .05, -1, 0xf6f8ff, day, eve);
 }
