@@ -2217,7 +2217,7 @@ function kitchenProps(k) {
     for (const [ux, uz, L, ax] of [[0, -.105, .2, 'x'], [0, .055, .2, 'x'], [-.1, -.025, .16, 'z'], [.1, -.025, .16, 'z']]) { const r = at(CY(.0035, .0035, L, 8), chrome, cx + ux, T + .345, cz + uz); if (ax === 'x') r.rotation.z = Math.PI / 2; else r.rotation.x = Math.PI / 2; }
     for (const [ux, uz] of [[-.1, -.105], [.1, -.105], [-.1, .055], [.1, .055]]) at(CY(.003, .003, .04, 6), chrome, cx + ux, T + .325, cz + uz);
     at(BX(.235, .012, .27), chrome, cx, T + .006, cz + .01); /* 바닥 크롬 띠 */
-    for (const s of [-1, 1]) at(CY(.035, .035, .012, 20), blk, cx + s * .06, T + .325, cz - .02);  // 위에 올린 컵
+    { const IC = new THREE.LatheGeometry([[.0315, 0], [.032, .002], [.03, .015], [.024, .052], [.022, .056], [.016, .057], [.016, .06], [0, .06]].map(([a, b]) => new THREE.Vector2(a, b)), 26), icm = std(0xffffff, .2); for (const s of [-1, 1]) at(IC, icm, cx + s * .06, T + .319, cz - .02); } /* 11-22 주방 소품 퀄리티업: 검은 원판 → 컵워머 위에 엎어 둔 흰 에스프레소 잔(입구 아래·굽 위) */  // 위에 올린 컵
     at(CY(.04, .045, .05, 24), chrome, cx, T + .2, cz + .14);                                       // 그룹헤드
     const pf = at(CY(.008, .008, .12, 10), blk, cx + .08, T + .18, cz + .18); pf.rotation.z = Math.PI / 2.4; // 포터필터 손잡이
     at(RB(.2, .015, .09, .005), chrome, cx, T + .01, cz + .17); at(new THREE.PlaneGeometry(.18, .075).rotateX(-Math.PI / 2), std(0xffffff, .3, .7, { map: toTex((() => { const c = mkCanvas(256, 128), x = c.getContext('2d'); x.fillStyle = '#d7dadd'; x.fillRect(0, 0, 256, 128); x.fillStyle = '#2a2c30'; for (let i = 0; i < 15; i++) x.fillRect(12 + i * 16, 14, 8, 100); return c; })()) }), cx, T + .0181, cz + .17); /* 11-21: 물받이 격자 덮개(가는 슬롯) */                                      // 물받이
