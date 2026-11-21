@@ -782,6 +782,10 @@ let PS_G = null; function placeGeo() { if (PS_G) return PS_G; const prof = [[0, 
   PS_G = { plate: new THREE.LatheGeometry(prof, 24), glass: new THREE.CylinderGeometry(.033, .029, .105, 18, 1, true), gbase: new THREE.CylinderGeometry(.029, .029, .006, 18), fork: new THREE.BoxGeometry(.014, .003, .18), knife: new THREE.BoxGeometry(.012, .003, .2), napkin: new THREE.BoxGeometry(.11, .005, .2),
     silver: std(0xd7d9db, .22, .95), glassM: std(0xf4f8fa, .05, 0, { transparent: true, opacity: .28, depthWrite: false }), linen: std(0xe9e4da, .9) }; return PS_G; }
 function placePlate(g, px, y, pz, r) { const s = r / .1, m = mesh(placeGeo().plate, M.whiteGloss, px, y - .01, pz, g, { cast: false }); m.scale.set(s, 1, s); return m; }
+let _wvMat = null; function wvMat() { if (_wvMat) return _wvMat; const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = '#44464a'; x.fillRect(0, 0, 256, 256); /* 11-22 소품 퀄리티업: 민무늬 회색 식탁 매트 → 동심원으로 짠 결 + 방사 살 + 가장자리 테(55B와 같은 짠 매트, 결정적 값) */
+  for (let r = 6, k = 0; r < 120; r += 4.5, k++) { x.strokeStyle = k % 2 ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.16)'; x.lineWidth = 2.4; x.beginPath(); x.arc(128, 128, r, 0, 7); x.stroke(); }
+  x.strokeStyle = 'rgba(0,0,0,.18)'; x.lineWidth = 1; for (let i = 0; i < 96; i++) { const a = i / 96 * Math.PI * 2; x.beginPath(); x.moveTo(128 + Math.cos(a) * 10, 128 + Math.sin(a) * 10); x.lineTo(128 + Math.cos(a) * 118, 128 + Math.sin(a) * 118); x.stroke(); }
+  x.strokeStyle = '#5b5d61'; x.lineWidth = 7; x.beginPath(); x.arc(128, 128, 123, 0, 7); x.stroke(); return (_wvMat = std(0xffffff, .85, 0, { map: toTex(c) })); }
 function placeSet(g, px, y, pz, r) { const P = placeGeo(), f = Math.abs(pz) > .05 ? [0, -Math.sign(pz)] : [px < 0 ? 1 : -1, 0], rt = [-f[1], f[0]], y0 = y - .01, ry = Math.atan2(f[0], f[1]), at = (u, v) => [px + rt[0] * u + f[0] * v, pz + rt[1] * u + f[1] * v];
   placePlate(g, px, y, pz, r); const sp = mesh(P.plate, M.whiteGloss, px, y0 + .0065, pz, g, { cast: false }); sp.scale.set(.68 * r / .1, 1, .68 * r / .1);
   { const [x, z] = at(-(r + .055), 0); const n = mesh(P.napkin, P.linen, x, y0 + .0025, z, g, { cast: false }); n.rotation.y = ry; const fk = mesh(P.fork, P.silver, x, y0 + .0065, z, g, { cast: false }); fk.rotation.y = ry; }
@@ -2330,7 +2334,7 @@ function diningSmall() {
   for (const x of [-.04, -L + .04]) for (const z of [-W / 2 + .04, W / 2 - .04]) mesh(BX(.025, .727, .025), M.black, x, .3635, z, g);
   // 복도 쪽(회전 π 후 로컬 -z) 의자는 식탁 밑으로 밀어 넣음
   for (const x of [-.3, -.8]) { diningChair(g, x, -.56, 0); diningChair(g, x, .56, Math.PI); } /* 요청: 서쪽 의자도 밀어 넣지 않고 동쪽과 같은 간격 */
-  for (const x of [-.3, -.8]) for (const pz of [-.2, .2]) { const m = mesh(CY(.17, .17, .004, 30), std(0x45474b, .8), x, .757, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); placeSet(g, x, .768, pz, .11); }
+  for (const x of [-.3, -.8]) for (const pz of [-.2, .2]) { const m = mesh(CY(.17, .17, .004, 30), wvMat(), x, .757, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); placeSet(g, x, .768, pz, .11); }
   tablePlant(g, -.55, .7525, 0);
   g.userData.len = L; return g;
 }
@@ -2346,7 +2350,7 @@ function diningLarge() {
   const cx = [-.33, -.975, -1.62];
   for (const [k, x, z, r] of [['n1', cx[0], -.4, 0], ['n2', cx[1], -.4, 0], ['n3', cx[2], -.4, 0], ['s1', cx[0], .66, Math.PI], ['s2', cx[1], .66, Math.PI], ['s3', cx[2], .66, Math.PI]])
     g.userData.chairs[k] = diningChair(g, x, z, r);
-  for (const px of cx) for (const pz of [-.24, .24]) { const m = mesh(CY(.16, .16, .004, 30), std(0x45474b, .8), px, .757, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); placeSet(g, px, .768, pz, .1); }
+  for (const px of cx) for (const pz of [-.24, .24]) { const m = mesh(CY(.16, .16, .004, 30), wvMat(), px, .757, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); placeSet(g, px, .768, pz, .1); }
   tablePlant(g, -.975, .755, 0);
   g.userData.len = L; return g;
 }
@@ -2360,7 +2364,7 @@ function diningPantry6() {
   const cx = [-.27, -.8, -1.33];
   for (const x of cx) diningChair(g, x, .6, Math.PI); /* 동쪽 3 */
   for (const x of cx.slice(1)) diningChair(g, x, -.6, 0); /* 서쪽(팬트리 쪽) 2 */
-  for (const x of cx) for (const pz of [-.2, .2]) { if (pz < 0 && x === cx[0]) continue; const m = mesh(CY(.16, .16, .004, 30), std(0x45474b, .8), x, .757, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); placeSet(g, x, .768, pz, .1); }
+  for (const x of cx) for (const pz of [-.2, .2]) { if (pz < 0 && x === cx[0]) continue; const m = mesh(CY(.16, .16, .004, 30), wvMat(), x, .757, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); placeSet(g, x, .768, pz, .1); }
   tablePlant(g, -.535, .7525, 0);
   g.userData.len = L; return g;
 }
