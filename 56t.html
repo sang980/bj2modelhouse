@@ -809,7 +809,16 @@ const WF_C = {}; function washerFace(tint, dryer) { const key = tint + (dryer ? 
   x.fillStyle = 'rgba(0,0,0,.4)'; x.font = '15px sans-serif'; x.textAlign = 'right'; x.fillText(dryer ? '건조 20kg' : '세탁 25kg', 585, 140);
   { const g = x.createRadialGradient(300, 470, 210, 300, 470, 290); g.addColorStop(0, 'rgba(0,0,0,.12)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.beginPath(); x.arc(300, 470, 290, 0, 7); x.fill(); } /* 문 둘레 그늘 */
   x.fillStyle = 'rgba(0,0,0,.12)'; x.fillRect(0, 770, 600, 3); x.strokeStyle = 'rgba(0,0,0,.14)'; x.lineWidth = 2; rr(470, 782, 100, 26, 4); x.stroke(); /* 아래 덮개 + 배수 필터 문 */
-  const t = toTex(c); return (WF_C[key] = std(0xffffff, .35, 0, { map: t })); }
+  x.globalCompositeOperation = 'destination-out'; x.fillStyle = '#000'; x.beginPath(); x.arc(300, 470, 207, 0, 7); x.fill(); x.globalCompositeOperation = 'source-over'; /* 11-22: 문 자리는 뚫어 드럼이 보이게 */
+  const t = toTex(c); return (WF_C[key] = std(0xffffff, .35, 0, { map: t, alphaTest: .5 })); }
+let DW_M = null; function washerShell(g, W, Hh, cy, dr, mat) { /* 11-22 세탁기·건조기 퀄리티업: 통짜 몸통이라 볼록 유리 너머로 앞면 색만 보이던 것 → 앞판에 둥근 구멍(두께 27cm) + 안쪽 깊이 있는 드럼(타공 스테인리스 벽·뒤판 그림·리프터 3), 뒤 몸통은 따로 */
+  mesh(RB(W, Hh, .43, .03), mat, 0, cy, -.135, g); const r = .03, sh = new THREE.Shape(), x0 = -W / 2, x1 = W / 2, y0 = -Hh / 2, y1 = Hh / 2;
+  sh.moveTo(x0 + r, y0); sh.lineTo(x1 - r, y0); sh.quadraticCurveTo(x1, y0, x1, y0 + r); sh.lineTo(x1, y1 - r); sh.quadraticCurveTo(x1, y1, x1 - r, y1); sh.lineTo(x0 + r, y1); sh.quadraticCurveTo(x0, y1, x0, y1 - r); sh.lineTo(x0, y0 + r); sh.quadraticCurveTo(x0, y0, x0 + r, y0);
+  const hole = new THREE.Path(); hole.absarc(0, dr, .207, 0, Math.PI * 2, true); sh.holes.push(hole); mesh(new THREE.ExtrudeGeometry(sh, { depth: .272, bevelEnabled: false, curveSegments: 24 }), mat, 0, cy, .078, g);
+  if (!DW_M) { const c = mkCanvas(256, 64), x = c.getContext('2d'); x.fillStyle = '#8d9298'; x.fillRect(0, 0, 256, 64); x.fillStyle = 'rgba(20,22,25,.55)'; for (let yy = 4; yy < 64; yy += 8) for (let xx = (yy / 8 % 2) * 4 + 4; xx < 256; xx += 8) { x.beginPath(); x.arc(xx, yy, 1.6, 0, 7); x.fill(); } const t = toTex(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(5, 2); DW_M = std(0xffffff, .38, .7, { map: t, side: THREE.BackSide }); }
+  const wl = mesh(new THREE.CylinderGeometry(.2, .2, .27, 40, 1, true), DW_M, 0, cy + dr, .215, g, { cast: false }); wl.rotation.x = Math.PI / 2;
+  mesh(new THREE.CircleGeometry(.2, 40), drumMat(), 0, cy + dr, .082, g, { cast: false }); const lm = std(0xa9aeb4, .3, .7);
+  for (let k = 0; k < 3; k++) { const a = k * Math.PI * 2 / 3 + Math.PI / 2, l = mesh(BX(.045, .03, .24), lm, Math.cos(a) * .185, cy + dr + Math.sin(a) * .185, .21, g, { cast: false }); l.rotation.z = a - Math.PI / 2; } }
 let DRUM_M = null; function drumMat() { if (DRUM_M) return DRUM_M; const c = mkCanvas(256, 256), x = c.getContext('2d'), g = x.createRadialGradient(128, 128, 20, 128, 128, 128); g.addColorStop(0, '#5a5f66'); g.addColorStop(1, '#2a2d31'); x.fillStyle = g; x.fillRect(0, 0, 256, 256);
   x.fillStyle = 'rgba(0,0,0,.45)'; for (let r = 30; r < 124; r += 9) for (let k = 0; k < Math.floor(r * .55); k++) { const a = k / Math.floor(r * .55) * Math.PI * 2; x.beginPath(); x.arc(128 + Math.cos(a) * r, 128 + Math.sin(a) * r, 1.6, 0, 7); x.fill(); } /* 드럼 타공 */
   x.fillStyle = '#9aa0a8'; for (let k = 0; k < 3; k++) { x.save(); x.translate(128, 128); x.rotate(k * Math.PI * 2 / 3); x.fillRect(-9, 40, 18, 82); x.restore(); } /* 리프터 3개 */
@@ -817,7 +826,7 @@ let DRUM_M = null; function drumMat() { if (DRUM_M) return DRUM_M; const c = mkC
 function washerDetail(w, tint, dryer, cy) { const dy = cy - .06; /* 몸통 앞면(z .35)에 앞면 그림·문 테·고무 테·드럼·볼록 유리·손잡이·다이얼 */
   mesh(new THREE.PlaneGeometry(.6, .82), washerFace(tint, dryer), 0, cy, .3505, w, { cast: false });
   mesh(new THREE.TorusGeometry(.245, .022, 14, 56), std(0xc9ccd0, .2, .85), 0, dy, .362, w, { cast: false }); mesh(new THREE.TorusGeometry(.205, .013, 10, 48), std(0x33363b, .45, .2), 0, dy, .368, w, { cast: false });
-  mesh(new THREE.CircleGeometry(.205, 40), drumMat(), 0, dy, .3, w, { cast: false }); const dome = mesh(new THREE.SphereGeometry(.4, 40, 8, 0, Math.PI * 2, 0, .553), std(0x34414d, .04, .2, { transparent: true, opacity: .42, depthWrite: false }), 0, dy, .02, w, { cast: false }); dome.rotation.x = Math.PI / 2;
+  const dome = mesh(new THREE.SphereGeometry(.4, 40, 8, 0, Math.PI * 2, 0, .553), std(0x34414d, .04, .2, { transparent: true, opacity: .42, depthWrite: false }), 0, dy, .02, w, { cast: false }); dome.rotation.x = Math.PI / 2;
   mesh(RB(.022, .1, .016, .006), std(0x8d9299, .35, .6), .228, dy, .372, w, { cast: false }); const d = mesh(CY(.032, .032, .022, 28), M.chrome, .17, cy + .35, .36, w, { cast: false }); d.rotation.x = Math.PI / 2;
   if (!dryer) mesh(new THREE.TorusGeometry(.042, .003, 6, 32), std(0x8fd3ff, .3, 0, { emissive: 0x6fc3ff, emissiveIntensity: .6 }), .17, cy + .35, .352, w, { cast: false }); }
 let BF_M = null; function boilerFaceMat() { if (BF_M) return BF_M; const c = mkCanvas(400, 800), x = c.getContext('2d'), rr = (a, b, w, h, r) => { x.beginPath(); if (x.roundRect) x.roundRect(a, b, w, h, r); else x.rect(a, b, w, h); }; x.fillStyle = '#f7f7f5'; x.fillRect(0, 0, 400, 800);
@@ -1887,7 +1896,7 @@ let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; /* 11-22: �
 // ── 다용도실(세탁): 세탁기 + 건조기(북쪽 벽), 위 선반 ──
 { const g = fixed;
   for (const [x, c, nm] of [[8.85, 0xf4f4f2, '세탁기'], [9.55, 0xe6e1d9, '건조기']]) { const w = piece(nm, x, 1.37, 0, { movable: false });
-    mesh(RB(.66, .86, .7, .03), std(c, .35), 0, .51, 0, w); washerDetail(w, c, nm === '건조기', .51); }
+    washerShell(w, .66, .86, .51, -.06, std(c, .35)); washerDetail(w, c, nm === '건조기', .51); }
   pbox(8.45, 10.0, 1.55, 1.57, .91, 1.3, shelfMatB, g); pbox(8.45, 10.0, 1.9, 1.92, .91, 1.3, shelfMatB, g);
   jugProp(g, WX(8.66), 1.57, WZ(1.1), 0); softenerProp(g, WX(8.86), 1.57, WZ(1.1)); towelsProp(g, WX(9.62), 1.57, WZ(1.1), 0); towelsProp(g, WX(9.2), 1.92, WZ(1.1), .1); /* 11-21: 선반 위 세제통·섬유유연제·수건 */
   { const bx = WX(9.62), bz = WZ(1.33), by = .945, hh = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }; /* 11-22 세탁실 소품: 건조기 위 라탄 빨래 바구니(엮은 결·두꺼운 테·손잡이 구멍) + 위로 볼록 쌓인 빨래(회색·흰·남색·베이지 천) */
