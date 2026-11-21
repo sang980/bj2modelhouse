@@ -2452,7 +2452,7 @@ const kidBed = piece('원목 아이 침대', 4.0, 7.48, Math.PI / 2); // 창 쪽
   for (let i = -3; i <= 3; i++) { mesh(BX(.03, .4, .03), pine, i * .15, .52, -L / 2 - .03, g); }
   mesh(BX(.05, .05, L * .7), pine, W / 2 + .03, .75, -L * .1, g); for (let i = 0; i < 7; i++) mesh(BX(.03, .32, .03), pine, W / 2 + .03, .58, -L * .43 + i * .2, g);
   for (const px of [-.22, .22]) { const p = mesh(pillowG(.48, .15, .34), std(0xf8f7f3, .95, 0, { map: M.linen.map }), px, .6, -L / 2 + .3, g); p.rotation.x = -.3; } /* 푹신한 흰 베개 2 + 연두 베개 */
-  { const p = mesh(pillowG(.42, .32, .14), std(0xa6d23f, .95), .26, .7, -L / 2 + .16, g); p.rotation.set(-.25, -.15, 0); } }
+  { const p = mesh(pillowG(.42, .32, .14), std(0xa6d23f, .92, 0, { map: M.linen.map, bumpMap: M.linen.map, bumpScale: 1 }), .26, .7, -L / 2 + .16, g); p.rotation.set(-.25, -.15, 0); pipeOn(p, std(0xf6f5f0, .8)); } } /* 11-21: 연두 쿠션 리넨 결 + 흰 솔기 파이핑 */
 const dartG = new THREE.Group(); fixed.add(dartG); decorGroup('다트판', dartG); // 다트판: 기본(분리)일 때만 — 1-1 통합·1-2 꺾음이면 뺌
 const alphaPosters = {};
 { const poster = (bg, draw) => toTex((() => { const c = mkCanvas(576, 768), x = c.getContext('2d'); x.scale(3, 3); x.fillStyle = bg; x.fillRect(0, 0, 192, 256); draw(x); return c; })());
