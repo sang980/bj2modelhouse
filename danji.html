@@ -2131,7 +2131,7 @@ OSMTX.aptK = () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#eef0f0', 
 OSMTX.forestia = () => facadeTex(1024, 256, g => { noiseFill(g, 1024, 256, '#e4e6e6', .03, 1500); /* 13m: 밝은 벽 칸(큰 창+유리난간, 작은 창) + 짙은 회색 세로 띠 칸(좁은 세로창) */
   win(g, 40, 40, 330, 176, 4, 7, '#fbfbfb', 2); g.fillStyle = 'rgba(220,232,238,.4)'; g.fillRect(40, 140, 330, 76); g.fillStyle = '#f6f7f7'; g.fillRect(36, 136, 338, 5);
   win(g, 420, 64, 120, 120, 2, 7, '#fbfbfb', 2);
-  g.fillStyle = '#545a61'; g.fillRect(590, 0, 250, 256); win(g, 640, 30, 70, 196, 1, 6, '#6c737a', 1); win(g, 740, 30, 70, 196, 1, 6, '#6c737a', 1);
+  g.fillStyle = '#c3c8cb'; g.fillRect(590, 0, 250, 256); win(g, 640, 30, 70, 196, 1, 6, '#d2d6d8', 0); win(g, 740, 30, 70, 196, 1, 6, '#d2d6d8', 0); /* 11-21 항공사진(i-park): 세로 띠는 짙은 차콜이 아니라 옅은 회색 — 전체가 밝은 흰 탑 */
   win(g, 880, 54, 110, 150, 2, 7, '#fbfbfb', 2);
   g.fillStyle = '#d4d7d8'; g.fillRect(0, 226, 590, 30); g.fillRect(840, 226, 184, 30); g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(0, 222, 590, 4); g.fillRect(840, 222, 184, 4); });
 OSMTX.forestiaBase = () => facadeTex(512, 256, g => { g.fillStyle = '#cbc4b6'; g.fillRect(0, 0, 512, 256); for (let y = 0; y < 256; y += 64) for (let x = (y / 64 & 1) * 64; x < 512; x += 128) { const v = (rand() - .5) * 12; g.fillStyle = `rgb(${200 + v | 0},${193 + v | 0},${180 + v | 0})`; g.fillRect(x + 1, y + 1, 126, 62); }
@@ -2245,7 +2245,7 @@ function buildOSM() {
     for (const [p, q, nx, nz, L] of foSigns) { const w = Math.min(L * .62, 9), h = w * .9, cx2 = (p[0] + q[0]) / 2 + nx * .12, cz2 = (p[1] + q[1]) / 2 + nz * .12, rx = nz, rz = -nx, y1 = top - 1.2, y0 = y1 - h; /* HDC IPARK 로고 */
       G.foSign.quad([cx2 - rx * w / 2, y0, cz2 - rz * w / 2], [cx2 + rx * w / 2, y0, cz2 + rz * w / 2], [cx2 + rx * w / 2, y1, cz2 + rz * w / 2], [cx2 - rx * w / 2, y1, cz2 - rz * w / 2], [nx, 0, nz], [0, 0, 1, 0, 1, 1, 0, 1]); }
     /* 고층 아파트 옥상 크라운(옥탑 띠): 외곽선을 따라 흰 띠(포레스티아는 짙은 회색 4m 크라운) */
-    if ((isApt && lv >= 12 && dist < 2400) || (/^villa/.test(tk) && dist < 1100)) { const vil = /^villa/.test(tk), fo = tk === 'forestia', ph = vil ? .9 : fo ? 4.2 : 2.2, cc = vil ? wc.map(v => Math.min(1, v * 1.06)) : fo ? vc('#555b62') : vc(rand() < .5 ? '#f4f4f1' : '#dfe2e4'); /* 빌라 옥상 난간벽 */
+    if ((isApt && lv >= 12 && dist < 2400) || (/^villa/.test(tk) && dist < 1100)) { const vil = /^villa/.test(tk), fo = tk === 'forestia', ph = vil ? .9 : fo ? 4.2 : 2.2, cc = vil ? wc.map(v => Math.min(1, v * 1.06)) : fo ? vc('#e3e6e7') : vc(rand() < .5 ? '#f4f4f1' : '#dfe2e4'); /* 빌라 옥상 난간벽 */
       for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz); if (L < .05) continue;
         const nx = dz / L * sg, nz = -dx / L * sg, [p, q] = sg < 0 ? [a, b] : [b, a]; R.quad([p[0], top, p[1]], [q[0], top, q[1]], [q[0], top + ph, q[1]], [p[0], top + ph, p[1]], [nx, 0, nz], null, cc); } }
     /* 지붕 */
@@ -2257,7 +2257,7 @@ function buildOSM() {
       let bl = 0, ux = 1, uz = 0; for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L > bl) { bl = L; ux = (b[0] - a[0]) / L; uz = (b[1] - a[1]) / L; } }
       const fo = tk === 'forestia', col = { gb: R, col: vc(fo ? '#d5d8da' : '#e4e4e0') }, colT = { gb: R, col: vc('#cfcfca') }, F = { front: col, back: col, left: col, right: col, top: colT };
       if (isApt) { for (const o of bl > 30 ? [-.25, .25] : [0]) obox(cx + ux * bl * o, cz + uz * bl * o, ux, uz, 6, 4.2, top, top + (fo ? 5.6 : 3.4), F);
-        if (fo) { const fr = { gb: R, col: vc('#4c5259') }; for (let q = -2; q <= 2; q++) obox(cx + ux * q * 2.2, cz + uz * q * 2.2, ux, uz, .35, 5, top + 4.2, top + 9.5, { front: fr, back: fr, left: fr, right: fr, top: fr }); } } /* 포레스티아 옥상 수직 프레임 */
+        if (fo) { const fr = { gb: R, col: vc('#cdd2d5') }; /* 11-21 항공사진: 옥상 크라운·수직 프레임도 흰색~옅은 회색 */ for (let q = -2; q <= 2; q++) obox(cx + ux * q * 2.2, cz + uz * q * 2.2, ux, uz, .35, 5, top + 4.2, top + 9.5, { front: fr, back: fr, left: fr, right: fr, top: fr }); } } /* 포레스티아 옥상 수직 프레임 */
       else { const o = (rand() - .5) * .4 * bl, wcD = { gb: R, col: wc.map(v => v * .9) }, Fw = { front: wcD, back: wcD, left: wcD, right: wcD, top: { gb: R, col: vc('#9fa3a6') } }; obox(cx + ux * o, cz + uz * o, ux, uz, 2.4, 2.2, top, top + 2.3, Fw); /* 옥탑 계단실(벽 색) */
         if (rand() < .55) { const tk2 = { gb: R, col: vc(rand() < .5 ? '#3f7fb3' : '#d9d9d4') }; obox(cx - ux * o * .8 + uz * 1.5, cz - uz * o * .8 - ux * 1.5, ux, uz, 1.4, 1.4, top, top + 1.5, { front: tk2, back: tk2, left: tk2, right: tk2, top: tk2 }); } } /* 물탱크 */
     }
