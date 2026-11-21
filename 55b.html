@@ -2390,8 +2390,12 @@ nestTables(3.75, 9.65); // 사진: 원형 2단 네스팅 테이블
     const mg = new THREE.ShapeGeometry(blob, 4); mg.rotateX(-Math.PI / 2); mesh(mg, std(0x2a2b2d, .85), WX(cx), top + .002, WZ(cz), g, { cast: false });
     twistVase(g, WX(cx - .02), top + .003, WZ(cz + .07), .2, .068); twistVase(g, WX(cx + .03), top + .003, WZ(cz - .07), .26, .062, 9, -1.2);
     pearlStrings(g, WX(cx + .03), top + .26, WZ(cz - .07), 7, .3, top);
-    const jug = new THREE.LatheGeometry([[0, 0], [.05, 0], [.065, .05], [.066, .1], [.05, .15], [.04, .18], [.046, .2], [.042, .2], [0, .19]].map(([a, b]) => new THREE.Vector2(a, b)), 32);
-    const jm = std(0x8a4a22, .22, .05); mesh(jug, jm, WX(cx - .06), top + .003, WZ(cz - .17), g); const hd = mesh(new THREE.TorusGeometry(.04, .009, 8, 20, Math.PI * 1.2), jm, WX(cx - .12), top + .12, WZ(cz - .17), g); hd.rotation.z = Math.PI / 2 + .3; }
+    { const jg = new THREE.Group(); jg.position.set(WX(cx - .06), top + .003, WZ(cz - .17)); g.add(jg); const hq = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }; /* 11-22 소품 퀄리티업: 갈색 유약 주전자 — 유약이 흘러내린 자국(아래 굽은 유약 없는 황토색) + 철점, 입구 테 + 반대쪽 주둥이, 고리 대신 몸통에 붙은 납작한 손잡이 */
+      const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = '#7a3e1c'; x.fillRect(0, 0, 256, 256); x.fillStyle = '#c9a77d'; x.beginPath(); x.moveTo(0, 256); for (let u = 0; u <= 256; u += 8) x.lineTo(u, 214 - hq(u, 3) * 26 - (u % 64 < 8 ? 14 : 0)); x.lineTo(256, 256); x.fill();
+      for (let i = 0; i < 300; i++) { x.fillStyle = hq(i, 5) < .5 ? 'rgba(40,18,8,.35)' : 'rgba(200,130,80,.18)'; x.fillRect(hq(i, 7) * 256, hq(i, 9) * 200, 1.5, 1.5); } const gr = x.createLinearGradient(0, 0, 0, 60); gr.addColorStop(0, 'rgba(30,12,4,.55)'); gr.addColorStop(1, 'rgba(30,12,4,0)'); x.fillStyle = gr; x.fillRect(0, 0, 256, 60);
+      const jt = toTex(c); const jm = std(0xffffff, .2, .05, { map: jt }); mesh(new THREE.LatheGeometry([[0, 0], [.05, 0], [.065, .05], [.066, .1], [.05, .15], [.04, .18], [.047, .2], [.043, .203], [.038, .19], [0, .17]].map(([a, b]) => new THREE.Vector2(a, b)), 40), jm, 0, 0, 0, jg);
+      { const sp = mesh(new THREE.CylinderGeometry(.006, .016, .03, 12, 1, true, -.9, 1.8), std(0x7a3e1c, .2, .05, { side: THREE.DoubleSide }), .05, .195, 0, jg, { cast: false }); sp.rotation.z = -1.0; }
+      { const cv = new THREE.CatmullRomCurve3([new THREE.Vector3(-.044, .175, 0), new THREE.Vector3(-.085, .17, 0), new THREE.Vector3(-.098, .12, 0), new THREE.Vector3(-.082, .07, 0), new THREE.Vector3(-.062, .055, 0)]), hd = mesh(new THREE.TubeGeometry(cv, 20, .0075, 8, false), std(0x7a3e1c, .2, .05), 0, 0, 0, jg); hd.scale.z = .55; } } }
 }
 // 4인 식탁: 한쪽 끝을 아일랜드 동쪽 면에 붙이고 동쪽으로(냉장고 쪽에서 보면 가로), 양옆 의자 2개씩
 // 의자는 55A·55C와 같은 흰 식탁 의자(diningChair) — 둥근 등받이 부클레 의자는 모양이 어색해 교체
