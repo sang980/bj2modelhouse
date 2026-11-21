@@ -1681,8 +1681,13 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
     mesh(CY(.022, .026, .03, 20), M.chrome, WX(6.45), .915, WZ(zb + .065), g); mesh(CY(.014, .016, .3, 18), M.chrome, WX(6.45), 1.06, WZ(zb + .065), g);
     const arc = new THREE.QuadraticBezierCurve3(new THREE.Vector3(WX(6.45), 1.2, WZ(zb + .065)), new THREE.Vector3(WX(6.45), 1.32, WZ(zb + .135)), new THREE.Vector3(WX(6.45), 1.13, WZ(zb + .255)));
     const spo = new THREE.Mesh(new THREE.TubeGeometry(arc, 18, .012, 10, false), M.chrome); spo.castShadow = true; g.add(spo);
-    mesh(CY(.015, .013, .06, 16), M.chrome, WX(6.45), 1.1, WZ(zb + .26), g);
-    const lever = mesh(BX(.012, .012, .08), M.chrome, WX(6.48), 1.0, WZ(zb + .065), g); lever.rotation.x = -.5; }
+    { const HX = WX(6.45), HZ = WZ(zb + .26), dx = 0, dz = 1, sx = 1, sz = 0, BXp = WX(6.45), BZp = WZ(zb + .065), dk = std(0x2a2b2d, .5); /* 11-22 주방 소품 퀄리티업(55A·55C와 같은 수전): 원통 분사 헤드 → 끝이 둥근 풀다운 헤드(이음 테 + 앞 분사 전환 버튼 + 아래 검은 분사면·노즐) + 꼭지 끝 도킹 링, 각진 막대 손잡이 → 옆 손잡이 받침(온·냉수 점) + 끝이 둥근 납작 레버, 바닥 둥근 받침판 */
+      mesh(new THREE.LatheGeometry([[0, 0], [.0165, 0], [.0178, .005], [.0172, .048], [.0145, .06], [.0125, .064], [0, .064]].map(([a, b]) => new THREE.Vector2(a, b)), 28), M.chrome, HX, 1.068, HZ, g);
+      mesh(new THREE.TorusGeometry(.0168, .0011, 6, 28), dk, HX, 1.108, HZ, g, { cast: false }).rotation.x = Math.PI / 2; mesh(CY(.0156, .0156, .002, 24), dk, HX, 1.0672, HZ, g, { cast: false }); for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; mesh(CY(.0016, .0016, .0012, 6), std(0xd9dcdf, .3, .6), HX + Math.cos(a) * .008, 1.066, HZ + Math.sin(a) * .008, g, { cast: false }); }
+      mesh(RB(.008, .013, .004, .002, 1), dk, HX + dx * .0178, 1.095, HZ + dz * .0178, g, { cast: false }).rotation.y = Math.atan2(dx, dz); mesh(new THREE.TorusGeometry(.0128, .0022, 8, 24), M.chrome, WX(6.45), 1.13, WZ(zb + .255), g, { cast: false }).rotation.x = Math.PI / 2;
+      mesh(CY(.03, .03, .006, 28), M.chrome, BXp, .903, BZp, g, { cast: false });
+      { const lb = mesh(CY(.0125, .0125, .028, 18), M.chrome, BXp + sx * .026, 1.0, BZp + sz * .026, g); lb.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(sx, 0, sz)); for (const [o, col] of [[-.006, 0xd8432c], [.006, 0x2f6fd0]]) { const dt = mesh(CY(.0022, .0022, .001, 10), std(col, .4), BXp + sx * .0405 + dx * o, 1.0, BZp + sz * .0405 + dz * o, g, { cast: false }); dt.quaternion.copy(lb.quaternion); } }
+      const lv = new THREE.Group(); lv.position.set(BXp + sx * .03, 1.012, BZp + sz * .03); lv.rotation.set(0, Math.atan2(dx, dz), 0); lv.rotateX(-.5); g.add(lv); mesh(RB(.013, .008, .085, .003, 2), M.chrome, 0, 0, .04, lv); mesh(new THREE.SphereGeometry(.0068, 14, 10), M.chrome, 0, 0, .083, lv, { cast: false }).scale.set(1, .6, 1); } }
   // 쿡탑(옵션 4): 기본 3구 가스쿡탑 / 4-1 하이라이트1+인덕션2 / 4-2 인덕션 3구 + 슬림 후드(공통)
   { const cx0 = 7.45, cx1 = 8.07, cz0 = zb + .05, cz1 = zb + .53;
     const ring = (grp, x, z, r, m) => { const t = new THREE.Mesh(new THREE.TorusGeometry(r, .004, 6, 40), m); t.rotation.x = Math.PI / 2; t.position.set(WX(x), .912, WZ(z)); grp.add(t); };
