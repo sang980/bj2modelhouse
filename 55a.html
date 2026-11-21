@@ -2228,13 +2228,18 @@ function kitchenProps(k) {
     at(CY(.014, .014, .02, 16), chrome, cx + .07, T + .25, cz + .13).rotation.x = Math.PI / 2;      // 다이얼
     at(CY(.032, .028, .07, 20), std(0xffffff, .2), cx, T + .05, cz + .17); }                        // 에스프레소 잔
   // 블랙 펠트 받침 + 전기주전자 (x 6.45)
-  { const cx = 6.46, cz = .3;
+  { const cx = 6.46, cz = .3, kw = M.whiteGloss, y0 = T + .026; /* 11-21 주방 소품 퀄리티업: 전기주전자 — 둥근 모서리 검은 받침 + 어깨선 있는 몸통, 뚜껑 이음선·검은 꼭지, 앞쪽 물높이 창(눈금), 위로 들린 주둥이, D자 손잡이(검은 그립) + 파란 불 전원 스위치 */
     at(CY(.15, .15, .004, 40), felt, cx, T + .002, cz + .02);
-    at(CY(.085, .09, .02, 32), blk, cx, T + .014, cz);
-    at(lathe([[0, 0], [.075, 0], [.085, .03], [.085, .13], [.07, .18], [.04, .2], [0, .2]]), M.whiteGloss, cx, T + .024, cz);
-    at(CY(.02, .02, .012, 16), blk, cx, T + .23, cz);
-    const sp = at(CY(.008, .015, .09, 12), M.whiteGloss, cx + .095, T + .15, cz); sp.rotation.z = -Math.PI / 3.2;
-    const h = at(new THREE.TorusGeometry(.06, .011, 8, 20, Math.PI), M.whiteGloss, cx - .085, T + .12, cz); h.rotation.z = Math.PI / 2; }
+    at(lathe([[0, 0], [.087, 0], [.091, .006], [.091, .017], [.085, .022], [0, .022]], 36), blk, cx, T + .004, cz);
+    at(lathe([[0, 0], [.074, 0], [.082, .012], [.086, .04], [.086, .13], [.079, .165], [.064, .19], [.05, .197], [0, .197]], 40), kw, cx, y0, cz);
+    at(new THREE.TorusGeometry(.05, .0017, 6, 36), std(0x8f8f8b, .4), cx, y0 + .1965, cz).rotation.x = Math.PI / 2;
+    at(lathe([[0, 0], [.016, 0], [.018, .008], [.012, .019], [0, .022]], 20), blk, cx, y0 + .197, cz);
+    at(new THREE.CylinderGeometry(.0868, .0868, .095, 10, 1, true, -.17, .34), std(0x2b3a44, .1, .1, { transparent: true, opacity: .6 }), cx, y0 + .082, cz);
+    for (let i = 0; i < 4; i++) at(BX(.012 - (i % 2) * .004, .0016, .002), std(0xf4f4f0, .5), cx, y0 + .05 + i * .02, cz + .0875);
+    { const sp = at(new THREE.CylinderGeometry(.011, .021, .065, 16, 1, true), kw, cx + .093, y0 + .158, cz); sp.rotation.z = -.95; }
+    at(RB(.026, .15, .032, .011, 2), kw, cx - .128, y0 + .1, cz); at(BX(.004, .11, .022), blk, cx - .1415, y0 + .1, cz);
+    at(RB(.056, .024, .03, .009, 2), kw, cx - .1, y0 + .168, cz); at(RB(.05, .022, .028, .008, 2), kw, cx - .1, y0 + .03, cz);
+    at(RB(.02, .013, .022, .004, 2), blk, cx - .1, y0 + .047, cz); at(BX(.004, .004, .005), std(0x3fa9ff, .3, 0, { emissive: 0x3fa9ff, emissiveIntensity: 1.4 }), cx - .1, y0 + .054, cz + .012); }
   // 블랙 레일 + 도구(국자·뒤집개·거품기) + 작은 걸이 바구니
   { const z = .14, y = 1.37, rl = std(0x1a1a1c, .35, .5), zr = z + .006; /* 11-21 주방 소품 퀄리티업: 납작한 검은 막대 레일 → 둥근 레일(벽 받침·끝 마개) + 도구마다 S고리·걸이 고리, 국자는 앞을 향한 오목한 국자 머리, 뒤집개는 구멍 세 줄 뚫린 스테인리스 머리, 거품기는 굵은 손잡이 + 쇠테 */
     at(CY(.008, .008, .5, 14), rl, 5.92, y, zr).rotation.z = Math.PI / 2;
