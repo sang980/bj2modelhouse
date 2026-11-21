@@ -2297,7 +2297,9 @@ function sideTable(x, z, withVase) {
     for (let i = 0; i < 9; i++) {
       const st = mesh(CY(.003, .003, .45), M.plant, -.06 + (rnd() - .5) * .04, .82, .03 + (rnd() - .5) * .04, g, { cast: false });
       st.rotation.set((rnd() - .5) * .7, 0, (rnd() - .5) * .7);
-      const f = mesh(new THREE.SphereGeometry(.018, 8, 6), rnd() < .5 ? M.flower : M.plant, st.position.x + Math.sin(st.rotation.z) * -.22, 1.03, st.position.z + Math.sin(st.rotation.x) * .22, g, { cast: false });
+      { const isF = rnd() < .5, fl = new THREE.Group(); fl.position.set(st.position.x + Math.sin(st.rotation.z) * -.22, 1.03, st.position.z + Math.sin(st.rotation.x) * .22); fl.rotation.set(st.rotation.x * .6, i * 1.7, st.rotation.z * .6); g.add(fl); /* 11-22 소품 퀄리티업: 줄기 끝 공 → 꽃잎 6장 파란 꽃(가운데 노란 꽃술) 또는 잎 두 장(공용 rnd 호출 수 그대로) */
+        if (isF) { for (let q = 0; q < 6; q++) { const a = q / 6 * Math.PI * 2, pt = mesh(new THREE.SphereGeometry(.012, 8, 5), M.flower, Math.cos(a) * .011, 0, Math.sin(a) * .011, fl, { cast: false }); pt.scale.set(1, .16, .5); pt.rotation.set(0, -a, .3); } mesh(new THREE.SphereGeometry(.005, 8, 6), std(0xe8c34a, .7), 0, .002, 0, fl, { cast: false }); }
+        else for (const sd of [-1, 1]) { const lf = mesh(new THREE.SphereGeometry(.016, 8, 5), M.plant, sd * .012, -.004, 0, fl, { cast: false }); lf.scale.set(1.2, .18, .45); lf.rotation.set(0, 0, sd * .5); } }
     }
     mesh(BX(.2, .04, .26), M.navy, .08, .595, -.02, g);
     mesh(CY(.03, .03, .09, 16), M.black, .09, .66, -.05, g);
