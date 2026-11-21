@@ -2047,11 +2047,11 @@ function sofa(x, z, rot, style = 'arm') {
       mesh(BX(.3, .355, .02), lea, sg * 1.075, .2125, -.45, g); /* 뒤판 */
       let bx = .945; for (let i = 0; bx < 1.15; i++) { const bw = .022 + ((i * 7 + (sg > 0 ? 3 : 0)) % 5) * .006, bh = .21 + ((i * 5 + (sg > 0 ? 1 : 0)) % 4) * .03; mesh(BOOK.geo(bw, bh, .24, 'z'), BOOK.mats[[5, 0, 4, 5, 2, 1, 5, 0, 4][(i + (sg > 0 ? 3 : 0)) % 9]], sg * (bx + bw / 2), .036 + bh / 2, .29, g); bx += bw + .003; } }
   }
-  const pil = (m, px, pz, rz, ry, s = .44) => { const p = mesh(sqPillowG(s, s, .19), m, px, .64, pz, g); p.rotation.set(-.2, ry, rz); }; /* 모서리 뾰족한 사각 쿠션 */
+  const pil = (m, px, pz, rz, ry, s = .44) => { const p = mesh(sqPillowG(s, s, .19), m, px, .64, pz, g); p.rotation.set(-.2, ry, rz); return p; }; /* 모서리 뾰족한 사각 쿠션 */
   if (style === 'arm') { /* VR 55A: 연회색 잔체크 쿠션 + 선명한 파랑 쿠션 */
     const lc = mkCanvas(256, 256), x = lc.getContext('2d'); x.scale(4, 4); x.fillStyle = '#f1f1ef'; x.fillRect(0, 0, 64, 64); for (let i = 0; i < 16; i++) for (let j = 0; j < 16; j++) if ((i + j) % 2) { x.fillStyle = '#b9bbbe'; x.fillRect(i * 4, j * 4, 4, 4); }
     for (let i = 0; i < 300; i++) { x.fillStyle = `rgba(0,0,0,${rnd() * .06})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 1); }
-    pil(std(0xffffff, .95, 0, { map: toTex(lc, { rep: [3, 3] }) }), .62, -.12, -.06, -.15, .46); pil(std(0x2050b4, .9, 0, { map: M.navy.map }), .82, -.18, .04, -.3, .4); }
+    { const p1 = pil(std(0xffffff, .95, 0, { map: toTex(lc, { rep: [3, 3] }) }), .62, -.12, -.06, -.15, .46); sqPipe(p1, .46, .46, std(0xb3b5b8, .8)); const vb = std(0x2050b4, .55, 0, { map: velvetTex(), bumpMap: velvetTex(), bumpScale: .8 }), p2 = pil(vb, .82, -.18, .04, -.3, .4); sqPipe(p2, .4, .4, vb); } } /* 11-21 소품 퀄리티업: 파랑 쿠션 벨벳 + 두 쿠션 솔기 파이핑 */
   else { pil(M.check, -.5, -.12, .06, .15, .46); pil(M.navy, -.7, -.18, -.04, .3, .4); }
   return g;
 }
