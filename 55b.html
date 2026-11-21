@@ -2157,9 +2157,18 @@ function kitchenPropsB() {
     at(BX(.05, .07, .003), std(0xf1e7c9, .7), 2.02, T + .12, 5.33 + .036);
     at(CY(.04, .04, .3, 24), glass, 2.13, T + .15, 5.36); for (let i = 0; i < 14; i++) { const a = i / 14 * 6.28; at(CY(.002, .002, .26, 5), pasta, 2.13 + Math.cos(a) * .022 * (i % 2 ? 1 : .5), T + .14, 5.36 + Math.sin(a) * .022 * (i % 2 ? 1 : .5)); } at(CY(.042, .042, .02, 24), wood, 2.13, T + .31, 5.36); }
   // ⑥ 창 왼쪽(북쪽) 벽 검은 레일: 걸이 머그 2 + 작은 검은 바구니(양념통 2)
-  { const x = .14, y = 1.36; at(BX(.02, .022, .55), blk, x, y, 5.53); for (const z of [5.27, 5.79]) at(BX(.03, .04, .02), blk, x - .005, y, z);
-    for (const z of [5.4, 5.5]) { at(new THREE.TorusGeometry(.012, .002, 6, 12), blk, x + .015, y - .02, z).rotation.y = Math.PI / 2; at(CY(.035, .03, .08, 20), blk, x + .05, y - .1, z); at(new THREE.TorusGeometry(.022, .005, 6, 14), blk, x + .05, y - .1, z + .04).rotation.y = Math.PI / 2; }
-    at(BX(.07, .07, .14), blk, x + .045, y - .06, 5.68); for (const dz of [-.035, .035]) { at(CY(.022, .022, .07, 16), glass, x + .045, y - .01, 5.68 + dz); at(CY(.023, .023, .015, 16), M.chrome, x + .045, y + .03, 5.68 + dz); } }
+  { const x = .14, y = 1.36, wire = std(0x202124, .4, .45), glaze = std(0x1e1f22, .22, .05), inner = std(0xf3f1ec, .3); /* 11-21 주방 소품 퀄리티업: 통짜 검은 막대·원기둥·상자였던 레일 소품 → 둥근 레일 + S고리 + 속이 빈 유광 검정 머그(안쪽 흰 유약) + 철사 바구니(안이 비쳐 양념병이 보임) */
+    at(CY(.008, .008, .55, 14), wire, x, y, 5.53).rotation.x = Math.PI / 2; for (const z of [5.27, 5.79]) { at(CY(.016, .016, .008, 16), wire, .114, y, z).rotation.z = Math.PI / 2; at(CY(.005, .005, .03, 8), wire, .128, y, z).rotation.z = Math.PI / 2; }
+    for (const z of [5.255, 5.805]) at(new THREE.SphereGeometry(.0095, 12, 8), wire, x, y, z);
+    const hook = (z, y1) => { at(new THREE.TorusGeometry(.0105, .0016, 5, 14, Math.PI * 1.25), wire, x, y, z).rotation.z = -Math.PI * .1; at(CY(.0016, .0016, y - .002 - y1, 5), wire, x + .0105, (y + y1) / 2, z); };
+    const mugO = new THREE.LatheGeometry([[0, 0], [.028, 0], [.031, .003], [.033, .012], [.034, .084], [.0325, .086]].map(([a, b]) => new THREE.Vector2(a, b)), 28), mugI = new THREE.LatheGeometry([[.0325, .086], [.0305, .083], [.0295, .012], [.02, .009], [0, .009]].map(([a, b]) => new THREE.Vector2(a, b)), 28);
+    for (const z of [5.4, 5.5]) { const mx = x + .0105 + .036, hy = y - .062; hook(z, hy + .002); at(mugO, glaze, mx, hy - .07, z); at(mugI, inner, mx, hy - .07, z); at(new THREE.TorusGeometry(.017, .0042, 8, 18, Math.PI * 1.15), glaze, mx - .036, hy - .017, z).rotation.z = Math.PI * .43; }
+    { const bx = x + .045, by = 1.265, bz = 5.68, W = .07, D = .14, Hh = .07; at(BX(W, .003, D), wire, bx, by, bz);
+      for (let i = 0; i <= 10; i++) for (const s of [-1, 1]) at(BX(.0024, Hh, .0024), wire, bx + s * W / 2, by + Hh / 2, bz - D / 2 + i * D / 10);
+      for (let i = 1; i < 5; i++) for (const s of [-1, 1]) at(BX(.0024, Hh, .0024), wire, bx - W / 2 + i * W / 5, by + Hh / 2, bz + s * D / 2);
+      for (const yy of [by + Hh * .5, by + Hh]) for (const s of [-1, 1]) { at(BX(W + .003, .003, .003), wire, bx, yy, bz + s * D / 2); at(BX(.003, .003, D + .003), wire, bx + s * W / 2, yy, bz); }
+      for (const dz of [-.05, .05]) hook(bz + dz, by + Hh);
+      for (const [dz, fc] of [[-.035, 0xb5402c], [.035, 0x6f7f3a]]) { at(CY(.022, .022, .075, 18), glass, bx, by + .0395, bz + dz); at(CY(.0195, .0195, .05, 18), std(fc, .85), bx, by + .027, bz + dz); at(CY(.0222, .0222, .018, 18), std(0xf2ede0, .8), bx, by + .042, bz + dz); at(CY(.023, .023, .014, 18), M.chrome, bx, by + .084, bz + dz); } } }
 }
 kitchenPropsB();
 function diningChair(parent, cx, cz, rot) {
