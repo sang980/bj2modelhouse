@@ -1385,8 +1385,13 @@ kInner(5.59, 6.22, .86, .9, .71, 2.12, M.counter);
   mesh(CY(.022, .026, .03, 20), M.chrome, WX(7.1), .915, WZ(.17), k); mesh(CY(.014, .016, .3, 18), M.chrome, WX(7.1), 1.06, WZ(.17), k);
   const arc = new THREE.QuadraticBezierCurve3(new THREE.Vector3(WX(7.1), 1.2, WZ(.17)), new THREE.Vector3(WX(7.1), 1.32, WZ(.24)), new THREE.Vector3(WX(7.1), 1.13, WZ(.36)));
   const sp = new THREE.Mesh(new THREE.TubeGeometry(arc, 18, .012, 10, false), M.chrome); sp.castShadow = true; k.add(sp);
-  mesh(CY(.015, .013, .06, 16), M.chrome, WX(7.1), 1.1, WZ(.365), k);
-  const lever = mesh(BX(.012, .012, .08), M.chrome, WX(7.13), 1.0, WZ(.17), k); lever.rotation.x = -.5; }
+  { const X = WX(7.1), Z = WZ(.365), dk = std(0x2a2b2d, .5); /* 11-22 주방 소품 퀄리티업: 원통 분사 헤드 → 끝이 둥근 풀다운 헤드(이음 테 + 앞 분사 전환 버튼 + 아래 검은 분사면·노즐) + 꼭지 끝 도킹 링, 각진 막대 손잡이 → 옆 손잡이 받침(온·냉수 빨강·파랑 점) + 끝이 둥근 납작 레버, 바닥 둥근 받침판 */
+    mesh(new THREE.LatheGeometry([[0, 0], [.0165, 0], [.0178, .005], [.0172, .048], [.0145, .06], [.0125, .064], [0, .064]].map(([a, b]) => new THREE.Vector2(a, b)), 28), M.chrome, X, 1.068, Z, k);
+    mesh(new THREE.TorusGeometry(.0168, .0011, 6, 28), dk, X, 1.108, Z, k, { cast: false }).rotation.x = Math.PI / 2; mesh(CY(.0156, .0156, .002, 24), dk, X, 1.0672, Z, k, { cast: false }); for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; mesh(CY(.0016, .0016, .0012, 6), std(0xd9dcdf, .3, .6), X + Math.cos(a) * .008, 1.066, Z + Math.sin(a) * .008, k, { cast: false }); }
+    mesh(RB(.008, .013, .004, .002, 1), dk, X, 1.095, Z + .0178, k, { cast: false }); mesh(new THREE.TorusGeometry(.0128, .0022, 8, 24), M.chrome, X, 1.13, WZ(.36), k, { cast: false }).rotation.x = Math.PI / 2;
+    mesh(CY(.03, .03, .006, 28), M.chrome, X, .903, WZ(.17), k, { cast: false });
+    const lb = mesh(CY(.0125, .0125, .028, 18), M.chrome, X + .026, 1.0, WZ(.17), k); lb.rotation.z = Math.PI / 2; for (const [dz, col] of [[-.006, 0xd8432c], [.006, 0x2f6fd0]]) { const dt = mesh(CY(.0022, .0022, .001, 10), std(col, .4), X + .0405, 1.0, WZ(.17) + dz, k, { cast: false }); dt.rotation.z = Math.PI / 2; }
+    const lv = new THREE.Group(); lv.position.set(X + .03, 1.012, WZ(.17)); lv.rotation.x = -.5; k.add(lv); mesh(RB(.013, .008, .085, .003, 2), M.chrome, 0, 0, .04, lv); mesh(new THREE.SphereGeometry(.0068, 14, 10), M.chrome, 0, 0, .083, lv, { cast: false }).scale.set(1, .6, 1); } }
 // 상부장 (창 위까지 이어짐) + 하부 LED
 kInner(5.61, 8.44, 1.5, 2.3, .11, .46, M.kdoor); kInner(5.6, 5.95, 1.5, 2.3, .46, 2.12, M.kdoor); kInner(5.6, 5.95, 2.3, H, .5, 2.12, M.white);
 kInner(5.61, 8.44, 1.48, 1.5, .12, .44, M.ledWarm);
