@@ -1575,6 +1575,7 @@ function shellChair(parent, x, z, ry, mat, legMat = mat, th = .012) { const g = 
   mesh(thickSurf(P, nx, ny, th, true), mat, 0, 0, 0, g);
   const Y = new THREE.Vector3(0, 1, 0), rod = (a, b, r) => { const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), L = A.distanceTo(B), m = mesh(CY(r, r * .8, L, 10), legMat, (A.x + B.x) / 2, (A.y + B.y) / 2, (A.z + B.z) / 2, g); m.quaternion.setFromUnitVectors(Y, A.sub(B).normalize()); return m; };
   for (const sx of [-1, 1]) for (const [z1, z2] of [[.13, .2], [-.13, -.2]]) rod([sx * .15, .45, z1], [sx * .2, 0, z2], .011);
+  { const wm = std(0x2b2c2e, .35, .7), gl = std(0x1c1c1d, .8); for (const sx of [-1, 1]) { rod([sx * .178, .2, .169], [sx * .178, .2, -.169], .0055).material = wm; for (const z2 of [.2, -.2]) mesh(CY(.012, .013, .008, 12), gl, sx * .2, .004, z2, g, { cast: false }); } for (const s of [-1, 1]) rod([-.178, .2, s * .169], [.178, .2, -s * .169], .0045).material = wm; for (const sx of [-1, 1]) rod([sx * .178, .2, 0], [sx * .06, .44, 0], .004).material = wm; } /* 11-22 의자 퀄리티업: 셸 의자 다리 — 옆 가로대 2 + 아래 X자 철사 보강 + 좌판 받침으로 오르는 철사 2 + 다리 끝 검은 미끄럼 패드 4 */
   mesh(CY(.07, .07, .012, 20), legMat, 0, .445, 0, g);
   return g; }
 /* 수건 재질(잔결 + 선택 무늬) — 같은 색·무늬는 공유 */
