@@ -827,6 +827,14 @@ function makeDecorPieces() { const V = new THREE.Vector3(), B = new THREE.Box3()
     for (const o of objs) g.attach(o);
     g.userData = { name: d.name, movable: true, solid: d.solid, decor: true, home: { x: g.position.x, z: g.position.z, r: 0 } }; movables.push(g); DECOR_G.push(g); }
   DECOR.length = 0; }
+/* 11-21 침구 퀄리티업: 벨벳 천(결정적 눌린 결 + 고운 털 결) · 사각 쿠션 솔기 파이핑(sqPillowG 가장자리 따라 둥근 줄) */
+let VELV = null; function velvetTex() { if (VELV) return VELV; const c = mkCanvas(512, 512), x = c.getContext('2d'); x.fillStyle = '#efefef'; x.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 110; i++) { const h = Math.imul(i + 1, 2654435761) >>> 0, px = h % 512, py = (h >>> 9) % 512, r = 24 + (h >>> 18) % 60, l = (h >>> 3) & 1 ? 255 : 0, g = x.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, `rgba(${l},${l},${l},.12)`); g.addColorStop(1, `rgba(${l},${l},${l},0)`); x.fillStyle = g; x.fillRect(px - r, py - r, 2 * r, 2 * r); }
+  for (let i = 0; i < 9000; i++) { const h = Math.imul(i + 7, 2246822519) >>> 0, l = (h >>> 21) & 1 ? 255 : 0; x.fillStyle = `rgba(${l},${l},${l},.07)`; x.fillRect(h % 512, (h >>> 10) % 512, 1, 2); }
+  return (VELV = toTex(c, { rep: [2, 2] })); }
+function sqPipe(o, w, h, mat) { const P = [], E = 10, at = (u, v) => P.push(new THREE.Vector3(u * w / 2 * (1 - .05 * v * v), v * h / 2 * (1 - .05 * u * u), 0));
+  for (let i = 0; i < E; i++) at(-1 + 2 * i / E, -1); for (let i = 0; i < E; i++) at(1, -1 + 2 * i / E); for (let i = 0; i < E; i++) at(1 - 2 * i / E, 1); for (let i = 0; i < E; i++) at(-1, 1 - 2 * i / E);
+  mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P, true, 'catmullrom', .2), 120, .0055, 6, true), mat, 0, 0, 0, o, { cast: false }); }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -2392,7 +2400,7 @@ const dining = diningS; // (예전 코드 호환용)
   for (let c = 0; c < 8; c++) for (let r = -1; r < 9; r++) { x.strokeStyle = (c + r) % 2 ? '#7d7f84' : '#36383c'; x.beginPath(); if (c % 2) { x.moveTo(c * 8, r * 8); x.lineTo(c * 8 + 8, r * 8 + 8); } else { x.moveTo(c * 8 + 8, r * 8); x.lineTo(c * 8, r * 8 + 8); } x.stroke(); }
   const blue = std(0x2c5fb8, .95, 0, { map: M.throwBlue.map, bumpMap: M.throwBlue.bumpMap, bumpScale: .8 }), tw = std(0xffffff, .95, 0, { map: toTex(hc, { rep: [2, 2] }) });
   const g1 = pillowG(.5, .46, .17), g2 = pillowG(.6, .28, .15), rm = []; b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = blue; else if (o.geometry === g1 || o.geometry === g2) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
-  const L = 2.1; { const c = mesh(sqPillowG(.5, .48, .18), std(0x1d2026, .85, 0, { map: M.charcoal.map }), .22, .79, -L / 2 + .42, b); c.rotation.set(-.24, -.12, -.03); }
+  const L = 2.1; { const vm = std(0x1f2633, .6, 0, { map: velvetTex(), bumpMap: velvetTex(), bumpScale: .8 }), c = mesh(sqPillowG(.5, .48, .18), vm, .22, .79, -L / 2 + .42, b); c.rotation.set(-.24, -.12, -.03); sqPipe(c, .5, .48, vm); } /* 11-21 침구 퀄리티업: 짙은 남색 벨벳 + 같은 천 파이핑 */
   { const c = mesh(sqPillowG(.56, .32, .15), tw, -.17, .7, -L / 2 + .64, b); c.rotation.set(-.42, .28, .06); } } /* VR 55A: 뒤 오른쪽 짙은 남색 사각 쿠션 + 앞 왼쪽 회색 헤링본 긴 쿠션(서로 박히지 않게 앞뒤로 띄움) */
 sideTable(9.14, 7.6, true);
 const sideTableN = sideTable(9.14, 5.3, false);
