@@ -2320,7 +2320,6 @@ function coffeeOvalT(x, z) { const g = piece('커피테이블', x, z, 0), w = st
   roundLeafPlant(g, -.12, .405, -.17); /* 화병이 책 더미 모서리를 파고들지 않게 */
   const bk = new THREE.Group(); bk.position.set(.05, .405, .02); bk.rotation.y = -.35; g.add(bk);
   mesh(BOOK.geo(.25, .022, .18, 'lie'), BOOK.mats[1], 0, .011, 0, bk); mesh(BOOK.geo(.23, .02, .17, 'lie'), BOOK.mats[3], .006, .032, -.004, bk); /* 11-21: 단색 상자 → 책등 글자·표지·종이 단면(ATLAS·LIGHT) */
-  mesh(BX(.252, .018, .001), std(0xe9e6df, .8), 0, .011, .0905, bk, { cast: false }); // 책 종이 단면
   mesh(CY(.06, .052, .008, 28), M.whiteGloss, .02, .046, 0, bk);
   mesh(new THREE.LatheGeometry([[0, 0], [.03, 0], [.034, .01], [.04, .055], [.036, .055], [.031, .012], [0, .012]].map(([a, b]) => new THREE.Vector2(a, b)), 28), M.whiteGloss, .02, .05, 0, bk);
   const hdl = mesh(new THREE.TorusGeometry(.016, .004, 8, 16, Math.PI), M.whiteGloss, .062, .078, 0, bk); hdl.rotation.z = -Math.PI / 2;
