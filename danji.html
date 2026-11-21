@@ -2338,7 +2338,7 @@ function buildOSM() {
       for (let i = Math.floor(Math.min(x0, x1) / CS) - 1; i <= Math.floor(Math.max(x0, x1) / CS) + 1; i++) for (let j = Math.floor(Math.min(z0, z1) / CS) - 1; j <= Math.floor(Math.max(z0, z1) / CS) + 1; j++) { const kk = key(i, j); if (!hash.has(kk)) hash.set(kk, []); hash.get(kk).push([x0, z0, x1, z1, r.w]); } } }
   const roadDist = (x, z) => { const l = hash.get(key(Math.floor(x / CS), Math.floor(z / CS))); if (!l) return 1e9; let best = 1e9;
     for (const [x0, z0, x1, z1, w] of l) { const ex = x1 - x0, ez = z1 - z0, t = Math.max(0, Math.min(1, ((x - x0) * ex + (z - z0) * ez) / (ex * ex + ez * ez || 1))), d = Math.hypot(x - x0 - ex * t, z - z0 - ez * t) - w / 2; if (d < best) best = d; } return best; };
-  const V2 = THREE.Vector2; let i = 0, cnt = 0; const DUP = new Map(); let dupN = 0; const XI_B = [], PAV = [], HOPE_P = (((GEO.env && GEO.env.green) || []).find(q => q.k === 'park' && polyDist(q.p, 650, 415) < 0) || {}).p; G.pav = new GB(); /* 11-21 희망대공원 쉼터(OSM amenity=shelter가 3층 건물로 그려지던 것) → 정자 */ const GOV = [], CHURCH = [], GOV_ENT = [], HOSP = [];
+  const V2 = THREE.Vector2; let i = 0, cnt = 0; const DUP = new Map(); let dupN = 0; const XI_B = [], PAV = [], SDC = [], HOPE_P = (((GEO.env && GEO.env.green) || []).find(q => q.k === 'park' && polyDist(q.p, 650, 415) < 0) || {}).p; G.pav = new GB(); /* 11-21 희망대공원 쉼터(OSM amenity=shelter가 3층 건물로 그려지던 것) → 정자 */ const GOV = [], CHURCH = [], GOV_ENT = [], HOSP = [];
   const OE = 1700, ORS = 2, ON = OE * 2 / ORS, ocv = cnv(ON, ON), og = ocv.getContext('2d', { willReadFrequently: true }); og.fillStyle = '#000'; og.strokeStyle = '#000'; og.lineJoin = 'round'; og.lineCap = 'round';
   while (i < n) {
     const kind = B[i], lv = Math.max(1, B[i + 1]), h = B[i + 2] / 10, mh = B[i + 3] / 10, np = B[i + 4]; i += 5;
@@ -2357,12 +2357,12 @@ function buildOSM() {
     let tk = kind === 1 || lv >= 6 ? 'apt' : kind === 2 ? (lv <= 3 ? 'shop' : 'office') : kind === 3 ? 'pub' : kind === 5 ? 'ind' : 'villa';
     if (tk === 'apt' && kind === 2) tk = 'stone';
     { const r = rand(); if (tk === 'villa') tk = r < .42 ? 'villaBrick' : r < .62 ? 'villaGray' : r < .8 ? 'villaTile' : 'villa'; /* 태평·신흥동 로드뷰 비율 */ else if (tk === 'apt') tk = lv >= 12 && inForestia(cx, cz) ? 'forestia' : lv >= 15 && cx > 250 && cx < 820 && cz > 100 && cz < 650 ? (rand() < .38 ? 'xiB' : 'xi') : r < .65 ? 'aptK' : 'aptModern'; /* 남동쪽 29층 단지 = 자이푸르지오 계열 외관 */ else if (tk === 'office' && r < .55) tk = 'stone'; }
-    if (isPav) { tk = 'pav'; PAV.push({ P, cx, cz, top }); } /* 벽은 G.pav(장면에 안 넣음), 지붕판만 3.4m에 */
+    if (isPav) { tk = 'pav'; PAV.push({ P, cx, cz, top }); } if (kind === 0 && Math.hypot(cx - 12.8, cz - 268.9) < 2) { tk = 'schoolBrick'; SDC.push(gavg); } /* 11-21 신흥동 성당(사진: 붉은 벽돌 + 종탑) */ /* 벽은 G.pav(장면에 안 넣음), 지붕판만 3.4m에 */
     if (kind === 6 && Math.hypot(cx - 250, cz - 114) < 25) { tk = 'gov'; GOV.push({ P, gavg, fh, top }); } if (kind === 6 && Math.hypot(cx - 642.3, cz - 541.3) < 6) tk = 'lib'; if (kind === 6 && Math.hypot(cx + 877, cz + 94) < 8) tk = 'schoolBrick'; /* 11-21 성남시 중앙도서관(사진: 붉은 벽돌) */ if (kind === 3 && Math.hypot(cx + 329, cz - 740.6) < 8) { tk = 'hosp'; HOSP.push({ P, top }); } /* 11-21 성남시의료원 */ /* 11-21 희망대공원 안 경기성남교육도서관 */ /* 11-21 수정구청(빌라로 그려지던 것) */
     if (kind === 4 && Math.hypot(cx - 119.4, cz - 207.6) < 6) { tk = 'stone'; CHURCH.push({ P, top }); }
     if (kind === 3 && Math.hypot(cx - 516, cz - 434) < 15) tk = 'schoolBrick'; /* 11-21 희망대초등학교(빙 이미지 사진: 붉은 벽돌 교사) */ /* 11-21 새로남교회(신흥초 정문 맞은편) */
     const isApt = /^(apt|aptK|aptModern|forestia|xi|xiB)$/.test(tk); if ((tk === 'xi' || tk === 'xiB') && dist < 1600) XI_B.push(P);
-    const rd = !/^(shop|pub|ind)$/.test(tk) && lv <= 9 && dist < 2600 ? roadDist(cx, cz) : 1e9, shopG = rd < 16 && lv >= 2;
+    const rd = !/^(shop|pub|ind|schoolBrick|gov|lib|hosp|pav)$/.test(tk) && lv <= 9 && dist < 2600 ? roadDist(cx, cz) : 1e9, shopG = rd < 16 && lv >= 2;
     const wc = WALL[tk][(rand() * WALL[tk].length) | 0], rc = ROOF[tk][(rand() * ROOF[tk].length) | 0], tw = OSM_TILE[tk];
     let A = 0; for (let k = 0; k < np; k++) { const a = P[k], b = P[(k + 1) % np]; A += a[0] * b[1] - b[0] * a[1]; }
     const sg = A > 0 ? 1 : -1; let s = 0;
@@ -2474,6 +2474,9 @@ function buildOSM() {
       if (R.some(q => polyDist(SITE, q[0], q[1]) < 25)) continue; XI_R.push({ cx, cz, ux, uz, s0, s1, t0, t1 }); const m = drapePoly(R, lawnM, .12, LOW ? 8 : 5); pos.push(m.geometry.attributes.position.array); scene.remove(m); m.geometry.dispose(); }
     if (pos.length) { let n2 = 0; for (const a2 of pos) n2 += a2.length; const all = new Float32Array(n2); let o = 0; for (const a2 of pos) { all.set(a2, o); o += a2.length; } const g2 = new THREE.BufferGeometry(); g2.setAttribute('position', new THREE.BufferAttribute(all, 3)); g2.computeVertexNormals(); const lm = new THREE.Mesh(g2, lawnM); lm.receiveShadow = true; lm.renderOrder = 3; scene.add(lm); envMeshes.push(lm); } }
   const add = (gb, mat, near) => { if (!gb.i.length) return; const m = new THREE.Mesh(gb.build(), mat); m.castShadow = true; m.receiveShadow = true; scene.add(m); envMeshes.push(m); };
+  for (const g0 of SDC) { const tx = 7.6, tz = 266.6, ux = .864, uz = -.502, bm = new THREE.MeshLambertMaterial({ color: '#8f4b3b' }), wm = new THREE.MeshLambertMaterial({ color: '#f2f0ea' }), tb = new GB(), cb = new GB(), F2 = gb => ({ front: { gb }, back: { gb }, left: { gb }, right: { gb }, top: { gb } }); /* 종탑: 벽돌 4.2m 각, 24m + 흰 십자가 */
+    obox(tx, tz, ux, uz, 4.2, 4.2, g0 - .5, g0 + 24, F2(tb)); obox(tx, tz, ux, uz, 4.6, 4.6, g0 + 24, g0 + 24.5, F2(tb)); obox(tx, tz, ux, uz, .3, .3, g0 + 24.5, g0 + 27.6, F2(cb)); obox(tx, tz, ux, uz, 1.7, .3, g0 + 26.4, g0 + 26.7, F2(cb));
+    for (const [gb, mt] of [[tb, bm], [cb, wm]]) { const m = new THREE.Mesh(gb.build(), mt); m.castShadow = true; scene.add(m); envMeshes.push(m); } }
   delete G.pav; if (PAV.length) { const po = new GB(), FF = gb => ({ front: { gb }, back: { gb }, left: { gb }, right: { gb } });
     for (const pv of PAV) { let R = 0; for (const p of pv.P) R = Math.max(R, Math.hypot(p[0] - pv.cx, p[1] - pv.cz)); for (let k = 0; k < 8; k++) { const a2 = k / 8 * Math.PI * 2, x = pv.cx + Math.cos(a2) * R * .78, z = pv.cz + Math.sin(a2) * R * .78; obox(x, z, 1, 0, .3, .3, heightAt(x, z) - .4, pv.top - .05, FF(po)); }
       const cone = new THREE.Mesh(new THREE.CylinderGeometry(.35, R + .7, 1.7, 8), new THREE.MeshLambertMaterial({ color: '#5d6a62' })); cone.position.set(pv.cx, pv.top + .85, pv.cz); cone.rotation.y = Math.PI / 8; cone.castShadow = true; scene.add(cone); envMeshes.push(cone); }
