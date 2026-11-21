@@ -2538,7 +2538,7 @@ function buildOSM() {
     const d = [-.617, -.787]; /* 아래 서문 앞 횡단보도·쉼터 기준 */
     { /* 11-21 서문 앞 수정로: 진입로 입구 옆 횡단보도(흰 줄 45cm·간격 50cm, 길이 4.5m) + 보도 위 유리 버스 쉼터(OSM 정류장 427,36) — 도로 중심선 (469.1,8.4)→u, 맞은편 차로까지 */
       const u = [-.7868, .6172], P = (t, s) => [469.1 + u[0] * t + d[0] * s, 8.4 + u[1] * t + d[1] * s], cw = [], tc = 41.5;
-      for (let s = -18.95; s < 7.3; s += .95) { if (s > -6.3 && s < -5) continue; /* 차로 띠는 폭 전체가 중심선 높이로 평평 → 줄도 그 차로 중심 높이에(위쪽 차로 s=0, 맞은편 s=-11.2), 두 차로가 만나는 분리대(s≈-5.6) 위는 비움 */
+      for (let s = -18.95; s < 7.3 && false; s += .95) { if (s > -6.3 && s < -5) continue; /* 11-21 로드뷰(2026.08, 정류장 앞 양방향): 여기엔 횡단보도 없음(정차금지 노란 빗금뿐) — 서문을 실제 자리로 옮기며 끔 */ /* 차로 띠는 폭 전체가 중심선 높이로 평평 → 줄도 그 차로 중심 높이에(위쪽 차로 s=0, 맞은편 s=-11.2), 두 차로가 만나는 분리대(s≈-5.6) 위는 비움 */
         const sc = s > -5.5 ? 0 : -11.2, q = [[tc - 2.25, s], [tc + 2.25, s], [tc + 2.25, s + .45], [tc - 2.25, s + .45]]; for (const k of [0, 1, 2, 0, 2, 3]) { const [t2, s2] = q[k], p = P(t2, s2), c0 = P(t2, sc); cw.push(p[0], heightAt(c0[0], c0[1]) + .5, p[1]); } }
       const cg = new THREE.BufferGeometry(); cg.setAttribute('position', new THREE.Float32BufferAttribute(cw, 3)); cg.computeVertexNormals(); const cm = new THREE.Mesh(cg, new THREE.MeshLambertMaterial({ color: '#e6e6e0', side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 })); cm.receiveShadow = true; cm.renderOrder = 4; scene.add(cm); envMeshes.push(cm);
       const [bx, bz] = P(64, 9.9) /* 문주 석재 기둥(t≈57) 지나 보도 위 */, by = heightAt(bx, bz) - .25 /* 지형 면이 heightAt보다 .25~.3 낮음(실측) */, fr = new GB(), gs = new GB(), bn = new GB(), FF = gb => ({ front: { gb }, back: { gb }, left: { gb }, right: { gb }, top: { gb }, bottom: { gb } });
