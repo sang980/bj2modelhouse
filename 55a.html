@@ -1906,9 +1906,12 @@ pbox(10.67, 10.69, 0, H, 2.3, 3.16, M.stoneTile, fixed); pbox(10.67, 10.69, 2.12
   for (let i = 0; i < 2; i++) { const y = .95 + i * .3; mesh(BX(.2, .01, .2), chrome, WX(sx + .1), y, WZ(2.99), fixed); mesh(BX(.2, .05, .005), chrome, WX(sx + .1), y + .025, WZ(3.09), fixed); } // 코너 바구니
   mesh(CY(.012, .016, .05, 12), std(0x6b7a5a, .5), WX(sx + .1), .985, WZ(2.99), fixed);
   // 꽃병(샤워부스 모서리)
-  { const vx = 8.66, vz = 3.75; mesh(CY(.03, .04, .45, 16), M.glass, WX(vx), .23, WZ(vz), fixed, { cast: false });
-    for (let i = 0; i < 6; i++) { const s = mesh(CY(.003, .003, .5, 5), M.plant, WX(vx), .62, WZ(vz), fixed, { cast: false }); s.rotation.set(Math.sin(i * 2.1) * .2, 0, Math.cos(i * 2.1) * .2);
-      mesh(new THREE.SphereGeometry(.028, 10, 8), std(i % 2 ? 0xf3efe2 : 0xe8e3a8, .8), WX(vx + Math.cos(i * 2.1) * .05), .86 + (i % 3) * .03, WZ(vz - Math.sin(i * 2.1) * .05), fixed, { cast: false }); } }
+  { const vx = 8.66, vz = 3.75, X = WX(vx), Z = WZ(vz), V3 = THREE.Vector3; /* 11-22 소품 퀄리티업: 바닥 꽃병 — 가운데를 축으로 기울어 유리를 뚫던 막대 + 떨어져 뜬 공 → 두꺼운 바닥 유리 원통(열린 입구) + 속 물, 물속에서 입구로 모여 올라가 벌어지는 줄기 6(곡선) 끝에 붙은 공 모양 꽃(크라스페디아: 노랑·크림, 작은 꽃 알갱이 결정적 텍스처) — 예전엔 2.1rad 간격이라 3쌍이 같은 자리에 겹쳐 3송이만 보이던 것을 황금각으로 벌림 */
+    mesh(new THREE.LatheGeometry([[0, 0], [.04, 0], [.04, .004], [.03, .45], [.027, .45], [.036, .012], [0, .012]].map(([a, b]) => new THREE.Vector2(a, b)), 28), std(0xeef5f3, .03, 0, { transparent: true, opacity: .26, depthWrite: false }), X, 0, Z, fixed, { cast: false });
+    mesh(new THREE.CylinderGeometry(.0305, .0356, .258, 24), std(0xd5e8e2, .05, 0, { transparent: true, opacity: .32, depthWrite: false }), X, .141, Z, fixed, { cast: false });
+    const bt = toTex((() => { const c = mkCanvas(128, 64), x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, 128, 64); for (let r = 0; r < 8; r++) for (let k = 0; k < 16; k++) { const cx = k * 8 + (r % 2) * 4 + 4, cy = r * 8 + 4; x.fillStyle = '#f2f2f2'; x.beginPath(); x.arc(cx, cy, 3, 0, 7); x.fill(); x.fillStyle = 'rgba(90,70,20,.35)'; x.beginPath(); x.arc(cx + 1, cy + 1.5, 1.2, 0, 7); x.fill(); } return c; })()), sm = std(0x6f8f4a, .7);
+    for (let i = 0; i < 6; i++) { const ag = i * 2.4 + .6, sp = .055 + (i % 2) * .02, dx = Math.cos(ag), dz = -Math.sin(ag), b0 = new V3(X + dx * .004, .03, Z + dz * .004), tp = new V3(X + dx * sp, .82 + (i % 3) * .045 + (i > 2 ? .025 : 0), Z + dz * sp), cv = new THREE.QuadraticBezierCurve3(b0, new V3(X + dx * .006, .52, Z + dz * .006), tp);
+      mesh(new THREE.TubeGeometry(cv, 14, .0026, 5), sm, 0, 0, 0, fixed, { cast: false }); mesh(new THREE.SphereGeometry(.024, 18, 12), std(i % 2 ? 0xeadfbd : 0xd6aa24, .85, 0, { map: bt, bumpMap: bt, bumpScale: 1.2 }), tp.x, tp.y + .02, tp.z, fixed, { cast: false }); } }
   wallBoxes.push({ minX: WX(8.49), maxX: WX(gx), minZ: WZ(2.9), maxZ: WZ(3.07) }); }
 // 북쪽 벽: 세면기(반다리형) · 변기 · 돌 선반 · 거울장 2짝
 { const g = piece('세면기', 9.85, 2.52, 0, { movable: false }); /* 북쪽 벽(z 2.28)을 따라 0.28 북쪽으로 */
