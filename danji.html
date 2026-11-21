@@ -1258,7 +1258,7 @@ function paintTerrain(N, E) {
   /* 시가지 지붕·골목 질감 */
   { const t = cnv(256, 256), tg = t.getContext('2d'); tg.clearRect(0, 0, 256, 256);
     for (let i = 0; i < 520; i++) { const v = 120 + rand() * 90 | 0, gr = rand() < .18; tg.fillStyle = gr ? `rgb(${80 + rand() * 30 | 0},${118 + rand() * 30 | 0},${84 + rand() * 20 | 0})` : `rgb(${v},${v - 4},${v - 10})`; tg.fillRect(rand() * 256, rand() * 256, 2 + rand() * 5, 2 + rand() * 5); }
-    overlay(t, um, .55); }
+    overlay(t, um, .55); { const t2 = cnv(64, 64), tg2 = t2.getContext('2d'); tg2.fillStyle = '#8e8f8c'; tg2.fillRect(0, 0, 64, 64); for (let i = 0; i < 160; i++) { const v = 118 + hash2(i, 701) * 50 | 0; tg2.fillStyle = `rgb(${v},${v},${v - 3})`; tg2.fillRect(hash2(i, 703) * 64, hash2(i, 709) * 64, 2 + hash2(i, 719) * 4, 2 + hash2(i, 727) * 4); } overlay(t2, um, .38); } } /* 11-22 카카오 스카이뷰 같은 틀(신흥동 100,450·태평동 −599,486): 빌라 사이 틈은 회색 콘크리트 마당·주차 — 시가지 바탕의 베이지 흙빛 위에 회색 콘크리트 결을 한 겹 더(hash만) */
   const P = (x, z) => [(x + E) / (2 * E) * N, (z + E) / (2 * E) * N], px = N / (2 * E);
   const ENV = GEO.env && GEO.env.roads && GEO.env.roads.length ? GEO.env : null;
   if (ENV) { paintEnv(g, ENV, P, px); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; return t; }
