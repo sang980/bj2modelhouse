@@ -2087,8 +2087,16 @@ await yieldUI();
 decorStart('TV·TV장', true, [], true); { const g = fixed, x = 5.61, top = .452, ceramic = std(0xf1efea, .32);
   const vase = new THREE.LatheGeometry([[0, 0], [.07, 0], [.1, .06], [.112, .14], [.095, .235], [.055, .3], [.044, .318], [.05, .33], [.043, .33]].map(([a, b]) => new THREE.Vector2(a, b)), 40);
   mesh(vase, ceramic, WX(x - .22), top, WZ(10.62), g); fernPlant(g, WX(x - .22), top + .32, WZ(10.62));
-  const jar = new THREE.LatheGeometry([[0, 0], [.055, 0], [.08, .045], [.085, .075], [.07, .11], [.035, .124], [.02, .13], [.02, .145], [0, .148]].map(([a, b]) => new THREE.Vector2(a, b)), 36);
-  mesh(jar, ceramic, WX(x - .2), top, WZ(10.36), g); } decorEnd();
+  { const jx = WX(x - .2), jz = WZ(10.36), L = pts => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 40), hq = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }; /* 11-22 소품 퀄리티업: 흰 공 같던 뚜껑 항아리 → 철점 박힌 무광 백자 유약(결정적 점무늬) + 몸통·뚜껑 이음선, 둥근 뚜껑 + 작은 꼭지, 유약 안 묻은 굽 */
+    const c = mkCanvas(256, 256), q = c.getContext('2d'); q.fillStyle = '#f2efe8'; q.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 520; i++) { const r = .6 + hq(i, 3) * (hq(i, 5) < .1 ? 2.2 : 1); q.fillStyle = `rgba(${70 + (hq(i, 7) * 40) | 0},${58 + (hq(i, 7) * 30) | 0},${46 + (hq(i, 7) * 24) | 0},${.35 + hq(i, 9) * .45})`; q.beginPath(); q.arc(hq(i, 1) * 256, hq(i, 2) * 256, r, 0, Math.PI * 2); q.fill(); }
+    const spk = std(0xffffff, .5, 0, { map: toTex(c, { rep: [2, 1] }) });
+    mesh(L([[0, .004], [.05, .004], [.056, .009], [.078, .042], [.085, .07], [.079, .096], [.067, .105], [.064, .107], [0, .107]]), spk, jx, top, jz, g);
+    mesh(new THREE.CylinderGeometry(.0505, .048, .0045, 40, 1, true), std(0xc9b293, .95), jx, top + .0023, jz, g, { cast: false });
+    mesh(new THREE.TorusGeometry(.0645, .0011, 4, 48), std(0x6d6458, .8), jx, top + .1075, jz, g, { cast: false }).rotation.x = Math.PI / 2;
+    mesh(L([[0, .108], [.066, .108], [.07, .111], [.065, .121], [.048, .134], [.026, .1405], [0, .142]]), spk, jx, top, jz, g);
+    mesh(L([[0, 0], [.009, 0], [.0125, .006], [.0115, .012], [.006, .0155], [0, .016]]), spk, jx, top + .1405, jz, g, { cast: false }); }
+  } decorEnd();
 await yieldUI();
 // 주방 상판 소품(사진): 레트로 커피머신, 전기주전자, 블랙 레일 도구, 끝쪽 블랙 보틀·양념병·은색 볼·화이트 볼 화분
 // 좌표는 주방 반전 전 기준(k 그룹 안에서 함께 반전됨). 상판 높이 .9
