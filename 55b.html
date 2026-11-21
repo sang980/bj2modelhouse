@@ -2337,9 +2337,18 @@ await yieldUI();
 // 침실1: 머리는 서쪽 벽(헤드보드 벽판), 양옆 협탁
 // 침실1(VR): 진회색 이불 + 짙은 초록 쿠션, 양옆 흰 물결무늬(플루팅) 받침 협탁
 const bed1B = bed(6.98, 9.6, Math.PI / 2, 1.6, 2.1, '침대');
-function recolorBed(b, throwC, pillowC, pillow2C) { const t = std(throwC, .98, 0, { map: M.throwBlue.map }), p1 = std(pillowC, .95, 0, { map: M.charcoal.map }), p2 = std(pillow2C, .95, 0, { map: M.charcoal.map });
-  b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = t; else if (o.material === M.charcoal) o.material = p1; else if (o.material === M.check) o.material = p2; }); }
-recolorBed(bed1B, 0x6e7173, 0x1f5446, 0x23604f);
+/* 11-21 침구 퀄리티업: 벨벳 쿠션 — 결정적 '눌린 결' 얼룩 + 고운 털 결 + 은은한 요철, 가장자리 솔기에 같은 천 파이핑(둥근 줄) */
+let VELV = null; function velvetTex() { if (VELV) return VELV; const c = mkCanvas(512, 512), x = c.getContext('2d'); x.fillStyle = '#efefef'; x.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 110; i++) { const h = Math.imul(i + 1, 2654435761) >>> 0, px = h % 512, py = (h >>> 9) % 512, r = 24 + (h >>> 18) % 60, l = (h >>> 3) & 1 ? 255 : 0, g = x.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, `rgba(${l},${l},${l},.12)`); g.addColorStop(1, `rgba(${l},${l},${l},0)`); x.fillStyle = g; x.fillRect(px - r, py - r, 2 * r, 2 * r); }
+  for (let i = 0; i < 9000; i++) { const h = Math.imul(i + 7, 2246822519) >>> 0, l = (h >>> 21) & 1 ? 255 : 0; x.fillStyle = `rgba(${l},${l},${l},.07)`; x.fillRect(h % 512, (h >>> 10) % 512, 1, 2); }
+  return (VELV = toTex(c, { rep: [2, 2] })); }
+function pipeOn(o, mat) { if (!o.geometry.boundingBox) o.geometry.computeBoundingBox(); const bb = o.geometry.boundingBox, w = bb.max.x - bb.min.x, hh = bb.max.y - bb.min.y, P = [];
+  for (let i = 0; i < 48; i++) { const a = i / 48 * Math.PI * 2, cx = Math.cos(a), sy = Math.sin(a); P.push(new THREE.Vector3(Math.sign(cx) * Math.pow(Math.abs(cx), .3) * w / 2 * .995, Math.sign(sy) * Math.pow(Math.abs(sy), .3) * hh / 2 * .995, 0)); }
+  mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P, true), 96, .0055, 6, true), mat, 0, 0, 0, o, { cast: false }); }
+function recolorBed(b, throwC, pillowC, pillow2C, velvet = false) { const t = std(throwC, .98, 0, { map: M.throwBlue.map }), vm = c => std(c, .62, 0, { map: velvetTex(), bumpMap: velvetTex(), bumpScale: .8 }), p1 = velvet ? vm(pillowC) : std(pillowC, .95, 0, { map: M.charcoal.map }), p2 = velvet ? vm(pillow2C) : std(pillow2C, .95, 0, { map: M.charcoal.map });
+  const pv = []; b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = t; else if (o.material === M.charcoal) { o.material = p1; pv.push(o); } else if (o.material === M.check) { o.material = p2; pv.push(o); } });
+  if (velvet) for (const o of pv) if (o.geometry.type === 'SphereGeometry') pipeOn(o, o.material); }
+recolorBed(bed1B, 0x6e7173, 0x1f5446, 0x23604f, true); /* 안방: 진초록 벨벳 쿠션 + 파이핑 */
 { const rm = [], g1 = pillowG(.5, .46, .17), g2 = pillowG(.6, .28, .15); bed1B.traverse(o => { if (o.isMesh && (o.geometry === g1 || o.geometry === g2)) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
   const gv = std(0x1f5446, .7, 0, { map: M.charcoal.map }), L = 2.1; for (const [px, ry, rz] of [[-.28, .14, .04], [.3, -.1, -.03]]) { const c = mesh(sqPillowG(.5, .48, .17), gv, px, .77, -L / 2 + .6, bed1B); c.rotation.set(-.32, ry, rz); } } /* VR: 짙은 초록 벨벳 사각 쿠션 2를 나란히(가운데 겹친 쿠션·긴 쿠션이 서로 박혀 보이던 것 정리) */
 { const w = 1.6, l = 2.1, hx = w / 2 + .04, parts = []; /* VR: 러너 양옆 끝단 흰 술 장식(침대 로컬: 러너 z l/2-.75 ~ l/2-.14, 끝단 높이 .23) */
