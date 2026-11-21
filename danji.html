@@ -1945,7 +1945,7 @@ function buildSchools() {
   for (const [txt, x, h, z] of [['성남여중', -8, 100.6 + 22, 150], ['신흥초', 66, 106.3 + 22, 124]]) { /* 11-16 사용자 요청: 학교 이름표 — 동 번호와 같은 파란 말머리 */
     const c = cnv(256, 96), g = c.getContext('2d'); g.fillStyle = '#1f5a96'; roundRect(g, 4, 8, 248, 80, 22); g.fill(); g.fillStyle = '#fff'; g.font = '700 50px "Noto Sans KR", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, 128, 50);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO; const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false, fog: false })); sp.position.set(x, h - Y0, z); sp.renderOrder = 5; scene.add(sp); schoolLabels.push(sp); }
-  for (const [txt, x, h, z] of [['새나리관', 111, 106.3 + 15.2, 138], ['신흥초 증축(예정·가상)', 141, 121.5, 108], ['도서관·수영장 복합(예정·가상)', 192, 121.5, 88]]) {
+  for (const [txt, x, h, z] of [['새나리관', 111, 106.3 + 15.2, 138], ['신흥초 증축(예정·가상)', 141, 121.5, 108], ['도서관·수영장 복합(예정·가상)', 192, 121.5, 88], ['수정구청', 247, 95.5, 113]]) {
     const c = cnv(512, 96), g = c.getContext('2d'); g.font = '700 38px "Noto Sans KR", sans-serif'; const tw = Math.min(500, g.measureText(txt).width + 36); g.fillStyle = 'rgba(30,38,46,.8)'; roundRect(g, (512 - tw) / 2, 14, tw, 66, 18); g.fill(); g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, 256, 48);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthWrite: false, fog: false })); sp.position.set(x, h - Y0 + 8, z); sp.renderOrder = 4; scene.add(sp); planLabels.push(sp); }
   /* 성남여중: 흙 운동장 + 남쪽 줄무늬 지붕 부속동 */
@@ -2151,6 +2151,11 @@ const xiTex = terra => facadeTex(1024, 256, g => { noiseFill(g, 1024, 256, '#eff
 OSMTX.xi = () => xiTex(false);
 OSMTX.xiB = () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#a5735e', .03, 900); g.fillStyle = 'rgba(60,25,15,.2)'; for (let x = 0; x < 512; x += 64) g.fillRect(x, 0, 2, 256); g.fillRect(0, 126, 512, 2); /* 측벽 테라코타 판 + 가운데 작은 창 줄 */
   win(g, 226, 60, 60, 140, 1, 5, '#c08a74', 2); g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(0, 250, 512, 6); });
+/* 11-21 수정구청(수정로 283, OSM 5층 16.5m) — 구글 지도 사진: 밝은 베이지 회색 타일 벽 + 흰 틀 창 줄 + 기둥 띠, 1층은 연보라 판 + 유리 출입문, 큰길 쪽 청록 유리 아치 캐노피 둘 */
+OSMTX.gov = () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#ddd7cd', .025, 900); g.fillStyle = 'rgba(0,0,0,.05)'; for (let y = 0; y < 256; y += 32) g.fillRect(0, y, 512, 1); g.fillStyle = '#cfc7ba'; g.fillRect(0, 0, 44, 256); g.fillRect(256, 0, 24, 256);
+  for (const x of [64, 150, 300, 390]) win(g, x, 62, 76, 126, 2, 5, '#f4f4f2', 1); g.fillStyle = '#d2cabe'; g.fillRect(0, 226, 512, 30); g.fillStyle = 'rgba(0,0,0,.1)'; g.fillRect(0, 224, 512, 3); });
+OSMTX.govBase = () => facadeTex(512, 256, g => { g.fillStyle = '#b9b0c4'; g.fillRect(0, 0, 512, 256); g.fillStyle = 'rgba(255,255,255,.12)'; for (let x = 0; x < 512; x += 64) g.fillRect(x, 0, 2, 256); g.fillStyle = '#cfc7ba'; g.fillRect(0, 0, 44, 256); g.fillRect(256, 0, 24, 256);
+  for (const x of [70, 300]) { glass(g, x, 60, 150, 196, 1); g.fillStyle = '#e8e8e6'; g.fillRect(x + 73, 60, 4, 196); } g.fillStyle = '#d8d2c8'; g.fillRect(0, 0, 512, 22); });
 /* 포레스티아 측벽(로드뷰 2026.08): 테라코타(주황빛 갈색) 판 + 세로 줄눈, 위쪽에 흰 HDC IPARK 로고 */
 OSMTX.forestiaSide = () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#a8603d', .035, 900); g.fillStyle = 'rgba(60,25,10,.22)'; for (let x = 0; x < 512; x += 128) g.fillRect(x, 0, 3, 256); g.fillRect(0, 252, 512, 4); });
 const foSignTex = () => { const c = cnv(256, 256), g = c.getContext('2d'); g.clearRect(0, 0, 256, 256); g.fillStyle = '#ffffff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '800 92px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText('HDC', 128, 78); g.font = '800 70px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText('IPARK', 128, 178);
@@ -2159,7 +2164,7 @@ const foSignTex = () => { const c = cnv(256, 256), g = c.getContext('2d'); g.cle
 OSMTX.piloti = () => facadeTex(1024, 256, g => { g.fillStyle = '#2d2f32'; g.fillRect(0, 0, 1024, 256); const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(0,0,0,.5)'); gr.addColorStop(1, 'rgba(90,90,88,.4)'); g.fillStyle = gr; g.fillRect(0, 0, 1024, 256);
   const cc = ['#e8e8e6', '#2b2d30', '#9aa0a6', '#7a1f22', '#1f3550', '#c9c9c4']; for (let k = 0; k < 4; k++) { const x = 40 + k * 250 + rand() * 30; g.fillStyle = cc[(rand() * cc.length) | 0]; g.fillRect(x, 150, 170, 80); g.fillStyle = 'rgba(30,40,50,.75)'; g.fillRect(x + 30, 160, 110, 26); g.fillStyle = '#151515'; g.fillRect(x + 18, 222, 30, 14); g.fillRect(x + 122, 222, 30, 14); }
   g.fillStyle = '#cfcac0'; for (const x of [0, 340, 680, 1010]) g.fillRect(x, 0, 30, 256); g.fillStyle = '#bdb8ae'; g.fillRect(0, 0, 1024, 26); }, true);
-const OSM_TILE = { xiB: 6, villa: 7, apt: 7, shop: 12, office: 7, pub: 8, ind: 8, villaBrick: 7, villaTile: 7, villaGray: 7, aptModern: 7, stone: 8, piloti: 12, aptK: 7, forestia: 13, forestiaBase: 8, forestiaSide: 6, xi: 12 };
+const OSM_TILE = { gov: 8, govBase: 8, xiB: 6, villa: 7, apt: 7, shop: 12, office: 7, pub: 8, ind: 8, villaBrick: 7, villaTile: 7, villaGray: 7, aptModern: 7, stone: 8, piloti: 12, aptK: 7, forestia: 13, forestiaBase: 8, forestiaSide: 6, xi: 12 };
 function frontRowWest() { /* 11-16 사용자 지적(뒤 건물 삐뚤삐뚤, 길 따라 반듯하게): 40m 도로 서쪽 2차로 보도에 닿거나 비스듬히 걸친 저층 주택은 빼고, 길과 나란한 주택 한 줄로 */
   const MMr = CUT.MM; if (!GEO.bld || MMr.length < 3) return; const HW = CUT.HW, IN = HW + 15.8, OUT = HW + 28.5, Z0 = -14, Z1 = 330;
   const proj = (x, z) => { let best = 1e9, q = null, u = null; for (let i = 0; i < MMr.length - 1; i++) { const a = MMr[i], b = MMr[i + 1], dx = b[0] - a[0], dz = b[1] - a[1], l2 = dx * dx + dz * dz, t = Math.max(-.5, Math.min(1.5, ((x - a[0]) * dx + (z - a[1]) * dz) / l2)), px = a[0] + dx * t, pz = a[1] + dz * t, d = Math.hypot(x - px, z - pz); if (d < best) { best = d; q = [px, pz]; const l = Math.sqrt(l2); u = [dx / l, dz / l]; } }
@@ -2189,10 +2194,10 @@ function buildOSM() {
   ROOF.villaBrick = ROOF.villaTile = ROOF.villa; ROOF.aptModern = ROOF.apt; ROOF.stone = ROOF.office;
   /* 이 동네 주택 옥상: 초록·청록 방수 도장과 회색·파랑이 대부분(스카이뷰 참고) */
   ROOF.villa = ROOF.villaBrick = ROOF.villaTile = ROOF.villaGray = ['#4f8f74', '#5a9a7c', '#3f8069', '#6aa087', '#8e979c', '#a9aeb1', '#5f7f9f', '#4a6f96', '#b8b4aa', '#8c6f5f'].map(vc);
-  WALL.aptK = ['#ffffff', '#f7f2e8', '#eef1f3', '#f4ece0', '#ffffff'].map(vc); WALL.forestia = ['#ffffff', '#f3f4f4'].map(vc); WALL.forestiaBase = ['#ffffff'].map(vc); WALL.forestiaSide = ['#ffffff'].map(vc); ROOF.forestiaSide = ['#9ba1a6'].map(vc); WALL.xi = ['#ffffff', '#f6f6f4'].map(vc); WALL.xiB = WALL.xi; ROOF.xi = ['#9ea4a8', '#a8adb0'].map(vc); ROOF.xiB = ROOF.xi;
+  WALL.aptK = ['#ffffff', '#f7f2e8', '#eef1f3', '#f4ece0', '#ffffff'].map(vc); WALL.forestia = ['#ffffff', '#f3f4f4'].map(vc); WALL.forestiaBase = ['#ffffff'].map(vc); WALL.forestiaSide = ['#ffffff'].map(vc); ROOF.forestiaSide = ['#9ba1a6'].map(vc); WALL.xi = ['#ffffff', '#f6f6f4'].map(vc); WALL.xiB = WALL.xi; WALL.gov = ['#ffffff'].map(vc); WALL.govBase = WALL.gov; ROOF.xi = ['#9ea4a8', '#a8adb0'].map(vc); ROOF.xiB = ROOF.xi; ROOF.gov = ['#a3a49f'].map(vc); ROOF.govBase = ROOF.gov;
   ROOF.aptK = ROOF.apt; ROOF.forestia = ['#9ba1a6', '#a7acaf'].map(vc); ROOF.forestiaBase = ROOF.forestia;
   WALL.villaGray = ['#ffffff', '#e9ebe6', '#dfe3e6', '#ece6dc'].map(vc);
-  for (const k of ['aptK', 'forestia', 'forestiaBase', 'forestiaSide', 'xi', 'xiB', 'villaGray']) if (!G[k]) { G[k] = new GB(); M[k] = new THREE.MeshLambertMaterial({ map: OSMTX[k](), vertexColors: true }); }
+  for (const k of ['aptK', 'forestia', 'forestiaBase', 'forestiaSide', 'xi', 'xiB', 'gov', 'govBase', 'villaGray']) if (!G[k]) { G[k] = new GB(); M[k] = new THREE.MeshLambertMaterial({ map: OSMTX[k](), vertexColors: true }); }
   if (!G.foSign) { G.foSign = new GB(); M.foSign = new THREE.MeshLambertMaterial({ map: foSignTex(), transparent: true, alphaTest: .35, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }); }
   for (const k in M) if (k !== 'foSign' && M[k].map) { M[k].emissiveMap = M[k].map; M[k].emissive = new THREE.Color('#5c5c5c'); } /* 그늘진 면도 하늘빛을 받아 너무 어둡지 않게(주변 건물은 환경광 반사가 없음) */
   const FOREST_P = ((GEO.env && GEO.env.land) || []).filter(l => l.n && /포레스티아/.test(l.n)).map(l => l.p);
@@ -2204,7 +2209,7 @@ function buildOSM() {
       for (let i = Math.floor(Math.min(x0, x1) / CS) - 1; i <= Math.floor(Math.max(x0, x1) / CS) + 1; i++) for (let j = Math.floor(Math.min(z0, z1) / CS) - 1; j <= Math.floor(Math.max(z0, z1) / CS) + 1; j++) { const kk = key(i, j); if (!hash.has(kk)) hash.set(kk, []); hash.get(kk).push([x0, z0, x1, z1, r.w]); } } }
   const roadDist = (x, z) => { const l = hash.get(key(Math.floor(x / CS), Math.floor(z / CS))); if (!l) return 1e9; let best = 1e9;
     for (const [x0, z0, x1, z1, w] of l) { const ex = x1 - x0, ez = z1 - z0, t = Math.max(0, Math.min(1, ((x - x0) * ex + (z - z0) * ez) / (ex * ex + ez * ez || 1))), d = Math.hypot(x - x0 - ex * t, z - z0 - ez * t) - w / 2; if (d < best) best = d; } return best; };
-  const V2 = THREE.Vector2; let i = 0, cnt = 0; const DUP = new Map(); let dupN = 0; const XI_B = [];
+  const V2 = THREE.Vector2; let i = 0, cnt = 0; const DUP = new Map(); let dupN = 0; const XI_B = []; const GOV = [];
   const OE = 1700, ORS = 2, ON = OE * 2 / ORS, ocv = cnv(ON, ON), og = ocv.getContext('2d', { willReadFrequently: true }); og.fillStyle = '#000'; og.strokeStyle = '#000'; og.lineJoin = 'round'; og.lineCap = 'round';
   while (i < n) {
     const kind = B[i], lv = Math.max(1, B[i + 1]), h = B[i + 2] / 10, mh = B[i + 3] / 10, np = B[i + 4]; i += 5;
@@ -2222,6 +2227,7 @@ function buildOSM() {
     let tk = kind === 1 || lv >= 6 ? 'apt' : kind === 2 ? (lv <= 3 ? 'shop' : 'office') : kind === 3 ? 'pub' : kind === 5 ? 'ind' : 'villa';
     if (tk === 'apt' && kind === 2) tk = 'stone';
     { const r = rand(); if (tk === 'villa') tk = r < .42 ? 'villaBrick' : r < .62 ? 'villaGray' : r < .8 ? 'villaTile' : 'villa'; /* 태평·신흥동 로드뷰 비율 */ else if (tk === 'apt') tk = lv >= 12 && inForestia(cx, cz) ? 'forestia' : lv >= 24 && cx > 250 && cx < 820 && cz > 100 && cz < 650 ? (rand() < .38 ? 'xiB' : 'xi') : r < .65 ? 'aptK' : 'aptModern'; /* 남동쪽 29층 단지 = 자이푸르지오 계열 외관 */ else if (tk === 'office' && r < .55) tk = 'stone'; }
+    if (kind === 6 && Math.hypot(cx - 250, cz - 114) < 25) { tk = 'gov'; GOV.push({ P, gavg, fh, top }); } /* 11-21 수정구청(빌라로 그려지던 것) */
     const isApt = /^(apt|aptK|aptModern|forestia|xi|xiB)$/.test(tk); if ((tk === 'xi' || tk === 'xiB') && dist < 1600) XI_B.push(P);
     const rd = !/^(shop|pub|ind)$/.test(tk) && lv <= 9 && dist < 2600 ? roadDist(cx, cz) : 1e9, shopG = rd < 16 && lv >= 2;
     const wc = WALL[tk][(rand() * WALL[tk].length) | 0], rc = ROOF[tk][(rand() * ROOF[tk].length) | 0], tw = OSM_TILE[tk];
@@ -2239,6 +2245,7 @@ function buildOSM() {
       else if (tk === 'forestia') { const yb2 = gavg + 2 * fh, gab = Math.abs(dx / L * fux + dz / L * fuz) < .4 && L > 7 && L < 22 && L < fbl * .6; /* 긴 축에 직각인 짧은 벽 = 측벽 */
         quad(G.forestiaBase, base, yb2, sp / 8, sq / 8, (base - gavg) / (2 * fh), 1, WALL.forestiaBase[0]);
         if (gab) { quad(G.forestiaSide, yb2, top, sp / 6, sq / 6, vb(yb2), lv, WALL.forestiaSide[0]); if (lv >= 15 && dist < 2000) foSigns.push([p, q, nx, nz, L]); } else quad(G.forestia, yb2, top, sp / tw, sq / tw, vb(yb2), lv, wc); } /* 저층 2개 층 석재, 측벽 테라코타 */
+      else if (tk === 'gov') { const y1 = gavg + fh; quad(G.govBase, base, y1, sp / 8, sq / 8, (base - gavg) / fh, 1, WALL.gov[0]); quad(G.gov, y1, top, sp / 8, sq / 8, vb(y1), lv, wc); }
       else if (tk === 'xi' || tk === 'xiB') { const yb2 = gavg + 2 * fh, gab = tk === 'xiB' && Math.abs(dx / L * fux + dz / L * fuz) < .4 && L > 7 && L < 24 && L < fbl * .7; quad(G.forestiaBase, base, yb2, sp / 8, sq / 8, (base - gavg) / (2 * fh), 1, WALL.forestiaBase[0]); if (gab) quad(G.xiB, yb2, top, sp / 6, sq / 6, vb(yb2), lv, WALL.xi[0]); else quad(G.xi, yb2, top, sp / 12, sq / 12, vb(yb2), lv, wc); } /* 11-21: 일부 동(약 40%)은 짧은 측벽만 테라코타 판(투시도) */ /* 로드뷰: 저층 2개 층 베이지 석재 */
       else quad(G[tk], base, top, sp / tw, sq / tw, vb(base), lv, wc);
       s += L; }
@@ -2263,6 +2270,10 @@ function buildOSM() {
     }
     cnt++;
   }
+  for (const gv of GOV) { const P = gv.P; let bi = -1, bd = 1e9, bl = 0; let A2 = 0; for (let k2 = 0; k2 < P.length; k2++) { const a2 = P[k2], b2 = P[(k2 + 1) % P.length]; A2 += a2[0] * b2[1] - b2[0] * a2[1]; } const sg2 = A2 > 0 ? 1 : -1;
+    for (let k2 = 0; k2 < P.length; k2++) { const a2 = P[k2], b2 = P[(k2 + 1) % P.length], L = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]); if (L < 25) continue; const nx = (b2[1] - a2[1]) / L * sg2, nz = -(b2[0] - a2[0]) / L * sg2, d = roadDist((a2[0] + b2[0]) / 2 + nx * 12, (a2[1] + b2[1]) / 2 + nz * 12); if (d < bd) { bd = d; bi = k2; bl = L; } }
+    if (bi < 0) continue; const a2 = P[bi], b2 = P[(bi + 1) % P.length], ux = (b2[0] - a2[0]) / bl, uz = (b2[1] - a2[1]) / bl, nx = uz * sg2, nz = -ux * sg2, cm = new THREE.MeshStandardMaterial({ color: '#4f9a90', roughness: .2, metalness: .1, transparent: true, opacity: .82, side: THREE.DoubleSide });
+    for (const t of [.38, .62]) { const cx2 = a2[0] + ux * bl * t + nx * 1.8, cz2 = a2[1] + uz * bl * t + nz * 1.8, arc = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.6, 3.6, 14, 1, true, 0, Math.PI), cm); arc.rotation.z = Math.PI / 2; const grp = new THREE.Group(); grp.add(arc); grp.position.set(cx2, gv.gavg + gv.fh * .95, cz2); grp.rotation.y = Math.atan2(-nz, nx); scene.add(grp); envMeshes.push(arc); } } /* 청록 유리 아치 캐노피 둘 */
   if (XI_B.length) { /* 11-21 산성역자이푸르지오: 단지 경계(OSM)가 없어 동 사이가 맨흙색 — 동마다 둘레 12m 잔디(사진: 동 사이 조경이 빽빽) */
     const pos = [], lawnM = new THREE.MeshLambertMaterial({ color: '#7f9c55', polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 });
     for (const P of XI_B) { let bl = 0, ux = 1, uz = 0, cx = 0, cz = 0; for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length], L = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]); cx += a2[0] / P.length; cz += a2[1] / P.length; if (L > bl) { bl = L; ux = (b2[0] - a2[0]) / L; uz = (b2[1] - a2[1]) / L; } }
@@ -2287,6 +2298,9 @@ function buildOSM() {
         if (kind !== 1 || lv < 8 || Math.hypot(cx, cz - 15) > 1600 || polyDist(SITE, cx, cz) < 30 || named.some(p => inPoly(p, cx, cz))) continue;
         for (let k = 0; k < 30; k++) { const a = rand() * 6.283, rr2 = 11 + rand() * 24, x = cx + Math.cos(a) * rr2, z = cz + Math.sin(a) * rr2; if (occAt(x, z) || occAt(x + 2, z) || occAt(x - 2, z) || occAt(x, z + 2) || occAt(x, z - 2)) continue; extraTrees.push([x, heightAt(x, z) - .3, z, 1.9 + rand() * 1.4, 3]); nT++; } }
       console.log('apt ring trees', nT); }
+    for (const gv of GOV) { const P = gv.P; let A2 = 0; for (let k = 0; k < P.length; k++) { const a2 = P[k], b2 = P[(k + 1) % P.length]; A2 += a2[0] * b2[1] - b2[0] * a2[1]; } const sg2 = A2 > 0 ? 1 : -1; /* 11-21 수정구청 둘레 조경수(맨흙이던 곳) */
+      for (let k = 0; k < 60; k++) { const e = (rand() * P.length) | 0, a2 = P[e], b2 = P[(e + 1) % P.length], L = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]); if (L < 6) continue; const t = rand(), o = 7 + rand() * 10, nx = (b2[1] - a2[1]) / L * sg2, nz = -(b2[0] - a2[0]) / L * sg2, x = a2[0] + (b2[0] - a2[0]) * t + nx * o, z = a2[1] + (b2[1] - a2[1]) * t + nz * o;
+        if (occAt(x, z) || occAt(x + 2, z) || occAt(x - 2, z) || occAt(x, z + 2) || occAt(x, z - 2)) continue; extraTrees.push([x, heightAt(x, z) - .3, z, 1.8 + rand() * 1.3, 3]); } }
     /* 단지 이름표(OSM 주거단지 이름) */
     const labs = []; for (const l of GEO.env.land || []) { if (l.k !== 'residential' || !l.n || !/아파트|단지|자이|푸르지오|포레스티아|위브|센트리빌|아이파크|힐스테이트|래미안|편한세상|캐슬|호반|더샵|주공|타운/.test(l.n) || /빌라|연립|빌리지/.test(l.n)) continue;
       let A = 0, x = 0, z = 0; for (let k = 0; k < l.p.length; k++) { const a = l.p[k], b = l.p[(k + 1) % l.p.length], c2 = a[0] * b[1] - b[0] * a[1]; A += c2; x += (a[0] + b[0]) * c2; z += (a[1] + b[1]) * c2; }
