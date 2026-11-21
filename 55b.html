@@ -2168,7 +2168,10 @@ function kitchenPropsB() {
   // ② 모서리: 머스터드 화병 + 고사리, 앞쪽 흰 레트로 토스터
   { at(lathe([[0, 0], [.055, 0], [.075, .05], [.08, .12], [.06, .19], [.04, .23], [.045, .25], [0, .25]], 32), std(0xc9a13b, .35), .3, T, 5.36); fernPlant(g, WX(.3), T + .24, WZ(5.36), .9);
     const tw = std(0xf3f1ec, .3); at(RB(.27, .17, .15, .035, 3), tw, .52, T + .085, 5.62).rotation.y = Math.PI / 2;
-    for (const dz of [-.035, .035]) at(BX(.2, .004, .025), std(0x2a2b2d, .6), .52, T + .171, 5.62 + dz).rotation.y = Math.PI / 2;
+    for (const dx of [-.035, .035]) at(BX(.2, .004, .025), std(0x2a2b2d, .6), .52 + dx, T + .171, 5.62).rotation.y = Math.PI / 2; /* 11-22: 투입구 두 줄이 길이 방향으로 겹쳐 있던 것 → 옆으로 나란히(x ±3.5cm) */
+    { const bs = new THREE.Shape(), w = .045, h = .085; bs.moveTo(-w, 0); bs.lineTo(w, 0); bs.lineTo(w, h * .72); bs.bezierCurveTo(w + .012, h * .95, w * .25, h * 1.08, 0, h * .98); bs.bezierCurveTo(-w * .25, h * 1.08, -w - .012, h * .95, -w, h * .72); bs.closePath(); /* 11-22 주방 소품: 투입구마다 꽂힌 식빵 한 장씩(윗부분 둥근 빵 모양, 노릇한 색) */
+      const bg = new THREE.ExtrudeGeometry(bs, { depth: .01, bevelEnabled: true, bevelThickness: .002, bevelSize: .003, bevelSegments: 1, curveSegments: 8 }); bg.translate(0, 0, -.005); const crumb = std(0xd6ab6c, .95);
+      for (const [dx, tl] of [[-.035, .03], [.035, -.02]]) { const b = at(bg, crumb, .52 + dx, T + .105, 5.62 + tl * .3); b.rotation.y = Math.PI / 2; } }
     at(BX(.015, .03, .02), M.chrome, .52 + .076, T + .12, 5.62); at(CY(.012, .012, .015, 12), M.chrome, .52 + .077, T + .06, 5.67).rotation.z = Math.PI / 2; }
   /* VR: 토스터 아래 둥근 라탄 매트 + 유리 물병 + 유리컵 2 + 컵에 꽂은 주황 실리콘 주걱 */
   { const rc = mkCanvas(64, 64), rx = rc.getContext('2d'); rx.fillStyle = '#c8a46c'; rx.fillRect(0, 0, 64, 64); rx.strokeStyle = 'rgba(90,60,25,.35)'; rx.lineWidth = 1.5; for (let r = 4; r < 46; r += 4) { rx.beginPath(); rx.arc(32, 32, r, 0, 7); rx.stroke(); }
