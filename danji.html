@@ -331,6 +331,31 @@ function synthPlanned() {
     for (const [A, B2, T0, T1] of [[[625.3, -470], [604.9, -272.2], 20, 192], [[604.9, -272.2], [590.4, -123.8], 2, 146], [[378.9, 95.4], [526.5, -25], 2, 104]]) { /* + 수정구청 북쪽 수정로 남동쪽(수정로296번길과 사이, 해맑은어린이집·BBQ 등) */ const L = Math.hypot(B2[0] - A[0], B2[1] - A[1]), u = [(B2[0] - A[0]) / L, (B2[1] - A[1]) / L], nE = [-u[1], u[0]][0] > 0 ? [-u[1], u[0]] : [u[1], -u[0]], W = (t, s) => [A[0] + u[0] * t + nE[0] * s, A[1] + u[1] * t + nE[1] * s];
       for (let t = T0; t < T1 - 6; k++) { const w = Math.min(WS[k % WS.length], T1 - t), lv = LV[k % LV.length]; let sMax = 12.5 + 15; for (let tt = t; tt <= t + w; tt += 2) for (let s2 = 12.5; s2 < sMax; s2 += .5) { const q = W(tt, s2); if (hit(q[0], q[1])) { sMax = s2; break; } }
         const s1 = sMax - 1.5; if (s1 - 12.5 >= 6) { push(2, lv, lv * 3.4 + .6, [W(t, 12.5), W(t + w, 12.5), W(t + w, s1), W(t, s1)]); n++; } t += w + 3; } } }
+  if (!LOW) { /* 11-21 스카이뷰(공원로 남쪽 신흥3동 ~ 신흥역 일대): OSM에 건물 윤곽이 통째로 빠져 골목만 있던 빈 동네 — 골목 양옆으로 빌라 필지(전면 9~14m·깊이 11~15m·3~5층) 합성. 100m 칸에 OSM 건물이 거의 없고(≤3) 길이 촘촘한(≥5점) 곳만, 고층(10층+) 70m 안·우리 단지 60m 안·학교·공원·주차장 등 용도지(주거지 제외)·길·기존 건물 자리는 뺌. 휴대폰은 삼각형 예산 때문에 생략 */
+    const X0 = -100, Z0 = 450, GW = 1300, GH = 900, cv = cnv(GW, GH), g = cv.getContext('2d', { willReadFrequently: true }); g.fillStyle = '#000'; g.strokeStyle = '#000'; g.lineCap = 'round'; g.lineJoin = 'round';
+    const path = P => { g.beginPath(); P.forEach((p, k) => { const x = p[0] - X0, z = p[1] - Z0; k ? g.lineTo(x, z) : g.moveTo(x, z); }); };
+    const inB = p => p[0] > X0 - 30 && p[0] < X0 + GW + 30 && p[1] > Z0 - 30 && p[1] < Z0 + GH + 30;
+    let j = 0; g.lineWidth = 3; while (j < B.length) { const np = B[j + 4]; j += 5; const P = []; for (let k = 0; k < np; k++) { P.push([B[j] * .2, B[j + 1] * .2]); j += 2; } if (np >= 3 && P.some(inB)) { path(P); g.closePath(); g.fill(); g.stroke(); } }
+    for (const l of [...(GEO.env.land || []), ...(GEO.env.green || [])]) if (l.p && l.p.length > 2 && l.k !== 'residential' && l.p.some(inB)) { path(l.p); g.closePath(); g.fill(); }
+    const RD = (GEO.env.roads || []).filter(r => r.t !== 1 && !/^(footway|path|steps|track|cycleway|pedestrian)$/.test(r.k) && r.p.some(inB));
+    for (const r of RD) { g.lineWidth = r.w + 1.2; path(r.p); g.stroke(); }
+    const img = g.getImageData(0, 0, GW, GH).data, occ = new Uint8Array(GW * GH); for (let k = 0; k < occ.length; k++) occ[k] = img[k * 4 + 3] > 40 ? 1 : 0; cv.width = cv.height = 1;
+    const free = (x, z) => { const a2 = Math.floor(x - X0), b2 = Math.floor(z - Z0); return a2 >= 0 && b2 >= 0 && a2 < GW && b2 < GH && !occ[b2 * GW + a2]; };
+    const cB = new Map(), cR = new Map(), ck = (x, z) => Math.floor(x / 100) * 10000 + Math.floor(z / 100);
+    for (const c2 of cents) { const k = ck(c2[0], c2[1]); cB.set(k, (cB.get(k) || 0) + 1); }
+    for (const r of RD) for (const p of r.p) { const k = ck(p[0], p[1]); cR.set(k, (cR.get(k) || 0) + 1); }
+    const TALL = cents.filter(c2 => c2[3] >= 10), gapAt = (x, z) => (cB.get(ck(x, z)) || 0) <= 3 && (cR.get(ck(x, z)) || 0) >= 5 && polyDist(SITE, x, z) > 60 && !TALL.some(c2 => Math.abs(c2[0] - x) < 70 && Math.abs(c2[1] - z) < 70);
+    const FW = [12, 10, 13, 11, 14, 9, 12], DP = [13, 11, 15, 12, 14], LVs = [4, 3, 5, 4, 3, 4, 5, 3]; let q = 0, nV = 0, nG = 0, nNG = 0;
+    for (const r of RD) { if (r.w > 20) continue; for (let k = 0; k < r.p.length - 1; k++) { const a = r.p[k], b = r.p[k + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 8) continue; const ux = (b[0] - a[0]) / L, uz = (b[1] - a[1]) / L;
+      for (const sg of [1, -1]) { const nx = -uz * sg, nz = ux * sg, s0 = r.w / 2 + 1.8, W2 = (tt, ss) => [a[0] + ux * tt + nx * ss, a[1] + uz * tt + nz * ss];
+        for (let t = 1.5; t < L - 3;) { let fw = FW[q % FW.length], dp = DP[q % DP.length]; q++; if (t + 8 > L - 1) break; const C = W2(t + 4, s0 + 4); let ok = gapAt(C[0], C[1]); if (ok) nG++; else nNG++;
+          const fits = (f2, d2) => { if (t + f2 > L - 1) return false; for (let aa = 0; aa <= f2; aa += 1) for (let bb = 0; bb <= d2; bb += 1) { const p = W2(t + aa, s0 + bb); if (!free(p[0], p[1])) return false; } return true; };
+          if (ok) { ok = false; for (const [f2, d2] of [[fw, dp], [fw, 10], [fw, 8], [8, 10], [8, 8]]) if (fits(f2, d2)) { fw = f2; dp = d2; ok = true; break; } } /* 얕은 블록·모퉁이는 작은 필지로 */
+          if (!ok) { t += 2.5; continue; } const lv = LVs[q % LVs.length]; push(0, lv, lv * 2.8 + .5, [W2(t, s0), W2(t + fw, s0), W2(t + fw, s0 + dp), W2(t, s0 + dp)]); n++; nV++;
+          const markL = (s1, d1) => { for (let aa = -1; aa <= fw + 1; aa += .5) for (let bb = -1; bb <= d1 + 1; bb += .5) { const p = W2(t + aa, s1 + bb), a2 = Math.floor(p[0] - X0), b2 = Math.floor(p[1] - Z0); if (a2 >= 0 && b2 >= 0 && a2 < GW && b2 < GH) occ[b2 * GW + a2] = 1; } }; markL(s0, dp);
+          { const sB = s0 + dp + 2.6; for (const d2 of [12, 10, 8]) { let fb = true; for (let aa = 0; aa <= fw && fb; aa += 1) for (let bb = 0; bb <= d2; bb += 1) { const p = W2(t + aa, sB + bb); if (!free(p[0], p[1])) { fb = false; break; } } if (fb) { const lv2 = LVs[(q + 3) % LVs.length]; push(0, lv2, lv2 * 2.8 + .5, [W2(t, sB), W2(t + fw, sB), W2(t + fw, sB + d2), W2(t, sB + d2)]); n++; nV++; markL(sB, d2); break; } } } /* 블록 안쪽 뒷필지 한 줄 */
+          t += fw + 1.2; } } } }
+    let fr = 0; for (let k = 0; k < occ.length; k++) fr += occ[k]; console.log('infill villas', nV, 'gap', nG, 'nogap', nNG, 'roads', RD.length, 'occ%', (fr / occ.length * 100).toFixed(1)); }
   if (out.length) { const nb = new Int16Array(B.length + out.length); nb.set(B); nb.set(out, B.length); GEO.bld = nb; }
   console.log('planned/constructed apartments', n);
 }
