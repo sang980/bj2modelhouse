@@ -1995,7 +1995,11 @@ washer(4.33, '세탁기', 0xf4f4f2); washer(5.0, '건조기', 0xe6e1d9);
     mesh(new THREE.PlaneGeometry(.42, .68), std(0xffffff, .3, 0, { map: toTex(c) }), 0, 1.2, .1505, g, { cast: false }); }
   { const ga = mesh(CY(.026, .026, .012, 28), M.chrome, .13, .95, .156, g, { cast: false }); ga.rotation.x = Math.PI / 2; const gf = mesh(CY(.021, .021, .002, 28), std(0xffffff, .4), .13, .95, .163, g, { cast: false }); gf.rotation.x = Math.PI / 2; const nd = mesh(BX(.002, .016, .002), M.black, .132, .953, .165, g, { cast: false }); nd.rotation.z = -.8; } /* 압력계 */
   { const gas = std(0xe9c12c, .45, .1); mesh(CY(.012, .012, 1.1, 12), gas, -.2, 1.4, -.13, g); for (const y of [1.0, 1.85]) mesh(CY(.02, .02, .03, 12), gas, -.2, y, -.13, g, { cast: false }); const v = mesh(BX(.05, .016, .016), std(0xd8432c, .5), -.2, 1.25, -.1, g, { cast: false }); } /* 노란 가스관 + 중간밸브(빨강) */
-  mesh(CY(.04, .04, .4), std(0xb8b8b8, .4, .5), -.1, 1.75, -.08, g); }
+  { const wf = std(0xf2f2ef, .35), x = -.1, z = -.08, y0 = 1.55, y1 = 1.86, R = .06; /* 11-22 보일러 퀄리티업: 회색 원통 배기통 → 흰 이중 배기통 — 몸체 위 이음 테 + 고정 밴드 2 + 위에서 뒤 벽으로 꺾이는 엘보 + 벽 속으로 들어가는 짧은 관 + 벽 마감 링 */
+    mesh(CY(.052, .052, .02, 24), std(0xd9d9d6, .4), x, y0 + .01, z, g); mesh(CY(.045, .045, y1 - y0, 24), wf, x, (y0 + y1) / 2, z, g); for (const yy of [y0 + .08, y1 - .05]) mesh(CY(.048, .048, .016, 24), std(0xc9c9c6, .35, .4), x, yy, z, g, { cast: false });
+    { const el = mesh(new THREE.TorusGeometry(R, .045, 12, 20, Math.PI / 2), wf, x, y1, z - R, g); el.rotation.y = -Math.PI / 2; }
+    { const zw = -.196, ze = z - R; const hp = mesh(CY(.045, .045, ze - zw + .03, 24), wf, x, y1 + R, (ze + zw - .03) / 2, g); hp.rotation.x = Math.PI / 2; const fl = mesh(CY(.075, .075, .012, 28), std(0xe8e8e5, .4), x, y1 + R, zw + .003, g, { cast: false }); fl.rotation.x = Math.PI / 2; } }
+  }
 { const g = fixed; /* 2단 알루미늄 선반 + 세제통·섬유유연제·개어 둔 수건·화분 — 11-21 퀄리티업 */
   for (const x of [4.6, 5.22]) pbox(x - .012, x + .012, 1.28, 1.86, .11, .14, std(0xbfc3c6, .3, .7), g);
   for (const y of [1.32, 1.72]) pbox(4.58, 5.24, y, y + .02, .11, .36, std(0xe8e5df, .5), g);
