@@ -1764,6 +1764,7 @@ await phase('욕실과 발코니를 꾸미는 중', 61);
   ceilingPanel(6.47, 6.97, 5.84, 6.34, .8, 2.2);
 }
 await yieldUI();
+let _bLeaf = null, _bLeafM = null; /* 11-22: 욕실 유리병 꽃 잎 모양·재질 공유 */
 // ── 욕실 소품(VR) ──
 { const g = fixed;
   // 수건 무늬: 위는 흰 타월, 아래 30%는 회색 띠(이음선) + 잔결
@@ -1813,8 +1814,11 @@ await yieldUI();
     mesh(bottle, glass, WX(bx), by, WZ(bz), g, { cast: false }); mesh(CY(.034, .034, .07, 20), std(0xbfd4d8, .1, 0, { transparent: true, opacity: .35 }), WX(bx), by + .035, WZ(bz), g, { cast: false });
     for (let i = 0; i < 5; i++) { const a = i * 1.3, st = mesh(CY(.0025, .0025, .34, 6), M.plant, WX(bx) + Math.cos(a) * .03, by + .34, WZ(bz) + Math.sin(a) * .03, g, { cast: false }); st.rotation.set(Math.sin(a) * .3, 0, Math.cos(a) * .3);
       const tip = [WX(bx) + Math.cos(a) * .03 - Math.cos(a) * .3 * .17, by + .5, WZ(bz) + Math.sin(a) * .03 + Math.sin(a) * .3 * .17];
-      if (i < 2) { const f = mesh(new THREE.SphereGeometry(.028, 12, 10), std(0xd0582a, .85), tip[0], tip[1], tip[2], g, { cast: false }); f.scale.set(1, 1.3, 1); }
-      for (let k = 0; k < 4; k++) { const l = mesh(new THREE.SphereGeometry(.02, 8, 6), std(0x5f8a3a, .8), tip[0] + (rnd() - .5) * .06, tip[1] - .04 - k * .05, tip[2] + (rnd() - .5) * .06, g, { cast: false }); l.scale.set(.45, 1.2, .2); l.rotation.set(rnd(), rnd() * 6, rnd()); } } }
+      if (i < 2) { const fl = new THREE.Group(); fl.position.set(tip[0], tip[1] - .012, tip[2]); fl.rotation.set(Math.sin(a) * .3, a, Math.cos(a) * .3); g.add(fl); /* 11-22 소품 퀄리티업: 주황 공 → 겹꽃잎 주황 라넌큘러스(짙은 가운데 + 안쪽은 감싸고 바깥은 벌어지는 오목한 꽃잎 세 겹) */
+        const pm = std(0xdf6a33, .62, 0, { side: THREE.DoubleSide }), up = new THREE.Vector3(0, 1, 0); mesh(new THREE.SphereGeometry(.009, 12, 8), std(0x9a3c1c, .6), 0, .012, 0, fl, { cast: false });
+        for (const [n, r, e, R, y] of [[5, .007, 1.3, .012, .012], [7, .013, 1.7, .016, .008], [9, .018, 2.1, .019, .003]]) for (let k = 0; k < n; k++) { const an = k / n * Math.PI * 2 + n * .4, d = new THREE.Vector3(Math.cos(an) * Math.sin(e), Math.cos(e), Math.sin(an) * Math.sin(e)), pt = mesh(new THREE.SphereGeometry(R, 10, 5, 0, Math.PI * 2, 0, 1.05), pm, Math.cos(an) * r, y, Math.sin(an) * r, fl, { cast: false }); pt.quaternion.setFromUnitVectors(up, d); pt.scale.set(1, .55, 1); } }
+      for (let k = 0; k < 4; k++) { const lf = _bLeaf || (_bLeaf = (() => { const s = new THREE.Shape(); s.moveTo(0, -.022); s.bezierCurveTo(.011, -.012, .011, .012, 0, .026); s.bezierCurveTo(-.011, .012, -.011, -.012, 0, -.022); const lg = new THREE.ShapeGeometry(s, 8), p = lg.attributes.position; for (let v = 0; v < p.count; v++) p.setZ(v, Math.abs(p.getX(v)) * .35 - p.getY(v) * p.getY(v) * 2); lg.computeVertexNormals(); return lg; })()); /* 잎: 납작한 공 → 가운데 접히고 끝이 처진 잎 모양(난수 호출 수 그대로) */
+        const l = mesh(lf, _bLeafM || (_bLeafM = std(0x5f8a3a, .7, 0, { side: THREE.DoubleSide })), tip[0] + (rnd() - .5) * .06, tip[1] - .04 - k * .05, tip[2] + (rnd() - .5) * .06, g, { cast: false }); l.rotation.set(rnd(), rnd() * 6, rnd()); } } }
   // 욕조 위 동쪽 벽 흰 샤워 선반 + 호박색 병 2
   pbox(6.74, 6.845, 1.12, 1.14, .62, 1.0, M.whiteGloss, g); pbox(6.735, 6.745, 1.12, 1.17, .62, 1.0, M.whiteGloss, g);
   amber(6.795, 1.14, .7); amber(6.795, 1.14, .79, .15);
