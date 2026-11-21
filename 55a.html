@@ -3690,30 +3690,44 @@ async function mergeStatic(parent) { // 8ms마다 양보 — 큰 묶음(고정 �
    방문 손잡이 쪽 벽 1.2m에 스위치 자동 배치(욕실은 문 밖), 콘센트 등은 방별 목록(PLATE_LIST).
    벽면이 정확히 그 자리에 있을 때만 붙임(허공·벽 속에 생기지 않게). 고정 메시라 아래 병합 단계에서 재질별로 합쳐짐 */
 const PLATE = (() => {
-  const draw = (kind, w, h) => { const c = mkCanvas(w, h), x = c.getContext('2d');
-    x.fillStyle = '#f3f2ee'; x.fillRect(0, 0, w, h); x.strokeStyle = 'rgba(0,0,0,.08)'; x.lineWidth = 2; x.strokeRect(1, 1, w - 2, h - 2);
-    const rocker = (cx, cy, rw, rh) => { x.fillStyle = 'rgba(0,0,0,.10)'; x.fillRect(cx - rw / 2 + 1.5, cy - rh / 2 + 2, rw, rh); x.fillStyle = '#fbfaf7'; x.fillRect(cx - rw / 2, cy - rh / 2, rw, rh); x.strokeStyle = 'rgba(0,0,0,.13)'; x.lineWidth = 1; x.strokeRect(cx - rw / 2 + .5, cy - rh / 2 + .5, rw - 1, rh - 1); x.strokeStyle = '#8f8f8b'; x.beginPath(); x.arc(cx + rw * .26, cy + rh * .14, 1.6, 0, 7); x.stroke(); };
-    const socket = (cx, cy, r) => { const g = x.createRadialGradient(cx, cy - r * .3, r * .2, cx, cy, r); g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#dcdad4'); x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill(); x.strokeStyle = 'rgba(0,0,0,.2)'; x.lineWidth = 1; x.stroke(); x.fillStyle = '#353535'; for (const s of [-1, 1]) { x.beginPath(); x.arc(cx + s * r * .42, cy, r * .13, 0, 7); x.fill(); } x.fillStyle = '#a5a5a1'; x.fillRect(cx - r * .12, cy - r * .95, r * .24, r * .2); x.fillRect(cx - r * .12, cy + r * .75, r * .24, r * .2); };
+  const draw = (kind, w, h) => { const c = mkCanvas(w, h), x = c.getContext('2d'), k = Math.min(w, h) / 64; /* 11-21 사용자: 스위치·온도조절기·월패드 퀄리티업 — 3배 해상도, 판 테두리 음영·빛 */
+    const rr = (a, b, cw, ch, r) => { x.beginPath(); if (x.roundRect) x.roundRect(a, b, cw, ch, r); else x.rect(a, b, cw, ch); }; /* 둥근 사각(구형 브라우저는 사각) */
+    { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#f9f8f5'); g.addColorStop(1, '#ebe9e4'); x.fillStyle = g; x.fillRect(0, 0, w, h); x.strokeStyle = 'rgba(0,0,0,.11)'; x.lineWidth = 2 * k; x.strokeRect(k, k, w - 2 * k, h - 2 * k); x.strokeStyle = 'rgba(255,255,255,.85)'; x.lineWidth = k; x.strokeRect(2.6 * k, 2.6 * k, w - 5.2 * k, h - 5.2 * k); }
+    const rocker = (cx, cy, rw, rh) => { x.fillStyle = 'rgba(0,0,0,.2)'; rr(cx - rw / 2 - k, cy - rh / 2 - k, rw + 2 * k, rh + 2 * k, 2 * k); x.fill(); x.fillStyle = '#fbfaf7'; rr(cx - rw / 2, cy - rh / 2, rw, rh, 1.5 * k); x.fill(); };
+    const socket = (cx, cy, r) => { x.fillStyle = 'rgba(0,0,0,.12)'; x.beginPath(); x.arc(cx + .6 * k, cy + 1.2 * k, r * 1.04, 0, 7); x.fill(); const g = x.createRadialGradient(cx - r * .2, cy - r * .35, r * .15, cx, cy, r); g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#d9d7d1'); x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill(); x.strokeStyle = 'rgba(0,0,0,.22)'; x.lineWidth = k; x.stroke();
+      x.fillStyle = '#c9c7c1'; x.beginPath(); x.arc(cx, cy, r * .78, 0, 7); x.fill(); x.fillStyle = '#efeee9'; x.beginPath(); x.arc(cx, cy, r * .74, 0, 7); x.fill(); x.fillStyle = '#2b2b2b'; for (const s of [-1, 1]) { x.beginPath(); x.arc(cx + s * r * .4, cy, r * .12, 0, 7); x.fill(); } x.fillStyle = '#a9a7a1'; x.fillRect(cx - r * .13, cy - r * .74, r * .26, r * .16); x.fillRect(cx - r * .13, cy + r * .58, r * .26, r * .16); };
     if (kind === 'sw1') rocker(w / 2, h / 2, w * .6, w * .6);
-    if (kind === 'sw3') for (let i = 0; i < 3; i++) rocker(w / 2, h * (.22 + i * .28), w * .62, h * .22); // 3구(세로로 3버튼)
+    if (kind === 'sw3') for (let i = 0; i < 3; i++) rocker(w / 2, h * (.22 + i * .28), w * .62, h * .22); /* 3구(세로로 3버튼) */
     if (kind === 'sw2') { rocker(w * .3, h / 2, w * .36, w * .62); rocker(w * .7, h / 2, w * .36, w * .62); }
     if (kind === 'out2') { socket(w / 2, h * .31, w * .31); socket(w / 2, h * .69, w * .31); }
-    if (kind === 'tv') { socket(w * .2, h / 2, h * .28); socket(w * .45, h / 2, h * .28); x.fillStyle = '#e4e2dc'; x.beginPath(); x.arc(w * .68, h / 2, h * .16, 0, 7); x.fill(); x.fillStyle = '#555'; x.beginPath(); x.arc(w * .68, h / 2, h * .05, 0, 7); x.fill(); x.fillStyle = '#2e2e2e'; x.fillRect(w * .82, h * .38, w * .1, h * .24); }
-    const rr = (a, b, c, d, r) => { x.beginPath(); if (x.roundRect) x.roundRect(a, b, c, d, r); else x.rect(a, b, c, d); }; // 둥근 사각(구형 브라우저는 사각)
-    if (kind === 'outw') { // 욕실 방수 콘센트: 흰 판 + 위 경첩 반투명 덮개(안쪽 2구가 흐리게 비침)
-      socket(w / 2, h * .52, w * .3); x.fillStyle = 'rgba(236,238,240,.72)'; rr(w * .1, h * .12, w * .8, h * .78, 6); x.fill();
-      x.strokeStyle = 'rgba(0,0,0,.22)'; x.lineWidth = 1.5; x.stroke(); x.fillStyle = 'rgba(255,255,255,.7)'; x.fillRect(w * .16, h * .16, w * .1, h * .6);
+    if (kind === 'tv') { socket(w * .2, h / 2, h * .28); socket(w * .45, h / 2, h * .28); x.fillStyle = '#e4e2dc'; x.beginPath(); x.arc(w * .68, h / 2, h * .16, 0, 7); x.fill(); x.strokeStyle = 'rgba(0,0,0,.2)'; x.lineWidth = k; x.stroke(); x.fillStyle = '#555'; x.beginPath(); x.arc(w * .68, h / 2, h * .05, 0, 7); x.fill(); x.fillStyle = '#2e2e2e'; rr(w * .82, h * .38, w * .1, h * .24, k); x.fill(); }
+    if (kind === 'outw') { /* 욕실 방수 콘센트: 흰 판 + 위 경첩 반투명 덮개(안쪽 2구가 흐리게 비침) */
+      socket(w / 2, h * .52, w * .3); x.fillStyle = 'rgba(236,238,240,.72)'; rr(w * .1, h * .12, w * .8, h * .78, 6 * k); x.fill();
+      x.strokeStyle = 'rgba(0,0,0,.22)'; x.lineWidth = 1.5 * k; x.stroke(); x.fillStyle = 'rgba(255,255,255,.7)'; x.fillRect(w * .16, h * .16, w * .1, h * .6);
       x.fillStyle = '#c9c7c1'; x.fillRect(w * .2, h * .1, w * .6, h * .04); x.fillStyle = '#b8b6b0'; x.fillRect(w * .4, h * .86, w * .2, h * .05); }
-    if (kind === 'pad') { // 월패드: 검은 유리 + 화면(시계·아이콘) + 아래 파란 LED 줄
-      x.fillStyle = '#15171b'; x.fillRect(0, 0, w, h); x.fillStyle = '#0d1016'; x.fillRect(w * .05, h * .08, w * .68, h * .74);
-      x.fillStyle = '#3a6fb0'; x.fillRect(w * .1, h * .14, w * .26, h * .26); x.fillStyle = '#e8eef5'; x.font = `bold ${h * .16 | 0}px sans-serif`; x.textBaseline = 'middle'; x.fillText('10:30', w * .41, h * .26);
-      const ic = ['#5b4ea8', '#2f8f7a', '#c27a2c', '#7d8a99']; for (let i = 0; i < 4; i++) { x.fillStyle = ic[i]; rr(w * (.1 + i * .155), h * .52, w * .11, h * .2, 3); x.fill(); }
-      x.fillStyle = '#9fb3c8'; for (let i = 0; i < 3; i++) { x.beginPath(); x.arc(w * .86, h * (.2 + i * .22), h * .06, 0, 7); x.fill(); }
-      x.fillStyle = '#3b7bff'; x.fillRect(w * .2, h * .9, w * .6, h * .03); }
-    if (kind === 'thermo') { x.fillStyle = '#20252b'; x.fillRect(w * .15, h * .14, w * .7, h * .36); x.fillStyle = '#8fd0ff'; x.font = `bold ${h * .2 | 0}px sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('24', w / 2, h * .32); for (let i = 0; i < 3; i++) { x.fillStyle = '#e2e0da'; x.beginPath(); x.arc(w * (.28 + i * .22), h * .72, w * .07, 0, 7); x.fill(); x.strokeStyle = 'rgba(0,0,0,.15)'; x.lineWidth = 1; x.stroke(); } }
+    if (kind === 'pad') { /* 월패드: 검은 유리 + 은색 테 + 홈 화면(날짜·날씨·시계·조명/난방/가스/환기/승강기/방범) + 오른쪽 통화·문열림 버튼 + 아래 파란 LED */
+      x.fillStyle = '#121418'; x.fillRect(0, 0, w, h); { const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, 'rgba(255,255,255,.08)'); g.addColorStop(.45, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, w, h); }
+      x.strokeStyle = '#9aa0a6'; x.lineWidth = 3 * k; x.strokeRect(1.5 * k, 1.5 * k, w - 3 * k, h - 3 * k);
+      const sx = w * .045, sy = h * .08, sw = w * .74, sh = h * .78; { const g = x.createLinearGradient(0, sy, 0, sy + sh); g.addColorStop(0, '#1b4366'); g.addColorStop(1, '#0c2134'); x.fillStyle = g; x.fillRect(sx, sy, sw, sh); }
+      x.textBaseline = 'middle'; x.fillStyle = 'rgba(255,255,255,.86)'; x.font = `${sh * .075 | 0}px sans-serif`; x.textAlign = 'left'; x.fillText('11.22 (일)', sx + sw * .04, sy + sh * .085); x.textAlign = 'right'; x.fillText('맑음 12°', sx + sw * .96, sy + sh * .085);
+      x.fillStyle = '#ffffff'; x.font = `${sh * .25 | 0}px sans-serif`; x.textAlign = 'left'; x.fillText('10:30', sx + sw * .045, sy + sh * .31); x.fillStyle = '#ffcf5a'; x.beginPath(); x.arc(sx + sw * .84, sy + sh * .29, sh * .075, 0, 7); x.fill();
+      x.fillStyle = 'rgba(255,255,255,.8)'; x.font = `${sh * .06 | 0}px sans-serif`; x.textAlign = 'right'; x.fillText('실내 23.5° · 습도 45%', sx + sw * .96, sy + sh * .43);
+      const L = ['조명', '난방', '가스', '환기', '승강기', '방범'], C2 = ['#f2b441', '#e8734a', '#4fb3a4', '#5b9bd5', '#8c7ae6', '#d65b6c'];
+      for (let i = 0; i < 6; i++) { const col = i % 3, row = i / 3 | 0, tx = sx + sw * (.045 + col * .31), ty = sy + sh * (.5 + row * .245), tw = sw * .29, th = sh * .21; x.fillStyle = 'rgba(255,255,255,.13)'; rr(tx, ty, tw, th, 5 * k); x.fill(); x.fillStyle = C2[i]; x.beginPath(); x.arc(tx + th * .45, ty + th / 2, th * .25, 0, 7); x.fill(); x.fillStyle = '#eef4f9'; x.font = `${th * .3 | 0}px sans-serif`; x.textAlign = 'left'; x.fillText(L[i], tx + th * .85, ty + th / 2); }
+      for (let i = 0; i < 3; i++) { const cx = w * .885, cy = h * (.24 + i * .24), r = h * .072; x.strokeStyle = '#7c848c'; x.lineWidth = 2 * k; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.stroke(); x.fillStyle = ['#59c37a', '#5b9bd5', '#c9cfd6'][i]; x.beginPath(); x.arc(cx, cy, r * .34, 0, 7); x.fill(); }
+      x.fillStyle = '#3b7bff'; x.fillRect(w * .2, h * .925, w * .5, 2 * k); }
+    if (kind === 'thermo') { /* 온도조절기: 둥근 흰 몸체 + 백라이트 LCD(현재 온도·난방 불꽃) — 버튼 4개는 실제로 튀어나온 상자 */
+      x.fillStyle = '#1b2228'; rr(w * .12, h * .09, w * .76, h * .44, 4 * k); x.fill(); { const g = x.createLinearGradient(0, h * .12, 0, h * .5); g.addColorStop(0, '#a6e6ff'); g.addColorStop(1, '#6cc6ee'); x.fillStyle = g; rr(w * .17, h * .12, w * .66, h * .38, 3 * k); x.fill(); }
+      x.fillStyle = '#10324a'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = `bold ${h * .16 | 0}px sans-serif`; x.fillText('23.5', w * .47, h * .33); x.font = `${h * .055 | 0}px sans-serif`; x.fillText('°C', w * .75, h * .27); x.fillText('난방', w * .32, h * .18);
+      x.fillStyle = '#e8622f'; x.beginPath(); x.moveTo(w * .53, h * .215); x.quadraticCurveTo(w * .48, h * .19, w * .515, h * .155); x.quadraticCurveTo(w * .52, h * .18, w * .54, h * .175); x.quadraticCurveTo(w * .58, h * .19, w * .53, h * .215); x.fill(); /* 난방 불꽃: '난방' 글자 옆 */
+      x.fillStyle = 'rgba(0,0,0,.14)'; for (const [bx, by] of [[.32, .66], [.68, .66], [.32, .8], [.68, .8]]) { rr(w * bx - w * .13, h * by - h * .055, w * .26, h * .11, 2 * k); x.fill(); } }
     return c; };
   const mats = {}, sizes = { sw1: [.075, .12], sw2: [.075, .12], sw3: [.075, .12], out2: [.075, .12], outw: [.075, .12], tv: [.14, .075], thermo: [.08, .12], pad: [.24, .17] };
-  const mat = k => mats[k] || (mats[k] = k === 'pad' ? std(0xffffff, .12, .1, { map: toTex(draw(k, 192, 128)) }) : std(0xffffff, .38, 0, { map: toTex(draw(k, sizes[k][0] > sizes[k][1] ? 104 : 64, sizes[k][0] > sizes[k][1] ? 64 : 104)) }));
+  const ROCK = std(0xfbfaf6, .32, 0), ROCKERS = { sw1: [[0, 0, .041, .041]], sw2: [[-.015, 0, .024, .043], [.015, 0, .024, .043]], sw3: [[0, .0336, .043, .023], [0, 0, .043, .023], [0, -.0336, .043, .023]], thermo: [[-.0144, -.0192, .018, .011], [.0144, -.0192, .018, .011], [-.0144, -.036, .018, .011], [.0144, -.036, .018, .011]] }; /* 실제로 3.5mm 튀어나온 누름판·버튼(그림자·빛 받음) */
+  const mat = k => mats[k] || (mats[k] = (() => { const S = { pad: [768, 544], tv: [288, 154], thermo: [200, 300] }[k] || [192, 307], cv = draw(k, S[0], S[1]), t = toTex(cv);
+    if (k === 'pad' || k === 'thermo') { const e = mkCanvas(S[0], S[1]), ex = e.getContext('2d'), R = k === 'pad' ? [.045, .08, .74, .78] : [.17, .12, .66, .38]; ex.fillStyle = '#000'; ex.fillRect(0, 0, S[0], S[1]); ex.drawImage(cv, R[0] * S[0], R[1] * S[1], R[2] * S[0], R[3] * S[1], R[0] * S[0], R[1] * S[1], R[2] * S[0], R[3] * S[1]); /* 화면 부분만 은은하게 발광 */
+      return std(0xffffff, k === 'pad' ? .1 : .38, k === 'pad' ? .1 : 0, { map: t, emissiveMap: toTex(e), emissive: 0xffffff, emissiveIntensity: k === 'pad' ? .55 : .3 }); }
+    return std(0xffffff, .38, 0, { map: t }); })());
   const rc = new THREE.Raycaster(), tgt = [structure, fixed], o3 = new THREE.Vector3(), d3 = new THREE.Vector3();
   // 광선 검사 가속: 메시마다 월드 경계 상자를 한 번만 계산해 두고, 광선 구간 상자와 겹치는 것만 검사(결과는 같음)
   let wcache = null; const seg = new THREE.Box3(), e3 = new THREE.Vector3();
@@ -3732,7 +3746,8 @@ const PLATE = (() => {
     const n = h.face.normal.clone().transformDirection(h.object.matrixWorld); if (Math.abs(n.y) > .3 || n.dot(d3) > -.7) return null; // 정면으로 마주 보는 세로 벽면만
     const [w, hh] = sizes[kind], dep = kind === 'pad' ? .014 : .007; const m = mesh(BX(w, hh, dep), mat(kind), 0, 0, 0, fixed, { cast: false });
     m.position.copy(h.point).addScaledVector(n, dep / 2 + .0005); m.lookAt(m.position.clone().add(n));
-    for (let p = h.object.parent; p && p !== scene; p = p.parent) if ((p.name && tagGroups[p.name] === p) || (p.name && OG[p.name] === p)) { p.attach(m); break; } // 옵션 벽이면 함께 숨김
+    const RB = []; for (const [ox, oy, bw, bh] of ROCKERS[kind] || []) { const r = mesh(BX(bw, bh, .0035), ROCK, 0, 0, 0, fixed, { cast: false }); r.quaternion.copy(m.quaternion); r.position.copy(m.position).add(new THREE.Vector3(ox, oy, dep / 2 + .00175).applyQuaternion(m.quaternion)); RB.push(r); }
+    for (let p = h.object.parent; p && p !== scene; p = p.parent) if ((p.name && tagGroups[p.name] === p) || (p.name && OG[p.name] === p)) { p.attach(m); for (const r of RB) p.attach(r); break; } // 옵션 벽이면 함께 숨김
     m.updateMatrixWorld(true); if (wcache) addCache(m); (window.__plates || (window.__plates = [])).push({ kind, p: m.position.clone(), n: n.clone(), w, h: hh }); // 다음 판이 겹쳐 붙지 않게 검사 목록에 추가(+점검용 기록)
     return m;
   };
