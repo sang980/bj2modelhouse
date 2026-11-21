@@ -2228,7 +2228,9 @@ function kitchenProps(k) {
     const pg = s => toTex((() => { const c = mkCanvas(512, 640), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#fbfaf6'; x.fillRect(0, 0, 128, 160);
       if (s) { const cl = ['#d9482b', '#e9a23b', '#6aa84f', '#f4e3c3', '#b5462a']; for (let i = 0; i < 26; i++) { x.fillStyle = cl[i % 5]; x.beginPath(); x.arc(14 + rnd() * 100, 20 + rnd() * 120, 6 + rnd() * 12, 0, 7); x.fill(); } }
       else { x.fillStyle = '#c4462c'; x.fillRect(12, 14, 70, 8); x.fillStyle = '#555'; for (let i = 0; i < 14; i++) x.fillRect(12, 34 + i * 8, 90 - (i % 3) * 14, 2); x.fillStyle = '#e9a23b'; x.fillRect(84, 100, 30, 40); } return c; })());
-    for (const s of [0, 1]) { const p = mesh(BX(.15, .2, .004), std(0xffffff, .8, 0, { map: pg(s) }), (s ? .077 : -.077), .135, .012 + .006, st, { cast: false }); p.rotation.y = s ? -.12 : .12; }
+    for (const s of [0, 1]) { const pl = new THREE.PlaneGeometry(.15, .2, 14, 1), pa = pl.attributes.position; /* 11-21 주방 소품 퀄리티업: 요리책 — 평평한 판 두 장 → 제본(가운데)에서 들렸다 바깥으로 펴지는 종이 곡면 + 양 끝 종이 단면 */
+      for (let i = 0; i < pa.count; i++) { const t = s ? (pa.getX(i) + .075) / .15 : (.075 - pa.getX(i)) / .15; pa.setZ(i, .014 * Math.sin(Math.PI * Math.min(1, t * 1.5))); } pl.computeVertexNormals();
+      { const pm = std(0xffffff, .8, 0, { map: pg(s), side: THREE.DoubleSide }); pm.userData.lbl = 1; mesh(pl, pm, (s ? .076 : -.076), .135, .015, st, { cast: false }); } /* 반전된 주방 묶음에서 글자가 바로 읽히게(라벨 보정) */ mesh(BX(.004, .198, .007), std(0xf1ece0, .9), (s ? .153 : -.153), .135, .0125, st, { cast: false }); }
     mesh(BX(.31, .205, .006), std(0x3a6b4a, .6), 0, .133, .01, st); }
   /* VR 55C: 전기주전자·벽 레일·도구 없음 */
   // 끝쪽(VR 55C): 흰 머그컵 걸이(기둥 + 가지 3, 흰 머그 3) + 작은 흰 접시
