@@ -1463,10 +1463,17 @@ pbox(8.88, 8.94, 1.15, 1.19, 5.32, 7.7, M.black, fixed);
 pbox(8.94, 8.95, 1.12, 1.15, 5.37, 7.65, M.ledStrip, fixed, { cast: false });
 pbox(8.88, 8.9, 1.19, H, 5.32, 7.7, std(0xffffff, .8, 0, { map: toTex(grooveCanvas('#e9e6e0', 3)) }), fixed);
 ledRectWall(8.97, 1.6, 6.45, 2.5, .8, 1, 0, 0xffdcb0, .5, 1.6);
+let _pendBlk = null, _pendBrass = null;
 for (const z of [5.3, 7.6]) { const x = 9.17, y = 1.15; decorStart('침대 옆 펜던트');
-  mesh(CY(.003, .003, H - y - .2), M.black, WX(x), (H + y + .2) / 2, WZ(z), fixed, { cast: false });
-  mesh(CY(.035, .035, .2, 20), M.black, WX(x), y + .1, WZ(z), fixed);
-  mesh(CY(.03, .03, .004, 20), M.ledWarm, WX(x), y - .002, WZ(z), fixed, { cast: false });
+  /* 11-21 소품 퀄리티업: 무광 검정 금속 원통 갓(둥근 어깨) + 천장 받침·코드 고정구 + 안쪽 놋쇠 반사면 + 살짝 들어간 발광면 + 아래 테 */
+  const PB = _pendBlk || (_pendBlk = std(0x232326, .36, .2)), PBr = _pendBrass || (_pendBrass = new THREE.MeshStandardMaterial({ color: 0xc9a14a, roughness: .3, metalness: .9, side: THREE.BackSide }));
+  mesh(CY(.04, .04, .014, 28), PB, WX(x), H - .007, WZ(z), fixed, { cast: false }); mesh(CY(.006, .006, .02, 12), PB, WX(x), H - .024, WZ(z), fixed, { cast: false });
+  mesh(CY(.0018, .0018, H - y - .23), M.black, WX(x), (H - .034 + y + .2) / 2, WZ(z), fixed, { cast: false });
+  mesh(CY(.007, .009, .03, 14), PB, WX(x), y + .212, WZ(z), fixed, { cast: false });
+  mesh(new THREE.LatheGeometry([[.035, 0], [.035, .184], [.031, .196], [.02, .2], [0, .2]].map(([a, b]) => new THREE.Vector2(a, b)), 36), PB, WX(x), y, WZ(z), fixed);
+  mesh(new THREE.LatheGeometry([[.0325, .001], [.0325, .17]].map(([a, b]) => new THREE.Vector2(a, b)), 36), PBr, WX(x), y, WZ(z), fixed, { cast: false });
+  { const rim = mesh(new THREE.TorusGeometry(.0338, .0014, 6, 36), PB, WX(x), y, WZ(z), fixed, { cast: false }); rim.rotation.x = Math.PI / 2; }
+  mesh(CY(.0322, .0322, .003, 28), M.ledWarm, WX(x), y + .028, WZ(z), fixed, { cast: false });
   ledRect(x - .05, x + .05, z - .05, z + .05, y - .01, -1, 0xffd9a8, .6, 1.4); decorEnd(); }
 ceilingPanel(10.25, 10.85, 6.15, 6.75, 1.0, 2.8);
 curtainSet(9.3, 12.0, 9.55, 11.37, (() => { const m = M.curtainGrey.clone(); m.color.set(0xefe8dc); return m; })()); /* VR 55C: 크림색 커튼 */
