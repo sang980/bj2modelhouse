@@ -1932,6 +1932,13 @@ function washer(x, name, tint) { const dryer = /건조기/.test(name);
   else { const d = mesh(CY(.028, .028, .018, 28), M.chrome, .17, .85, .358, g, { cast: false }); d.rotation.x = Math.PI / 2; }
   return g; }
 washer(4.33, '세탁기', 0xf4f4f2); washer(5.0, '건조기', 0xe6e1d9);
+{ const g = fixed, bx = WX(5.02), bz = WZ(.6), by = .965, hh = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }; /* 11-22 세탁실 소품: 건조기 위 라탄 빨래 바구니(55B·56T와 같은 모양) + 볼록 쌓인 빨래 — 위 선반·늘어진 러너와 안 닿게 앞쪽에 */
+  const c = mkCanvas(256, 64), x = c.getContext('2d'); x.fillStyle = '#b38c5c'; x.fillRect(0, 0, 256, 64); for (let r = 0; r < 8; r++) for (let k = 0; k < 32; k++) { const v = hh(r, k); x.fillStyle = (r + k) % 2 ? 'rgba(255,230,190,' + (.18 + v * .12).toFixed(3) + ')' : 'rgba(70,45,20,' + (.18 + v * .12).toFixed(3) + ')'; x.fillRect(k * 8, r * 8, 8, 8); } x.strokeStyle = 'rgba(60,38,15,.45)'; x.lineWidth = 1; for (let r = 0; r <= 8; r++) { x.beginPath(); x.moveTo(0, r * 8); x.lineTo(256, r * 8); x.stroke(); }
+  const wv = std(0xffffff, .85, 0, { map: toTex(c, { rep: [3, 1] }), side: THREE.DoubleSide }), rim = std(0x8f6a3f, .7);
+  const bw = mesh(new THREE.CylinderGeometry(.23, .2, .24, 36, 1, true), wv, bx, by + .12, bz, g); bw.scale.set(1, 1, .72); mesh(CY(.2, .2, .012, 32), rim, bx, by + .006, bz, g).scale.set(1, 1, .72);
+  { const t = mesh(new THREE.TorusGeometry(.231, .013, 8, 48), rim, bx, by + .24, bz, g); t.rotation.x = Math.PI / 2; t.scale.set(1, .72, 1); }
+  for (const sd of [-1, 1]) { const hdl = mesh(RB(.012, .03, .085, .01, 2), std(0x2a2118, .9), bx + sd * .228, by + .19, bz, g, { cast: false }); hdl.rotation.z = sd * .14; }
+  for (const [dx, dy, dz, r, col] of [[-.08, .23, .01, .12, 0xb9bcc0], [.07, .24, .03, .11, 0xf2f1ec], [0, .26, -.04, .1, 0x2f3d5c], [.11, .22, -.05, .085, 0xd9cbb0], [-.12, .225, -.06, .08, 0xf2f1ec]]) { const cl = mesh(new THREE.SphereGeometry(r, 16, 10), std(col, .95, 0, { map: M.linen.map }), bx + dx, by + dy, bz + dz, g, { cast: false }); cl.scale.set(1, .42, .78); cl.rotation.y = dx * 9; } }
 { const g = piece('보일러', 3.72, .36, 0, { movable: false }); /* 서북쪽 코너: 받침장 위 보일러 — 11-21: 앞면 조작판(난방·온수 온도·표시등)·아래 덮개·통풍 틈 + 압력계 + 노란 가스관 */
   mesh(RB(.44, .82, .38, .01), M.whiteGloss, 0, .41, 0, g); mesh(BX(.14, .03, .01), M.black, .05, .62, .19, g);
   { const c = mkCanvas(220, 400), x = c.getContext('2d'); x.fillStyle = '#f7f7f5'; x.fillRect(0, 0, 220, 400); x.fillStyle = 'rgba(0,0,0,.14)'; x.fillRect(0, 96, 220, 2); x.fillRect(108, 98, 3, 302); x.fillStyle = 'rgba(255,255,255,.7)'; x.fillRect(0, 98, 220, 1); /* 11-21 받침장 앞면: 위 칸·양문 이음선 + 아래 통풍 루버 */
