@@ -2022,7 +2022,9 @@ function coffeeTable(x, z, rot) {
     const mg = new THREE.Group(); mg.position.set(.04, .392, .14); mg.rotation.y = .3; g.add(mg);
     for (const [sx, s] of [[-1, 0], [1, 1]]) { const pg = mesh(BX(.2, .004, .27), std(0xffffff, .85, 0, { map: page(s) }), sx * .1, .004, 0, mg, { cast: false }); pg.rotation.z = -sx * .05; } }
   { const tray = mesh(CY(.15, .15, .006, 40), std(0x1f2d52, .35), .02, .392, -.18, g, { cast: false }); tray.scale.set(1.35, 1, .8); }
-  mesh(CY(.04, .035, .1), std(0x2f4f86, .05, 0, { transparent: true, opacity: .8 }), -.08, .445, -.2, g);
+  { mesh(new THREE.LatheGeometry([[0, 0], [.033, 0], [.04, .03], [.036, .075], [.026, .098], [.029, .104], [.025, .104], [.022, .098], [.032, .075], [.036, .03], [.03, .006], [0, .006]].map(([u, v]) => new THREE.Vector2(u, v)), 32), std(0x2f4f86, .04, 0, { transparent: true, opacity: .78, side: THREE.DoubleSide }), -.08, .395, -.2, g); /* 11-21 소품: 두께 있는 파란 유리 화병 + 마른 팜파스 3줄기 */
+    const stem = std(0xb59a72, .8), plume = std(0xe9dcc3, .95), Y = new THREE.Vector3(0, 1, 0); for (let i = 0; i < 3; i++) { const a2 = i * 2.2 + .4, t = .16 + i * .07, L = .26 + i * .04, dir = new THREE.Vector3(Math.cos(a2) * Math.sin(t), Math.cos(t), Math.sin(a2) * Math.sin(t)), b0 = new THREE.Vector3(-.08, .42, -.2);
+      const s = mesh(CY(.0016, .0016, L, 5), stem, b0.x + dir.x * L / 2, b0.y + dir.y * L / 2, b0.z + dir.z * L / 2, g, { cast: false }); s.quaternion.setFromUnitVectors(Y, dir); const pl = mesh(new THREE.SphereGeometry(.014, 10, 8), plume, b0.x + dir.x * (L + .03), b0.y + dir.y * (L + .03), b0.z + dir.z * (L + .03), g, { cast: false }); pl.quaternion.setFromUnitVectors(Y, dir); pl.scale.set(.85, 3.4, .85); } }
   mesh(new THREE.SphereGeometry(.06, 24, 16), M.chrome, .12, .455, -.15, g);
   return g;
 }
