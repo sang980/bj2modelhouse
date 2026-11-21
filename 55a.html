@@ -835,6 +835,16 @@ let VELV = null; function velvetTex() { if (VELV) return VELV; const c = mkCanva
 function sqPipe(o, w, h, mat) { const P = [], E = 10, at = (u, v) => P.push(new THREE.Vector3(u * w / 2 * (1 - .05 * v * v), v * h / 2 * (1 - .05 * u * u), 0));
   for (let i = 0; i < E; i++) at(-1 + 2 * i / E, -1); for (let i = 0; i < E; i++) at(1, -1 + 2 * i / E); for (let i = 0; i < E; i++) at(1 - 2 * i / E, 1); for (let i = 0; i < E; i++) at(-1, 1 - 2 * i / E);
   mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P, true, 'catmullrom', .2), 120, .0055, 6, true), mat, 0, 0, 0, o, { cast: false }); }
+/* 11-21 설비 퀄리티업: 천장 매입 다운라이트 — 흰 테 + 은빛 다면 반사갓(동심원 결) + 밝은 렌즈, 6mm 테 옆면. 낮엔 렌즈만 은은히, 밤엔 반사갓까지 번짐 */
+function dlMaps() { const S = 256, C = S / 2, mk = (f) => { const c = mkCanvas(S, S), x = c.getContext('2d'); f(x); return toTex(c); };
+  const map = mk(x => { x.fillStyle = '#f4f4f2'; x.fillRect(0, 0, S, S); const g = x.createRadialGradient(C, C, C * .48, C, C, C * .8); g.addColorStop(0, '#8e9094'); g.addColorStop(1, '#d3d4d6'); x.fillStyle = g; x.beginPath(); x.arc(C, C, C * .8, 0, 7); x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.28)'; x.lineWidth = 1; for (let i = 0; i < 7; i++) { x.beginPath(); x.arc(C, C, C * (.5 + i * .044), 0, 7); x.stroke(); }
+    x.strokeStyle = '#b4b5b6'; x.lineWidth = 2; x.beginPath(); x.arc(C, C, C * .8, 0, 7); x.stroke(); x.fillStyle = '#ffffff'; x.beginPath(); x.arc(C, C, C * .48, 0, 7); x.fill(); });
+  const em = mk(x => { x.fillStyle = '#000'; x.fillRect(0, 0, S, S); const g = x.createRadialGradient(C, C, C * .46, C, C, C * .8); g.addColorStop(0, '#a0a0a0'); g.addColorStop(1, '#202020'); x.fillStyle = g; x.beginPath(); x.arc(C, C, C * .8, 0, 7); x.fill(); x.fillStyle = '#fff'; x.beginPath(); x.arc(C, C, C * .48, 0, 7); x.fill(); });
+  return [map, em]; }
+function dlFix(x, z, r) { if (!M.downlight.map) { const [mp, em] = dlMaps(); M.downlight.map = mp; M.downlight.emissiveMap = em; M.downlight.needsUpdate = true; }
+  mesh(new THREE.CylinderGeometry(r, r, .006, 32, 1, true), M.white, x, H - .003, z, ceilingGroup, { cast: false, recv: false });
+  const d = mesh(new THREE.CircleGeometry(r, 32), M.downlight, x, H - .006, z, ceilingGroup, { cast: false, recv: false }); d.rotation.x = Math.PI / 2; return d; }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -1265,11 +1275,11 @@ function updateLightPool(dt, pos, instant) {
 }
 const roomLights = lampSpots.map(([x, z]) => {
   const p = new THREE.PointLight(0xffdcb0, 0, 7, 2); p.position.set(WX(x), H - .25, WZ(z)); scene.add(p);
-  const d = mesh(new THREE.CircleGeometry(.065, 24), M.downlight, WX(x), H - .003, WZ(z), ceilingGroup, { cast: false, recv: false }); d.rotation.x = Math.PI / 2;
+  dlFix(WX(x), WZ(z), .065);
   return p;
 });
 for (const [x, z] of [[5.6, 5.4], [5.6, 7.8], /* (4.9, 3.4)는 벽에 반쯤 묻혀 뺌 */ [9.4, 3.0], [.95, 3.6], [11.2, 3.3], [9.5, 7.3], [11.6, 7.3], [7.0, 1.0]]) {
-  const d = mesh(new THREE.CircleGeometry(.05, 20), M.downlight, WX(x), H - .003, WZ(z), ceilingGroup, { cast: false, recv: false }); d.rotation.x = Math.PI / 2;
+  dlFix(WX(x), WZ(z), .05);
 }
 
 /* ───────── fixed interiors ───────── */
