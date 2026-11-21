@@ -2464,7 +2464,12 @@ function flutedPedestal(x, z, withLamp) { const g = piece('사이드 테이블',
       const st = mesh(CY(.004, .005, h, 8), stemM, .04 + dx / 2, .7 + h / 2, -.02 + dz / 2, g, { cast: false }); st.rotation.set(Math.cos(a) * tilt, 0, -Math.sin(a) * tilt);
       const fl = mesh(callaG, white, .04 + dx, .7 + h - .01, -.02 + dz, g, { cast: false }); fl.rotation.set(Math.cos(a) * (tilt + .45), a, -Math.sin(a) * (tilt + .45));
       mesh(CY(.003, .003, .045, 6), pist, .04 + dx * 1.05, .7 + h + .03, -.02 + dz * 1.05, g, { cast: false }); }
-    mesh(CY(.03, .03, .07, 20), std(0x2a2522, .15, .2, { transparent: true, opacity: .85 }), -.1, .585, .07, g); mesh(CY(.026, .026, .004, 20), std(0xf3efe6, .8), -.1, .6, .07, g); }
+    { const cx = -.1, cz = .07, y0 = .55, L = (pts, n) => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), n); /* 11-22 소품 퀄리티업: 검은 유리 캔들 — 막힌 원통 → 두꺼운 바닥·얇은 벽의 속 빈 연기색 유리잔(입구 둥근 테) + 안쪽 크림 왁스(가운데 녹아 오목) + 그을린 심지 + 앞면 크림 라벨, 옆에 놋쇠 뚜껑 */
+      mesh(L([[0, 0], [.029, 0], [.0305, .003], [.0305, .074], [.029, .076], [.0275, .074], [.0275, .009], [0, .009]], 32), std(0x2a2522, .08, .1, { transparent: true, opacity: .8 }), cx, y0, cz, g);
+      mesh(L([[0, 0], [.027, 0], [.027, .044], [.0245, .0455], [.012, .0428], [0, .0418]], 28), std(0xf1eadc, .65), cx, y0 + .009, cz, g, { cast: false }); mesh(CY(.0011, .0011, .011, 6), std(0x1a1715, .8), cx, y0 + .056, cz, g, { cast: false }).rotation.z = .18;
+      const c = mkCanvas(256, 112), x = c.getContext('2d'); x.fillStyle = '#efe7d6'; x.fillRect(0, 0, 256, 112); x.strokeStyle = '#3a332c'; x.lineWidth = 2; x.strokeRect(10, 10, 236, 92); x.fillStyle = '#2b2622'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = 'bold 40px serif'; x.fillText('NOIR', 128, 46); x.font = '18px serif'; x.fillText('fig & cedar', 128, 80);
+      const lb = mesh(new THREE.CylinderGeometry(.031, .031, .03, 24, 1, true, -.75, 1.5), std(0xffffff, .8, 0, { map: toTex(c) }), cx, y0 + .036, cz, g, { cast: false }); lb.rotation.y = Math.PI / 2;
+      const brass = std(0xb8955a, .32, .85); mesh(L([[0, 0], [.0322, 0], [.0322, .0055], [.0305, .0075], [.012, .0082], [0, .0082]], 32), brass, -.13, y0, -.035, g, { cast: false }); mesh(L([[0, 0], [.006, 0], [.0085, .003], [.0075, .006], [0, .0065]], 16), brass, -.13, y0 + .0082, -.035, g, { cast: false }); } }
   return g; }
 flutedPedestal(6.16, 8.42, true);
 flutedPedestal(6.16, 10.78, false);
