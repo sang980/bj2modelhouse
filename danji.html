@@ -994,7 +994,8 @@ function paintEnv(g, env, P, px) {
       if (kind !== 1 || lv < 8 || Math.hypot(cx, cz - 15) > 2600) continue; const r = P(cx, cz), rad = Math.max(26, Math.min(48, (x1 - x0) * 1.1 + 16)) * px; g.beginPath(); g.arc(r[0], r[1], rad, 0, 7); g.fill(); } }
   for (const l of env.land || []) if (l.k === 'pitch') fill(l.p, /여자중|초등/.test(l.n || '') || l.p.some(p => Math.hypot(p[0] - 30, p[1] - 170) < 120) ? '#bba98c' : '#86a066'); /* 학교 운동장은 흙 */
   fill([[-22, 201.5], [25, 183], [41, 198], [-6, 231], [-17, 223]], 'rgba(112,142,96,.95)'); /* 11-17 카카오 스카이뷰: 성남여중 운동장 남쪽은 나무 비탈(OSM 운동장 윤곽이 비탈까지 모래색으로 칠하던 것) */
-  for (const gr of env.green || []) if (gr.k === 'park') fill(gr.p, 'rgba(118,150,90,.85)');
+  { const FOR = (env.green || []).filter(q => q.k === 'forest' && polyDist(SITE, q.p.reduce((s2, v) => s2 + v[0], 0) / q.p.length, q.p.reduce((s2, v) => s2 + v[1], 0) / q.p.length) > 300); /* 단지 300m 안(영장산·근린공원 잔디색)은 사용자 요청대로 그대로 */ /* 11-21 카카오 스카이뷰: 희망대공원 등은 숲인데 공원 잔디색이 숲 수관 질감을 덮어 잔디밭처럼 보이던 것 → 공원 색은 숲 윤곽 밖에만 */
+    for (const gr of env.green || []) if (gr.k === 'park') { if (polyDist(gr.p, 650, 415) < 0) { const c0 = P(650, 415); g.beginPath(); g.arc(c0[0], c0[1], 33 * px, 0, 7); g.lineWidth = Math.max(1, 5 * px); g.strokeStyle = '#cfc8b8'; g.stroke(); continue; } /* 희망대공원: 잔디색 대신 숲(paintTerrain), 원형 광장 둘레길만 */ g.save(); path(gr.p); g.closePath(); g.clip(); g.beginPath(); g.rect(0, 0, g.canvas.width, g.canvas.height); for (const f of FOR) f.p.forEach((q, i) => { const r = P(q[0], q[1]); i ? g.lineTo(r[0], r[1]) : g.moveTo(r[0], r[1]); }); g.fillStyle = 'rgba(118,150,90,.85)'; g.fill('evenodd'); g.restore(); } }
   for (const w of env.water || []) if (!w.line) fill(w.p, '#5b7c88');
   for (const w of env.water || []) if (w.line) { line(w.p, w.w + 14, 'rgba(120,150,96,.8)'); line(w.p, w.w, '#5b7c88'); }
   for (const r of env.rail || []) { line(r, 9, '#8e8a84'); line(r, 3.2, '#5e5a55'); }
@@ -1019,6 +1020,7 @@ function paintTerrain(N, E) {
     const up = cnv(M, M), ug = up.getContext('2d'); ug.imageSmoothingEnabled = true; ug.drawImage(fc, 0, 0, M, M); const d = ug.getImageData(0, 0, M, M).data; oF = new Float32Array(M * M); for (let i = 0; i < M * M; i++) oF[i] = d[i * 4 + 3] / 255; }
   GEO.fmask = { M, E, a: new Float32Array(M * M) };
   /* 11-21 OSM에 숲 윤곽이 빠진 산(동쪽 남한산성 줄기 등 — 3km 보기에서 맨흙·회색으로 보이던 것): 건물(45m)·토지이용·도로(폭+30m)가 없는 경사지(7%↑)·높은 곳(해발 160m↑)은 숲 색. 나무 배치용 fmask는 그대로 */
+  const HOPE = ((GEO.env && GEO.env.green) || []).find(q => q.k === 'park' && polyDist(q.p, 650, 415) < 0); /* 11-21 카카오 스카이뷰: 희망대공원은 원형 광장·코트·도서관 빼고 언덕 전체가 숲(OSM 숲 윤곽은 가장자리 고리만) */
   let urb = null; if (GEO.bld) { const H = M >> 1, uc = cnv(H, H), ug2 = uc.getContext('2d'), S = H / (2 * E), pth = (P2, close) => { ug2.beginPath(); P2.forEach((p, k) => { const X = (p[0] + E) * S, Z = (p[1] + E) * S; k ? ug2.lineTo(X, Z) : ug2.moveTo(X, Z); }); if (close) ug2.closePath(); };
     ug2.fillStyle = ug2.strokeStyle = '#fff'; ug2.lineCap = ug2.lineJoin = 'round'; const B = GEO.bld; let bi = 0;
     while (bi < B.length) { const np = B[bi + 4]; bi += 5; let cx = 0, cz = 0; for (let k = 0; k < np; k++) { cx += B[bi] * .2; cz += B[bi + 1] * .2; bi += 2; } ug2.beginPath(); ug2.arc((cx / np + E) * S, (cz / np + E) * S, 45 * S, 0, 7); ug2.fill(); }
@@ -1033,7 +1035,7 @@ function paintTerrain(N, E) {
     const x = -E + (i + .5) / M * 2 * E, z = -E + (j + .5) / M * 2 * E, k = (j * M + i) * 4;
     let f = oF ? oF[j * M + i] * (polyDist(SITE, x, z) < 0 ? 0 : 1) : smooth(-12, 18, -polyDist(FOREST, x, z)), n = fbm(x / 260, z / 260), n2 = fbm(x / 1400 + 5, z / 1400);
     GEO.fmask.a[j * M + i] = f;
-    const hgt = heightAt(x, z), sl = urb ? Math.hypot(heightAt(x + 15, z) - heightAt(x - 15, z), heightAt(x, z + 15) - heightAt(x, z - 15)) / 30 : 0, fT = urb && polyDist(SITE, x, z) > 60 ? (1 - urb[j * M + i]) * Math.max(smooth(.07, .16, sl), smooth(25, 60, hgt)) : 0; f = Math.max(f, fT * .92); /* 색만 숲(위 fmask는 이미 기록) */
+    const hgt = heightAt(x, z), sl = urb ? Math.hypot(heightAt(x + 15, z) - heightAt(x - 15, z), heightAt(x, z + 15) - heightAt(x, z - 15)) / 30 : 0, fT = urb && polyDist(SITE, x, z) > 60 ? (1 - urb[j * M + i]) * Math.max(smooth(.07, .16, sl), smooth(25, 60, hgt)) : 0; f = Math.max(f, fT * .92, HOPE && x > 470 && x < 960 && z > 185 && z < 735 && polyDist(HOPE.p, x, z) < -4 ? .95 : 0); /* 색만 숲(위 fmask는 이미 기록) */
     let r = 166 + 26 * (n - .5), gg = 161 + 22 * (n - .5), b = 151 + 16 * (n - .5);
     const parky = oF ? 0 : smooth(.62, .7, n2) * (1 - f); r += (112 - r) * parky * .7; gg += (138 - gg) * parky * .7; b += (92 - b) * parky * .7;
     const alt = smooth(80, 330, hgt);
