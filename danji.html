@@ -308,7 +308,7 @@ function synthPlanned() {
     else if (/공동주택|엘리프|에듀포레/.test(nm)) rule = { f: [15, 25], L: 42, D: 14, su: 56, sv: 48 };
     else if (/주상복합/.test(nm)) rule = { f: [28, 36], tower: true };
     else if (/업무시설|상업시설|도시지원|일반상업|글로벌센터/.test(nm) && dist < 3000) rule = { f: [8, 16], L: 40, D: 26, su: 62, sv: 50, kind: 2 }; /* 복정1지구 업무·상업 용지 */
-    else if (!nm && dist < 1300) { let A = 0; for (let k = 0; k < P.length; k++) { const a = P[k], b = P[(k + 1) % P.length]; A += a[0] * b[1] - b[0] * a[1]; } if (Math.abs(A) / 2 > 30000) rule = { f: [18, 29], L: 42, D: 14, su: 56, sv: 48 }; }
+    else if (!nm && dist < 1300) { let A = 0; for (let k = 0; k < P.length; k++) { const a = P[k], b = P[(k + 1) % P.length]; A += a[0] * b[1] - b[0] * a[1]; } if (Math.abs(A) / 2 > 20000) rule = { f: [18, 29], L: 42, D: 14, su: 56, sv: 48 }; } /* 11-21 로드뷰(2026.08)·스카이뷰: 산성역 헤리스톤 서쪽 부지(수정로 동쪽, 2.1만㎡)도 고층 골조가 올라감 — 3만→2만 */
     if (!rule) continue;
     if (cents.filter(c => c[2] !== 5 && c[3] >= 5 && inPoly(P, c[0], c[1])).length >= 3) continue; /* 이미 실제 윤곽이 있으면 그대로 */
     let bl = 0, ux = 1, uz = 0; for (let k = 0; k < P.length; k++) { const a = P[k], b = P[(k + 1) % P.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L > bl) { bl = L; ux = (b[0] - a[0]) / L; uz = (b[1] - a[1]) / L; } }
