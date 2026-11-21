@@ -1538,7 +1538,7 @@ decorStart('백라이트 책장', true); { const g = new THREE.Group(); g.userDa
     for (const dz of [z0 + .45, z0 + .9, z0 + 1.35]) if (z < dz + .025 && z + bt > dz - .005) z = dz + .03; if (z + bt > z1 - .025) z = z1 - .03 - bt; /* 칸막이에 책이 박히지 않게(겹치면 z-fighting) */
     mesh(BOOK.geo(.22, bh, bt, '-x'), BOOK.mats[i % 7], WX(x0 + .16), y + bh / 2, WZ(z + bt / 2), g); } // 책등이 방 쪽(열린 쪽 x0, -x)
   { const blk = std(0x1a1a1c, .35), wht = std(0xf4f3ef, .35), X = 4.9, cz = [6.175, 6.625, 7.075, 7.515], ly = [.125, .545, .965, 1.385, 1.805]; /* VR: 빈 칸마다 소품 — 흰 공 조형·화분·눕힌 책·TOM FORD 책·액자·흰 공·펼친 그림책·검은 매듭·카드·검은 링·검은 화병 */
-    for (let i = 0; i < 3; i++) mesh(new THREE.SphereGeometry(.045 - i * .008, 18, 12), wht, WX(X + (i % 2) * .02), ly[4] + .045 + i * .07, WZ(cz[0] + (i - 1) * .02), g);
+    { let y = ly[4]; for (const [r, sy, c, dx, dz, ry] of [[.058, .42, 0xf2f0ea, 0, 0, .3], [.047, .5, 0xc9c6bf, .006, -.004, 1.1], [.038, .52, 0xeceae4, -.004, .005, 2.2], [.028, .55, 0x8f8b85, .003, -.002, .7], [.019, .62, 0xf4f2ed, -.002, .002, 1.6]]) { const h = r * sy; const pb = mesh(new THREE.SphereGeometry(r, 26, 16), std(c, .78), WX(X + dx), y + h * .92, WZ(cz[0] + dz), g); pb.scale.set(1, sy, .86); pb.rotation.y = ry; y += h * 1.8; } } /* 11-22 소품 퀄리티업: 흰 공 셋 → 납작한 조약돌 다섯 개를 쌓은 돌탑(흰·회색 번갈아, 크기 줄며 살짝 엇갈림, 무광) */
     mesh(CY(.045, .038, .08, 20), wht, WX(X), ly[4] + .04, WZ(cz[1]), g); grassTuft(g, WX(X), ly[4] + .08, WZ(cz[1]), 20, .12);
     for (let i = 0; i < 2; i++) { const b = mesh(BOOK.geo(.26, .035, .2, 'lie'), BOOK.mats[[0, 5][i]], WX(X - .01), ly[4] + .0175 + i * .036, WZ(cz[2]), g); b.rotation.y = i * .1; }
     for (let i = 0; i < 2; i++) mesh(BOOK.geo(.22, .28, .045, '-x'), BOOK.mats[7], WX(X), ly[1] + .14, WZ(cz[0] - .05 + i * .05), g);
@@ -1561,7 +1561,10 @@ decorStart('백라이트 책장', true); { const g = new THREE.Group(); g.userDa
       const pl = mesh(new THREE.PlaneGeometry(.124, .172), std(0xffffff, .7, 0, { map: art }), -.0062, 0, 0, c, { cast: false }); pl.rotation.y = -Math.PI / 2; }
     { const r = mesh(new THREE.TorusGeometry(.06, .022, 16, 40), blk, WX(X), ly[3] + .082, WZ(cz[1]), g); r.rotation.y = Math.PI / 2; }
     for (let i = 0; i < 3; i++) { const b = mesh(BOOK.geo(.24, .03, .18, 'lie'), BOOK.mats[[1, 5, 4][i]], WX(X - .01), ly[0] + .015 + i * .031, WZ(cz[1]), g); b.rotation.y = (i - 1) * .08; }
-    mesh(new THREE.LatheGeometry([[0, 0], [.04, 0], [.05, .05], [.035, .14], [.02, .18], [.025, .2], [0, .2]].map(([a, b]) => new THREE.Vector2(a, b)), 24), blk, WX(X), ly[0], WZ(cz[3]), g); }
+    { mesh(new THREE.LatheGeometry([[0, 0], [.04, 0], [.05, .05], [.035, .14], [.02, .18], [.025, .2], [.019, .2], [.014, .185], [0, .185]].map(([a, b]) => new THREE.Vector2(a, b)), 32), std(0x1a1a1c, .28, .1), WX(X), ly[0], WZ(cz[3]), g); /* 11-22: 막힌 검은 화병 → 입구가 열린 유광 검은 화병 + 마른 가지 셋(잔가지·둥근 마른 꽃봉오리) */
+      const tw = std(0x7a6249, .85), bud = std(0xc8b08a, .9); for (const [a, tl, ln] of [[0, .12, .2], [2.2, .22, .175], [4.1, .3, .155]]) { const br = new THREE.Group(); br.position.set(WX(X), ly[0] + .17, WZ(cz[3])); br.rotation.set(Math.sin(a) * tl, 0, Math.cos(a) * tl); g.add(br); mesh(CY(.0018, .0026, ln, 5), tw, 0, ln / 2, 0, br, { cast: false });
+        for (let k = 0; k < 3; k++) { const t = ln * (.45 + k * .18), sg = k % 2 ? 1 : -1, sp = new THREE.Group(); sp.position.set(0, t, 0); sp.rotation.set(sg * .2, k * 2.1, sg * .7); br.add(sp); mesh(CY(.0011, .0014, .05, 4), tw, 0, .025, 0, sp, { cast: false }); mesh(new THREE.SphereGeometry(.006, 8, 6), bud, 0, .052, 0, sp, { cast: false }); }
+        mesh(new THREE.SphereGeometry(.0075, 8, 6), bud, 0, ln + .004, 0, br, { cast: false }); } } }
   ledRectWall(4.7, 1.1, 6.85, 1.7, 1.9, -1, 0, 0xeaf3ff, .5, 1.3); } decorEnd();
 const alphaTable = piece('원형 테이블', 3.75, 7.15, 0);
 { const t = alphaTable;
