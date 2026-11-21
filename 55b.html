@@ -2549,7 +2549,7 @@ function nestTables(x, z) { // 원형 2단 네스팅 테이블(베이지 우드 
   mesh(CY(.42, .42, .035, 48), wood, -.15, .45, -.2, g); mesh(CY(.25, .28, .43, 40), base, -.15, .215, -.2, g);
   mesh(CY(.36, .36, .035, 48), wood, .3, .32, .35, g); mesh(CY(.22, .25, .3, 40), base, .3, .15, .35, g);
   tablePlant(g, -.2, .47, -.25);
-  for (let i = 0; i < 2; i++) mesh(BX(.22 - i * .03, .028, .28 - i * .03), [std(0x2f3134, .5), std(0xe8e2d6, .7)][i], .35, .352 + i * .028, .3, g).rotation.y = .3 - i * .15; /* 책 2권 */
+  for (let i = 0; i < 2; i++) mesh(BOOK.geo(.22 - i * .03, .028, .28 - i * .03, 'lie'), BOOK.mats[[7, 0][i]], .35, .352 + i * .028, .3, g).rotation.y = .3 - i * .15; /* 11-21: 단색 상자 → 책등 글자·표지·종이 단면 */ /* 책 2권 */
   { const v = mesh(new THREE.SphereGeometry(.07, 28, 18), std(0x1b1b1d, .35), .05, .535, -.02, g); v.scale.set(1, .82, 1); mesh(CY(.018, .022, .02, 16), std(0x1b1b1d, .35), .05, .59, -.02, g); } /* VR: 검정 둥근 도자 오브제 */
   return g;
 }
