@@ -362,7 +362,7 @@ function synthPlanned() {
     const inB = p => p[0] > X0 - 30 && p[0] < X0 + GW + 30 && p[1] > Z0 - 30 && p[1] < Z0 + GH + 30;
     for (const BB of [B, out]) { let j = 0; g.lineWidth = 3; while (j < BB.length) { const np = BB[j + 4]; j += 5; const P = []; for (let k = 0; k < np; k++) { P.push([BB[j] * .2, BB[j + 1] * .2]); j += 2; } if (np >= 3 && P.some(inB)) { path(P); g.closePath(); g.fill(); g.stroke(); } } } /* 합성 건물(out)도 */
     for (const l of [...(GEO.env.land || []), ...(GEO.env.green || [])]) if (l.p && l.p.length > 2 && (l.k !== 'residential' || l.n) && l.p.some(inB)) /* 이름 있는 주거단지(아파트)도 뺌 */ { path(l.p); g.closePath(); g.fill(); }
-    for (const P of NOVIL) if (P.some(inB)) { path(P); g.closePath(); g.fill(); }
+    for (const P of NOVIL) if (P.some(inB)) { path(P); g.closePath(); g.fill(); } /* 11-21 GAPOK: 희망로 동쪽 골프존파크 뒤(수정노인종합복지관·아이비유치원·영동빌라, 스카이뷰상 빌라 밀집) — OSM 도로 꼭짓점이 적어 '도시 판정(칸당 5점)'에 떨어져 통째로 빈 땅이던 곳 */
     const RD = (GEO.env.roads || []).filter(r => r.t !== 1 && !/^(footway|path|steps|track|cycleway|pedestrian)$/.test(r.k) && r.p.some(inB));
     for (const r of RD) { g.lineWidth = r.w + 1.2; path(r.p); g.stroke(); }
     const img = g.getImageData(0, 0, GW, GH).data, occ = new Uint8Array(GW * GH); for (let k = 0; k < occ.length; k++) occ[k] = img[k * 4 + 3] > 40 ? 1 : 0; cv.width = cv.height = 1;
@@ -370,7 +370,7 @@ function synthPlanned() {
     const cB = new Map(), cR = new Map(), ck = (x, z) => Math.floor(x / 100) * 10000 + Math.floor(z / 100);
     for (const c2 of cents) { const k = ck(c2[0], c2[1]); cB.set(k, (cB.get(k) || 0) + 1); }
     for (const r of RD) for (const p of r.p) { const k = ck(p[0], p[1]); cR.set(k, (cR.get(k) || 0) + 1); }
-    const TALL = cents.filter(c2 => c2[3] >= 10), gapAt = (x, z) => (cB.get(ck(x, z)) || 0) <= (X0 === -100 ? 40 : 20) && (cR.get(ck(x, z)) || 0) >= 5 && polyDist(SITE, x, z) > 60 && !TALL.some(c2 => Math.abs(c2[0] - x) < 70 && Math.abs(c2[1] - z) < 70);
+    const TALL = cents.filter(c2 => c2[3] >= 10), GAPOK = [[790, -10, 960, 125]], gapAt = (x, z) => (cB.get(ck(x, z)) || 0) <= (X0 === -100 ? 40 : 20) && ((cR.get(ck(x, z)) || 0) >= 5 || GAPOK.some(o => x > o[0] && x < o[2] && z > o[1] && z < o[3])) && polyDist(SITE, x, z) > 60 && !TALL.some(c2 => Math.abs(c2[0] - x) < 70 && Math.abs(c2[1] - z) < 70);
     const FW = [12, 10, 13, 11, 14, 9, 12], DP = [13, 11, 15, 12, 14], LVs = [4, 3, 5, 4, 3, 4, 5, 3]; let q = 0, nV = 0, nG = 0, nNG = 0;
     for (const r of RD) { if (r.w > 20) continue; for (let k = 0; k < r.p.length - 1; k++) { const a = r.p[k], b = r.p[k + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 8) continue; const ux = (b[0] - a[0]) / L, uz = (b[1] - a[1]) / L;
       for (const sg of [1, -1]) { const nx = -uz * sg, nz = ux * sg, s0 = r.w / 2 + 1.8, W2 = (tt, ss) => [a[0] + ux * tt + nx * ss, a[1] + uz * tt + nz * ss];
