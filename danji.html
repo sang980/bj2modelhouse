@@ -199,6 +199,7 @@ async function loadGeo() {
     const dm = new Uint16Array(await d.arrayBuffer()); GEO.N = 512; GEO.E = 5000; GEO.dem = new Float32Array(dm.length); for (let i = 0; i < dm.length; i++) GEO.dem[i] = dm[i] / 10 - 100;
     if (b.ok) GEO.bld = new Int16Array(await b.arrayBuffer());
     if (e.ok) GEO.env = await e.json();
+    if (GEO.env) (GEO.env.land || (GEO.env.land = [])).push({ k: 'parking', p: LIBLOT });
     if (GEO.env) for (const r of GEO.env.roads || []) if (r.k === 'residential' && r.w === 7 && r.p.length === 7 && Math.hypot(r.p[0][0] - 643, r.p[0][1] - 186) < 2 && Math.hypot(r.p[2][0] - 471, r.p[2][1] - 403) < 2) r.w = 12; /* 11-21 로드뷰 (437,556)·(556,270): 희망로533번길은 OSM 7m보다 넓은 4차로(≈12m) */
     if (GEO.env) for (const r of GEO.env.roads || []) if (r.k === 'residential' && r.w === 7 && r.p.length === 3 && Math.hypot(r.p[0][0] - 524, r.p[0][1] - 87) < 2 && Math.hypot(r.p[2][0] - 626, r.p[2][1] + 33) < 2) r.w = 14; /* 11-21 로드뷰 (576,12): 수정남로(자이 4xx 북서쪽)는 4차로(≈14m) */
     if (GEO.env) for (const r of GEO.env.roads || []) if (r.k === 'residential' && r.w === 7 && r.p.length === 2 && Math.hypot(r.p[0][0] - 643, r.p[0][1] - 186) < 2 && Math.hypot(r.p[1][0] - 818, r.p[1][1] - 342) < 2) r.w = 13; /* 11-21 로드뷰 (714,239): 수정로306번길(자이 3xx–희망대공원)은 4차로(≈13m) */
@@ -257,6 +258,7 @@ function levelAbs(x, z) {
 const levelAt = (x, z) => levelAbs(x, z) - Y0;
 /* 도면 GL − SRTM 차이(보정점, 월드 x,z,차이m): 서측 40m 도로·신흥초·북측 산자락 */
 /* 학교 부지(도면 GL·스카이뷰): 신흥초 운동장 GL 106.2~106.4, 성남여중 GL 100.4~100.7 — 평탄한 부지 */
+const LIBLOT = [[577, 523], [614.5, 523], [614.5, 551.5], [577, 551.5]]; /* 11-22 카카오 스카이뷰 1단계(경기성남교육도서관 642,541): 도서관 서쪽 길가 지상 주차장(숲이던 자리) — OSM 주차장 목록에 더해 회색 바닥·주차된 차는 기존 코드로, 숲 나무는 다 심은 뒤 걸러냄(난수 순서 그대로) */
 const TPC = [[-218, 796], [-156, 772], [-153, 748], [-145, 738], [-136, 731], [-117, 729], [-96, 730], [-80, 740], [-70, 753], [-54.5, 807.8], [-191.5, 860.8]]; /* 11-22 카카오 스카이뷰 1단계(−125,790): 의료원 동쪽 주상복합 단지(OSM 상업 용지) — 남쪽 경계는 큰길 차도에서 13m 안쪽 */
 const WPARK = { plaza: [[-793.5, 32.2], [-752.4, 29.2], [-753.6, 49.6], [-772.5, 58], [-797.4, 50.2]], play: [[-770.4, 60.1], [-759, 54.1], [-749.4, 63.1], [-759, 76.6], [-768.6, 70.6]], court: [[-757.5, 21.1], [-746.4, 1], [-730.5, 8.2], [-742.5, 28]], tent: [[-737.4, 16], [-729, 1.6], [-713.4, 12.1], [-723, 34.6]], arcC: [-794.1, 74.2], fount: [-795.6, 76.6] }; /* 11-22 카카오 스카이뷰(1단계, 태평동 서쪽 공원 −777,37): 벽돌 광장 · 반원 산책 트랙 + 둥근 분수 · 하늘색 놀이터 · 흙 코트 + 흰 막구조 지붕 코트 */
 const FOREST_PLAY = [[-461, 27], [-455, 21.5], [-446, 21], [-441.5, 27], [-442, 37], [-448, 43.5], [-455.5, 44], [-462.5, 39]]; /* 11-22 카카오 스카이뷰(1단계, 태평동 서쪽 숲 −450,33): 숲 속 어린이놀이터 — 하늘색 탄성 포장 + 둥근 광장 + 흰 곡선 그늘막 */
@@ -2366,6 +2368,7 @@ function buildTrees(planData, PW, PH, PK) {
     for (let d = 1.2; d < L; d += 2.8) for (const sd of [-1, 1]) for (const row of [0]) { if (rand() < .5) continue; /* 모형 VE17: 길 양옆 한 줄, 작은 나무·관목 */ const o = w + 1.6 + row + rand() * 1.2, x = P[0] + ux * d + nx * o * sd, z = P[1] + uz * d + nz * o * sd; if (inBld(x, z) || polyDist(SITE, x, z) > -2 || WALKS.some(([A, B, w2]) => pathDist([A, B], x, z) < w2 + .8) || FZ.some(([fx2, fz2]) => Math.hypot(x - fx2, z - fz2) < 6.5) || DA.some(([fx2, fz2]) => Math.hypot(x - fx2, z - fz2) < 3.2) || pathDist(NWRAMP, x, z) < 2.2 || polyDist(TEALE, x, z) < 1.5) continue;
       pts.push([x, levelAt(x, z), z, rand() < .65 ? .5 + rand() * .3 : .9 + rand() * .45, rand() < .15 ? 2 : 0]); } } /* 모형 VE16: 길가는 대부분 낮은 관목, 나무는 드문드문 */
   for (const t of extraTrees) pts.push(t);
+  for (let k = pts.length - 1; k >= 0; k--) if (polyDist(LIBLOT, pts[k][0], pts[k][2]) < 1.5) pts.splice(k, 1); /* 11-22 도서관 서쪽 주차장 자리 나무 빼기(숲·추가 나무 모두, 난수 호출 뒤라 다른 나무 그대로) */
   for (let i = pts.length - 1; i >= 0; i--) { const x = pts[i][0], z = pts[i][2]; if (Math.abs(x + 770) < 70 && Math.abs(z - 40) < 60 && (['plaza', 'play', 'court', 'tent'].some(k => polyDist(WPARK[k], x, z) < 1.5) || Math.abs(Math.hypot(x - WPARK.arcC[0], z - WPARK.arcC[1]) - 20) < 3.5 && z < WPARK.arcC[1] + 4 || Math.hypot(x - WPARK.fount[0], z - WPARK.fount[1]) < 7.5)) pts.splice(i, 1); } /* 서쪽 공원 광장·놀이터·코트·트랙 자리 나무 비움 */
   for (let i = pts.length - 1; i >= 0; i--) if (polyDist(FOREST_PLAY, pts[i][0], pts[i][2]) < 1.5 || pathDist([[-465.5, 35.5], [-463.5, 41], [-460.5, 45.5], [-456.5, 48]], pts[i][0], pts[i][2]) < 2.5) pts.splice(i, 1); /* 숲 속 놀이터·그늘막 자리 나무 비움(난수 순서 그대로) */
   if (!LOW) { const FP = [[-618.2, 9.8], [-596.5, 65], [-645, 65], [-645, -20], [-637, -25.2], [-629.1, -18.5], [-616.5, .7]]; let nf = 0; /* 11-22 카카오 스카이뷰 2단계(같은 틀, 태평동 −400,100): 서쪽 운동장 서쪽 비탈·동쪽 띠는 빽빽한 숲인데 OSM 숲 경계 밖이라 베이지 맨땅이던 것 — 숲 나무와 같은 크기·종류로 5m 격자 + hash 흔들림, 건물·길 자리 빼고(공용 rand 순서 그대로, 데스크톱) */
