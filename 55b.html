@@ -854,8 +854,8 @@ function linenOn(c) { const x = c.getContext('2d'), S = c.width; for (let k = 0;
    장식 블록을 decorStart/decorEnd로 감싸 그 사이 fixed·scene(면광원)·지정 묶음에 추가된 것을 모아 두었다가, 정적 병합 직전에
    움직일 수 있는 묶음으로 옮김(가구 목록 맨 뒤에 붙여 기존 저장 번호 유지). 옵션 묶음 안의 장식은 그 묶음 안에 두어 옵션 표시·숨김을 따름 */
 const DECOR = [], DECOR_G = []; let _dmark = null; /* DECOR_G: 만든 장식 묶음 — 정적 병합 대상(휴대폰 그리기 횟수 그대로) */
-function decorStart(name, solid = false, extra = [], join = false) { const ps = [fixed, scene, ...extra]; _dmark = { name, solid, join, ps, n: ps.map(p => p.children.length) }; }
-function decorEnd() { const m = _dmark; _dmark = null; if (!m) return; const objs = []; m.ps.forEach((p, i) => { for (const o of p.children.slice(m.n[i])) objs.push(o); });
+let _ddepth = 0; function decorStart(name, solid = false, extra = [], join = false) { if (_dmark) { _ddepth++; return; } const ps = [fixed, scene, ...extra]; _dmark = { name, solid, join, ps, n: ps.map(p => p.children.length) }; }
+function decorEnd() { if (_ddepth) { _ddepth--; return; } const m = _dmark; _dmark = null; if (!m) return; const objs = []; m.ps.forEach((p, i) => { for (const o of p.children.slice(m.n[i])) objs.push(o); });
   if (!objs.length) return; const e = m.join && DECOR.find(d => d.name === m.name && !d.direct); if (e) e.objs.push(...objs); else DECOR.push({ name: m.name, solid: m.solid, objs }); }
 function decorGroup(name, objs, solid = false) { if (_dmark) return; DECOR.push({ name, solid, objs: [].concat(objs) }); }
 function decorDirect(name, g, solid = false) { DECOR.push({ name, solid, direct: g }); } /* 이미 제자리 기준점이 있는 묶음(옵션이 위치를 정함)은 감싸지 않고 그대로 가구로 */
@@ -1306,9 +1306,9 @@ function curtain(x0, x1, zLine, h = 2.28, parent = fixed, mat = M.sheer, folds =
   return mesh(g, mat, WX((x0 + x1) / 2), h / 2 + .03, WZ(zLine), parent, { cast: mat !== M.sheer, recv: false });
 }
 function curtainSet(x0, x1, w0, w1) { // 창 양옆: 회색 암막 + 속커튼, 천장 커튼박스
-  curtain(x0, w0 + .15, 8.0, 2.27, fixed, M.sheer); curtain(w1 - .15, x1, 8.0, 2.27, fixed, M.sheer);
+  decorStart('커튼'); /* 11-21 사용자: 커튼·블라인드도 지울 수 있게(창마다 한 묶음, 커튼박스는 천장이라 그대로) */ curtain(x0, w0 + .15, 8.0, 2.27, fixed, M.sheer); curtain(w1 - .15, x1, 8.0, 2.27, fixed, M.sheer);
   curtain(x0, x0 + .42, 7.92, 2.27, fixed, M.curtainGrey, 9, .045); curtain(x1 - .42, x1, 7.92, 2.27, fixed, M.curtainGrey, 9, .045);
-  pbox(x0 - .02, x1 + .02, 2.3, H, 7.85, 8.11, M.ceil, fixed, { cast: false });
+  decorEnd(); pbox(x0 - .02, x1 + .02, 2.3, H, 7.85, 8.11, M.ceil, fixed, { cast: false });
 }
 function artCanvas2(kind) {
   const W = 512, Hh = 256, c = mkCanvas(W, Hh), x = c.getContext('2d');
@@ -1664,8 +1664,8 @@ await phase('거실을 꾸미는 중', 56);
   const cove = new THREE.RectAreaLight(0xffd8a6, 0, i1 - i0, j1 - j0); cove.position.set(WX((i0 + i1) / 2), H - t - .01, WZ((j0 + j1) / 2)); cove.lookAt(WX((i0 + i1) / 2), H + 1, WZ((j0 + j1) / 2)); scene.add(cove); window.__cove = cove;
   // 평판등은 아래 사진 기준 2구 평판등으로 대체
   // 창 커튼(속커튼 + 회색 암막) + 커튼박스
-  curtain(2.18, 2.78, 11.0, 2.27, fixed, M.sheer); curtain(5.14, 5.69, 11.0, 2.27, fixed, M.sheer);
-  curtain(2.18, 2.58, 10.92, 2.27, fixed, M.curtainGrey, 9, .045); curtain(5.29, 5.69, 10.92, 2.27, fixed, M.curtainGrey, 9, .045);
+  decorStart('커튼'); curtain(2.18, 2.78, 11.0, 2.27, fixed, M.sheer); curtain(5.14, 5.69, 11.0, 2.27, fixed, M.sheer);
+  curtain(2.18, 2.58, 10.92, 2.27, fixed, M.curtainGrey, 9, .045); curtain(5.29, 5.69, 10.92, 2.27, fixed, M.curtainGrey, 9, .045); decorEnd();
   pbox(2.16, 5.71, 2.3, H, 10.85, 11.14, M.ceil, fixed, { cast: false });
   // 시스템에어컨(창 위)
   pbox(3.3, 4.4, H - .035, H, 10.19, 10.59, M.white, ceilingGroup, { cast: false }); pbox(3.36, 4.34, H - .039, H - .035, 10.26, 10.33, std(0x202225, .6), ceilingGroup, { cast: false });
@@ -1848,7 +1848,7 @@ await phase('침실을 꾸미는 중', 66);
 // 침실2: VR의 브라운 로만셰이드(창 위쪽 절반) + 침대 쪽 초록 패브릭 ㄱ자 벽판(북쪽 벽 + 서쪽 벽 머리 쪽, 세로 채널)
 { const pleat = toTex((() => { const c = mkCanvas(16, 32), x = c.getContext('2d'), gr = x.createLinearGradient(0, 0, 0, 32); gr.addColorStop(0, '#8a7058'); gr.addColorStop(.25, '#c7ab8e'); gr.addColorStop(.75, '#b39579'); gr.addColorStop(1, '#7d654f'); x.fillStyle = gr; x.fillRect(0, 0, 16, 32); return c; })(), { rep: [1, 34] }); /* VR: 촘촘한 허니콤(셀룰러) 블라인드 주름 */
   const sh = std(0xffffff, .95, 0, { map: pleat });
-  pbox(1.31, 1.36, 1.7, 2.3, .45, 2.62, sh, fixed, { cast: false }); pbox(1.31, 1.375, 1.68, 1.7, .44, 2.63, std(0xd9cdbd, .6), fixed, { cast: false }); /* 아래 레일 */
+  decorStart('로만셰이드'); pbox(1.31, 1.36, 1.7, 2.3, .45, 2.62, sh, fixed, { cast: false }); pbox(1.31, 1.375, 1.68, 1.7, .44, 2.63, std(0xd9cdbd, .6), fixed, { cast: false }); decorEnd(); /* 아래 레일 */
   const gp = std(0x6f8a55, .95), gl = std(0x5c7647, .95);
   decorStart('초록 패브릭 벽판'); pbox(1.31, 3.6, 0, 1.0, .11, .13, gl, fixed); pbox(1.31, 1.33, 0, 1.0, .13, 1.2, gl, fixed); /* 바탕판 */
   { const nN = 14, cwN = (3.6 - 1.37) / nN, nW = 6, cwW = (1.2 - .18) / nW; /* 둥글게 부푼 세로 채널 쿠션 */
@@ -1860,7 +1860,7 @@ await phase('침실을 꾸미는 중', 66);
     mesh(RB(x1 - x0, .025, .19, .008, 2), ym, WX((x0 + x1) / 2), y + .0125, WZ(.205), fixed); const d = mesh(CY(.11, .11, .012, 40), ym, WX(dx), y - .02, WZ(.117), fixed); d.rotation.x = Math.PI / 2; } } decorEnd(); }
 // 알파룸(VR): 창 양옆 회색 암막 커튼(서쪽 벽, 천장까지) + 커튼박스, 남쪽 벽 타이포그래피 포스터
 { const grey = std(0x77746f, 1, 0, { map: M.curtainGrey.map }); grey.side = THREE.DoubleSide;
-  for (const [z0, z1] of [[2.8, 3.2], [4.21, 4.61]]) { const w = z1 - z0, c = curtain(0, w, 0, 2.3, fixed, grey, 8, .05); c.rotation.y = Math.PI / 2; c.position.set(WX(1.38), c.position.y, WZ((z0 + z1) / 2)); }
+  decorStart('커튼'); for (const [z0, z1] of [[2.8, 3.2], [4.21, 4.61]]) { const w = z1 - z0, c = curtain(0, w, 0, 2.3, fixed, grey, 8, .05); c.rotation.y = Math.PI / 2; c.position.set(WX(1.38), c.position.y, WZ((z0 + z1) / 2)); } decorEnd();
   pbox(1.31, 1.5, 2.3, H, 2.82, 4.68, M.ceil, fixed, { cast: false });
   const poster = toTex((() => { const c = mkCanvas(1280, 900), x = c.getContext('2d'); x.scale(2.5, 2.5); x.fillStyle = '#f7f7f5'; /* 2.5배 해상도 */ x.fillRect(0, 0, 512, 360); x.fillStyle = '#1b1b1b'; x.font = 'bold 46px sans-serif'; /* VR: 큰 흰 아크릴 판 타이포그래피 포스터(바우하우스 알파벳) */
     const L = ['abcdefghi', 'jklmnopqr', 'stuvwxyz']; L.forEach((t, i) => x.fillText(t, 26, 64 + i * 54));
@@ -1876,8 +1876,8 @@ await phase('침실을 꾸미는 중', 66);
   for (let z = 8.8; z < 10.6; z += .2) pbox(x + .06, x + .062, .45, 1.25, z - .002, z + .002, std(0xcfcac1, .9), g);
   pbox(x, x + .1, 1.25, 1.28, 8.6, 10.6, std(0xf2f1ee, .4), g); pbox(x + .02, x + .08, 1.245, 1.25, 8.65, 10.55, M.ledWarm, g, { cast: false });
   ledRectWall(x + .12, 1.5, 9.6, 1.9, .6, 1, 0, 0xffd9a8, .3, .9); decorEnd();
-  curtain(6.0, 6.55, 11.0, 2.27, fixed, M.sheer); curtain(8.25, 8.8, 11.0, 2.27, fixed, M.sheer);
-  curtain(6.0, 6.4, 10.92, 2.27, fixed, M.curtainGrey, 9, .045); curtain(8.4, 8.8, 10.92, 2.27, fixed, M.curtainGrey, 9, .045);
+  decorStart('커튼'); curtain(6.0, 6.55, 11.0, 2.27, fixed, M.sheer); curtain(8.25, 8.8, 11.0, 2.27, fixed, M.sheer);
+  curtain(6.0, 6.4, 10.92, 2.27, fixed, M.curtainGrey, 9, .045); curtain(8.4, 8.8, 10.92, 2.27, fixed, M.curtainGrey, 9, .045); decorEnd();
   pbox(5.98, 8.82, 2.3, H, 10.85, 11.14, M.ceil, fixed, { cast: false });
   ceilingPanel(7.2, 7.9, 9.0, 9.7, 1.0, 2.8);
 }
