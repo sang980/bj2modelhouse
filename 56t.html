@@ -847,6 +847,12 @@ let TVS_M = null; function tvScreenMat() { if (TVS_M) return TVS_M; const c = mk
 function tvScreen(parent, x, y, z, w, h) { const s = mesh(new THREE.PlaneGeometry(w, h), tvScreenMat(), x, y, z, parent, { cast: false }); s.rotation.y = -Math.PI / 2; mesh(new THREE.SphereGeometry(.003, 8, 6), new THREE.MeshStandardMaterial({ color: 0x300000, emissive: 0xff2a1a, emissiveIntensity: .9 }), x - .001, y - h / 2 - .006, z, parent, { cast: false }); return s; }
 /* 11-21 사용자: 침대 위 장식 퀄리티업 — 담요(러너) 와플 짜임: 기존 잡티 그림(전역 난수 사용 횟수 그대로) 위에 결정적 격자(홈 + 칸 밝은 면)를 덧그림 */
 function waffleOn(c, bump) { const x = c.getContext('2d'), S = c.width, n = 16, cs = S / n; for (let i = 0; i < n; i++) { x.fillStyle = bump ? 'rgba(0,0,0,.38)' : 'rgba(0,0,0,.11)'; x.fillRect(i * cs, 0, cs * .2, S); x.fillRect(0, i * cs, S, cs * .2); } x.fillStyle = bump ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.07)'; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) x.fillRect(i * cs + cs * .32, j * cs + cs * .32, cs * .5, cs * .5); return c; }
+/* 11-21 사용자: 주방 소품 퀄리티업 — 후드 터치 표시부(팬·바람 세기 막대·조명 아이콘, 발광) */
+let HD_M = null; function hoodDispMat() { if (HD_M) return HD_M; const c = mkCanvas(300, 90), x = c.getContext('2d'); x.fillStyle = '#0a0f18'; x.fillRect(0, 0, 300, 90); x.strokeStyle = '#6fb2ff'; x.fillStyle = '#6fb2ff'; x.lineWidth = 4;
+  x.beginPath(); x.arc(48, 45, 22, 0, 7); x.stroke(); for (let k = 0; k < 3; k++) { x.save(); x.translate(48, 45); x.rotate(k * Math.PI * 2 / 3); x.beginPath(); x.ellipse(0, -10, 6, 11, .5, 0, 7); x.fill(); x.restore(); }
+  for (let k = 0; k < 3; k++) { x.globalAlpha = k < 2 ? 1 : .25; x.fillRect(110 + k * 30, 62 - k * 14, 20, 14 + k * 14); } x.globalAlpha = 1;
+  x.beginPath(); x.arc(252, 40, 14, 0, 7); x.stroke(); x.fillRect(244, 58, 16, 6); for (let k = 0; k < 5; k++) { const a2 = -Math.PI + k * Math.PI / 4; x.beginPath(); x.moveTo(252 + Math.cos(a2) * 20, 40 + Math.sin(a2) * 20); x.lineTo(252 + Math.cos(a2) * 28, 40 + Math.sin(a2) * 28); x.stroke(); }
+  const t = toTex(c); return (HD_M = new THREE.MeshStandardMaterial({ color: 0xffffff, map: t, emissiveMap: t, emissive: 0xffffff, emissiveIntensity: .85, roughness: .15 })); }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -1623,7 +1629,7 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
     ring(hl, pts[0][0], pts[0][1], .1, std(0xc8402a, .3)); ring(hl, pts[1][0], pts[1][1], .08, ringM); ring(hl, pts[2][0], pts[2][1], .07, ringM);
     pbox(cx0, cx1, .9, .906, cz0, cz1, M.tv, ind);
     for (const [x, z, r] of pts) ring(ind, x, z, r, ringM);
-    const ss = std(0xc8cacc, .3, .85); kb(cx0 - .05, cx1 + .05, 1.36, 1.498, zb, zb + .29, ss); kb(cx0 - .05, cx1 + .05, 1.4, 1.498, zb + .29, zb + .53, ss); kb(cx0 - .05, cx1 + .05, 1.4, 1.498, zb + .53, zb + .56, std(0x111214, .12, .3)); } // 후드 윗면은 타일 윗면(1.5)보다 2mm 아래
+    const ss = std(0xc8cacc, .3, .85); kb(cx0 - .05, cx1 + .05, 1.36, 1.498, zb, zb + .29, ss); kb(cx0 - .05, cx1 + .05, 1.4, 1.498, zb + .29, zb + .53, ss); kb(cx0 - .05, cx1 + .05, 1.4, 1.498, zb + .53, zb + .56, std(0x111214, .12, .3)); mesh(new THREE.PlaneGeometry(.1, .03), hoodDispMat(), WX(cx1 - .06), 1.45, WZ(zb + .5606), fixed, { cast: false }); } /* 11-21 후드 터치 표시부 */ // 후드 윗면은 타일 윗면(1.5)보다 2mm 아래
   // 상부장(창 오른쪽) + 하부 간접등
   kb(5.86, 8.29, 1.5, 2.3, zb, zb + .35); kb(5.86, 8.29, 2.3, H, zb, zb + .39, M.white); // VR: 상부장이 창 위까지 벽 전체
   for (let x = 5.86 + .405; x < 8.25; x += .405) kb(x - .0015, x + .0015, 1.52, 2.28, zb + .35, zb + .354, seamMat); // 상부장 문 이음선(6짝)
