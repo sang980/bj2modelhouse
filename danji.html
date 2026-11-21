@@ -344,7 +344,7 @@ function synthPlanned() {
     const cB = new Map(), cR = new Map(), ck = (x, z) => Math.floor(x / 100) * 10000 + Math.floor(z / 100);
     for (const c2 of cents) { const k = ck(c2[0], c2[1]); cB.set(k, (cB.get(k) || 0) + 1); }
     for (const r of RD) for (const p of r.p) { const k = ck(p[0], p[1]); cR.set(k, (cR.get(k) || 0) + 1); }
-    const TALL = cents.filter(c2 => c2[3] >= 10), gapAt = (x, z) => (cB.get(ck(x, z)) || 0) <= 3 && (cR.get(ck(x, z)) || 0) >= 5 && polyDist(SITE, x, z) > 60 && !TALL.some(c2 => Math.abs(c2[0] - x) < 70 && Math.abs(c2[1] - z) < 70);
+    const TALL = cents.filter(c2 => c2[3] >= 10), gapAt = (x, z) => (cB.get(ck(x, z)) || 0) <= (X0 === -100 ? 25 : 3) && (cR.get(ck(x, z)) || 0) >= 5 && polyDist(SITE, x, z) > 60 && !TALL.some(c2 => Math.abs(c2[0] - x) < 70 && Math.abs(c2[1] - z) < 70);
     const FW = [12, 10, 13, 11, 14, 9, 12], DP = [13, 11, 15, 12, 14], LVs = [4, 3, 5, 4, 3, 4, 5, 3]; let q = 0, nV = 0, nG = 0, nNG = 0;
     for (const r of RD) { if (r.w > 20) continue; for (let k = 0; k < r.p.length - 1; k++) { const a = r.p[k], b = r.p[k + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 8) continue; const ux = (b[0] - a[0]) / L, uz = (b[1] - a[1]) / L;
       for (const sg of [1, -1]) { const nx = -uz * sg, nz = ux * sg, s0 = r.w / 2 + 1.8, W2 = (tt, ss) => [a[0] + ux * tt + nx * ss, a[1] + uz * tt + nz * ss];
