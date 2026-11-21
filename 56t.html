@@ -897,6 +897,10 @@ function dlMaps() { const S = 256, C = S / 2, mk = (f) => { const c = mkCanvas(S
 function dlFix(x, z, r) { if (!M.downlight.map) { const [mp, em] = dlMaps(); M.downlight.map = mp; M.downlight.emissiveMap = em; M.downlight.needsUpdate = true; }
   mesh(new THREE.CylinderGeometry(r, r, .006, 32, 1, true), M.white, x, H - .003, z, ceilingGroup, { cast: false, recv: false });
   const d = mesh(new THREE.CircleGeometry(r, 32), M.downlight, x, H - .006, z, ceilingGroup, { cast: false, recv: false }); d.rotation.x = Math.PI / 2; return d; }
+/* 11-21: 둥근 쿠션(pillowG) 솔기 파이핑 */
+function pipeOn(o, mat) { if (!o.geometry.boundingBox) o.geometry.computeBoundingBox(); const bb = o.geometry.boundingBox, w = bb.max.x - bb.min.x, hh = bb.max.y - bb.min.y, P = [];
+  for (let i = 0; i < 48; i++) { const a = i / 48 * Math.PI * 2, cx = Math.cos(a), sy = Math.sin(a); P.push(new THREE.Vector3(Math.sign(cx) * Math.pow(Math.abs(cx), .3) * w / 2 * .995, Math.sign(sy) * Math.pow(Math.abs(sy), .3) * hh / 2 * .995, 0)); }
+  mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P, true), 96, .0055, 6, true), mat, 0, 0, 0, o, { cast: false }); }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -2413,7 +2417,7 @@ const b2art = new THREE.Group(); fixed.add(b2art);
   const qm = std(0xffffff, .92, 0, { map: quilt, bumpMap: quilt, bumpScale: 2 }), rm = [], lyingPil = pillowG(.64, .19, .4);
   bed2.traverse(o => { if (!o.isMesh) return; if (o.material === M.linen && (o.geometry.type === 'BufferGeometry' || o.geometry.type === 'CylinderGeometry')) o.material = qm; else if (o.material === M.throwBlue || o.geometry === lyingPil) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
   const stripe = toTex((() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#f6f7f6'; x.fillRect(0, 0, 64, 64); x.fillStyle = '#6fb3d6'; for (let i = 0; i < 4; i++) x.fillRect(0, i * 16 + 3, 64, 8); return c; })());
-  const L = 1.95; for (const [px, pz, ry, w, h, m, y] of [[-.22, .14, .07, .5, .42, std(0xd9cbb5, .95, 0, { map: M.linen.map }), .74], [.2, .2, -.1, .44, .34, std(0xffffff, .9, 0, { map: stripe }), .7], [-.02, .32, .05, .32, .22, std(0xf7f6f2, .95), .64]]) { const p = mesh(pillowG(w, h, .15), m, px, y, -L / 2 + pz, bed2); p.rotation.set(-.3, ry, 0); }
+  const L = 1.95; for (const [px, pz, ry, w, h, m, y] of [[-.22, .14, .07, .5, .42, std(0xd9cbb5, .95, 0, { map: M.linen.map }), .74], [.2, .2, -.1, .44, .34, std(0xffffff, .9, 0, { map: stripe }), .7], [-.02, .32, .05, .32, .22, std(0xf7f6f2, .95, 0, { map: M.linen.map, bumpMap: M.linen.map, bumpScale: 1 }), .64]]) { const p = mesh(pillowG(w, h, .15), m, px, y, -L / 2 + pz, bed2); p.rotation.set(-.3, ry, 0); if (w < .45) pipeOn(p, w === .44 ? std(0x6fb3d6, .8) : m); } /* 11-21: 줄무늬·작은 흰 쿠션 솔기 파이핑(줄무늬는 하늘색), 흰 쿠션 리넨 결 */
   const dots = toTex((() => { const c = mkCanvas(384, 512), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#f4f4f2'; x.fillRect(0, 0, 96, 128); x.fillStyle = '#7fcfc6'; x.fillRect(14, 16, 68, 92); x.fillStyle = '#e8b04a'; for (let i = 0; i < 9; i++) for (let j = 0; j < 12; j++) if ((i + j) % 2) { x.beginPath(); x.arc(20 + i * 7, 22 + j * 7, 2, 0, 7); x.fill(); } return c; })());
   wallArt(b2art, { cx: 2.80, cy: 1.4, cz: 5.825, nx: -1, nz: 0, w: .55, h: .7, fw: .02, d: .03, frame: std(0xdedcd7, .5), mat: 0, art: dots }); }
 /* VR(56T 침실2): 침대 머리 쪽 벽 옆 흰 파슨스 책상 + 흑백 사진 액자 2 + 작은 책, 흰 셸 의자, 위 흰 벽선반 2단(장식 공 2 / 작은 화분 2) — 책상과 함께 움직임 */
