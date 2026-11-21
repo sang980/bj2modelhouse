@@ -1344,7 +1344,12 @@ kInner(5.6, 5.615, .9, 1.5, .46, 2.12, M.splash);
 { const ss = std(0xc8cacc, .3, .85);
   kInner(5.61, 5.89, 1.36, 1.5, 1.06, 1.7, ss); kInner(5.89, 6.18, 1.40, 1.5, 1.06, 1.7, ss);
   kInner(6.17, 6.2, 1.40, 1.5, 1.06, 1.7, std(0x111214, .12, .3));
-  kInner(6.195, 6.202, 1.44, 1.47, 1.14, 1.24, new THREE.MeshStandardMaterial({ color: 0x0c1830, emissive: 0x3a7bd5, emissiveIntensity: .9 }));
+  { const ht = toTex((() => { const c = mkCanvas(300, 90), x = c.getContext('2d'); x.fillStyle = '#0a0f18'; x.fillRect(0, 0, 300, 90); x.strokeStyle = '#6fb2ff'; x.fillStyle = '#6fb2ff'; x.lineWidth = 4; /* 11-21 후드 터치 표시부: 팬 아이콘·바람 세기 막대 3칸(2칸 켜짐)·조명 아이콘 — 반전 묶음이라 글자 없이 기호만 */
+      x.beginPath(); x.arc(48, 45, 22, 0, 7); x.stroke(); for (let k = 0; k < 3; k++) { x.save(); x.translate(48, 45); x.rotate(k * Math.PI * 2 / 3); x.beginPath(); x.ellipse(0, -10, 6, 11, .5, 0, 7); x.fill(); x.restore(); }
+      for (let k = 0; k < 3; k++) { x.globalAlpha = k < 2 ? 1 : .25; x.fillRect(110 + k * 30, 62 - k * 14, 20, 14 + k * 14); } x.globalAlpha = 1;
+      x.beginPath(); x.arc(252, 40, 14, 0, 7); x.stroke(); x.fillRect(244, 58, 16, 6); for (let k = 0; k < 5; k++) { const a2 = -Math.PI + k * Math.PI / 4; x.beginPath(); x.moveTo(252 + Math.cos(a2) * 20, 40 + Math.sin(a2) * 20); x.lineTo(252 + Math.cos(a2) * 28, 40 + Math.sin(a2) * 28); x.stroke(); }
+      return c; })());
+    kInner(6.195, 6.202, 1.44, 1.47, 1.14, 1.24, new THREE.MeshStandardMaterial({ color: 0xffffff, map: ht, emissiveMap: ht, emissive: 0xffffff, emissiveIntensity: .85, roughness: .15 })); }
   for (const z of [1.5, 1.56, 1.62]) kInner(6.195, 6.202, 1.445, 1.455, z, z + .015, std(0x9a9a9a, .4, .6));
   kInner(5.74, 6.04, 1.395, 1.4, 1.15, 1.61, std(0x8d9093, .5, .7)); // 필터
   kInner(6.06, 6.1, 1.392, 1.398, 1.2, 1.56, M.ledWarm); }
