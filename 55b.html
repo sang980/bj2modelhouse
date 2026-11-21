@@ -889,6 +889,11 @@ function dlMaps() { const S = 256, C = S / 2, mk = (f) => { const c = mkCanvas(S
 function dlFix(x, z, r) { if (!M.downlight.map) { const [mp, em] = dlMaps(); M.downlight.map = mp; M.downlight.emissiveMap = em; M.downlight.needsUpdate = true; }
   mesh(new THREE.CylinderGeometry(r, r, .006, 32, 1, true), M.white, x, H - .003, z, ceilingGroup, { cast: false, recv: false });
   const d = mesh(new THREE.CircleGeometry(r, 32), M.downlight, x, H - .006, z, ceilingGroup, { cast: false, recv: false }); d.rotation.x = Math.PI / 2; return d; }
+/* 11-21 소품 퀄리티업: 색 지정 책 재질(BOOK.geo 아틀라스와 같은 배치 — 책등 0~.25 · 표지 .25~.75 · 종이 단면 .75~1) */
+const _bkC = new Map(); function bookMatC(bg, ac) { const k = bg + ac; if (_bkC.has(k)) return _bkC.get(k); const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = bg; x.fillRect(0, 0, 192, 256);
+  x.fillStyle = ac; x.fillRect(0, 14, 64, 4); x.fillRect(0, 238, 64, 4); x.fillRect(24, 200, 16, 10); x.fillRect(27, 58, 10, 96); x.fillStyle = 'rgba(0,0,0,.16)'; x.fillRect(62, 0, 3, 256);
+  x.strokeStyle = ac; x.globalAlpha = .5; x.lineWidth = 2; x.strokeRect(80, 16, 96, 224); x.globalAlpha = 1; x.fillStyle = ac; x.fillRect(100, 96, 56, 8); x.fillRect(110, 112, 36, 4);
+  x.fillStyle = '#f2ece0'; x.fillRect(192, 0, 64, 256); x.fillStyle = 'rgba(120,100,80,.18)'; for (let y = 2; y < 256; y += 3) x.fillRect(192, y, 64, 1); const m = std(0xffffff, .72, 0, { map: toTex(c) }); _bkC.set(k, m); return m; }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -2435,7 +2440,7 @@ const desk2 = piece('책상', 1.66, 1.88, Math.PI / 2);
   plush(-.12, -L / 2 + .46, .25, std(0x8c5b3a, .95), std(0x6e4529, .95), std(0xc9a17c, .95), false);
   // 책상(로컬: 뒤 -z가 벽, 위 .745) — 왼쪽 노란 책 2권, 가운데 그림 카드(받침), 오른쪽 작은 화분
   const top = .745;
-  mesh(BX(.22, .028, .16), std(0xe9c64c, .6), -.35, top + .014, -.05, desk2).rotation.y = .18; mesh(BX(.2, .022, .15), std(0x7fb3a6, .6), -.34, top + .039, -.06, desk2).rotation.y = -.06;
+  mesh(BOOK.geo(.22, .028, .16, 'lie'), bookMatC('#e9c64c', '#5a4a1a'), -.35, top + .014, -.05, desk2).rotation.y = .18; mesh(BOOK.geo(.2, .022, .15, 'lie'), bookMatC('#7fb3a6', '#f4f1e8'), -.34, top + .039, -.06, desk2).rotation.y = -.06; /* 11-21: 책등·표지·종이 단면 */
   { const cov = toTex((() => { const c = mkCanvas(640, 480), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#f7efd9'; x.fillRect(0, 0, 160, 120); x.fillStyle = '#8fc0d8'; x.fillRect(0, 0, 160, 62); /* VR: 세워 둔 그림책 — 하늘·버스 그림 표지 */
       x.fillStyle = '#e2533b'; x.beginPath(); x.roundRect(26, 46, 104, 40, 8); x.fill(); x.fillStyle = '#dff1fb'; for (let i = 0; i < 4; i++) x.fillRect(36 + i * 22, 52, 16, 14); x.fillStyle = '#2b2b2b'; for (const wx of [50, 108]) { x.beginPath(); x.arc(wx, 88, 9, 0, 7); x.fill(); }
       x.fillStyle = '#6aa84f'; x.fillRect(0, 96, 160, 24); x.fillStyle = '#2b2b2b'; x.font = 'bold 15px sans-serif'; x.fillText('BUS', 64, 26); return c; })());
@@ -2447,7 +2452,7 @@ const desk2 = piece('책상', 1.66, 1.88, Math.PI / 2);
   // 골드 선반 위(월드): 1단(x 2.2–2.9, 위 1.575) 분홍 컵 2·세운 책, 2단(x 2.9–3.6, 위 1.875) 작은 꽃병·액자
   decorStart('골드 벽선반', false, [], true); { const g = fixed, y1 = 1.575, y2 = 1.875;
     for (const [x, c] of [[2.33, 0xe8a99c], [2.42, 0xf1c2b4]]) mesh(CY(.03, .027, .075, 20), std(c, .4), WX(x), y1 + .0375, WZ(.2), g);
-    [[2.6, 0xd9cfc0, .17], [2.63, 0x9fb7c9, .15], [2.66, 0xe8b65a, .16], [2.69, 0xf0eee8, .14]].forEach(([x, c, h]) => mesh(BX(.024, h, .12), std(c, .7), WX(x), y1 + h / 2, WZ(.2), g));
+    [[2.6, '#d9cfc0', .17], [2.63, '#9fb7c9', .15], [2.66, '#e8b65a', .16], [2.69, '#f0eee8', .14]].forEach(([x, c, h]) => mesh(BOOK.geo(.024, h, .12, 'z'), bookMatC(c, '#3b3d40'), WX(x), y1 + h / 2, WZ(.2), g)); /* 11-21: 세운 책 — 방 쪽 책등 */
     const bud = new THREE.LatheGeometry([[0, 0], [.03, 0], [.038, .03], [.03, .07], [.012, .1], [.014, .115], [0, .115]].map(([a, b]) => new THREE.Vector2(a, b)), 24);
     mesh(bud, std(0xf4efe4, .3), WX(3.08), y2, WZ(.2), g);
     for (let i = 0; i < 3; i++) { const st = mesh(CY(.002, .002, .2, 6), M.plant, WX(3.08 + (i - 1) * .015), y2 + .2, WZ(.2 + (i - 1) * .01), g, { cast: false }); st.rotation.z = (i - 1) * .25;
@@ -2540,7 +2545,7 @@ await yieldUI();
   { const ph = toTex((() => { const c = mkCanvas(256, 320), q = c.getContext('2d'); q.scale(4, 4); q.fillStyle = '#f4f2ee'; q.fillRect(0, 0, 64, 80); const gr = q.createLinearGradient(0, 10, 0, 70); gr.addColorStop(0, '#c9cbcd'); gr.addColorStop(1, '#4e5054'); q.fillStyle = gr; q.fillRect(9, 10, 46, 60); q.fillStyle = '#2a2b2e'; q.beginPath(); q.moveTo(14, 70); q.lineTo(30, 38); q.lineTo(40, 52); q.lineTo(50, 40); q.lineTo(55, 70); q.fill(); return c; })()); /* VR: 위칸 흰 액자 사진 + 작은 화병, 아래칸 눕힌 책 2 + 유리 구 테라리움 */
     const f = new THREE.Group(); f.position.set(WX(x + .07), 1.81, WZ(8.45)); f.rotation.z = .1; g.add(f); { const fm = std(0xf6f5f2, .4); mesh(BX(.015, .18, .14), fm, 0, .09, 0, f); mesh(BX(.002, .14, .1), std(0xffffff, .8, 0, { map: ph }), .009, .09, 0, f, { cast: false }); for (const [fy, fz, hh, ww] of [[.174, 0, .012, .14], [.006, 0, .012, .14], [.09, .064, .18, .012], [.09, -.064, .18, .012]]) mesh(BX(.006, hh, ww), fm, .0105, fy, fz, f, { cast: false }); mesh(new THREE.PlaneGeometry(.116, .156), std(0xffffff, .04, 0, { transparent: true, opacity: .1, depthWrite: false }), .0125, .09, 0, f, { cast: false }).rotation.y = Math.PI / 2; } /* 11-21 액자: 앞 테 턱 + 유리 */
     mesh(CY(.025, .03, .11, 18), std(0xf2f0eb, .3), WX(x + .1), 1.865, WZ(8.2), g); for (let i = 0; i < 4; i++) { const s = mesh(CY(.002, .002, .16, 5), M.plant, WX(x + .1) + (i - 1.5) * .006, 1.98, WZ(8.2), g, { cast: false }); s.rotation.z = (i - 1.5) * .18; mesh(new THREE.SphereGeometry(.012, 8, 6), M.plant, WX(x + .1) - Math.sin((i - 1.5) * .18) * .08 + (i - 1.5) * .006, 2.055, WZ(8.2), g, { cast: false }).scale.set(1, .5, 1.4); }
-    mesh(BX(.15, .025, .21), std(0xd9cdb8, .7), WX(x + .1), 1.4925, WZ(8.24), g); mesh(BX(.14, .022, .19), std(0x8b8f94, .7), WX(x + .1), 1.516, WZ(8.24), g).rotation.y = .08;
+    mesh(BOOK.geo(.21, .025, .15, 'lie'), bookMatC('#d9cdb8', '#5b5348'), WX(x + .1), 1.4925, WZ(8.24), g).rotation.y = Math.PI / 2; mesh(BOOK.geo(.19, .022, .14, 'lie'), bookMatC('#8b8f94', '#f2f0ea'), WX(x + .1), 1.516, WZ(8.24), g).rotation.y = Math.PI / 2 + .08; /* 11-21: 책등이 방 쪽 */
     mesh(new THREE.SphereGeometry(.065, 24, 18), std(0xe6eef0, .05, 0, { transparent: true, opacity: .3 }), WX(x + .1), 1.545, WZ(8.5), g, { cast: false }); { const m = mesh(new THREE.SphereGeometry(.045, 16, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std(0x6f8f4f, .9), WX(x + .1), 1.53, WZ(8.5), g, { cast: false }); } }
   decorEnd(); decorStart('창가 펜던트'); { const px = 2.95, pz = 10.75, py = 1.72; /* VR: 창가 흰 원반 펜던트(검정 줄, 아래 빛) */
     mesh(CY(.04, .04, .025), M.white, WX(px), H - .0125, WZ(pz), g, { cast: false }); mesh(CY(.003, .003, H - py - .07), M.black, WX(px), (H + py + .07) / 2, WZ(pz), g, { cast: false });
