@@ -321,6 +321,10 @@ function synthPlanned() {
       const x = cx + ux * u + fx * v, z = cz + uz * u + fz * v, Q = box(x, z, rule.L, rule.D); if (!inside(Q) || rr() < .12) continue;
       const f = rule.f[0] + (rr() * (rule.f[1] - rule.f[0] + 1) | 0); if (rule.kind === 2) push(2, f, f * 3.8 + 1, Q); else push(1, f, f * 2.9 + 1, Q); n++; }
   }
+  { /* 11-21 로드뷰(2026.08)·스카이뷰: 수정구청 맞은편 수정로 동쪽 띠(수정로296번길과 사이, 폭 18~24m)는 상가·주상복합(파리바게뜨·뉴에스짐·세일띠아모아파트 등)이 줄지어 있는데 OSM 윤곽이 없어 빈 땅이던 곳 — 보도 4.5m 뒤로 5개 동 합성(층수는 사진·그림자 기준 대략) */
+    const a = [366.6, 108.2], u = [-.5324, .8465], nE = [.8465, .5324], R3 = [[479.6, 43.6], [425.3, 105], [379.5, 154.2], [318.8, 243.6]], W = (t, s) => [a[0] + u[0] * t + nE[0] * s, a[1] + u[1] * t + nE[1] * s];
+    for (const [t0, t1, lv, kind] of [[4, 30, 5, 2], [34, 58, 6, 2], [62, 82, 5, 2], [86, 104, 7, 2], [108, 134, 12, 1]]) { let sMax = 40; for (let t = t0; t <= t1; t += 2) for (let s = 12.5; s < 40; s += .5) { const q = W(t, s); if (pathDist(R3, q[0], q[1]) < 5.5) { sMax = Math.min(sMax, s); break; } }
+      const s1 = Math.min(sMax - .5, 12.5 + 22); if (s1 - 12.5 < 8) continue; push(kind, lv, kind === 1 ? lv * 2.9 + 1 : lv * 3.6 + 1, [W(t0, 12.5), W(t1, 12.5), W(t1, s1), W(t0, s1)]); n++; } }
   if (out.length) { const nb = new Int16Array(B.length + out.length); nb.set(B); nb.set(out, B.length); GEO.bld = nb; }
   console.log('planned/constructed apartments', n);
 }
