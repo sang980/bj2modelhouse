@@ -2248,10 +2248,14 @@ let _hound = null; const houndMat = (rep) => { if (!_hound) { const c = mkCanvas
     for (let v = 0; v < 8; v++) for (let u = 0; u < 8; u++) { const a = u < 4, b = v < 4, k = a && b ? 1 : (!a && !b) ? 0 : ((u + 7 - v) % 4 < 2 ? 1 : 0); if (k) x.fillRect(u * 8, v * 8, 8, 8); }
     _hound = c; } const t = toTex(_hound, { rep }); return std(0xffffff, .95, 0, { map: t }); };
 let _houndSeat = null, _houndBack = null;
+let _houndWelt = null; /* 11-22: 둥근 모서리 상자 둘레 웰트(56T와 같은 함수) */
+function rrPipe(o, w, h, r, plane, off, mat, rad = .0045) { const P = [], seg = 6, hw = w / 2 - r, hh = h / 2 - r;
+  for (const [cx, cy, a0] of [[hw, hh, 0], [-hw, hh, Math.PI / 2], [-hw, -hh, Math.PI], [hw, -hh, Math.PI * 1.5]]) for (let i = 0; i <= seg; i++) { const a = a0 + i / seg * Math.PI / 2, u = cx + Math.cos(a) * r, v = cy + Math.sin(a) * r; P.push(plane === 'xz' ? new THREE.Vector3(u, off, v) : new THREE.Vector3(u, v, off)); }
+  mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P, true, 'catmullrom', .1), 80, rad, 6, true), mat, 0, 0, 0, o, { cast: false }); return o; }
 function diningChair(parent, cx, cz, rot) { /* VR: 하운드투스 배럴 의자 — 둥글게 감싸는 등받이(앞으로 갈수록 낮아짐) + 도톰한 좌석 + 가는 검은 다리 4 */
   const c = new THREE.Group(); c.position.set(cx, 0, cz); c.rotation.y = rot; parent.add(c);
   _houndSeat = _houndSeat || houndMat([14, 14]); _houndBack = _houndBack || houndMat([30, 10]);
-  mesh(RB(.44, .07, .42, .03, 3), _houndSeat, 0, .475, .01, c);
+  rrPipe(mesh(RB(.44, .07, .42, .03, 3), _houndSeat, 0, .475, .01, c), .432, .412, .028, 'xz', .034, _houndWelt || (_houndWelt = std(0x1d1d1f, .6)), .005); /* 11-22 소품 퀄리티업: 좌석 윗모서리 검은 웰트 */
   const nx = 28, ny = 8, P = new Float32Array((nx + 1) * (ny + 1) * 3), A = 1.95;
   for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) { const a = (i / nx * 2 - 1) * A, t = j / ny, top = .8 - .2 * Math.pow(Math.abs(a) / A, 2), y = .48 + (top - .48) * t, r = .22 + .025 * t, k = (j * (nx + 1) + i) * 3;
     P[k] = Math.sin(a) * r; P[k + 1] = y; P[k + 2] = -Math.cos(a) * r + .02; }
