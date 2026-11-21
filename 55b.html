@@ -2317,7 +2317,11 @@ function dining4() {
   for (const x of [-.05, -L + .05]) for (const z of [-W / 2 + .05, W / 2 - .05]) mesh(BX(.04, .72, .04), M.whiteGloss, x, .36, z, g);
   const cx = [-.38, -1.02];
   for (const [x, z, r] of [[cx[0], -.52, 0], [cx[1], -.52, 0], [cx[0], .52, Math.PI], [cx[1], .52, Math.PI]]) diningChair(g, x, z, r);
-  for (const px of cx) for (const pz of [-.22, .22]) { const m = mesh(CY(.16, .16, .004, 30), std(0x45474b, .8), px, .757, pz, g, { cast: false }); m.scale.set(1.2, 1, 1); placeSet(g, px, .768, pz, .1); }
+  const wvM = std(0xffffff, .85, 0, { map: toTex((() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = '#44464a'; x.fillRect(0, 0, 256, 256); /* 11-21 소품 퀄리티업: 동심원으로 짠 매트 결 + 가장자리 테 */
+    for (let r = 6, k = 0; r < 120; r += 4.5, k++) { x.strokeStyle = k % 2 ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.16)'; x.lineWidth = 2.4; x.beginPath(); x.arc(128, 128, r, 0, 7); x.stroke(); }
+    x.strokeStyle = 'rgba(0,0,0,.18)'; x.lineWidth = 1; for (let i = 0; i < 96; i++) { const a = i / 96 * Math.PI * 2; x.beginPath(); x.moveTo(128 + Math.cos(a) * 10, 128 + Math.sin(a) * 10); x.lineTo(128 + Math.cos(a) * 118, 128 + Math.sin(a) * 118); x.stroke(); }
+    x.strokeStyle = '#5b5d61'; x.lineWidth = 7; x.beginPath(); x.arc(128, 128, 123, 0, 7); x.stroke(); return c; })()) });
+  for (const px of cx) for (const pz of [-.22, .22]) { const m = mesh(CY(.16, .16, .004, 40), wvM, px, .757, pz, g, { cast: false }); m.scale.set(1.2, 1, 1); placeSet(g, px, .768, pz, .1); }
   { /* VR: 트래버틴(베이지 석재) 타원 받침 트레이 2개(골 파인 원기둥 다리 2) — 뒤 높은 쪽엔 고사리 잎, 앞 낮은 쪽엔 에어플랜트 + 작은 초록 열매 */
     const tv = toTex((() => { const c = mkCanvas(512, 512), q = c.getContext('2d'); q.scale(4, 4); q.fillStyle = '#ddd0b6'; q.fillRect(0, 0, 128, 128); for (let i = 0; i < 40; i++) { q.fillStyle = 'rgba(' + (150 + rnd() * 40 | 0) + ',' + (130 + rnd() * 30 | 0) + ',' + (100 + rnd() * 20 | 0) + ',' + (.12 + rnd() * .15) + ')'; q.fillRect(0, rnd() * 128, 128, .6 + rnd() * 2); } for (let i = 0; i < 260; i++) { q.fillStyle = 'rgba(120,100,75,' + (.2 + rnd() * .35) + ')'; q.beginPath(); q.ellipse(rnd() * 128, rnd() * 128, .4 + rnd() * 1.6, .3 + rnd() * .6, 0, 0, 7); q.fill(); } return c; })(), { rep: [2, 2] }), tm = std(0xffffff, .85, 0, { map: tv, bumpMap: tv, bumpScale: .6 });
     const stad = (L, W) => { const s = new THREE.Shape(), r = W / 2, a = L / 2 - r; s.moveTo(-a, -r); s.lineTo(a, -r); s.absarc(a, 0, r, -Math.PI / 2, Math.PI / 2, false); s.lineTo(-a, r); s.absarc(-a, 0, r, Math.PI / 2, Math.PI * 1.5, false); return s; };
