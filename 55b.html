@@ -727,6 +727,30 @@ M.counter = std(MAT_OPT.mma.color, MAT_OPT.mma.roughness);
 M.splash = std(0xffffff, .25, 0, { map: MAT_OPT.tile.map });
 M.carpet = new THREE.MeshPhysicalMaterial({ color: 0xcfc8bd, roughness: 1, map: toTex(noiseCanvas([255, 255, 255], 40), { rep: [10, 10] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 150), { srgb: false, rep: [10, 10] }), bumpScale: 1.5, sheen: 1, sheenRoughness: .8, sheenColor: new THREE.Color(0x9a948a) });
 M.wall.bumpMap = toTex(noiseCanvas([128, 128, 128], 60, 256), { srgb: false, rep: [3, 3] }); M.wall.bumpScale = .15;
+/* 11-21 OpenPBR 기준 재질 값(사용자 요청) — three.js에는 OpenPBR 셰이더가 없어, OpenPBR 표준 파라미터(base·specular_weight·coat·IOR)를 MeshPhysicalMaterial 값으로 옮김.
+   고화질·표준(tier 0·1)에서만 켜고, 저화질·최저(휴대폰 기본)는 이전 값 그대로. 반사맵 촬영 때 창밖 하늘을 2.2배(HDR)로 밝혀 창이 실제 광원처럼 비치게 */
+const OPBR = {
+  floor: { roughness: .45, clearcoat: .6, clearcoatRoughness: .18, ior: 1.5 }, /* 강마루: 우레탄 코팅 층 */
+  counter: { clearcoat: .4, clearcoatRoughness: .14, ior: 1.5 }, /* 주방 상판(인조대리석) */
+  splash: { clearcoat: .85, clearcoatRoughness: .05, ior: 1.52 }, /* 주방 벽 유광 타일(유약) */
+  bathWall: { clearcoat: .85, clearcoatRoughness: .06, ior: 1.52 }, /* 욕실 벽 유광 포셀린 */
+  stoneTile: { clearcoat: .5, clearcoatRoughness: .1, ior: 1.52 }, /* 석재 타일 */
+  quartz: { clearcoat: .7, clearcoatRoughness: .05, ior: 1.54 }, marble: { clearcoat: .7, clearcoatRoughness: .05, ior: 1.54 }, /* 연마 석재 */
+  whiteGloss: { clearcoat: .8, clearcoatRoughness: .08, ior: 1.5 }, appliance: { clearcoat: .5, clearcoatRoughness: .1 }, /* 하이그로시·가전 */
+  winFrame: { roughness: .35, clearcoat: .25, clearcoatRoughness: .3, ior: 1.46 }, /* PVC 창틀 */
+  oak: { clearcoat: .35, clearcoatRoughness: .25 }, walnut: { clearcoat: .35, clearcoatRoughness: .25 }, /* 도장 목재 */
+  wall: { specularIntensity: .5 }, ceil: { specularIntensity: .5 }, kdoor: { specularIntensity: .7 }, /* 무광 도장·벽지: specular_weight ≈ .5 */
+  chrome: { color: 0xc8cacc, roughness: .08 }, /* 크롬 반사율 ≈ .55(선형) */
+  glass: { ior: 1.52 },
+};
+const OPBR_SKY = 2.2; let opbrOn = false; const opbrPhys = new Map(), opbrOrig = new Map();
+function applyOpenPBR(on) {
+  if (on) for (const k in OPBR) { const m = M[k]; if (!m || !m.isMeshStandardMaterial || m.isMeshPhysicalMaterial || opbrPhys.has(m)) continue; const ph = new THREE.MeshPhysicalMaterial(); THREE.MeshStandardMaterial.prototype.copy.call(ph, m); ph.defines = { STANDARD: '', PHYSICAL: '' }; opbrPhys.set(m, ph); M[k] = ph; }
+  if (on && opbrPhys.size) { const sw = mt => opbrPhys.get(mt) || mt; scene.traverse(o => { if (!o.isMesh) return; o.material = Array.isArray(o.material) ? o.material.map(sw) : sw(o.material); if (o.userData.fullMat) o.userData.fullMat = Array.isArray(o.userData.fullMat) ? o.userData.fullMat.map(sw) : sw(o.userData.fullMat); }); }
+  for (const k in OPBR) { const m = M[k]; if (!m || !m.isMeshPhysicalMaterial) continue; if (!opbrOrig.has(m)) { const o = {}; for (const q in OPBR[k]) o[q] = q === 'color' ? m.color.getHex() : m[q]; opbrOrig.set(m, o); } const src = on ? OPBR[k] : opbrOrig.get(m); for (const q in src) { if (q === 'color') m.color.setHex(src[q]); else m[q] = src[q]; } m.needsUpdate = true; }
+  opbrOn = on;
+}
+function skyHDR(k) { sky.traverse(o => { const m = o.material; if (!o.isMesh || !m || !m.isMeshBasicMaterial || !m.map) return; if (!m.userData.c0) m.userData.c0 = m.color.clone(); m.color.copy(m.userData.c0).multiplyScalar(k); }); }
 
 /* ───────── helpers ───────── */
 const world = new THREE.Group(); scene.add(world);
@@ -3142,6 +3166,7 @@ for (const p of mirrorProbes) p.mat.envMap = placeholderEnv;
 await yieldUI();
 // 큐브 한 면씩 렌더하고 사이사이 양보(한 번에 6면×5곳을 그리면 수 초 멈춤)
 async function captureCube(pos) {
+  if (opbrOn) skyHDR(OPBR_SKY); /* 11-21 창밖을 HDR로(반사맵 촬영 동안만) */
   if (cubeCam.coordinateSystem !== renderer.coordinateSystem) { cubeCam.coordinateSystem = renderer.coordinateSystem; cubeCam.updateCoordinateSystem(); }
   cubeCam.position.copy(pos); cubeCam.updateMatrixWorld(true);
   updateLightPool(0, pos, true); lpForce = lpInstant = true; // 촬영 위치 기준으로 조명 풀 배정(끝나면 다음 프레임에 카메라 기준으로 즉시 복귀)
@@ -3150,7 +3175,7 @@ async function captureCube(pos) {
     renderer.setRenderTarget(cubeRT, i); renderer.render(scene, cubeCam.children[i]);
     renderer.setRenderTarget(prev); if (tier > 0 || i === 5 || !window.__mhLoaded) await yieldUI(); // 로딩 중엔 면마다 양보(로딩 화면이 멈추지 않게), 실행 중 고화질은 6면을 한 번에 // 고화질(빠른 GPU)은 6면을 한 번에 → 화면이 멈춰 보이는 시간 1/6
   }
-  renderer.xr.enabled = xr;
+  renderer.xr.enabled = xr; if (opbrOn) skyHDR(1);
   return pmrem.fromCubemap(cubeRT.texture).texture;
 }
 async function bakeEnv() {
@@ -3271,6 +3296,7 @@ function applyTier(t) {
   // 최저 단계: 환경맵 반사(픽셀당 큐브맵 샘플링)도 끄고, PBR 재질을 가벼운 램버트 재질로 교체
   scene.environment = t >= 3 ? null : (bakedEnv || placeholderEnv);
   setLiteMaterials(t >= 3);
+  applyOpenPBR(t <= 1); /* 11-21 OpenPBR 값은 고화질·표준만 */
   if (t < 3 && !bakedEnv && window.__mhLoaded) queueBake(); // 최저→상위로 올라오면 반사를 그때 구움
   document.documentElement.classList.toggle('lowfx', t >= 2);
   renderer.shadowMap.needsUpdate = true;
