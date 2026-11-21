@@ -3294,7 +3294,10 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
   cab(g, nx0, nx1, my0 - .02, my0, nb, z1 - .15, body);                             // 거울장 바닥판(= 오픈 선반 천장)
   cab(g, nx0 + .02, nx1 - .02, my0 - .025, my0 - .02, nb + .02, z1 - .17, M.ledWarm, { cast: false }); // 오픈 선반 비추는 간접등
   for (const y of [1.5, 1.84]) cab(g, nx0, nx1, y, y + .018, nb, z1 - .155, body);
-  cab(g, nx0 + .03, nx0 + .2, my0, my0 + .12, nb + .05, nb + .2, std(0xd8d2c4, .6)); mesh(CY(.025, .025, .14, 14), M.glass, WX(nx1 - .1), 1.518 + .07, WZ(nb + .12), g, { cast: false });
+  cab(g, nx0 + .035, nx0 + .195, my0, my0 + .1, nb + .055, nb + .195, std(0xd8d2c4, .85)); cab(g, nx0 + .03, nx0 + .2, my0 + .1, my0 + .122, nb + .05, nb + .2, std(0xcbc3b2, .75)); cab(g, nx0 + .1, nx0 + .13, my0 + .042, my0 + .072, nb + .195, nb + .199, std(0x5b4636, .6)); /* 11-22 소품 퀄리티업(거울장 안): 베이지 통상자 → 몸통 + 살짝 큰 뚜껑 + 앞 가죽 손잡이 탭, 유리 원통 → 반투명 토너 병(속 연분홍 액체 + 로즈골드 뚜껑) + 흰 크림 단지(로즈골드 뚜껑) */
+  { const X = WX(nx1 - .1), Z = WZ(nb + .12), y0 = 1.518, rg = std(0xc99a7a, .3, .8); mesh(new THREE.LatheGeometry([[0, 0], [.024, 0], [.025, .004], [.025, .1], [.02, .115], [.009, .12], [.009, .128], [0, .128]].map(([a, b]) => new THREE.Vector2(a, b)), 24), std(0xe9eef0, .35, 0, { transparent: true, opacity: .72, depthWrite: false }), X, y0, Z, g, { cast: false });
+    mesh(CY(.0215, .0215, .07, 20), std(0xf0d2cc, .3, 0, { transparent: true, opacity: .85 }), X, y0 + .042, Z, g, { cast: false }); mesh(CY(.0115, .0115, .024, 18), rg, X, y0 + .138, Z, g, { cast: false });
+    const X2 = WX(nx1 - .175); mesh(CY(.03, .028, .04, 24), std(0xf6f5f1, .2), X2, y0 + .02, Z, g, { cast: false }); mesh(CY(.0315, .0315, .014, 24), rg, X2, y0 + .047, Z, g, { cast: false }); }
   { const mg = new THREE.Group(); mg.position.y = my0; g.add(mg);
     const lw = nx1 - nx0 - .012, lh = my1 + .02 - my0 - .006;
     const d = makeDoor({ parent: mg, horiz: true, line: z1 - .135, t: .024, hu: nx0 + .006, du: 1, side: 1, lw, lh, lt: .02, mat: M.mirrorBed2, from: nx0, to: nx1, name: '거울장 문', startOpen: false, handle: false });
