@@ -2401,7 +2401,7 @@ const dining = diningS; // (예전 코드 호환용)
   const blue = std(0x2c5fb8, .95, 0, { map: M.throwBlue.map, bumpMap: M.throwBlue.bumpMap, bumpScale: .8 }), tw = std(0xffffff, .95, 0, { map: toTex(hc, { rep: [2, 2] }) });
   const g1 = pillowG(.5, .46, .17), g2 = pillowG(.6, .28, .15), rm = []; b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = blue; else if (o.geometry === g1 || o.geometry === g2) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
   const L = 2.1; { const vm = std(0x1f2633, .6, 0, { map: velvetTex(), bumpMap: velvetTex(), bumpScale: .8 }), c = mesh(sqPillowG(.5, .48, .18), vm, .22, .79, -L / 2 + .42, b); c.rotation.set(-.24, -.12, -.03); sqPipe(c, .5, .48, vm); } /* 11-21 침구 퀄리티업: 짙은 남색 벨벳 + 같은 천 파이핑 */
-  { const c = mesh(sqPillowG(.56, .32, .15), tw, -.17, .7, -L / 2 + .64, b); c.rotation.set(-.42, .28, .06); } } /* VR 55A: 뒤 오른쪽 짙은 남색 사각 쿠션 + 앞 왼쪽 회색 헤링본 긴 쿠션(서로 박히지 않게 앞뒤로 띄움) */
+  { const c = mesh(sqPillowG(.56, .32, .15), tw, -.17, .7, -L / 2 + .64, b); c.rotation.set(-.42, .28, .06); sqPipe(c, .56, .32, std(0x2e3034, .75)); } } /* 11-21: 헤링본 긴 쿠션 솔기에 짙은 회색 파이핑 */ /* VR 55A: 뒤 오른쪽 짙은 남색 사각 쿠션 + 앞 왼쪽 회색 헤링본 긴 쿠션(서로 박히지 않게 앞뒤로 띄움) */
 sideTable(9.14, 7.6, true);
 const sideTableN = sideTable(9.14, 5.3, false);
 const bed2 = bed(.72, 7.0, Math.PI, 1.1, 2.0, '싱글 침대'); // 사진: 화이트 플로팅 프레임 + 하부 간접등, 머리는 창 쪽
