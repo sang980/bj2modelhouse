@@ -2538,10 +2538,13 @@ const desk2 = piece('책상', 1.66, 1.88, Math.PI / 2);
   { const cov = toTex((() => { const c = mkCanvas(640, 480), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#f7efd9'; x.fillRect(0, 0, 160, 120); x.fillStyle = '#8fc0d8'; x.fillRect(0, 0, 160, 62); /* VR: 세워 둔 그림책 — 하늘·버스 그림 표지 */
       x.fillStyle = '#e2533b'; x.beginPath(); x.roundRect(26, 46, 104, 40, 8); x.fill(); x.fillStyle = '#dff1fb'; for (let i = 0; i < 4; i++) x.fillRect(36 + i * 22, 52, 16, 14); x.fillStyle = '#2b2b2b'; for (const wx of [50, 108]) { x.beginPath(); x.arc(wx, 88, 9, 0, 7); x.fill(); }
       x.fillStyle = '#6aa84f'; x.fillRect(0, 96, 160, 24); x.fillStyle = '#2b2b2b'; x.font = 'bold 15px sans-serif'; x.fillText('BUS', 64, 26); return c; })());
-    const pb = mesh(BX(.22, .17, .016), std(0xffffff, .7, 0, { map: cov }), -.6, top + .09, -.31, desk2); pb.rotation.x = -.12; } /* 책상 끝 벽에 기대 세운 그림책 */
+    const pb = new THREE.Group(); pb.position.set(-.6, top + .002, -.31); pb.rotation.x = -.12; desk2.add(pb); /* 책상 끝 벽에 기대 세운 그림책 — 11-22 소품 퀄리티업: 얇은 판 한 장 → 하드커버 앞표지(그림) + 빨간 뒤표지 + 안쪽으로 들어간 크림색 종이 단면(줄) + 왼쪽 천 책등 */
+    mesh(BX(.22, .17, .003), std(0xffffff, .7, 0, { map: cov }), 0, .085, .0065, pb); mesh(BX(.22, .17, .003), std(0xd24a33, .75), 0, .085, -.0065, pb);
+    { const pg = toTex((() => { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#f3ecd9'; x.fillRect(0, 0, 64, 64); x.fillStyle = 'rgba(150,130,100,.28)'; for (let i = 1; i < 64; i += 3) x.fillRect(0, i, 64, 1); return c; })()); mesh(BX(.212, .162, .0104), std(0xffffff, .9, 0, { map: pg }), .003, .085, 0, pb, { cast: false }); }
+    mesh(BX(.006, .1724, .0166), std(0xb73b28, .85), -.108, .085, 0, pb); /* 책등 위아래를 표지보다 1mm씩 길게(윗면 겹침 방지) */ }
   { const card = toTex((() => { const c = mkCanvas(384, 512), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#fbf7ee'; x.fillRect(0, 0, 96, 128); const cols = ['#f2b8a2', '#9dc7b5', '#f3d27a', '#b9c8e8']; for (let i = 0; i < 4; i++) { x.fillStyle = cols[i]; x.fillRect(10 + (i % 2) * 40, 14 + (i >> 1) * 52, 34, 44); } return c; })());
     const cd = mesh(BX(.15, .2, .006), std(0xffffff, .8, 0, { map: card }), -.05, top + .1, -.2, desk2); cd.rotation.x = -.14; mesh(BX(.012, .17, .012), M.oak, -.05, top + .08, -.24, desk2).rotation.x = .3; }
-  { mesh(CY(.045, .036, .075, 24), std(0xf3f1ec, .45), .42, top + .038, -.17, desk2);
+  { mesh(new THREE.LatheGeometry([[0, 0], [.034, 0], [.036, .004], [.044, .068], [.046, .072], [.0425, .0745], [.0395, .068], [0, .066]].map(([a, b]) => new THREE.Vector2(a, b)), 28), std(0xf3f1ec, .45), .42, top, -.17, desk2); mesh(CY(.0398, .0398, .004, 22), std(0x4a3b2e, .95), .42, top + .066, -.17, desk2, { cast: false }); /* 11-22: 민무늬 원통 → 테두리 있는 도기 화분 + 짙은 흙 */
     grassTuft(desk2, .42, top + .07, -.17, 22, .16, .005); } /* 화분: 풀잎 */
   // 골드 선반 위(월드): 1단(x 2.2–2.9, 위 1.575) 분홍 컵 2·세운 책, 2단(x 2.9–3.6, 위 1.875) 작은 꽃병·액자
   decorStart('골드 벽선반', false, [], true); { const g = fixed, y1 = 1.575, y2 = 1.875;
