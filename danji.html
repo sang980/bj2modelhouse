@@ -2118,6 +2118,10 @@ function buildSchools() {
     if (b.np === 4 && sp.n === '성남여중' && area > 900) ext(b.P, y - .6, y + 12.5, 'gymW2', 'gymR');
     else if (sp.n === '신흥초') { ext(b.P, y - .6, y + 4 * 3.6, 'sh', 'roofG'); shDetail(b.P, y - .6, y + 4 * 3.6); }
     else { ext(b.P, y - .6, y + 4 * 3.6, 'brickH', 'roofB'); shDetail(b.P, y - .6, y + 4 * 3.6, 'brickH', 'brickH'); } } /* 성남여중 벽돌 교사도 층 턱(벽돌 그림의 흰 띠 높이)·옥상 계단실·실외기 */
+  { /* 11-21 신흥초·성남여중 경계(부지 높이 106.3 ↔ 100.6 단차) = 스카이뷰상 나무 심긴 비탈 — 맨바닥 대신 풀 비탈 띠(폭 7m) */
+    const A = [22, 92], B = [62, 174], L = Math.hypot(B[0] - A[0], B[1] - A[1]), u = [(B[0] - A[0]) / L, (B[1] - A[1]) / L], n = [-u[1], u[0]], W = 3.5, P = [[A[0] - n[0] * W, A[1] - n[1] * W], [B[0] - n[0] * W, B[1] - n[1] * W], [B[0] + n[0] * W, B[1] + n[1] * W], [A[0] + n[0] * W, A[1] + n[1] * W]];
+    const c = cnv(256, 256), g = c.getContext('2d'); g.fillStyle = '#6f9a55'; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 900; i++) { g.fillStyle = hash2(i, 131) < .5 ? 'rgba(200,230,150,.12)' : 'rgba(20,50,10,.12)'; g.fillRect(hash2(i, 137) * 256, hash2(i, 139) * 256, 2 + hash2(i, 149) * 4, 2 + hash2(i, 151) * 4); } const t = tex(c); t.repeat.set(.5, .5);
+    drapePoly(P, new THREE.MeshLambertMaterial({ map: t }), .12, 2); }
   /* 신흥초: 흙 운동장 + 태양광 지붕 강당(스카이뷰 동쪽) + 무지개 담장 */
   { const y = 106.3 - Y0; pad(106.3, [[56, 122], [96, 114], [104, 156], [64, 164]]);
     { const F = { gb: G.gymW, uv: w => [0, 0, w / 13, 0, w / 13, 1, 0, 1] }; obox(111, 138, ux, uz, 28, 40, y - .6, y + 15.2, { front: F, back: F, left: F, right: F, top: { gb: G.roofW } }); } obox(111, 138, ux, uz, 25, 37, y + 15.25, y + 15.3, { top: { gb: G.solar } }); /* 새나리관(체육관, 위성사진: 지붕 전체 태양광) — 높이 신흥초 교사와 비슷하게 */
