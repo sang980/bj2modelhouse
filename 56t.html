@@ -2354,6 +2354,10 @@ function coffeeOvalT(x, z) { const g = piece('커피테이블', x, z, 0), w = st
   mesh(CY(.06, .052, .008, 28), M.whiteGloss, .02, .046, 0, bk);
   mesh(new THREE.LatheGeometry([[0, 0], [.03, 0], [.034, .01], [.04, .055], [.036, .055], [.031, .012], [0, .012]].map(([a, b]) => new THREE.Vector2(a, b)), 28), M.whiteGloss, .02, .05, 0, bk);
   const hdl = mesh(new THREE.TorusGeometry(.016, .004, 8, 16, Math.PI), M.whiteGloss, .062, .078, 0, bk); hdl.rotation.z = -Math.PI / 2;
+  { const c = mkCanvas(128, 128), x = c.getContext('2d'), gr = x.createRadialGradient(64, 64, 4, 64, 64, 64); gr.addColorStop(0, '#6b3e1c'); gr.addColorStop(.62, '#7a4822'); gr.addColorStop(.8, '#b98652'); gr.addColorStop(1, '#8a5a30'); x.fillStyle = gr; x.fillRect(0, 0, 128, 128); /* 11-22 소품 퀄리티업: 빈 흰 잔(위에서 흰 덩어리) → 커피(가장자리 크레마 고리 + 가운데 하트 라떼아트) + 받침 위 티스푼 */
+    x.fillStyle = '#f2e6d0'; x.beginPath(); x.moveTo(64, 92); x.bezierCurveTo(30, 66, 38, 36, 64, 52); x.bezierCurveTo(90, 36, 98, 66, 64, 92); x.fill(); x.strokeStyle = '#7a4822'; x.lineWidth = 3; x.beginPath(); x.moveTo(64, 50); x.lineTo(64, 96); x.stroke();
+    const cf = mesh(new THREE.CircleGeometry(.0345, 28), std(0xffffff, .15, 0, { map: toTex(c) }), .02, .095, 0, bk, { cast: false }); cf.rotation.x = -Math.PI / 2; }
+  { const sp = new THREE.Group(); sp.position.set(.02, .0505, 0); sp.rotation.y = .9; bk.add(sp); const st = M.chrome || std(0xd0d3d6, .2, .9); mesh(new THREE.SphereGeometry(.0085, 14, 8), st, -.042, .002, 0, sp, { cast: false }).scale.set(1.5, .28, 1); mesh(BX(.05, .0018, .0045), st, -.078, .0035, 0, sp, { cast: false }); }
   return g; }
 coffeeOvalT(6.9, 6.85);
 // TV장 소품(VR): 오른쪽(창 쪽) 흰 돌 링 + 노란 타원 링이 엇갈린 조형물, 왼쪽 흰 질감 화병 2개 + 큰 잎 열대식물
