@@ -1764,7 +1764,7 @@ await phase('욕실과 발코니를 꾸미는 중', 61);
   ceilingPanel(6.47, 6.97, 5.84, 6.34, .8, 2.2);
 }
 await yieldUI();
-let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; /* 11-22: 욕실 유리병 꽃 잎 모양·재질 공유 */
+let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; let SHV_B = null; /* 11-22: 책장 검은 화병 재질 공유 */ /* 11-22: 욕실 유리병 꽃 잎 모양·재질 공유 */
 // ── 욕실 소품(VR) ──
 { const g = fixed;
   // 수건 무늬: 위는 흰 타월, 아래 30%는 회색 띠(이음선) + 잔결
@@ -1892,9 +1892,11 @@ await phase('침실을 꾸미는 중', 66);
       else if (t === 'k') { let yy = y; const n = 2 + (r() * 3 | 0); for (let i = 0; i < n; i++) { const h = .025 + r() * .02, m = (row === 0 && col === 0 && i === n - 1) ? BOOK.mats[7] : BOOK.mats[(r() * 7) | 0]; const b = mesh(BOOK.geo(.22 + r() * .06, h, .17 + r() * .05, 'lie'), m, X(cx + (r() - .5) * .03), yy + h / 2, Z(zc), g); b.rotation.y = (r() - .5) * .2; yy += h; }
         if (row === 1 && col === 4) mesh(lath([[0, 0], [.03, 0], [.04, .04], [.025, .09], [.012, .11], [0, .11]]), blackM, X(cx + .03), yy, Z(zc), g); } // 책 더미 위 작은 화병은 한 곳만
       else if (t === 'b' || t === 'w') { const m = t === 'b' ? blackM : whiteM;
-        mesh(lath([[0, 0], [.05, 0], [.07, .06], [.065, .14], [.035, .21], [.03, .24], [0, .24]]), m, X(cx - .06), y, Z(zc), g);
+        { const prof = []; const base = [[0, 0], [.05, 0], [.07, .06], [.065, .14], [.035, .21], [.03, .24]]; for (let k = 0; k <= 40; k++) { const yy = .24 * k / 40; let i = 0; while (i < base.length - 2 && base[i + 1][1] < yy) i++; const [r0, y0] = base[i], [r1, y1] = base[i + 1], rr = r0 + (r1 - r0) * Math.min(1, Math.max(0, (yy - y0) / ((y1 - y0) || 1))); prof.push([k ? rr + (t === 'w' && yy > .01 && yy < .2 ? .0016 * Math.sin(yy * 190) : 0) : 0, yy]); } prof[0] = [0, 0]; prof.splice(1, 0, [.05, 0]); prof.push([.024, .24], [.02, .216], [0, .2]); /* 11-22 소품 퀄리티업: 막힌 매끈한 화병 → 입구가 열린 화병(안쪽 벽), 흰 것은 물레 자국 가로 골, 검은 것은 은은한 철점 무광 유약 */
+          const vm = t === 'b' ? (SHV_B || (SHV_B = (() => { const c = mkCanvas(128, 128), q = c.getContext('2d'); q.fillStyle = '#1f1f21'; q.fillRect(0, 0, 128, 128); for (let k = 0; k < 260; k++) { const h1 = Math.sin(k * 12.9898) * 43758.5453, h2 = Math.sin(k * 78.233) * 43758.5453, h3 = Math.sin(k * 39.425) * 43758.5453; q.fillStyle = `rgba(150,140,125,${(.15 + (h3 - Math.floor(h3)) * .35).toFixed(2)})`; q.fillRect((h1 - Math.floor(h1)) * 128, (h2 - Math.floor(h2)) * 128, 1.2, 1.2); } return std(0xffffff, .72, 0, { map: toTex(c, { rep: [3, 2] }) }); })())) : std(0xf3f1ec, .42);
+          mesh(new THREE.LatheGeometry(prof.map(([a, b]) => new THREE.Vector2(a, b)), 36), vm, X(cx - .06), y, Z(zc), g); }
         if (t === 'w') { let sx = cx + .04; for (let i = 0; i < 3; i++) { const w = .03, h = .22 + i * .02; mesh(BOOK.geo(w, h, .18, 'z'), BOOK.mats[i + 1], X(sx + w / 2), y + h / 2, Z(zc - .02), g); sx += w + .004; } } } // 흰 화병 옆엔 책 몇 권(화병 짝 중복 없앰)
-      else if (t === 'p') { mesh(CY(.06, .05, .1, 24), potM, X(cx), y + .05, Z(zc), g); /* 늘어지는 화분: 동글동글한 구 잎 대신 가늘고 길게 휘어 늘어지는 풀잎(스파이더 플랜트처럼) */
+      else if (t === 'p') { { const pg = lath([[0, 0], [.046, 0], [.049, .005], [.057, .09], [.062, .097], [.062, .104], [.057, .104], [.055, .098], [0, .096]]), pp = pg.attributes.position; for (let i = 0; i < pp.count; i++) { const px = pp.getX(i), pz = pp.getZ(i), py = pp.getY(i), rr = Math.hypot(px, pz); if (py > .008 && py < .092 && rr > .04) { const k = 1 + .05 * Math.cos(Math.atan2(pz, px) * 16); pp.setX(i, px * k); pp.setZ(i, pz * k); } } pg.computeVertexNormals(); mesh(pg, potM, X(cx), y, Z(zc), g); mesh(CY(.055, .055, .004, 24), std(0x4a3b2e, .95), X(cx), y + .096, Z(zc), g, { cast: false }); } /* 11-22: 원통 화분 → 세로 골 도기 화분(윗단 테) + 흙 */ /* 늘어지는 화분: 동글동글한 구 잎 대신 가늘고 길게 휘어 늘어지는 풀잎(스파이더 플랜트처럼) */
         const P = [], C = [], a = new THREE.Vector3(), tg = new THREE.Vector3(), sd = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), col = new THREE.Color();
         for (let i = 0; i < 34; i++) { const yaw = i * 2.39996 + r() * .4, dx = Math.sin(yaw), dz = Math.cos(yaw), hh = .08 + r() * .1, out = .07 + r() * .09, dn = r() < .55 ? .04 + r() * .2 : -.02 - r() * .06;
           const cv = new THREE.CubicBezierCurve3(new THREE.Vector3(dx * .01, 0, dz * .01), new THREE.Vector3(dx * .03, hh, dz * .03), new THREE.Vector3(dx * out * .8, hh * 1.1, dz * out * .8), new THREE.Vector3(dx * out, -dn, dz * out));
