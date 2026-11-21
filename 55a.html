@@ -2078,7 +2078,9 @@ function coffeeTable(x, z, rot) {
       else { x.fillStyle = '#2b2f36'; x.fillRect(10, 12, 40, 6); x.fillStyle = '#8a9099'; for (let k = 0; k < 9; k++) x.fillRect(10, 26 + k * 8, 70 - (k % 3) * 8, 3); x.fillStyle = '#b9a58c'; x.fillRect(10, 100, 34, 18); }
       return c; })());
     const mg = new THREE.Group(); mg.position.set(.04, .392, .14); mg.rotation.y = .3; g.add(mg);
-    for (const [sx, s] of [[-1, 0], [1, 1]]) { const pg = mesh(BX(.2, .004, .27), std(0xffffff, .85, 0, { map: page(s) }), sx * .1, .004, 0, mg, { cast: false }); pg.rotation.z = -sx * .05; } }
+    for (const [sx, s] of [[-1, 0], [1, 1]]) { const pg = new THREE.PlaneGeometry(.2, .27, 14, 1); pg.rotateX(-Math.PI / 2); const pa = pg.attributes.position; /* 11-21 소품 퀄리티업: 펼친 잡지 — 제본 쪽에서 살짝 들렸다 펴지는 종이 곡면 + 아래 종이 묶음 */
+      for (let i = 0; i < pa.count; i++) { const u = (pa.getX(i) + .1) / .2, t = sx < 0 ? 1 - u : u; pa.setY(i, .013 * Math.sin(Math.PI * Math.min(1, t * 1.6))); } pg.computeVertexNormals(); mesh(pg, std(0xffffff, .85, 0, { map: page(s), side: THREE.DoubleSide }), sx * .1, .0062, 0, mg, { cast: false }); }
+    mesh(BX(.398, .006, .268), std(0xf1ede4, .9), 0, .003, 0, mg, { cast: false }); }
   { const tray = mesh(CY(.15, .15, .006, 40), std(0x1f2d52, .35), .02, .392, -.18, g, { cast: false }); tray.scale.set(1.35, 1, .8); }
   { mesh(new THREE.LatheGeometry([[0, 0], [.033, 0], [.04, .03], [.036, .075], [.026, .098], [.029, .104], [.025, .104], [.022, .098], [.032, .075], [.036, .03], [.03, .006], [0, .006]].map(([u, v]) => new THREE.Vector2(u, v)), 32), std(0x2f4f86, .04, 0, { transparent: true, opacity: .78, side: THREE.DoubleSide }), -.08, .395, -.2, g); /* 11-21 소품: 두께 있는 파란 유리 화병 + 마른 팜파스 3줄기 */
     const stem = std(0xb59a72, .8), plume = std(0xe9dcc3, .95), Y = new THREE.Vector3(0, 1, 0); for (let i = 0; i < 3; i++) { const a2 = i * 2.2 + .4, t = .16 + i * .07, L = .26 + i * .04, dir = new THREE.Vector3(Math.cos(a2) * Math.sin(t), Math.cos(t), Math.sin(a2) * Math.sin(t)), b0 = new THREE.Vector3(-.08, .42, -.2);
