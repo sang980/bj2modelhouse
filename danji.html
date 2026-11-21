@@ -2604,7 +2604,13 @@ function buildOSM() {
       if (isApt) { for (const o of bl > 30 ? [-.25, .25] : [0]) obox(cx + ux * bl * o, cz + uz * bl * o, ux, uz, 6, 4.2, top, top + (fo ? 5.6 : 3.4), F);
         if (fo) { const fr = { gb: R, col: vc('#cdd2d5') }; /* 11-21 항공사진: 옥상 크라운·수직 프레임도 흰색~옅은 회색 */ for (let q = -2; q <= 2; q++) obox(cx + ux * q * 2.2, cz + uz * q * 2.2, ux, uz, .35, 5, top + 4.2, top + 9.5, { front: fr, back: fr, left: fr, right: fr, top: fr }); } } /* 포레스티아 옥상 수직 프레임 */
       else { const o = (rand() - .5) * .4 * bl, wcD = { gb: R, col: wc.map(v => v * .9) }, Fw = { front: wcD, back: wcD, left: wcD, right: wcD, top: { gb: R, col: vc('#9fa3a6') } }; obox(cx + ux * o, cz + uz * o, ux, uz, 2.4, 2.2, top, top + 2.3, Fw); /* 옥탑 계단실(벽 색) */
-        if (rand() < .55) { const tk2 = { gb: R, col: vc(rand() < .5 ? '#3f7fb3' : '#d9d9d4') }; obox(cx - ux * o * .8 + uz * 1.5, cz - uz * o * .8 - ux * 1.5, ux, uz, 1.4, 1.4, top, top + 1.5, { front: tk2, back: tk2, left: tk2, right: tk2, top: tk2 }); } } /* 물탱크 */
+        if (rand() < .55) { const tk2 = { gb: R, col: vc(rand() < .5 ? '#3f7fb3' : '#d9d9d4') }; obox(cx - ux * o * .8 + uz * 1.5, cz - uz * o * .8 - ux * 1.5, ux, uz, 1.4, 1.4, top, top + 1.5, { front: tk2, back: tk2, left: tk2, right: tk2, top: tk2 }); }
+        if (!LOW) { const nx2 = -uz, nz2 = ux, sx = cx + ux * o, sz = cz + uz * o, hd = hash2(Math.round(cx * 7) + 13, Math.round(cz * 7) + 29), sg2 = hd < .5 ? 1 : -1, drc = { gb: R, col: vc(hd < .22 ? '#5e4b3d' : hd < .62 ? '#6c7176' : '#86563a') }, DR = { front: drc, back: drc, left: drc, right: drc, top: drc }; /* 11-22 카카오 스카이뷰·로드뷰(태평동·신흥동 빌라 옥상): 옥탑 계단실 문(갈색·회색 철문 + 위 작은 차양) + 옥상 스티로폼 텃밭 상자 줄(흰 상자 + 흙·푸성귀) — hash만, 데스크톱 */
+          obox(sx + nx2 * sg2 * 1.12, sz + nz2 * sg2 * 1.12, ux, uz, .84, .05, top, top + 1.95, DR); { const cv2 = { gb: R, col: vc('#b9bcbd') }; obox(sx + nx2 * sg2 * 1.32, sz + nz2 * sg2 * 1.32, ux, uz, 1.2, .45, top + 2.02, top + 2.08, { front: cv2, back: cv2, left: cv2, right: cv2, top: cv2 }); }
+          if (hd > .3 && bl > 6.2) { const wbx = { gb: R, col: vc('#ecebe6') }, WB = { front: wbx, back: wbx, left: wbx, right: wbx }, n3 = 3 + Math.floor(hash2(Math.round(cz * 5) + 7, Math.round(cx * 5) + 3) * 5), dir = o > 0 ? -1 : 1, s0 = o + dir * 2.1, off = 1.6; /* 물탱크(−n 쪽) 반대편 */
+            for (let q = 0; q < n3; q++) { const sq = s0 + dir * q * .72, x = cx + ux * sq + nx2 * off, z = cz + uz * sq + nz2 * off; if (polyDist(P, x, z) > -.7) break; const hv = hash2(Math.round(x * 9), Math.round(z * 9) + 5), tc = { gb: R, col: vc(hv < .3 ? '#6b5641' : hv < .7 ? '#5f7d3b' : '#7c9a46') };
+              obox(x, z, ux, uz, .62, .42, top, top + .28, { ...WB, top: tc }); if (hv > .3) obox(x, z, ux, uz, .5, .3, top + .28, top + .36 + hv * .12, { front: tc, back: tc, left: tc, right: tc, top: tc }); } } }
+      } /* 물탱크 */
     }
     cnt++;
   }
