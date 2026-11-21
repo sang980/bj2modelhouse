@@ -2340,6 +2340,7 @@ function sideTable(x, z, withVase) {
     for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2, t = .16 + (i % 3) * .05, s = mesh(CY(.0016, .0016, .26, 5), std(0x3a2b20, .8), -.09 + Math.cos(a) * Math.sin(t) * .13, .68 + Math.cos(t) * .13, .08 + Math.sin(a) * Math.sin(t) * .13, g, { cast: false }); s.rotation.set(Math.sin(a) * t, 0, -Math.cos(a) * t); } }
   if (withVase) {
     mesh(CY(.05, .06, .2, 24), std(0xdfeaf0, .05, 0, { transparent: true, opacity: .45 }), -.06, .675, .03, g, { cast: false });
+    mesh(CY(.0525, .0585, .11, 24), std(0xbfdbe4, .04, 0, { transparent: true, opacity: .32, depthWrite: false }), -.06, .636, .03, g, { cast: false }); mesh(CY(.058, .0595, .014, 24), std(0xe6f0f2, .05, 0, { transparent: true, opacity: .55 }), -.06, .582, .03, g, { cast: false }); /* 11-21 소품 퀄리티업: 화병 속 물(엷은 청록) + 두꺼운 유리 바닥 */
     for (let i = 0; i < 9; i++) {
       const st = mesh(CY(.003, .003, .45), M.plant, -.06 + (rnd() - .5) * .04, .82, .03 + (rnd() - .5) * .04, g, { cast: false });
       st.rotation.set((rnd() - .5) * .7, 0, (rnd() - .5) * .7);
