@@ -833,6 +833,13 @@ let MW_P = null, MW_W = null; function mwPanelMat() { if (MW_P) return MW_P; con
 function mwWinMat() { if (MW_W) return MW_W; const c = mkCanvas(280, 200), x = c.getContext('2d'), g = x.createRadialGradient(140, 110, 10, 140, 110, 160); g.addColorStop(0, '#4a4033'); g.addColorStop(1, '#15161a'); x.fillStyle = g; x.fillRect(0, 0, 280, 200);
   x.fillStyle = 'rgba(0,0,0,.55)'; for (let yy = 4; yy < 200; yy += 6) for (let xx = 4 + (yy / 6 % 2) * 3; xx < 280; xx += 6) { x.beginPath(); x.arc(xx, yy, 1.6, 0, 7); x.fill(); } x.fillStyle = 'rgba(255,255,255,.06)'; x.beginPath(); x.moveTo(30, 0); x.lineTo(110, 0); x.lineTo(50, 200); x.lineTo(0, 200); x.fill();
   return (MW_W = std(0xffffff, .12, .2, { map: toTex(c) })); }
+/* 11-21 사용자: 소품 퀄리티업 — 꺼진 TV 화면: 가는 테 + 은은한 사선 반사광(유광 검정), 아래 가운데 대기 표시등 */
+let TVS_M = null; function tvScreenMat() { if (TVS_M) return TVS_M; const c = mkCanvas(1024, 600), x = c.getContext('2d'); x.fillStyle = '#0b0c0e'; x.fillRect(0, 0, 1024, 600);
+  { const g = x.createLinearGradient(0, 0, 1024, 600); g.addColorStop(0, 'rgba(255,255,255,.05)'); g.addColorStop(.35, 'rgba(255,255,255,.015)'); g.addColorStop(.55, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 1024, 600); }
+  x.fillStyle = 'rgba(255,255,255,.035)'; x.beginPath(); x.moveTo(560, 0); x.lineTo(700, 0); x.lineTo(420, 600); x.lineTo(280, 600); x.fill();
+  x.strokeStyle = '#1d1f23'; x.lineWidth = 10; x.strokeRect(5, 5, 1014, 590); x.strokeStyle = 'rgba(255,255,255,.06)'; x.lineWidth = 2; x.strokeRect(11, 11, 1002, 578);
+  return (TVS_M = std(0xffffff, .06, .3, { map: toTex(c) })); }
+function tvScreen(parent, x, y, z, w, h) { const s = mesh(new THREE.PlaneGeometry(w, h), tvScreenMat(), x, y, z, parent, { cast: false }); s.rotation.y = -Math.PI / 2; mesh(new THREE.SphereGeometry(.003, 8, 6), new THREE.MeshStandardMaterial({ color: 0x300000, emissive: 0xff2a1a, emissiveIntensity: .9 }), x - .001, y - h / 2 - .006, z, parent, { cast: false }); return s; }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -1605,7 +1612,7 @@ await phase('거실을 꾸미는 중', 56);
   const slab = std(0xffffff, .38, 0, { map: toTex(tileCanvas(1, 1, [218, 216, 211], '#d0cdc6', { j: 4, veins: 3, gap: 0 })) });
   pbox(x - .03, x, 0, H, 8.14, 11.1, slab, g);   // 침실1 문(7.2~8.05) 문틀 뒤에서 시작
   { const seam = std(0xb9b5ad, .7); for (let z = 8.14 + .6; z < 11.08; z += .6) pbox(x - .034, x - .03, 0, H, z - .0015, z + .0015, seam, g, { cast: false }); pbox(x - .034, x - .03, 1.2 - .0015, 1.2 + .0015, 8.14, 11.1, seam, g, { cast: false }); }
-  pbox(x - .07, x - .034, .98, 1.72, 8.75, 10.3, M.tv, g, { cast: false });                      // 벽걸이 TV
+  pbox(x - .07, x - .034, .98, 1.72, 8.75, 10.3, M.tv, g, { cast: false }); tvScreen(g, WX(x - .0705), 1.35, WZ(9.525), 1.54, .73); // 벽걸이 TV(11-21 화면 테·반사광·대기등)
   // VR: TV 왼쪽 대형 월패드(검은 유리 화면 + 아래 파란 LED)
   { const ui = toTex(padScreen(832, 405)); /* 11-21 화면 고해상도(TV 왼쪽 대형 월패드 .39×.19m) */
     pbox(x - .046, x - .034, 1.36, 1.58, 8.24, 8.66, std(0x15161a, .15, .3), g); pbox(x - .047, x - .046, 1.375, 1.565, 8.255, 8.645, std(0xffffff, .2, 0, { map: ui, emissive: 0xffffff, emissiveMap: ui, emissiveIntensity: .35 }), g, { cast: false });

@@ -796,6 +796,13 @@ const LBL_C = {}; function labelMat(kind) { if (LBL_C[kind]) return LBL_C[kind];
     x.restore(); }
   const m = std(0xffffff, .75, 0, { map: toTex(c) }); m.userData.lbl = 1; return (LBL_C[kind] = m); }
 const LBL_M = new Map(); function mirLbl(m) { if (!LBL_M.has(m)) { const t = m.map.clone(); t.repeat.x = -1; t.needsUpdate = true; const n = m.clone(); n.map = t; LBL_M.set(m, n); } return LBL_M.get(m); } /* 좌우 반전된 묶음(주방) 안의 라벨은 그림을 다시 뒤집어 글자가 바로 읽히게 */
+/* 11-21 사용자: 소품 퀄리티업 — 꺼진 TV 화면: 가는 테 + 은은한 사선 반사광(유광 검정), 아래 가운데 대기 표시등 */
+let TVS_M = null; function tvScreenMat() { if (TVS_M) return TVS_M; const c = mkCanvas(1024, 600), x = c.getContext('2d'); x.fillStyle = '#0b0c0e'; x.fillRect(0, 0, 1024, 600);
+  { const g = x.createLinearGradient(0, 0, 1024, 600); g.addColorStop(0, 'rgba(255,255,255,.05)'); g.addColorStop(.35, 'rgba(255,255,255,.015)'); g.addColorStop(.55, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 1024, 600); }
+  x.fillStyle = 'rgba(255,255,255,.035)'; x.beginPath(); x.moveTo(560, 0); x.lineTo(700, 0); x.lineTo(420, 600); x.lineTo(280, 600); x.fill();
+  x.strokeStyle = '#1d1f23'; x.lineWidth = 10; x.strokeRect(5, 5, 1014, 590); x.strokeStyle = 'rgba(255,255,255,.06)'; x.lineWidth = 2; x.strokeRect(11, 11, 1002, 578);
+  return (TVS_M = std(0xffffff, .06, .3, { map: toTex(c) })); }
+function tvScreen(parent, x, y, z, w, h) { const s = mesh(new THREE.PlaneGeometry(w, h), tvScreenMat(), x, y, z, parent, { cast: false }); s.rotation.y = -Math.PI / 2; mesh(new THREE.SphereGeometry(.003, 8, 6), new THREE.MeshStandardMaterial({ color: 0x300000, emissive: 0xff2a1a, emissiveIntensity: .9 }), x - .001, y - h / 2 - .006, z, parent, { cast: false }); return s; }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -1382,7 +1389,7 @@ await phase('거실을 꾸미는 중', 56);
 // 아트월·콘솔은 거실 서쪽 벽(z 5.16~)에만 — 현관 복도에서 거실로 들어오는 입구(z 4.2~5.1)는 비워 둠
 // 평면도 방향(견본주택 반전): TV 아트월·콘솔은 동쪽 벽(x=8.76, 침실1 문 남쪽 z 5.16~)
 pbox(8.74, 8.76, 0, H, 5.16, 8.05, M.woodPanel, fixed);
-pbox(8.695, 8.74, 1.0, 1.75, 6.25, 7.55, M.tv, fixed);
+pbox(8.695, 8.74, 1.0, 1.75, 6.25, 7.55, M.tv, fixed); tvScreen(fixed, WX(8.6945), 1.375, WZ(6.9), 1.29, .74);
 pbox(8.34, 8.74, .2, .42, 5.35, 8.0, M.marbleW, fixed);
 pbox(8.36, 8.72, .185, .2, 5.37, 7.98, M.ledWarm, fixed, { cast: false });
 ledRect(8.36, 8.69, 5.45, 7.9, .17, -1, 0xffd9a8, 1.6, 3.2);
