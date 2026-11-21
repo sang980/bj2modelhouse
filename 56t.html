@@ -2421,6 +2421,15 @@ await yieldUI();
 }
 const diningB = diningLarge();
 // 56T(VR): 흰 상판 + 원목 다리 4인 식탁(남북 방향) + 흰 의자, 식탁 옆 동쪽 벽 작은 액자 4개
+/* 11-22 소품 퀄리티업(56T 식탁): 베이지 판 매트 → 둥근 모서리 리넨 매트(짜임 결 + 가장자리 접어 박은 단·박음질, 결정적 값) + 젓가락 옆 스테인리스 숟가락 */
+let LIN_T = null; function linenMatT() { if (LIN_T) return LIN_T; const hq = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); };
+  const W = .28, D = .36, r = .018, sh = new THREE.Shape(); sh.moveTo(-W / 2 + r, -D / 2); sh.lineTo(W / 2 - r, -D / 2); sh.quadraticCurveTo(W / 2, -D / 2, W / 2, -D / 2 + r); sh.lineTo(W / 2, D / 2 - r); sh.quadraticCurveTo(W / 2, D / 2, W / 2 - r, D / 2); sh.lineTo(-W / 2 + r, D / 2); sh.quadraticCurveTo(-W / 2, D / 2, -W / 2, D / 2 - r); sh.lineTo(-W / 2, -D / 2 + r); sh.quadraticCurveTo(-W / 2, -D / 2, -W / 2 + r, -D / 2);
+  const geo = new THREE.ExtrudeGeometry(sh, { depth: .004, bevelEnabled: false, curveSegments: 5 }); geo.rotateX(-Math.PI / 2); { const uv = geo.attributes.uv, pa = geo.attributes.position; for (let i = 0; i < uv.count; i++) uv.setXY(i, (pa.getX(i) + W / 2) / W, (pa.getZ(i) + D / 2) / D); }
+  const c = mkCanvas(280, 360), x = c.getContext('2d'); x.fillStyle = '#ddd3c2'; x.fillRect(0, 0, 280, 360);
+  for (let k = 0; k < 360; k += 2) { x.fillStyle = `rgba(120,100,70,${.04 + hq(k, 3) * .07})`; x.fillRect(0, k, 280, 1); } for (let k = 0; k < 280; k += 2) { x.fillStyle = `rgba(255,250,240,${.04 + hq(k, 5) * .08})`; x.fillRect(k, 0, 1, 360); }
+  for (let i = 0; i < 90; i++) { x.fillStyle = 'rgba(110,90,60,.16)'; x.fillRect(hq(i, 7) * 280, hq(i, 9) * 360, 4 + hq(i, 11) * 10, 1); }
+  x.strokeStyle = 'rgba(120,100,72,.35)'; x.lineWidth = 3; x.strokeRect(16, 16, 248, 328); x.strokeStyle = '#f4efe4'; x.lineWidth = 1.6; x.setLineDash([5, 4]); x.strokeRect(22, 22, 236, 316); x.setLineDash([]);
+  LIN_T = { geo, mat: std(0xffffff, .9, 0, { map: toTex(c) }), steel: std(0xd3d5d7, .22, .9, { side: THREE.DoubleSide }) }; return LIN_T; }
 function diningWhiteT(L = 1.4, per = 2) { /* per: 한쪽 의자 수(2 → 4인, 3 → 6인) */
   const g = piece('식탁(' + per * 2 + '인)', 0, 0, 0), W = .8, top = std(0xf7f6f3, .35), wood = M.oak, zs = per === 3 ? [-.62, 0, .62] : [-.33, .33];
   mesh(RB(W, .035, L, .008), top, 0, .74, 0, g);
@@ -2429,7 +2438,7 @@ function diningWhiteT(L = 1.4, per = 2) { /* per: 한쪽 의자 수(2 → 4인, 
 
   // VR: 자리마다 매트 + 흰 접시 + 주황 그릇 + 젓가락
   const bowlGeo = new THREE.LatheGeometry([[0, 0], [.03, 0], [.034, .004], [.058, .035], [.062, .05], [.058, .05], [.03, .012], [0, .012]].map(([a, b]) => new THREE.Vector2(a, b)), 32), orange = std(0xd9822f, .3), chop = std(0x2b2523, .5), glazeGeo = new THREE.LatheGeometry([[.0575, .0497], [.0335, .0173], [.03, .0127], [0, .0127]].map(([a, b]) => new THREE.Vector2(a, b)), 32), glaze = std(0xf3ead6, .22); /* 11-21 소품 퀄리티업: 그릇 안쪽 크림색 유약 */
-  for (const [px, pz] of zs.flatMap(z => [[-.2, z], [.2, z]])) { mesh(BX(.28, .004, .36), std(0xdcd3c4, .9), px, .76, pz, g, { cast: false }); placePlate(g, px, .772, pz, .1);
+  for (const [px, pz] of zs.flatMap(z => [[-.2, z], [.2, z]])) { mesh(linenMatT().geo, LIN_T.mat, px, .758, pz, g, { cast: false }); placePlate(g, px, .772, pz, .1); { const sx = px + Math.sign(px) * .114, sp = new THREE.Group(); sp.position.set(sx, .763, pz); g.add(sp); const bw = mesh(new THREE.SphereGeometry(.019, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), LIN_T.steel, 0, .006, -.085, sp, { cast: false }); bw.scale.set(.85, .32, 1.25); mesh(BX(.0065, .0022, .15), LIN_T.steel, 0, .0035, .01, sp, { cast: false }); mesh(BX(.011, .0024, .04), LIN_T.steel, 0, .0035, .075, sp, { cast: false }); } /* 숟가락: 오목한 머리 + 가는 목 + 넓은 손잡이 끝 */
     mesh(bowlGeo, orange, px, .782, pz, g); mesh(glazeGeo, glaze, px, .782, pz, g, { cast: false }); for (const dz of [-.008, .008]) { const c = mesh(CY(.0025, .0035, .22, 6), chop, px + Math.sign(px) * .13, .766, pz + dz, g, { cast: false }); c.rotation.x = Math.PI / 2; } }
   { const bot = new THREE.LatheGeometry([[0, 0], [.036, 0], [.037, .2], [.03, .245], [.014, .275], [.014, .315], [0, .315]].map(([a, b]) => new THREE.Vector2(a, b)), 28), gm = std(0x1f2b22, .12, .25), foil = std(0x5a1420, .4, .3); /* VR: 와인병 2 + 와인잔 */
     for (const [x, z] of [[-.04, -.06], [.05, .04]]) { mesh(bot, gm, x, .757, z, g); mesh(CY(.0155, .0155, .045, 16), foil, x, .757 + .3, z, g); mesh(CY(.0375, .0375, .075, 28, 1, true), labelMat('wine'), x, .757 + .1, z, g, { cast: false }).rotation.y = Math.PI / 2 + Math.atan2(-x, -z); mesh(CY(.0156, .0156, .004, 16), std(0xc9a64a, .3, .8), x, .757 + .2775, z, g, { cast: false }); mesh(CY(.0308, .034, .02, 24, 1, true), std(0xefe6d2, .6), x, .757 + .232, z, g, { cast: false }); } /* 11-22 소품 퀄리티업: 민무늬 크림 띠 → 글자 있는 와인 라벨(RESERVE·문장·빈티지) + 호일 아래 금색 테 + 어깨 목 라벨 */
