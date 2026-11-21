@@ -2506,7 +2506,7 @@ function buildOSM() {
   const ROOF = { villa: ['#7f9a78', '#879f80', '#8d9194', '#a4a7a8', '#c4c2bb', '#8f7466', '#7f8a96', '#b2ada3', '#9aa09a'].map(vc), apt: ['#9aa0a5', '#a8acaf', '#8f979e'].map(vc), shop: ['#a2a4a5', '#8f9396'].map(vc), office: ['#a2a6aa'].map(vc), pub: ['#8f9a90', '#a1a49b'].map(vc), ind: ['#7f8a94', '#a3a9ad', '#8c8f8a'].map(vc) };
   ROOF.villaBrick = ROOF.villaTile = ROOF.villa; ROOF.aptModern = ROOF.apt; ROOF.stone = ROOF.office;
   /* 이 동네 주택 옥상: 초록·청록 방수 도장과 회색·파랑이 대부분(스카이뷰 참고) */
-  ROOF.villa = ROOF.villaBrick = ROOF.villaTile = ROOF.villaGray = ['#4f8f74', '#5a9a7c', '#3f8069', '#6aa087', '#8e979c', '#a9aeb1', '#5f7f9f', '#4a6f96', '#b8b4aa', '#8c6f5f'].map(vc);
+  ROOF.villa = ROOF.villaBrick = ROOF.villaTile = ROOF.villaGray = ['#4f8f74', '#5a9a7c', '#3f8069', '#6aa087', '#8e979c', '#a9aeb1', '#5f7f9f', '#4a6f96', '#c3c6c6', '#d4d6d4', '#4f8f74', '#8c6f5f'].map(vc); /* 11-22 카카오 스카이뷰(같은 틀, 태평동): 흰·밝은 회색 옥상이 많고 갈색은 드묾 — 베이지(햇빛에 주황빛)를 밝은 회색 둘로, 갈색 1/12 */
   WALL.aptK = ['#ffffff', '#f7f2e8', '#eef1f3', '#f4ece0', '#ffffff'].map(vc); WALL.forestia = ['#ffffff', '#f3f4f4'].map(vc); WALL.forestiaBase = ['#ffffff'].map(vc); WALL.forestiaSide = ['#ffffff'].map(vc); ROOF.forestiaSide = ['#9ba1a6'].map(vc); WALL.xi = ['#ffffff', '#f6f6f4'].map(vc); WALL.xiB = WALL.xi; WALL.gov = ['#ffffff'].map(vc); WALL.lib = ['#ffffff'].map(vc); ROOF.lib = ['#b4aea2'].map(vc); WALL.hosp = ['#ffffff'].map(vc); ROOF.hosp = ['#9fae9a'].map(vc); WALL.pav = ['#ffffff'].map(vc); ROOF.pav = ['#5d6a62'].map(vc); WALL.cmty = ['#ffffff'].map(vc); ROOF.cmty = ['#9ea3a6'].map(vc); WALL.youth = ['#ffffff'].map(vc); WALL.seomun = ['#ffffff'].map(vc); ROOF.seomun = ['#a9adb0'].map(vc); ROOF.youth = ['#5d9384'].map(vc); /* 스카이뷰: 청록 지붕 */ WALL.youthBase = WALL.youth; ROOF.youthBase = ROOF.youth; WALL.govBase = WALL.gov; WALL.schoolBrick = WALL.gov; WALL.xiBase = WALL.gov; ROOF.xi = ['#9ea4a8', '#a8adb0'].map(vc); ROOF.xiB = ROOF.xi; ROOF.gov = ['#5f9c88'].map(vc); /* 11-21 카카오 스카이뷰·항공사진: 수정구청 지붕은 청록 */ ROOF.govBase = ROOF.gov; ROOF.schoolBrick = ['#7f8c7e'].map(vc); ROOF.xiBase = ROOF.gov;
   ROOF.aptK = ROOF.apt; ROOF.forestia = ['#9ba1a6', '#a7acaf'].map(vc); ROOF.forestiaBase = ROOF.forestia;
   WALL.villaGray = ['#ffffff', '#e9ebe6', '#dfe3e6', '#ece6dc'].map(vc);
@@ -2979,7 +2979,7 @@ function buildSurroundings(T) {
   const lod = d => d < 1000 ? 0 : d < 2000 ? 1 : 2;
   const vc = hex => { const c = new THREE.Color(hex); return [c.r, c.g, c.b]; };
   const WALLC = ['#e6e1d7', '#d9cbb0', '#b77a5e', '#ece9e3', '#c8c3ba', '#d6b8a4', '#c49a76', '#bfc4c8'].map(vc);
-  const ROOFC = ['#6f8f68', '#8a9488', '#8d9094', '#9ea2a6', '#b0b1ae', '#c4c1b9', '#d2d0ca', '#a7a39b', '#94775f', '#7f8b97'].map(vc); /* 옥상: 회색·흰색 위주, 초록 방수·붉은 지붕 조금 */
+  const ROOFC = ['#6f8f68', '#8a9488', '#8d9094', '#9ea2a6', '#b0b1ae', '#c6c8c7', '#d2d3d0', '#a7a9a6', '#5a8a6e', '#7f8b97', '#94775f'].map(vc); /* 11-22: 따뜻한 베이지 줄이고 초록 방수 하나 더, 갈색 1/11 */ /* 옥상: 회색·흰색 위주, 초록 방수·붉은 지붕 조금 */
   const APTC = ['#f0efea', '#e9e5dc', '#e2e4e6', '#efe9df', '#dfe3e2'].map(vc);
   const addBox = (lv, x, z, ux, uz, L, Dp, h, kind) => {
     const y0 = Math.min(heightAt(x, z), heightAt(x + ux * L / 2, z + uz * L / 2), heightAt(x - ux * L / 2, z - uz * L / 2)) - .8;
