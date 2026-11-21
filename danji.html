@@ -1038,7 +1038,7 @@ function buildDong(D, G, MAT) {
     const { A, L, ux, uz, f, n } = w, cx = A[0] + ux * L / 2, cz = A[1] + uz * L / 2, fx = -uz, fz = ux, tw = L / n;
     /* 해발고(공사계획평면도 FL): 1층 바닥 yb. 56T(테라스) 층은 FL 아래, 낮은 쪽 단을 향함. 116동은 지면(130)~FL(135.7) 필로티 */
     const yb = (FLV[D.d] || 121) - Y0, t = D.t && (D.w.length === 1 || wi === 1) ? D.t : 0, yF1 = D.pit ? 130 - Y0 : yb - t * FH, ft = D.pit ? f : f + t, H = ft * FH + (D.pit ? yb - yF1 : 0); /* 필로티 동: FL 위로 f개 층 */
-    let dW = 0, yl = yb; const tz0 = TZ.find(q => q.key === D.d + '_' + wi); if (tz0) { dW = tz0.dW; yl = tz0.yl; } else for (let d = DEP / 2 + .5; d < 32; d += .5) { const lv = levelAt(cx + fx * d, cz + fz * d); if (lv < yb - 1) { dW = d; yl = levelAt(cx + fx * (d + 2), cz + fz * (d + 2)); break; } }
+    let dW = 0, yl = yb, tS2 = 0; const tz0 = TZ.find(q => q.key === D.d + '_' + wi); if (tz0) { dW = tz0.dW; yl = tz0.yl; } else for (let d = DEP / 2 + .5; d < 32; d += .5) { const lv = levelAt(cx + fx * d, cz + fz * d); if (lv < yb - 1) { dW = d; yl = levelAt(cx + fx * (d + 2), cz + fz * (d + 2)); break; } }
     const yLowR = Math.min(0, (t ? yl : yb) - yF1) - .4, yBackR = yb - yF1, pitH = D.pit ? yb - yF1 : 0;
     const base = pitH + (t + 3) * FH; /* 모든 동: 1~3층 갈색 도장(테라스 층은 따로) */
     YOFF = yF1;
@@ -1102,7 +1102,7 @@ function buildDong(D, G, MAT) {
       obox(cx + fx * (DEP / 2 + dep - .25), cz + fz * (DEP / 2 + dep - .25), ux, uz, L - .4, .45, .12, 1.05, { front: F(TB), back: F(TB), left: F(TB), right: F(TB), top: F(TB) });
       /* 세대 사이 칸막이·테라스 위 처마: 모형처럼 갈색 도장 */
       if (!shallow) for (let k = 0; k <= n; k++) { const s = -L / 2 + tw * k, ex = Math.max(-L / 2 + .2, Math.min(L / 2 - .2, s)); const W5 = { front: F(G.white), back: F(G.white), left: F(G.white), right: F(G.white), top: F(G.white) }; obox(cx + ux * ex + fx * (ox - dep / 4), cz + uz * ex + fz * (ox - dep / 4), fx, fz, dep / 2, .5, .12, 2.1, W5); obox(cx + ux * ex + fx * (ox + dep / 6), cz + uz * ex + fz * (ox + dep / 6), fx, fz, dep / 3, .5, .12, 1.55, W5); obox(cx + ux * ex + fx * (ox + dep * .42), cz + uz * ex + fz * (ox + dep * .42), fx, fz, dep / 6, .5, .12, 1.1, W5); } /* 모형 VE04 확대: 세대 사이 칸막이는 밝은 회색, 두껍고 앞쪽으로 낮아지는 둥근 모양(계단식 근사) */
-      if (t === 2) { const s2 = Math.min(3.2, dep - 1.2), o2 = DEP / 2 + s2 / 2, TU = { gb: G.terr, uv: uvTile(tw, FH) }; /* 모형 사진 1(122동): 56T 두 줄은 계단식 — 1층 세대가 앞으로 나오고 그 지붕이 2층 테라스 */
+      if (t === 2) { const s2 = Math.min(3.2, dep - 1.2), o2 = DEP / 2 + s2 / 2, TU = { gb: G.terr, uv: uvTile(tw, FH) }; tS2 = s2; /* 11-21: 우리 집(T1) 거실 창 위치용 */ /* 모형 사진 1(122동): 56T 두 줄은 계단식 — 1층 세대가 앞으로 나오고 그 지붕이 2층 테라스 */
         obox(cx + fx * o2, cz + fz * o2, ux, uz, L - .3, s2, .12, FH, { front: TU, left: TU, right: TU, top: { gb: G.tdeckL } });
         obox(cx + fx * (DEP / 2 + s2 - .22), cz + fz * (DEP / 2 + s2 - .22), ux, uz, L - .5, .4, FH, FH + 1, { front: F(TB), back: F(TB), left: F(TB), right: F(TB), top: F(TB) }); }
       obox(cx + fx * (DEP / 2 + .9), cz + fz * (DEP / 2 + .9), ux, uz, L, 1.8, yT - .35, yT + .05, { front: { gb: TB }, back: { gb: TB }, top: { gb: TB }, bottom: { gb: TB }, left: { gb: TB }, right: { gb: TB } }); } /* 테라스 위 처마(어닝): 11-17 사용자 — 밑에서 보면 뚫려 보임 → 밑면·양끝까지 닫힌 상자 */
@@ -1117,7 +1117,7 @@ function buildDong(D, G, MAT) {
         G.path.quad([P[0] + fx * w, y, P[1] + fz * w], [Q[0] + fx * w, y, Q[1] + fz * w], [Q[0] - fx * w, y, Q[1] - fz * w], [P[0] - fx * w, y, P[1] - fz * w], [0, 1, 0], [(P[0]) / 4, -P[1] / 4, Q[0] / 4, -Q[1] / 4, (Q[0] - fx * 2 * w) / 4, -(Q[1] - fz * 2 * w) / 4, (P[0] - fx * 2 * w) / 4, -(P[1] - fz * 2 * w) / 4]); } }
     if (false) { const off = DEP / 2 + CORE_D + 3, y0 = levelAt(cx - fx * off, cz - fz * off); if (polyDist(SITE, cx - fx * off, cz - fz * off) < -3) for (const sgn of [-1, 1]) { const s2 = sgn * (L / 2 - 3), bx = cx + ux * s2 - fx * off, bz = cz + uz * s2 - fz * off; if (Math.abs(levelAt(bx, bz) - y0) > .3) continue;
       obox(bx, bz, ux, uz, 2.2, 1.6, y0 - YOFF, y0 - YOFF + 1.3, { front: { gb: G.vent }, back: { gb: G.vent }, left: { gb: G.vent }, right: { gb: G.vent }, top: { gb: G.vent } }); } } /* (11-16: 짐작 위치 대신 배치도 DA 위치로 옮김 — buildYard) */
-    pieces.push({ cx, cz, ux, uz, L, H, f, ft, yF1, yb, t, n, ln: w.ln || Array.from({ length: n }, (_, k) => n - k) });
+    pieces.push({ cx, cz, ux, uz, L, H, f, ft, yF1, yb, t, tS2, n, ln: w.ln || Array.from({ length: n }, (_, k) => n - k) });
     topY = Math.max(topY, yF1 + H); cxs += cx * L; czs += cz * L; wsum += L;
   });
   /* ㄱ자 동: 꺾이는 곳 코어 */
@@ -2540,8 +2540,8 @@ function capSpot(dong, hoRaw) {
   const s = String(hoRaw || '').trim(), isT = /^t/i.test(s), num = parseInt(s.replace(/[^0-9]/g, ''), 10); if (!num) return { err: '호수가 없습니다' };
   const k = Math.floor(num / 100), line = num % 100, tD = b.D.t || 0, fl = isT ? -(Math.max(1, tD) - k + 1) : k;
   for (const p of b.pieces) { const i = p.ln.indexOf(line); if (i < 0) continue;
-    const tw = p.L / p.n, sAl = -p.L / 2 + tw * (i + .5), fx = -p.uz, fz = p.ux, fy = p.yb + (fl > 0 ? fl - 1 : fl) * FH, back = fl < 0 ? DEP / 2 + 3 : DEP / 2 - 2.5; /* 테라스(T층) 세대는 타워 앞 저층부라 더 앞(조감도 거실 전망은 +4.5) */
-    return { x: p.cx + p.ux * sAl + fx * back, y: fy + 1.53, z: p.cz + p.uz * sAl + fz * back, fx, fz, fl, line, f: p.f, asl: Y0 + fy + 1.53, facing: facing(fx, fz), eyeRel: [0, 1.53, back - DEP / 2] }; } /* eyeRel: 거실 창 벽(동 앞면 DEP/2, 바닥 높이, 세대 가운데) 기준 눈 위치 — 인테리어 좌표(창 바깥 +z) */
+    const tw = p.L / p.n, sAl = -p.L / 2 + tw * (i + .5), fx = -p.uz, fz = p.ux, fy = p.yb + (fl > 0 ? fl - 1 : fl) * FH, wall = DEP / 2 + (fl === -2 && p.tS2 ? p.tS2 : 0), back = fl < 0 ? wall + 3 : DEP / 2 - 2.5; /* 11-21 121동 사용자 신고(테라스 위 천장): 계단식 56T(112·121·122) 아래층(T1) 세대는 탑보다 s2(≤3.2m) 앞으로 나와 있고 그 지붕이 T2 테라스 — 거실 창을 탑 앞면에 두면 T2 테라스 바닥이 T1 테라스 위 천장이 됨 → T1 거실 창 = 앞으로 나온 면 */ /* 테라스(T층) 세대는 타워 앞 저층부라 더 앞(조감도 거실 전망은 +4.5) */
+    return { x: p.cx + p.ux * sAl + fx * back, y: fy + 1.53, z: p.cz + p.uz * sAl + fz * back, fx, fz, fl, line, f: p.f, asl: Y0 + fy + 1.53, facing: facing(fx, fz), eyeRel: [0, 1.53, back - (fl < 0 ? wall : DEP / 2)] }; } /* eyeRel: 거실 창 벽(동 앞면 DEP/2, 바닥 높이, 세대 가운데) 기준 눈 위치 — 인테리어 좌표(창 바깥 +z) */
   return { err: line + '호 라인이 없습니다' };
 }
 /* 우리 집 주변 실제 3D(테라스 세대): 눈 위치 E 둘레 한 변 2·RC 정육면체 안의 메시를 잘라 인테리어 좌표(거실 창 바깥 = +z)로 보냄 — 6면 사진은 near = RC 로 찍어 이 안쪽은 빼고 먼 풍경만 */
