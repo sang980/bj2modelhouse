@@ -1764,7 +1764,7 @@ await phase('욕실과 발코니를 꾸미는 중', 61);
   ceilingPanel(6.47, 6.97, 5.84, 6.34, .8, 2.2);
 }
 await yieldUI();
-let _bLeaf = null, _bLeafM = null; /* 11-22: 욕실 유리병 꽃 잎 모양·재질 공유 */
+let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; /* 11-22: 욕실 유리병 꽃 잎 모양·재질 공유 */
 // ── 욕실 소품(VR) ──
 { const g = fixed;
   // 수건 무늬: 위는 흰 타월, 아래 30%는 회색 띠(이음선) + 잔결
@@ -1802,8 +1802,9 @@ let _bLeaf = null, _bLeafM = null; /* 11-22: 욕실 유리병 꽃 잎 모양·�
     for (let i = 0; i < 64; i += 4) { x.fillStyle = 'rgba(90,64,30,.18)'; x.fillRect(0, i, 64, 1.5); x.fillStyle = 'rgba(255,240,210,.12)'; x.fillRect(i, 0, 1.5, 64); } for (let i = 0; i < 500; i++) { x.fillStyle = `rgba(70,50,20,${rnd() * .12})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 1); } return c; })(), { rep: [4, 3] });
   const amber = (x, y, z, h = .17) => { mesh(CY(.032, .032, h, 20), std(0x6e3f16, .22, .05, { transparent: true, opacity: .92 }), WX(x), y + h / 2, WZ(z), g); mesh(CY(.012, .012, .03, 12), std(0x151515, .4), WX(x), y + h + .015, WZ(z), g);
     mesh(CY(.0325, .0325, h * .38, 20, 1, true), std(0xf1ead8, .8), WX(x), y + h * .48, WZ(z), g); }; // 둘러 붙인 크림색 라벨
-  const grassPot = (x, y, z) => { mesh(CY(.04, .034, .06, 20), std(0xf3f1ec, .4), WX(x), y + .03, WZ(z), g);
-    for (let i = 0; i < 16; i++) { const a = rnd() * 6.28, h = .07 + rnd() * .03, l = mesh(BX(.005, h, .002), M.plant, WX(x) + Math.cos(a) * .015, y + .06 + h / 2, WZ(z) + Math.sin(a) * .015, g, { cast: false }); l.rotation.set(Math.sin(a) * .35, a, Math.cos(a) * .35); } };
+  const grassPot = (x, y, z) => { mesh(new THREE.LatheGeometry([[0, 0], [.033, 0], [.035, .004], [.04, .056], [.042, .06], [.0385, .061], [.035, .056], [0, .054]].map(([a, b]) => new THREE.Vector2(a, b)), 24), std(0xf3f1ec, .4), WX(x), y, WZ(z), g); mesh(CY(.0352, .0352, .004, 20), std(0x4a3b2e, .95), WX(x), y + .054, WZ(z), g, { cast: false }); /* 11-22: 흰 원통 → 테두리 있는 도기 화분 + 짙은 흙 표면 */
+    const bg = _gBlade || (_gBlade = (() => { const s = new THREE.Shape(); s.moveTo(-.0028, 0); s.quadraticCurveTo(-.0034, .55, 0, 1); s.quadraticCurveTo(.0034, .55, .0028, 0); s.lineTo(-.0028, 0); const sg = new THREE.ShapeGeometry(s, 6), p = sg.attributes.position; for (let v = 0; v < p.count; v++) { const t = p.getY(v); p.setZ(v, -.22 * t * t + Math.abs(p.getX(v)) * 1.5); } sg.computeVertexNormals(); return sg; })()), bm = _gBladeM || (_gBladeM = std(M.plant.color.getHex(), .65, 0, { side: THREE.DoubleSide })); /* 11-22: 납작한 막대 풀잎 → 끝이 뾰족하고 뒤로 휘는 가는 잎(가운데 골, 난수 호출 수 그대로) */
+    for (let i = 0; i < 16; i++) { const a = rnd() * 6.28, h = .07 + rnd() * .03, l = mesh(bg, bm, WX(x) + Math.cos(a) * .015, y + .055, WZ(z) + Math.sin(a) * .015, g, { cast: false }); l.scale.set(1, h, h); l.rotation.set(Math.sin(a) * .35, a, Math.cos(a) * .35); } };
   // 욕실1: 남쪽 벽(z 1.635, 문과 욕조 사이) 수건 — 흰+회색 띠 + 녹슨 주황(VR)
   hangTowels(5.82, 1.635, 0, -1, .5, 1.42, 0xd06a3e);
   paperHolder(4.575, .82, 1, 0, .72);                              // 변기 옆 서쪽 벽
