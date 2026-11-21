@@ -827,6 +827,14 @@ function makeDecorPieces() { const V = new THREE.Vector3(), B = new THREE.Box3()
     for (const o of objs) g.attach(o);
     g.userData = { name: d.name, movable: true, solid: d.solid, decor: true, home: { x: g.position.x, z: g.position.z, r: 0 } }; movables.push(g); DECOR_G.push(g); }
   DECOR.length = 0; }
+/* 11-21 침구 퀄리티업: 벨벳 천(결정적 눌린 결 + 고운 털 결) · 사각 쿠션 솔기 파이핑(sqPillowG 가장자리 따라 둥근 줄) */
+let VELV = null; function velvetTex() { if (VELV) return VELV; const c = mkCanvas(512, 512), x = c.getContext('2d'); x.fillStyle = '#efefef'; x.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 110; i++) { const h = Math.imul(i + 1, 2654435761) >>> 0, px = h % 512, py = (h >>> 9) % 512, r = 24 + (h >>> 18) % 60, l = (h >>> 3) & 1 ? 255 : 0, g = x.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, `rgba(${l},${l},${l},.12)`); g.addColorStop(1, `rgba(${l},${l},${l},0)`); x.fillStyle = g; x.fillRect(px - r, py - r, 2 * r, 2 * r); }
+  for (let i = 0; i < 9000; i++) { const h = Math.imul(i + 7, 2246822519) >>> 0, l = (h >>> 21) & 1 ? 255 : 0; x.fillStyle = `rgba(${l},${l},${l},.07)`; x.fillRect(h % 512, (h >>> 10) % 512, 1, 2); }
+  return (VELV = toTex(c, { rep: [2, 2] })); }
+function sqPipe(o, w, h, mat) { const P = [], E = 10, at = (u, v) => P.push(new THREE.Vector3(u * w / 2 * (1 - .05 * v * v), v * h / 2 * (1 - .05 * u * u), 0));
+  for (let i = 0; i < E; i++) at(-1 + 2 * i / E, -1); for (let i = 0; i < E; i++) at(1, -1 + 2 * i / E); for (let i = 0; i < E; i++) at(1 - 2 * i / E, 1); for (let i = 0; i < E; i++) at(-1, 1 - 2 * i / E);
+  mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P, true, 'catmullrom', .2), 120, .0055, 6, true), mat, 0, 0, 0, o, { cast: false }); }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -2362,8 +2370,9 @@ function dresser(x, z, rot) {
 { const s = sofa(5.66, 6.55, Math.PI / 2); s.scale.x = -1; /* 55A와 같은 팔걸이형 소파 — 쿠션만 55C 소품 */
   s.traverse(o => { if (o.isMesh && (o.material === M.check || o.material === M.navy)) o.visible = false; }); /* 기본 쿠션은 숨김 */
   const fur = std(0xd9d1c0, 1, 0, { map: M.boucle.map, bumpMap: M.boucle.bumpMap, bumpScale: 2.5 });
-  [[.8, std(0xd8c2ab, .9), .44, -.16], [.52, std(0xf7f5f1, .9), .42, -.12], [.24, std(0xf7f5f1, .9), .42, -.15], [-.05, std(0xdcc0ae, .9), .4, -.12], [-.36, fur, .46, -.15]].forEach(([px, m, sz, pz], i) => {
-    const p = mesh(sqPillowG(sz, sz * .92, .18), m, px, .64, pz, s); p.rotation.set(-.22, (i - 2) * .06, (i % 2 ? .06 : -.05)); }); } /* 모서리 뾰족한 사각 쿠션 */
+  const lin = c => std(c, .9, 0, { map: M.linen.map, bumpMap: M.linen.map, bumpScale: 1.2 }), wl = lin(0xf7f5f1); /* 11-21 소품 퀄리티업: 베이지·흰 쿠션 리넨 짜임 + 분홍 쿠션 벨벳, 털 쿠션 빼고 솔기 파이핑 */
+  [[.8, lin(0xd8c2ab), .44, -.16], [.52, wl, .42, -.12], [.24, wl, .42, -.15], [-.05, std(0xdcc0ae, .6, 0, { map: velvetTex(), bumpMap: velvetTex(), bumpScale: .3 }), .4, -.12], [-.36, fur, .46, -.15]].forEach(([px, m, sz, pz], i) => {
+    const p = mesh(sqPillowG(sz, sz * .92, .18), m, px, .64, pz, s); p.rotation.set(-.22, (i - 2) * .06, (i % 2 ? .06 : -.05)); if (m !== fur) sqPipe(p, sz, sz * .92, m); }); } /* 모서리 뾰족한 사각 쿠션 */
 // VR: 거실 회색 샤기 러그(긴 털) — 털 결 무늬 + 같은 무늬로 강한 요철, 두께 3cm
 M.shagGrey = (() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = '#9c9b98'; x.fillRect(0, 0, 256, 256); x.lineCap = 'round';
   for (let i = 0; i < 2400; i++) { const px = rnd() * 256, py = rnd() * 256, a = rnd() * 6.28, l = 5 + rnd() * 10, v = 120 + rnd() * 105 | 0; x.strokeStyle = `rgb(${v},${v},${Math.max(0, v - 3)})`; x.lineWidth = 1.4 + rnd() * 1.8; x.beginPath(); x.moveTo(px, py); x.quadraticCurveTo(px + Math.cos(a + 1) * l * .6, py + Math.sin(a + 1) * l * .6, px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke(); }
