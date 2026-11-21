@@ -3167,7 +3167,9 @@ let b6door = null;
   cab(v, 8.96, xb, 1.1, 2.0, z0 + .07, z1 - .05, std(0xdedcd7, .5));
   for (const [a, b] of [[z0 + .08, zm - .002], [zm + .01, z1 - .06]]) cab(v, 8.955, 8.96, 1.11, 1.99, a, b, M.mirrorBed1, { cast: false });
   cab(v, 8.95, 8.97, 2.0, 2.02, z0 + .07, z1 - .05, M.ledWarm, { cast: false });
-  const st = piece('스툴', 8.56, zm, 0); /* 상판 밑으로 조금 밀어 넣어 드레스룸 출입 동선을 비움 */ mesh(CY(.17, .17, .05, 24), std(0xe6e0d6, .9), 0, .45, 0, st); mesh(CY(.02, .02, .42, 10), M.black, 0, .21, 0, st); mesh(CY(.15, .15, .015, 24), M.black, 0, .01, 0, st);
+  const st = piece('스툴', 8.56, zm, 0); /* 상판 밑으로 조금 밀어 넣어 드레스룸 출입 동선을 비움 */ { const fab = M.linen.clone(), ch = std(0xd7d9db, .18, .95); fab.color.set(0xe6e0d6); mesh(new THREE.LatheGeometry([[0, 0], [.165, 0], [.172, .012], [.173, .036], [.162, .054], [.11, .064], [0, .066]].map(([a, b]) => new THREE.Vector2(a, b)), 40), fab, 0, .418, 0, st); { const w = mesh(new THREE.TorusGeometry(.171, .0045, 6, 48), fab, 0, .463, 0, st, { cast: false }); w.rotation.x = Math.PI / 2; } mesh(CY(.11, .12, .012, 32), M.black, 0, .412, 0, st); /* 11-22 소품·의자 퀄리티업: 화장대 스툴 — 원통 판 → 리넨 결 둥근 방석(윗면 볼록) + 가장자리 웰트, 검은 기둥 + 크롬 발받침 고리(살 2) + 가장자리가 낮아지는 둥근 받침 */
+    mesh(CY(.02, .024, .4, 14), M.black, 0, .21, 0, st); { const r = mesh(new THREE.TorusGeometry(.13, .006, 8, 40), ch, 0, .2, 0, st, { cast: false }); r.rotation.x = Math.PI / 2; for (const a of [0, Math.PI / 2]) { const s = mesh(CY(.004, .004, .26, 6), ch, 0, .2, 0, st, { cast: false }); s.rotation.set(Math.PI / 2, 0, a); } }
+    mesh(new THREE.LatheGeometry([[0, 0], [.165, 0], [.165, .006], [.13, .018], [.04, .026], [0, .028]].map(([a, b]) => new THREE.Vector2(a, b)), 40), M.black, 0, 0, 0, st); }
   OG['b8-2st'] = st; }
 // 9 침실2 붙박이장: 55A 침실2와 같은 붙박이장 유닛(2짝 옷장 | 거울장 니치 | 문 쪽 오픈칸 기둥 + 스위치)을 그대로 가져와
 //   A 좌표(북쪽 벽을 따라 서쪽→문)로 만든 뒤 B 침실2 동쪽 벽(북쪽 모서리→방문)으로 90° 돌려 배치

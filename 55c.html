@@ -3273,8 +3273,11 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
     for (const y of [.69, .58]) cab(sg, dx0 - .008, dx0, y, y + .01, z0 + .12, zv - .12, std(0xc9c7c2, .4, .3)); // 손잡이 홈
     // 의자(스툴) — 테이블 밑으로 반쯤 넣어 둠
     const sx = x0 + .12, sz = (z0 + zv) / 2;
-    mesh(CY(.17, .17, .05, 24), std(0xd9d4cb, .9), WX(sx), .45, WZ(sz), sg);
-    for (const a of [0, 2.1, 4.2]) mesh(CY(.01, .01, .43, 8), M.white, WX(sx + Math.cos(a) * .11), .215, WZ(sz + Math.sin(a) * .11), sg);
+    { const X = WX(sx), Z = WZ(sz), fab = M.linen.clone(), oak = std(0xc7a47a, .55), brass = std(0xc9a64a, .3, .9), Yv = new THREE.Vector3(0, 1, 0); fab.color.set(0xd9d4cb); /* 11-22 소품·의자 퀄리티업: 화장대 스툴 — 원통 판 + 가는 막대 다리 3 → 리넨 결 둥근 방석(윗면 볼록) + 가장자리 웰트 + 원목 테 + 바깥으로 벌어진 원목 다리 3(아래로 가늘게) + 황동 발받침 고리 */
+      mesh(new THREE.LatheGeometry([[0, 0], [.165, 0], [.172, .012], [.173, .036], [.162, .054], [.11, .064], [0, .066]].map(([a, b]) => new THREE.Vector2(a, b)), 40), fab, X, .418, Z, sg); { const w = mesh(new THREE.TorusGeometry(.171, .0045, 6, 48), fab, X, .418 + .045, Z, sg, { cast: false }); w.rotation.x = Math.PI / 2; }
+      mesh(new THREE.CylinderGeometry(.152, .152, .03, 36, 1, true), oak, X, .405, Z, sg); mesh(CY(.152, .152, .004, 36), oak, X, .392, Z, sg, { cast: false });
+      for (const a of [.5, 2.6, 4.7]) { const top = new THREE.Vector3(X + Math.cos(a) * .115, .395, Z + Math.sin(a) * .115), bot = new THREE.Vector3(X + Math.cos(a) * .165, 0, Z + Math.sin(a) * .165), d = top.clone().sub(bot), L = d.length(); const lg = mesh(new THREE.CylinderGeometry(.013, .008, L, 10), oak, (top.x + bot.x) / 2, L / 2 * d.y / L, (top.z + bot.z) / 2, sg); lg.quaternion.setFromUnitVectors(Yv, d.normalize()); }
+      { const r = mesh(new THREE.TorusGeometry(.142, .0045, 6, 40), brass, X, .17, Z, sg, { cast: false }); r.rotation.x = Math.PI / 2; } }
   } }
 // 11 침실2 붙박이장
 /* (옛 동쪽 벽 장 없앰 — 11-17 버그 제보: 미설치인데 VR 붙박이장이 늘 있고, 선택하면 옆에 하나 더 생김 → 옵션 11 = 아래 견본주택 VR 붙박이장 하나만) */
