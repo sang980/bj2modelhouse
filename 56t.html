@@ -883,6 +883,10 @@ let VELV = null; function velvetTex() { if (VELV) return VELV; const c = mkCanva
 function sqPipe(o, w, h, mat) { const P = [], E = 10, at = (u, v) => P.push(new THREE.Vector3(u * w / 2 * (1 - .05 * v * v), v * h / 2 * (1 - .05 * u * u), 0));
   for (let i = 0; i < E; i++) at(-1 + 2 * i / E, -1); for (let i = 0; i < E; i++) at(1, -1 + 2 * i / E); for (let i = 0; i < E; i++) at(1 - 2 * i / E, 1); for (let i = 0; i < E; i++) at(-1, 1 - 2 * i / E);
   mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P, true, 'catmullrom', .2), 120, .0055, 6, true), mat, 0, 0, 0, o, { cast: false }); }
+/* 11-21 소품 퀄리티업: 둥근 사각 쿠션 모서리 웰트(파이핑) — plane 'xz'(좌판 윗모서리) 또는 'xy'(등받이 앞모서리), off: 그 면까지 거리 */
+function rrPipe(o, w, h, r, plane, off, mat, rad = .0045) { const P = [], seg = 6, hw = w / 2 - r, hh = h / 2 - r;
+  for (const [cx, cy, a0] of [[hw, hh, 0], [-hw, hh, Math.PI / 2], [-hw, -hh, Math.PI], [hw, -hh, Math.PI * 1.5]]) for (let i = 0; i <= seg; i++) { const a = a0 + i / seg * Math.PI / 2, u = cx + Math.cos(a) * r, v = cy + Math.sin(a) * r; P.push(plane === 'xz' ? new THREE.Vector3(u, off, v) : new THREE.Vector3(u, v, off)); }
+  mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P, true, 'catmullrom', .1), 80, rad, 6, true), mat, 0, 0, 0, o, { cast: false }); return o; }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
@@ -2151,12 +2155,12 @@ kitchenPropsT();
 let _tCush = null;
 function diningChair(parent, cx, cz, rot) { /* VR(56T): 밝은 원목 프레임 + 흰 쿠션 좌석 + 원목 기둥 사이 넓은 흰 등받이 쿠션 */
   const c = new THREE.Group(); c.position.set(cx, 0, cz); c.rotation.y = rot; parent.add(c);
-  const cu = _tCush || (_tCush = std(0xf6f5f1, .7)), w = M.oak;
+  const cu = _tCush || (_tCush = std(0xf6f5f1, .85, 0, { map: M.linen.map, bumpMap: M.linen.map, bumpScale: 1 })), w = M.oak; /* 11-21: 쿠션 리넨 결 */
   for (const [lx, lz] of [[-.19, .18], [.19, .18]]) mesh(BX(.034, .44, .034), w, lx, .22, lz, c); /* 앞다리 */
   for (const lx of [-.19, .19]) { const p = mesh(BX(.034, .88, .034), w, lx, .44, -.19, c); p.rotation.x = -.05; } /* 뒷다리 = 등받이 기둥 */
   for (const lz of [-.19, .18]) mesh(BX(.38, .05, .025), w, 0, .42, lz, c); for (const lx of [-.19, .19]) mesh(BX(.025, .05, .37), w, lx, .42, 0, c); /* 좌석 틀 */
-  mesh(RB(.43, .07, .43, .025, 3), cu, 0, .47, .0, c); /* 좌석 쿠션 */
-  const b = mesh(RB(.36, .26, .045, .02, 3), cu, 0, .72, -.205, c); b.rotation.x = -.05; /* 넓은 등받이 쿠션 */
+  rrPipe(mesh(RB(.43, .07, .43, .025, 3), cu, 0, .47, .0, c), .422, .422, .028, 'xz', .029, cu); /* 좌석 쿠션 + 윗모서리 웰트 */
+  const b = mesh(RB(.36, .26, .045, .02, 3), cu, 0, .72, -.205, c); b.rotation.x = -.05; rrPipe(b, .352, .252, .022, 'xy', .0165, cu); /* 넓은 등받이 쿠션 + 앞모서리 웰트 */
   const t = mesh(BX(.4, .035, .03), w, 0, .87, -.215, c); t.rotation.x = -.05; /* 위 가로대 */
   return c;
 }
