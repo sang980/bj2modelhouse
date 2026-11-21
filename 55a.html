@@ -3327,11 +3327,25 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
 { const g = item('b2unit', '침실2 벽선반', false), wt = std(0xf6f5f2, .4), blu = std(0x8fb6de, .25, .05);
   pbox(.11, .31, 1.52, 1.545, 6.62, 7.22, wt, g);
   for (const [z, s, ry] of [[6.84, 1, .5], [6.97, .85, -.3]]) { const b = new THREE.Group(); b.position.set(WX(.21), 1.545, WZ(z)); b.rotation.y = Math.PI / 2 + ry; b.scale.setScalar(s); g.add(b);
-    mesh(new THREE.SphereGeometry(.034, 18, 12), blu, 0, .036, 0, b).scale.set(1, 1.05, .9); mesh(new THREE.SphereGeometry(.027, 18, 12), blu, 0, .092, .004, b);
-    for (const sx of [-1, 1]) { mesh(new THREE.SphereGeometry(.01, 10, 8), blu, sx * .018, .116, 0, b); mesh(new THREE.SphereGeometry(.011, 10, 8), blu, sx * .02, .012, .022, b); }
-    mesh(new THREE.SphereGeometry(.009, 10, 8), std(0xbcd5ee, .3), 0, .088, .029, b); }
-  const moon = toTex((() => { const c = mkCanvas(192, 64), x = c.getContext('2d'); x.fillStyle = '#eef1f4'; x.fillRect(0, 0, 192, 64); x.fillStyle = '#fff6d8'; x.beginPath(); x.arc(150, 32, 16, 0, 7); x.fill(); x.fillStyle = '#eef1f4'; x.beginPath(); x.arc(158, 27, 14, 0, 7); x.fill(); return c; })());
-  pbox(.11, .125, 1.26, 1.36, 6.77, 7.07, std(0xeef1f4, .4), g); pbox(.125, .127, 1.27, 1.35, 6.78, 7.06, std(0xffffff, .5, 0, { map: moon, emissive: 0xfff3d0, emissiveMap: moon, emissiveIntensity: .45 }), g, { cast: false }); decorGroup('침실2 벽선반', g.children.slice()); }
+    /* 11-22 소품 퀄리티업: 공 몇 개이던 파란 도자기 곰 → 앉은 곰(배 불룩한 몸통·앞으로 뻗은 다리 + 연한 발바닥·옆에 붙인 팔), 툭 튀어나온 연한 주둥이 + 남색 코·눈, 귀 안쪽 연한 유약, 반짝이는 유약 */
+    const gz = std(0x86afdc, .3, .02), lt = std(0xc4dbf1, .38), dk = std(0x1f2c47, .2); mesh(new THREE.LatheGeometry([[0, 0], [.026, 0], [.033, .01], [.036, .027], [.032, .047], [.023, .06], [.012, .066], [0, .067]].map(([u, v]) => new THREE.Vector2(u, v)), 36), gz, 0, 0, 0, b);
+    for (const sx of [-1, 1]) { mesh(new THREE.SphereGeometry(.0125, 12, 10), gz, sx * .017, .012, .02, b).scale.set(.95, .8, 1.45); mesh(new THREE.CircleGeometry(.0072, 14), lt, sx * .017, .012, .0384, b, { cast: false });
+      const ar = mesh(new THREE.SphereGeometry(.011, 12, 10), gz, sx * .03, .036, .011, b); ar.scale.set(.75, 1.45, .8); ar.rotation.z = sx * .35;
+      mesh(new THREE.SphereGeometry(.0105, 12, 10), gz, sx * .019, .114, -.002, b).scale.set(1, 1, .55); mesh(new THREE.CircleGeometry(.0058, 12), lt, sx * .019, .1135, .0039, b, { cast: false });
+      mesh(new THREE.SphereGeometry(.0031, 8, 6), dk, sx * .0105, .0975, .0245, b, { cast: false }); }
+    mesh(new THREE.SphereGeometry(.0275, 28, 20), gz, 0, .09, .002, b); mesh(new THREE.SphereGeometry(.0125, 14, 10), lt, 0, .0835, .0245, b).scale.set(1.1, .78, .85); mesh(new THREE.SphereGeometry(.0042, 10, 8), dk, 0, .0885, .0345, b, { cast: false }).scale.set(1.25, .85, .8);
+    mesh(new THREE.CircleGeometry(.011, 16), lt, 0, .04, .0352, b, { cast: false }).rotation.x = -.18; }
+  { /* 달 무드등: 텍스처 판 → 둥근 모서리 반투명 아크릴 판 + 도톰한 초승달(빛남) + 작은 별 셋 */
+    pbox(.11, .114, 1.255, 1.365, 6.765, 7.075, std(0xe4e8ec, .5), g); mesh(RB(.012, .11, .31, .005, 2), std(0xf6f8fa, .3, 0, { transparent: true, opacity: .92 }), WX(.12), 1.31, WZ(6.92), g, { cast: false });
+    const glow = std(0xfff4d2, .4, 0, { emissive: 0xffe2a0, emissiveIntensity: .7 }), R = .036, c2 = [.016, .011], R2 = .032, d = Math.hypot(c2[0], c2[1]), aa = (R * R - R2 * R2 + d * d) / (2 * d), al = Math.acos(aa / R), ph = Math.atan2(c2[1], c2[0]), sh = new THREE.Shape();
+    for (let k = 0; k <= 28; k++) { const t = ph + al + (2 * Math.PI - 2 * al) * k / 28, px = R * Math.cos(t), py = R * Math.sin(t); k ? sh.lineTo(px, py) : sh.moveTo(px, py); }
+    { const T1 = [R * Math.cos(ph + al), R * Math.sin(ph + al)], T2 = [R * Math.cos(ph - al), R * Math.sin(ph - al)], p1 = Math.atan2(T1[1] - c2[1], T1[0] - c2[0]), p2 = Math.atan2(T2[1] - c2[1], T2[0] - c2[0]); let dl = ((p1 - p2) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI); const mid = p2 + dl / 2; if (Math.hypot(c2[0] + R2 * Math.cos(mid), c2[1] + R2 * Math.sin(mid)) > R) dl -= 2 * Math.PI;
+      for (let k = 1; k <= 20; k++) { const t = p2 + dl * k / 20; sh.lineTo(c2[0] + R2 * Math.cos(t), c2[1] + R2 * Math.sin(t)); } }
+    const cg = new THREE.ExtrudeGeometry(sh, { depth: .008, bevelEnabled: true, bevelThickness: .003, bevelSize: .0025, bevelSegments: 3 }); const cm = mesh(cg, glow, WX(.127), 1.312, WZ(6.995), g, { cast: false }); cm.rotation.y = Math.PI / 2;
+    const st = new THREE.Shape(); for (let k = 0; k < 10; k++) { const r = k % 2 ? .0042 : .0105, t = Math.PI / 2 + k * Math.PI / 5; k ? st.lineTo(r * Math.cos(t), r * Math.sin(t)) : st.moveTo(r * Math.cos(t), r * Math.sin(t)); }
+    const sg = new THREE.ExtrudeGeometry(st, { depth: .004, bevelEnabled: true, bevelThickness: .0012, bevelSize: .001, bevelSegments: 1 });
+    for (const [z, y, sc] of [[6.85, 1.335, 1], [6.81, 1.288, .7], [6.885, 1.285, .55]]) { const sm = mesh(sg, glow, WX(.127), y, WZ(z), g, { cast: false }); sm.rotation.y = Math.PI / 2; sm.scale.setScalar(sc); } }
+  decorGroup('침실2 벽선반', g.children.slice()); }
 }
 // 13 알파룸 특화형 붙박이장 (닫힌장 + 오픈 선반)
 // 분양 자료 13: 꺾음 시공(1-2)으로 생긴 알파룸 쪽 오목한 자리(창 쪽)에 큰 문 2짝 붙박이장, 문은 알파룸(동쪽)을 향함
