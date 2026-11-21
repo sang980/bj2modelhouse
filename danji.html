@@ -481,7 +481,7 @@ function buildRoads() {
             for (const sg of sides) { const o = r.w / 2 + 1.1, px = x + nx * sg * o, pz = z + nz * sg * o, y = heightAt(x, z) + .3; obox(px, pz, ux, uz, .16, .16, y - .3, y + 9, FF2(gl2)); obox(px - nx * sg * 1.1, pz - nz * sg * 1.1, nx, nz, 2.2, .12, y + 8.85, y + 9, FF2(gl2)); obox(px - nx * sg * 2.1, pz - nz * sg * 2.1, nx, nz, .7, .3, y + 8.7, y + 8.95, FF2(gh2)); nL++; } }
           acc += L; } });
       for (const [gb, col] of [[gl2, '#8a8f94'], [gh2, '#d8dade']]) if (gb.i.length) { const m = new THREE.Mesh(gb.build(), new THREE.MeshLambertMaterial({ color: col })); scene.add(m); } console.log('street lamps', nL); }
-    for (const [x, z, ux, uz] of [[574, 128.9, .766, .643], [694.6, 134.6, .7075, -.7068]]) { /* 11-21 로드뷰: 어린이보호구역 노란 횡단보도(붉은 길 위) — 2·4단지 문주 교차로, 3단지 쪽 모퉁이 */
+    for (const [x, z, ux, uz] of [[574, 128.9, .766, .643], [694.6, 134.6, .7075, -.7068], [642.7 - .766 * 9, 186.5 - .643 * 9, .766, .643], [642.7 + .7075 * 9, 186.5 - .7068 * 9, .7075, -.7068]]) { /* + 붉은 두 길이 만나는 교차로(642.7,186.5) 양쪽 */ /* 11-21 로드뷰: 어린이보호구역 노란 횡단보도(붉은 길 위) — 2·4단지 문주 교차로, 3단지 쪽 모퉁이 */
       const nx = -uz, nz = ux, hw = 3.2, y = heightAt(x, z) + .46;
       const V = [[x - ux * 2 + nx * hw, z - uz * 2 + nz * hw, hw], [x - ux * 2 - nx * hw, z - uz * 2 - nz * hw, -hw], [x + ux * 2 - nx * hw, z + uz * 2 - nz * hw, -hw], [x + ux * 2 + nx * hw, z + uz * 2 + nz * hw, hw]];
       for (const k of [0, 1, 2, 0, 2, 3]) { YP.push(V[k][0], y, V[k][1]); YU.push(V[k][2] / .95, k === 2 || k === 3 ? 1 : 0); } }
