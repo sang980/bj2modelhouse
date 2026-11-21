@@ -627,7 +627,7 @@ Object.assign(M, {
   check: std(0xffffff, .95, 0, { map: toTex(checkCanvas(), { rep: [2, 2] }) }),
   charcoal: std(0x3a3d42, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 22), { rep: [3, 3] }) }),
   linen: std(0xf6f5f2, .95, 0, { map: toTex(noiseCanvas([255, 255, 255], 14), { rep: [4, 4] }) }),
-  throwBlue: std(0x4a6f9a, .98, 0, { map: toTex(noiseCanvas([255, 255, 255], 34), { rep: [5, 5] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 90), { srgb: false, rep: [5, 5] }), bumpScale: .8 }),
+  throwBlue: std(0x4a6f9a, .98, 0, { map: toTex(waffleOn(noiseCanvas([255, 255, 255], 34)), { rep: [5, 5] }), bumpMap: toTex(waffleOn(noiseCanvas([128, 128, 128], 90), true), { srgb: false, rep: [5, 5] }), bumpScale: .8 }),
   rug: std(0xb9b8b4, 1, 0, { map: toTex(noiseCanvas([255, 255, 255], 46), { rep: [8, 8] }), bumpMap: toTex(noiseCanvas([128, 128, 128], 140), { srgb: false, rep: [8, 8] }), bumpScale: 2 }),
 });
 await yieldUI(); // 나무결 2장은 따로
@@ -840,6 +840,8 @@ let TVS_M = null; function tvScreenMat() { if (TVS_M) return TVS_M; const c = mk
   x.strokeStyle = '#1d1f23'; x.lineWidth = 10; x.strokeRect(5, 5, 1014, 590); x.strokeStyle = 'rgba(255,255,255,.06)'; x.lineWidth = 2; x.strokeRect(11, 11, 1002, 578);
   return (TVS_M = std(0xffffff, .06, .3, { map: toTex(c) })); }
 function tvScreen(parent, x, y, z, w, h) { const s = mesh(new THREE.PlaneGeometry(w, h), tvScreenMat(), x, y, z, parent, { cast: false }); s.rotation.y = -Math.PI / 2; mesh(new THREE.SphereGeometry(.003, 8, 6), new THREE.MeshStandardMaterial({ color: 0x300000, emissive: 0xff2a1a, emissiveIntensity: .9 }), x - .001, y - h / 2 - .006, z, parent, { cast: false }); return s; }
+/* 11-21 사용자: 침대 위 장식 퀄리티업 — 담요(러너) 와플 짜임: 기존 잡티 그림(전역 난수 사용 횟수 그대로) 위에 결정적 격자(홈 + 칸 밝은 면)를 덧그림 */
+function waffleOn(c, bump) { const x = c.getContext('2d'), S = c.width, n = 16, cs = S / n; for (let i = 0; i < n; i++) { x.fillStyle = bump ? 'rgba(0,0,0,.38)' : 'rgba(0,0,0,.11)'; x.fillRect(i * cs, 0, cs * .2, S); x.fillRect(0, i * cs, S, cs * .2); } x.fillStyle = bump ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.07)'; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) x.fillRect(i * cs + cs * .32, j * cs + cs * .32, cs * .5, cs * .5); return c; }
 /* ───────── 벽 액자(공통 고품질): 벽에 지는 부드러운 그림자 + 둥근 모서리 테(바깥 단 + 안쪽 턱) + 매트(베벨 컷·종이결) + 그림 + 유리 반사 ─────────
    cx, cy, cz: 벽면 위 액자 중심(평면 좌표·높이) · nx, nz: 벽에서 방 쪽 방향 · w, h: 바깥 크기 · fw: 테 폭 · d: 벽에서 나온 두께
    frame: 테 재질(null이면 테 없는 캔버스 그림 — 옆면 edge 색) · mat: 매트 폭(m) · art: 텍스처/캔버스 · glass: 유리 · tilt: 아래쪽이 벽에서 뜨는 기울기 */
