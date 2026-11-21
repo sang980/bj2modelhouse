@@ -1547,7 +1547,7 @@ function shellChair(parent, x, z, ry, mat, legMat = mat, th = .012) { const g = 
 /* 수건 재질(잔결 + 선택 무늬) — 같은 색·무늬는 공유 */
 const _twC = {};
 function towelMat(col, kind = '') { const key = col + kind; if (_twC[key]) return _twC[key];
-  const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, 64, 64);
+  const c = mkCanvas(256, 256), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#ffffff'; x.fillRect(0, 0, 64, 64);
   if (kind === 'geo') { const cl = ['#2b2b2d', '#8d8f91', '#ecebe7', '#5d5f62']; for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { x.fillStyle = cl[(i * 3 + j * 5 + (i * j) % 3) % 4]; x.fillRect(i * 8, j * 8, 8, 8); } }
   for (let i = 0; i < 420; i++) { x.fillStyle = `rgba(0,0,0,${.03 + rnd() * .07})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 2); }
   return (_twC[key] = std(kind ? 0xffffff : col, 1, 0, { map: toTex(c, { rep: [2, 2] }) })); }
@@ -2745,7 +2745,7 @@ function ribbonGeo(pts, w, tw, ref = new THREE.Vector3(1, 0, 0)) { const cv = ne
   for (let i = 0; i <= N; i++) { const t = i / N, p = cv.getPointAt(t), T = cv.getTangentAt(t), s = ref.clone().addScaledVector(T, -T.dot(ref)).normalize().applyAxisAngle(T, tw * Math.sin(t * Math.PI * 1.4)), ww = w * (.8 + .2 * Math.sin(t * 11 + w * 40));
     for (const k of [-1, 1]) { pos.push(p.x + s.x * ww / 2 * k, p.y + s.y * ww / 2 * k, p.z + s.z * ww / 2 * k); uv.push((k + 1) / 2, t * 2.2); } if (i < N) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } }
   const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx); geo.computeVertexNormals(); return geo; }
-function quiltMat() { if (_quiltM) return _quiltM; const c = mkCanvas(128, 128), x = c.getContext('2d'); x.fillStyle = '#909090'; x.fillRect(0, 0, 128, 128); x.strokeStyle = '#2a2a2a'; x.lineWidth = 4;
+function quiltMat() { if (_quiltM) return _quiltM; const c = mkCanvas(512, 512), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#909090'; x.fillRect(0, 0, 128, 128); x.strokeStyle = '#2a2a2a'; x.lineWidth = 4;
   for (let i = -128; i <= 256; i += 32) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + 128, 128); x.stroke(); x.beginPath(); x.moveTo(i, 128); x.lineTo(i + 128, 0); x.stroke(); }
   return (_quiltM = std(0x151517, .4, 0, { bumpMap: toTex(c, { srgb: false, rep: [1, 1] }), bumpScale: 4 })); }
 function chainGeo(pts, n = 52) { const cv = new THREE.CatmullRomCurve3(pts.map(a => new THREE.Vector3(...a))), links = [], X = new THREE.Vector3(1, 0, 0);
