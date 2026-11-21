@@ -3134,7 +3134,16 @@ const indRing = std(0x8a8c90, .3);
   // 전기밥솥(아래 칸) · 유리 저장용기(위 칸)
   mesh(new THREE.LatheGeometry([[0, 0], [.12, 0], [.13, .03], [.13, .2], [.11, .25], [0, .26]].map(([x, y]) => new THREE.Vector2(x, y)), 28), M.whiteGloss, WX(5.92), .9, WZ(2.48), g);
   mesh(BX(.02, .03, .1), M.metalDark, WX(6.06), 1.06, WZ(2.48), g).rotation.y = Math.PI / 2;
-  for (const [z, h] of [[2.33, .14], [2.5, .18], [2.65, .12]]) { mesh(CY(.045, .045, h, 20), M.glass, WX(5.92), 1.22 + h / 2, WZ(z), g, { cast: false }); mesh(CY(.047, .047, .02, 20), std(0xb08a5e, .6), WX(5.92), 1.22 + h + .01, WZ(z), g); } }
+  { const hh = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }, gl = std(0xf2f6f7, .03, 0, { transparent: true, opacity: .16, depthWrite: false }), seal = std(0xd9d9d4, .7), bam = std(0xc9a46c, .55); /* 11-22 주방 소품 퀄리티업: 막힌 유리 원통 3 → 두께 있는 유리병(두꺼운 바닥, 열린 입구) + 속 내용물(커피콩·펜네·쌀, 결정적 텍스처) + 대나무 뚜껑 + 회색 실리콘 패킹 */
+    const fillTex = k => toTex((() => { const c = mkCanvas(128, 128), x = c.getContext('2d'), base = ['#3e2312', '#e2c48a', '#f1eee5'][k]; x.fillStyle = base; x.fillRect(0, 0, 128, 128);
+      for (let i = 0; i < 260; i++) { const px = hh(i, k + 1) * 128, py = hh(i + 500, k + 3) * 128, a = hh(i + 900, k + 5) * Math.PI; x.save(); x.translate(px, py); x.rotate(a);
+        if (k === 0) { x.fillStyle = hh(i, 7) < .5 ? '#2a1507' : '#6a3d1c'; x.beginPath(); x.ellipse(0, 0, 4.2, 3, 0, 0, 7); x.fill(); x.strokeStyle = 'rgba(15,8,3,.7)'; x.lineWidth = 1; x.beginPath(); x.moveTo(-3, 0); x.lineTo(3, 0); x.stroke(); }
+        else if (k === 1) { x.fillStyle = hh(i, 9) < .5 ? '#d6b273' : '#ecd39d'; x.fillRect(-7, -2.2, 14, 4.4); x.fillStyle = 'rgba(120,80,30,.35)'; x.fillRect(-7, -.6, 14, 1.2); }
+        else { x.fillStyle = hh(i, 11) < .5 ? '#ffffff' : '#e7e2d4'; x.beginPath(); x.ellipse(0, 0, 2.6, 1.1, 0, 0, 7); x.fill(); } x.restore(); } return c; })(), { rep: [2, 1] });
+    [[2.33, .14, 0, .72], [2.5, .18, 1, .62], [2.65, .12, 2, .78]].forEach(([z, h, k, f]) => { const X = WX(5.92), Z = WZ(z), y0 = 1.22, fh = (h - .008) * f;
+      mesh(new THREE.LatheGeometry([[0, 0], [.043, 0], [.045, .003], [.045, h - .004], [.044, h], [.041, h], [.041, .008], [0, .008]].map(([a, b]) => new THREE.Vector2(a, b)), 28), gl, X, y0, Z, g, { cast: false });
+      mesh(CY(.0405, .0405, fh, 24), std(0xffffff, .85, 0, { map: fillTex(k) }), X, y0 + .008 + fh / 2, Z, g, { cast: false });
+      mesh(CY(.0418, .0418, .006, 24), seal, X, y0 + h + .002, Z, g, { cast: false }); mesh(CY(.047, .047, .016, 28), bam, X, y0 + h + .013, Z, g); mesh(CY(.046, .046, .002, 28), std(0xb38d58, .6), X, y0 + h + .022, Z, g, { cast: false }); }); } }
 // 주방 본체·쿡탑·냉장고장 옆 유닛을 평면도 방향으로 좌우 반전 (주방 중심 x=6.95 기준)
 // → 냉장고장·키큰장·쿡탑 코너가 동쪽 벽, 발코니 문이 있는 서쪽 벽은 비워 둠
 for (const g of [k, OG.o5base, OG['o5-1'], OG['o5-2'], OG.o6base, OG['o6-1'], OG['o6-2']]) { g.scale.x = -1; g.position.x = 2 * WX(6.95); }
