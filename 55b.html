@@ -2144,6 +2144,9 @@ function kitchenPropsB() {
     const gl = new THREE.MeshStandardMaterial({ color: 0xe8f0f2, roughness: .05, metalness: .05, transparent: true, opacity: .32, side: THREE.DoubleSide, depthWrite: false });
     at(new THREE.LatheGeometry([[0, 0], [.045, 0], [.05, .02], [.05, .14], [.035, .19], [.03, .22], [.034, .23]].map(([a, b]) => new THREE.Vector2(a, b)), 28), gl, .76, T + .006, 5.48);
     for (const [x, z] of [[.78, 5.62], [.7, 5.7]]) at(new THREE.CylinderGeometry(.032, .028, .09, 24, 1, true), gl, x, T + .051, z);
+    { const wm = new THREE.MeshStandardMaterial({ color: 0xc4dde6, roughness: .04, metalness: 0, transparent: true, opacity: .38, depthWrite: false }), ws = new THREE.MeshStandardMaterial({ color: 0xe6f2f6, roughness: .02, transparent: true, opacity: .55, depthWrite: false }); /* 11-22 주방 소품 퀄리티업: 빈 유리 물병·컵 → 물(옅은 하늘빛) + 밝은 수면 */
+      at(new THREE.LatheGeometry([[0, 0], [.043, 0], [.047, .018], [.047, .125], [0, .125]].map(([a, b]) => new THREE.Vector2(a, b)), 24), wm, .76, T + .009, 5.48); at(new THREE.CircleGeometry(.0465, 24), ws, .76, T + .1345, 5.48).rotation.x = -Math.PI / 2;
+      at(CY(.0285, .0265, .05, 20), wm, .7, T + .033, 5.7); at(new THREE.CircleGeometry(.0284, 20), ws, .7, T + .0585, 5.7).rotation.x = -Math.PI / 2; }
     { const s = new THREE.Group(); s.position.set(WX(.78), T + .02, WZ(5.62)); s.rotation.set(.25, 0, -.2); g.add(s); mesh(CY(.006, .006, .22, 8), std(0xf2efe8, .5), 0, .12, 0, s); mesh(RB(.05, .07, .008, .004, 1), std(0xe0782a, .6), 0, .26, 0, s); } }
   // ③ 쿡탑 줄 왼쪽: 나무 도마(손잡이 구멍) + 나무 주걱
   { const b = at(RB(.42, .02, .26, .012, 2), wood, .98, T + .01, 5.45); b.rotation.y = .22;
