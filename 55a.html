@@ -1940,7 +1940,7 @@ ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
   }
   /* 욕조 위 흰 벽선반 + 갈색 펌프병 2(검정 라벨) */
   { pbox(.11, .24, 1.0, 1.02, 2.91, 3.31, std(0xf4f3f0, .35), g); pbox(.22, .24, 1.02, 1.035, 2.91, 3.31, std(0xf4f3f0, .35), g);
-    for (const z of [3.03, 3.15]) pumpBottle(.165, 1.02, z, 0x6b3a12, .17, .03, -Math.PI / 2, true, true); }
+    for (const [z, lb] of [[3.03, 'SHAMPOO'], [3.15, 'BODY WASH']]) pumpBottle(.165, 1.02, z, 0x6b3a12, .17, .03, -Math.PI / 2, true, lb); } /* 11-21 글자 라벨 */
   let _slp = null; const slipperPair = (cx, cz, col, ry = 0, gap = .18) => { /* 슬리퍼 한 켤레: 발 모양 바닥(흰 밑창 + 천) + 앞쪽 아치 끈 */
     if (!_slp) { const sh = new THREE.Shape(); sh.absellipse(0, .06, .05, .07, 0, Math.PI, false); sh.absellipse(0, -.05, .045, .08, Math.PI, Math.PI * 2, false);
       const sg = new THREE.ExtrudeGeometry(sh, { depth: .014, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 16 }); sg.rotateX(Math.PI / 2);
@@ -1952,7 +1952,7 @@ ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
     mesh(RB(.62, .012, .42, .006, 2), std(0xffffff, 1, 0, { map: fib }), WX(1.28), .006, WZ(4.61), g, { cast: false }); /* 열린 문짝(z 4.25)이 슬리퍼를 뚫지 않게 문 회전 범위 밖으로 */
     slipperPair(1.28, 4.61, 0x1f2a44); }
   /* VR 욕실2: 돌 선반 위 갈색 유리 펌프병, 세면기 앞 진회색 발매트 + 연하늘 슬리퍼(앞코가 세면기 쪽) */
-  pumpBottle(10.2, 1.28, 2.36, 0x5a3418, .13, .028, 0, true);
+  pumpBottle(10.2, 1.28, 2.36, 0x5a3418, .13, .028, 0, true, 'HAND SOAP'); /* 11-21 글자 라벨 */
   { const fib = toTex((() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#56595c'; x.fillRect(0, 0, 64, 64); for (let i = 0; i < 700; i++) { const v = 70 + rnd() * 40 | 0; x.fillStyle = `rgb(${v},${v + 2},${v + 4})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 1); } return c; })(), { rep: [3, 2] });
     mesh(RB(.46, .012, .36, .006, 2), std(0xffffff, 1, 0, { map: fib }), WX(9.85), .006, WZ(3.02), g, { cast: false }); slipperPair(9.85, 3.02, 0x9fb4c4, Math.PI, .16); }
 }

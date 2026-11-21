@@ -1937,7 +1937,7 @@ ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
   }
   /* 욕조 위 흰 벽선반 + 갈색 펌프병 2(검정 라벨) */
   { pbox(.11, .24, 1.0, 1.02, 2.91, 3.31, std(0xf4f3f0, .35), g); pbox(.22, .24, 1.02, 1.035, 2.91, 3.31, std(0xf4f3f0, .35), g);
-    for (const z of [3.03, 3.15]) pumpBottle(.165, 1.02, z, 0x6b3a12, .17, .03, -Math.PI / 2, true, true); }
+    for (const [z, lb] of [[3.03, 'SHAMPOO'], [3.15, 'BODY WASH']]) pumpBottle(.165, 1.02, z, 0x6b3a12, .17, .03, -Math.PI / 2, true, lb); } /* 11-21 글자 라벨 */
   let _slp = null; const slipperPair = (cx, cz, col, ry = 0, gap = .18) => { /* 슬리퍼 한 켤레: 발 모양 바닥(흰 밑창 + 천) + 앞쪽 아치 끈 */
     if (!_slp) { const sh = new THREE.Shape(); sh.absellipse(0, .06, .05, .07, 0, Math.PI, false); sh.absellipse(0, -.05, .045, .08, Math.PI, Math.PI * 2, false);
       const sg = new THREE.ExtrudeGeometry(sh, { depth: .014, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 16 }); sg.rotateX(Math.PI / 2);
