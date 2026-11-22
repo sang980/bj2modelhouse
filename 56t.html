@@ -1409,6 +1409,19 @@ function curtain(x0, x1, zLine, h = 2.28, parent = fixed, mat = M.sheer, folds =
   const g = parts.length > 1 ? mergeGeometries(parts, false) : parts[0]; g.computeVertexNormals();
   return mesh(g, mat, WX((x0 + x1) / 2), h / 2 + .03, WZ(zLine), parent, { cast: mat !== M.sheer, recv: false });
 }
+function blindGroup(a0, a1, w, alongZ, toRoom) { const g = new THREE.Group(); g.position.set(alongZ ? WX(w) : WX((a0 + a1) / 2), 0, alongZ ? WZ((a0 + a1) / 2) : WZ(w)); g.rotation.y = alongZ ? toRoom * Math.PI / 2 : (toRoom > 0 ? 0 : Math.PI); fixed.add(g); return g; } /* 블라인드 공용 틀: 로컬 x = 폭, 로컬 +z = 방 쪽, 창 쪽 면이 w */
+function cellShade(a0, a1, y0, y1, w, alongZ, toRoom, col, railCol) { /* 11-22 소품 퀄리티업: 허니콤(셀룰러) 블라인드 — 줄무늬 그림 판 → 셀마다 앞으로 접혀 나온 실제 아코디언 주름(면마다 빛이 달라 위·아래 면 밝기가 갈림) + 위 헤드레일 + 아래 바 */
+  const L = a1 - a0, g = blindGroup(a0, a1, w, alongZ, toRoom), top = y1 - .035, n = Math.max(4, Math.round((top - y0) / .022)), d = .008, pos = [], R = j => [top - (top - y0) * j / (2 * n), j % 2 ? d : .003];
+  for (let j = 0; j < 2 * n; j++) { const [ya, za] = R(j), [yb, zb] = R(j + 1); pos.push(-L / 2, ya, za, -L / 2, yb, zb, L / 2, yb, zb, -L / 2, ya, za, L / 2, yb, zb, L / 2, ya, za); }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.computeVertexNormals(); mesh(geo, std(col, .92, 0, { side: THREE.DoubleSide, emissive: col, emissiveIntensity: .14 }), 0, 0, 0, g, { cast: false }); /* 얇은 천이 빛을 조금 통과 */
+  mesh(RB(L + .012, .035, .04, .006, 2), std(0xecebe7, .5), 0, top + .0175, .02, g, { cast: false }); mesh(RB(L + .004, .02, .026, .006, 2), std(railCol, .6), 0, y0 - .01, .013, g, { cast: false }); return g; }
+function slatBlind(a0, a1, yTop, n, pitch, w, alongZ, toRoom, col) { /* 11-22 소품 퀄리티업: 가로 블라인드 — 세워 쌓은 납작한 상자 → 앞으로 기운 얇은 날개(둥근 모서리) + 헤드레일 + 무거운 아래 바 + 사다리 끈 2줄(앞·뒤 테이프 + 가운데 들어 올림 줄) + 옆으로 늘어진 조절 줄·손잡이 술 */
+  const L = a1 - a0, g = blindGroup(a0, a1, w, alongZ, toRoom), m = std(col, .55), tp = std(0xe6e1d6, .9), cz = .03, sg = RB(L, .004, .05, .0018, 1);
+  mesh(RB(L + .02, .03, .058, .006, 2), m, 0, yTop - .015, cz, g, { cast: false });
+  let y = yTop - .05; for (let i = 0; i < n; i++, y -= pitch) { const s = mesh(sg, m, 0, y, cz, g, { cast: false }); s.rotation.x = .9; }
+  const yb = y + pitch - .035, yt = yTop - .03, hT = yt - yb; mesh(RB(L, .014, .052, .005, 2), m, 0, yb, cz, g, { cast: false });
+  for (const u of [-L * .32, L * .32]) { for (const dz of [-.027, .027]) mesh(BX(.016, hT, .0008), tp, u, (yt + yb) / 2, cz + dz, g, { cast: false }); mesh(CY(.0011, .0011, hT, 5), tp, u, (yt + yb) / 2, cz, g, { cast: false }); }
+  { const tl = yb - .25; mesh(CY(.0012, .0012, yt - tl, 5), tp, L / 2 - .03, (yt + tl) / 2, cz + .03, g, { cast: false }); mesh(CY(.005, .007, .03, 10), m, L / 2 - .03, tl - .012, cz + .03, g, { cast: false }); } return g; }
 function curtainSet(x0, x1, w0, w1) { // 창 양옆: 회색 암막 + 속커튼, 천장 커튼박스
   decorStart('커튼'); /* 11-21 사용자: 커튼·블라인드도 지울 수 있게(창마다 한 묶음, 커튼박스는 천장이라 그대로) */ curtain(x0, w0 + .15, 8.0, 2.27, fixed, M.sheer); curtain(w1 - .15, x1, 8.0, 2.27, fixed, M.sheer);
   curtain(x0, x0 + .42, 7.92, 2.27, fixed, M.curtainGrey, 9, .045); curtain(x1 - .42, x1, 7.92, 2.27, fixed, M.curtainGrey, 9, .045);
@@ -1949,7 +1962,7 @@ await phase('침실을 꾸미는 중', 66);
 }
 // 침실2·알파룸 창 블라인드(남쪽, 테라스 쪽)
 { const wb = std(0xf4f3f0, .7), gr = std(0x9ccc3a, .8); // VR: 침실2 흰 블라인드 · 알파룸 연두·흰 줄무늬
-  decorStart('블라인드'); for (const [x0, x1] of [[.73, 2.22]]) for (let i = 0; i < 8; i++) pbox(x0, x1, 1.82 + i * .045, 1.85 + i * .045, 8.0, 8.03, wb, fixed, { cast: false }); decorEnd();
+  decorStart('블라인드'); slatBlind(.73, 2.22, 2.21, 8, .045, 8.03, false, -1, 0xf4f3f0); decorEnd(); /* 11-22: 세운 상자 8 → 기운 날개·사다리 끈 */
   { decorStart('로만셰이드'); const c = mkCanvas(256, 96), x = c.getContext('2d'); x.fillStyle = '#f6f5f1'; x.fillRect(0, 0, 256, 96); /* VR(알파룸): 흰 로만셰이드 — 양쪽 가장자리에 연두·노랑 세로 줄 + 가로 접힘 그늘 */
     for (const s of [0, 1]) for (const [o, w, col] of [[10, 14, '#9ccc3a'], [28, 4, '#e8d84a'], [36, 6, '#9ccc3a'], [46, 3, '#e8d84a']]) x.fillStyle = col, x.fillRect(s ? 256 - o - w : o, 0, w, 96);
     for (const y of [30, 62]) { const gg = x.createLinearGradient(0, y - 8, 0, y + 6); gg.addColorStop(0, 'rgba(0,0,0,0)'); gg.addColorStop(.7, 'rgba(0,0,0,.14)'); gg.addColorStop(1, 'rgba(255,255,255,.25)'); x.fillStyle = gg; x.fillRect(0, y - 8, 256, 14); }
