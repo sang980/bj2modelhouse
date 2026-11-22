@@ -1898,10 +1898,23 @@ let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; let SHV_B = 
   const grassPot = (x, y, z) => { mesh(new THREE.LatheGeometry([[0, 0], [.033, 0], [.035, .004], [.04, .056], [.042, .06], [.0385, .061], [.035, .056], [0, .054]].map(([a, b]) => new THREE.Vector2(a, b)), 24), std(0xf3f1ec, .4), WX(x), y, WZ(z), g); mesh(CY(.0352, .0352, .004, 20), std(0x4a3b2e, .95), WX(x), y + .054, WZ(z), g, { cast: false }); /* 11-22: 흰 원통 → 테두리 있는 도기 화분 + 짙은 흙 표면 */
     const bg = _gBlade || (_gBlade = (() => { const s = new THREE.Shape(); s.moveTo(-.0028, 0); s.quadraticCurveTo(-.0034, .55, 0, 1); s.quadraticCurveTo(.0034, .55, .0028, 0); s.lineTo(-.0028, 0); const sg = new THREE.ShapeGeometry(s, 6), p = sg.attributes.position; for (let v = 0; v < p.count; v++) { const t = p.getY(v); p.setZ(v, -.22 * t * t + Math.abs(p.getX(v)) * 1.5); } sg.computeVertexNormals(); return sg; })()), bm = _gBladeM || (_gBladeM = std(M.plant.color.getHex(), .65, 0, { side: THREE.DoubleSide })); /* 11-22: 납작한 막대 풀잎 → 끝이 뾰족하고 뒤로 휘는 가는 잎(가운데 골, 난수 호출 수 그대로) */
     for (let i = 0; i < 16; i++) { const a = rnd() * 6.28, h = .07 + rnd() * .03, l = mesh(bg, bm, WX(x) + Math.cos(a) * .015, y + .055, WZ(z) + Math.sin(a) * .015, g, { cast: false }); l.scale.set(1, h, h); l.rotation.set(Math.sin(a) * .35, a, Math.cos(a) * .35); } };
+  let _tp = null; const toothSet = (x, y0, z, ry, col) => { /* 11-22 루프 욕실 소품(55A와 같은 세트): 돌 선반 위 속 빈 도자기 양치컵(굽·입술·안쪽 바닥) + 컵에 기대 선 칫솔 2(손잡이·고무 그립·가는 목·두 색 솔 머리) + 옆에 누운 치약(끝이 눌린 튜브·흰 뚜껑) — 묶음의 +z가 벽 쪽, 위 거울장 밑에 닿지 않게 기울임 */
+    const s = new THREE.Group(); s.position.set(WX(x), y0, WZ(z)); s.rotation.y = ry; g.add(s);
+    mesh(new THREE.LatheGeometry([[0, 0], [.025, 0], [.028, .002], [.029, .009], [.0315, .092], [.031, .095], [.0285, .095], [.0278, .09], [.0262, .013], [.021, .009], [0, .009]].map(([a, b]) => new THREE.Vector2(a, b)), 32), std(col, .4), 0, 0, 0, s);
+    const brush = (k, r2) => { const hm = std([0xf4f4f2, 0x9fd3e6][k], .3), gm = std([0x2c7fb8, 0x55b37a][k], .75), t = new THREE.Group(); t.position.set(.02 * Math.cos(r2), .009, -.02 * Math.sin(r2)); t.rotation.set(0, r2, .49); s.add(t);
+      mesh(CY(.0058, .0052, .065, 12), hm, 0, .0325, 0, t, { cast: false }); mesh(CY(.0062, .0058, .05, 12), gm, 0, .09, 0, t, { cast: false }); mesh(CY(.0036, .0062, .03, 12), hm, 0, .13, 0, t, { cast: false }); mesh(CY(.003, .0036, .016, 10), hm, 0, .153, 0, t, { cast: false });
+      mesh(RB(.0115, .028, .006, .0028, 2), hm, 0, .165, 0, t, { cast: false }); for (const [yy, c] of [[.159, 0xfafafa], [.171, [0x7fc4e4, 0xf2a7b8][k]]]) mesh(BX(.0092, .0118, .011), std(c, .9), 0, yy, .0085, t, { cast: false }); };
+    brush(0, .35); brush(1, Math.PI + .5);
+    const L = .13, r = .0165; if (!_tp) { const gq = new THREE.CylinderGeometry(r, r, L, 22, 10), pa = gq.attributes.position; for (let i = 0; i < pa.count; i++) { const k = Math.pow((pa.getY(i) + L / 2) / L, 1.6); pa.setX(i, pa.getX(i) * (1 - .86 * k) + r * .86 * k); pa.setZ(i, pa.getZ(i) * (1 + .42 * k)); } gq.computeVertexNormals();
+      const c = mkCanvas(256, 128), x2 = c.getContext('2d'); x2.fillStyle = '#f6f6f3'; x2.fillRect(0, 0, 256, 128); x2.fillStyle = '#2f6db3'; x2.fillRect(0, 0, 256, 22); x2.fillRect(20, 44, 96, 52); x2.fillRect(148, 44, 96, 52); x2.fillStyle = '#e04a4a'; x2.fillRect(20, 96, 96, 6); x2.fillRect(148, 96, 96, 6); x2.strokeStyle = '#ffffff'; x2.lineWidth = 3; for (const o of [20, 148]) { x2.beginPath(); for (let i = 0; i <= 96; i += 4) { const yy = 70 + Math.sin(i / 96 * Math.PI * 2) * 8; i ? x2.lineTo(o + i, yy) : x2.moveTo(o + i, yy); } x2.stroke(); }
+      _tp = { gq, mt: std(0xffffff, .45, 0, { map: toTex(c) }), blue: std(0x2f6db3, .5), cap: std(0xfbfbf9, .25), neck: std(0xf6f6f3, .45) }; }
+    const t = new THREE.Group(); t.position.set(.165, r, .008); t.rotation.set(0, -.12, -Math.PI / 2); s.add(t); mesh(_tp.gq, _tp.mt, 0, 0, 0, t, { cast: false });
+    mesh(BX(.004, .008, r * 2 * 1.42 + .002), _tp.blue, r - .002, L / 2 + .004, 0, t, { cast: false }); mesh(CY(.0065, .0065, .006, 16), _tp.neck, 0, -L / 2 - .003, 0, t, { cast: false }); mesh(CY(.0095, .0105, .018, 20), _tp.cap, 0, -L / 2 - .015, 0, t, { cast: false }); };
   // 욕실1: 남쪽 벽(z 1.635, 문과 욕조 사이) 수건 — 흰+회색 띠 + 녹슨 주황(VR)
   hangTowels(5.82, 1.635, 0, -1, .5, 1.42, 0xd06a3e);
   paperHolder(4.575, .82, 1, 0, .72);                              // 변기 옆 서쪽 벽
   dispenser(5.05, 1.25, .18, 0xc9b8a0); dispenser(5.14, 1.25, .18, 0x8f8a83); grassPot(4.78, 1.25, .18); // 돌 선반 위
+  toothSet(5.48, 1.25, .175, Math.PI, 0xe9dfcf); /* 11-22: 세면기 위 돌 선반 — 디스펜서와 세면기 사이 */
   // 욕조 서쪽 테두리(남쪽 끝) 위 유리병 + 주황 꽃·잎 가지
   { const bx = 6.15, bz = 1.42, by = .552, glass = std(0xdfe9ec, .05, .1, { transparent: true, opacity: .35 });
     const bottle = new THREE.LatheGeometry([[0, 0], [.035, 0], [.038, .01], [.038, .14], [.02, .18], [.013, .2], [.015, .21], [0, .21]].map(([a, b]) => new THREE.Vector2(a, b)), 24);
@@ -1920,6 +1933,7 @@ let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; let SHV_B = 
   hangTowels(7.525, 5.93, -1, 0, .26, 1.2, 0x2e6b4a);
   paperHolder(6.5, 6.895, 0, -1, .72);                              // 변기 옆 남쪽 벽
   dispenser(5.97, 1.28, 5.87, 0xc9b8a0, Math.PI / 2); dispenser(5.97, 1.28, 5.95, 0x8f8a83, Math.PI / 2); grassPot(5.97, 1.28, 6.72); // 돌 선반 위
+  toothSet(5.96, 1.28, 6.2, -Math.PI / 2, 0xd5ddd3); /* 11-22: 세면기 옆 돌 선반(벽 서쪽) — 세이지 컵 */
   /* VR: 욕실1·2 세면기 앞 황마 발매트 + 회색 슬리퍼(앞코가 세면기 쪽) */
   mesh(RB(.5, .012, .36, .006, 2), std(0xd6cfc2, 1, 0, { map: juteMat }), WX(5.6), .006, WZ(.98), g, { cast: false }); slipperPair(5.6, .98, 0x8d8f91, Math.PI, .16);
   mesh(RB(.36, .012, .5, .006, 2), std(0xd6cfc2, 1, 0, { map: juteMat }), WX(6.62), .006, WZ(6.02), g, { cast: false }); slipperPair(6.62, 6.02, 0x8d8f91, -Math.PI / 2, .16);
