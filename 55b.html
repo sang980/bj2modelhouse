@@ -1036,7 +1036,10 @@ function makeDoor({ parent, horiz, line, t, hu, du, side, lw, lh, lt = .04, styl
     add(mesh(BX(lw - .06, lh - .06, Math.min(.012, lt - .004)), g, lw / 2, lh / 2 + .01, 0, null, { cast: false, recv: false })); /* 유리가 테와 두께가 같으면 앞면이 겹쳐 z-fighting */
     for (const [w, h, x, y] of [[.03, lh, .015, lh / 2], [.03, lh, lw - .015, lh / 2], [lw, .04, lw / 2, .03], [lw, .04, lw / 2, lh - .01]]) add(mesh(BX(w, h, lt), style === 'tint' ? M.rail : M.winFrame, x, y + .01, 0));
   }
-  if (handle && handle !== 'lever') for (const sz of [-1, 1]) add(mesh(BX(.14, .02, .02), M.chrome, lw - .1, 1.0, sz * (lt / 2 + .025), null, { cast: false })); /* 유리문 등: 막대 손잡이 */
+  if (handle && handle !== 'lever') { /* 유리문 등 — 11-22 소품 퀄리티업: 문에서 2.5cm 떠 있던 납작한 가로 막대 → 양면 세로 바 손잡이(둥근 바 + 위·아래 반구 마개) + 유리를 관통해 양쪽 바를 잇는 받침 기둥 2 */
+    const PG = makeDoor._pg || (makeDoor._pg = { bar: CY(.011, .011, .3, 18), cap: new THREE.SphereGeometry(.011, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), post: CY(.007, .007, 1, 12) }), hx = lw - .07, bl = Math.min(.3, lh * .2), so = lt / 2 + .035;
+    for (const sz of [-1, 1]) { const b = add(mesh(PG.bar, M.chrome, hx, 1.0, sz * so, null, { cast: false })); b.scale.y = bl / .3; for (const e of [-1, 1]) { const c = add(mesh(PG.cap, M.chrome, hx, 1.0 + e * bl / 2, sz * so, null, { cast: false })); if (e < 0) c.rotation.x = Math.PI; } }
+    for (const e of [-1, 1]) { const p = add(mesh(PG.post, M.chrome, hx, 1.0 + e * (bl / 2 - .04), 0, null, { cast: false })); p.rotation.x = Math.PI / 2; p.scale.y = 2 * so; } }
   if (handle === 'lever') { /* 방문 레버 손잡이(양쪽): 둥근 받침(로제트) + 목 + 경첩 쪽으로 뻗은 둥근 모서리 레버 — 예전 떠 있는 크롬 막대 대신 */
     const HG = makeDoor._hg || (makeDoor._hg = { ros: CY(.027, .027, .008, 28), neck: CY(.009, .009, .03, 16), lev: RB(.13, .018, .014, .007, 3) }), hx = lw - .065;
     for (const sz of [-1, 1]) { const r = add(mesh(HG.ros, M.chrome, hx, 1.0, sz * (lt / 2 + .004), null, { cast: false })); r.rotation.x = Math.PI / 2;
