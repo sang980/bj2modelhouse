@@ -37,6 +37,8 @@ export function initInterior(o) {
   M.cdBrass = std(0xc9a25e, .3, .7); M.cdGlass = std(0xead8c0, .08, 0, { transparent: true, opacity: .6 }); /* 화장대 금색 손잡이·향수병 유리 */
   M.stDoor = std(0xe6dccb, .18, .05); /* 스타일러 베이지 유광 문 */
   { const t = cv(128, 64, (x, w, h) => { x.fillStyle = '#16191d'; x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(150,158,166,.8)'; for (let yy = 3; yy < h; yy += 6) for (let xx = (yy % 12 === 3 ? 3 : 6); xx < w; xx += 6) { x.beginPath(); x.arc(xx, yy, 1.6, 0, 7); x.fill(); } }); t.repeat.set(2, 2); M.mwWin = std(0xffffff, .15, .2, { map: t }); M.mwRim = std(0x8a8e93, .4, .3); } /* 전자레인지 문 창: 점 구멍 망 */
+  M.bumper = std(0x55585c, .5, 0, { side: T.DoubleSide }); /* 로봇청소기 앞 범퍼(열린 호) */
+  M.robotLed = std(0x2f8f4e, .4, 0, { emissive: 0x35c46a, emissiveIntensity: .8 }); /* 충전 거치대 초록 불 */
   M.wrGold = std(0xc6a066, .3, .65); /* 로프트 침대 옷장: 금색 막대 손잡이 */
   { /* 11-22 루프: 킹 침대 이불 누빔 — 마름모 박음질 줄 + 칸마다 살짝 볼록한 밝기(무작위 없음) */
     const q = cv(256, 256, (x, w, h) => { x.fillStyle = '#e6e3dd'; x.fillRect(0, 0, w, h); const n = 4, c = w / n; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const gx = x.createRadialGradient(i * c + c / 2, j * c + c / 2, 2, i * c + c / 2, j * c + c / 2, c * .62); gx.addColorStop(0, 'rgba(255,255,255,.22)'); gx.addColorStop(1, 'rgba(160,150,135,.06)'); x.fillStyle = gx; x.save(); x.translate(i * c + c / 2, j * c + c / 2); x.rotate(Math.PI / 4); x.fillRect(-c * .36, -c * .36, c * .72, c * .72); x.restore(); }
@@ -240,7 +242,10 @@ export function initInterior(o) {
       build: () => { const g = new T.Group(), W = .48, H = .81, D = .565; bx(g, W, .02, D, 0, H - .02, 0, M.white); for (const sx of [-1, 1]) bx(g, .018, H - .02, D, sx * (W / 2 - .009), 0, 0, M.white); bx(g, W - .036, H - .02, .012, 0, 0, -D / 2 + .006, M.white);
         for (const y of [0, .245, .62]) bx(g, W - .036, .018, D - .012, 0, y, .006, M.white); bx(g, W - .006, .16, .018, 0, .638, D / 2 - .009, M.white); bx(g, .14, .008, .005, 0, .76, D / 2 + .002, M.greyD);
         bx(g, W - .006, .35, .018, 0, .265, D / 2 - .009, M.white); bx(g, .006, .14, .005, W / 2 - .05, .38, D / 2 + .002, M.greyD);
-        cy(g, .165, .085, 0, .02, .03, M.robot, 40); cy(g, .045, .02, 0, .105, -.03, M.robotTop, 24); cy(g, .167, .02, 0, .03, .03, M.greyD, 40); return g; } },
+        cy(g, .165, .085, 0, .02, .03, M.robot, 40); cy(g, .167, .02, 0, .03, .03, M.greyD, 40); /* 11-22 루프 퀄리티업: 로봇청소기 — 윗판 안쪽 밝은 원판 · 라이다 탑(어두운 띠) · 앞쪽 범퍼 호 · 청록 표시등 · 뒤 충전 거치대(검은 쐐기 + 초록 불) */
+        cy(g, .148, .004, 0, .105, .03, M.robotTop, 40); cy(g, .042, .022, 0, .109, -.03, M.robotTop, 24); cy(g, .043, .006, 0, .116, -.03, M.black, 24);
+        { const bp = mk(g, new T.CylinderGeometry(.169, .169, .05, 32, 1, true, -Math.PI / 2.4, Math.PI / 1.2), M.bumper, 0, .055, .03); } bx(g, .03, .004, .008, 0, .109, .14, M.display);
+        bx(g, .22, .1, .075, 0, .02, -.215, M.robot); bx(g, .012, .012, .004, .07, .09, -.176, M.robotLed); return g; } },
   ];
   const BY = Object.fromEntries(CAT.map(c => [c.k, c]));
 
