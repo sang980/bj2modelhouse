@@ -4243,6 +4243,15 @@ await yieldUI();
     for (const [a, b] of [[.55, .55], [-.55, .55], [.55, -.55], [-.55, -.55], [0, .55], [0, -.55], [.55, 0], [-.55, 0], [0, 0]]) { const X = WX(cx + a * (r.x1 - r.x0) / 2), Z = WZ(cz + b * (r.z1 - r.z0) / 2), y = hitY(X, Z); if (y == null || y > .009 || y < -.05) continue;
       if ([[.15, 0], [-.15, 0], [0, .15], [0, -.15], [.1, .1], [-.1, -.1]].some(([dx, dz]) => { const yy = hitY(X + dx, Z + dz); return yy == null || Math.abs(yy - y) > .003; })) continue;
       mesh(rimG, rimM, X, y + .0015, Z, fixed, { cast: false }); const p = mesh(new THREE.PlaneGeometry(.105, .105), fm, X, y + .0042, Z, fixed, { cast: false }); p.rotation.x = -Math.PI / 2; break; } } }
+{ /* 11-22 설비 퀄리티업: 욕실 천장 점검구 — 욕실마다 45cm 사각 점검구(얇은 흰 테 + 안쪽 어두운 틈 줄 + 잠금 구멍), 환기구·매입등·감지기 등 천장 설비와 18cm 넘게 떨어진 첫 자리(벽에서 35cm 안쪽)를 자동으로 고름 */
+  ceilingGroup.updateMatrixWorld(true); const pts = [], v3 = new THREE.Vector3(); ceilingGroup.traverse(o => { if (o.isMesh) { o.getWorldPosition(v3); pts.push([v3.x, v3.z]); } });
+  const fm = std(0xf1f1ee, .5), sm = std(0x6b6d70, .8), s = .45, hs = s / 2;
+  for (const r of rooms) { if (!r.sp || !/욕실|화장실/.test(r.n) || r.x1 - r.x0 < s + .7 || r.z1 - r.z0 < s + .7) continue; let best = null;
+    for (let a = 0; a <= 8 && !best; a++) for (let b = 0; b <= 8 && !best; b++) { const X = WX(r.x0 + .35 + hs + (r.x1 - r.x0 - .7 - s) * a / 8), Z = WZ(r.z0 + .35 + hs + (r.z1 - r.z0 - .7 - s) * b / 8); if (pts.every(([x, z]) => Math.max(Math.abs(x - X), Math.abs(z - Z)) > hs + .18)) best = [X, Z]; }
+    if (!best) continue; const [X, Z] = best;
+    for (const [dx, dz, w, d] of [[0, -hs, s + .03, .03], [0, hs, s + .03, .03], [-hs, 0, .03, s - .03], [hs, 0, .03, s - .03]]) mesh(BX(w, .006, d), fm, X + dx, H - .003, Z + dz, ceilingGroup, { cast: false });
+    for (const [dx, dz, w, d] of [[0, -hs + .02, s - .04, .003], [0, hs - .02, s - .04, .003], [-hs + .02, 0, .003, s - .04], [hs - .02, 0, .003, s - .04]]) mesh(BX(w, .002, d), sm, X + dx, H - .0011, Z + dz, ceilingGroup, { cast: false });
+    mesh(CY(.008, .008, .003, 16), sm, X + hs - .05, H - .0016, Z, ceilingGroup, { cast: false }); } }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
