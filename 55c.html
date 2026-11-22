@@ -3145,7 +3145,11 @@ const COOK = { x0: 5.66, x1: 6.14, z0: 1.07, z1: 1.68, y: .9 }; // 폭 61cm, 다
 const BURN = [[5.79, 1.22], [5.79, 1.53], [6.01, 1.375]];
 function burnerRing(g, x, z, r, mat) { const t = new THREE.Mesh(new THREE.TorusGeometry(r, .004, 6, 40), mat); t.rotation.x = Math.PI / 2; t.position.set(WX(x), COOK.y + .012, WZ(z)); g.add(t); }
 { const g = item('o5base', '3구 가스쿡탑', false); cookPot(g, ...BURN[0], COOK.y + .042); cab(g, COOK.x0, COOK.x1, COOK.y, COOK.y + .008, COOK.z0, COOK.z1, std(0x2b2c2e, .35, .6));
-  for (const [x, z] of BURN) { mesh(CY(.045, .05, .02, 20), M.black, WX(x), COOK.y + .018, WZ(z), g); for (const a of [0, Math.PI / 2]) { const b = cab(g, x - .08, x + .08, COOK.y + .03, COOK.y + .04, z - .006, z + .006, M.black); b.rotation.y = a; } } }
+  const gasBurner = (par, X, Z, r, y0, yt) => { const L = pts => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 32), dk = std(0x2e3033, .45, .55), ir = std(0x1a1b1d, .6, .35); /* 11-22 주방 소품 퀄리티업: 가스 화구 — 검은 원통 + 십자 막대 → 금속 버너 받침 + 불꽃 구멍 고리 + 검은 뚜껑 + 주철 받침(손가락 4 + 고리 + 발 4) */
+    mesh(L([[r * .32, 0], [r * .62, 0], [r * .64, .01], [r * .58, .02], [r * .34, .02]]), dk, X, y0, Z, par); { const t = mesh(new THREE.TorusGeometry(r * .47, .0045, 6, 32), std(0x8c7a5a, .35, .7), X, y0 + .021, Z, par, { cast: false }); t.rotation.x = Math.PI / 2; } mesh(L([[0, 0], [r * .4, 0], [r * .41, .004], [r * .3, .009], [0, .01]]), ir, X, y0 + .021, Z, par);
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4, d = r * .82; const f = mesh(BX(r * .8, .009, .01), ir, X + Math.cos(a) * d, yt - .0045, Z + Math.sin(a) * d, par); f.rotation.y = -a; const ft = mesh(BX(.01, yt - y0 - .012, .01), ir, X + Math.cos(a) * r * 1.2, (y0 + yt - .012) / 2, Z + Math.sin(a) * r * 1.2, par, { cast: false }); }
+    { const t = mesh(new THREE.TorusGeometry(r * 1.2, .005, 6, 36), ir, X, yt - .012, Z, par); t.rotation.x = Math.PI / 2; } };
+  for (const [x, z] of BURN) gasBurner(g, WX(x), WZ(z), .068, COOK.y + .008, COOK.y + .042); }
 const hotRing = new THREE.MeshStandardMaterial({ color: 0x4a1a14, emissive: 0x7a1d10, emissiveIntensity: .6, roughness: .5 });
 const indRing = std(0x8a8c90, .3);
 { const g = item('o5-1', '하이라이트+인덕션', false); cookPot(g, ...BURN[0], COOK.y + .006); cab(g, COOK.x0, COOK.x1, COOK.y, COOK.y + .006, COOK.z0, COOK.z1, M.tv); burnerRing(g, ...BURN[0], .085, hotRing); burnerRing(g, ...BURN[1], .08, indRing); burnerRing(g, ...BURN[2], .07, indRing); }

@@ -1701,12 +1701,15 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   // 쿡탑(옵션 4): 기본 3구 가스쿡탑 / 4-1 하이라이트1+인덕션2 / 4-2 인덕션 3구 + 슬림 후드(공통)
   { const cx0 = 7.45, cx1 = 8.07, cz0 = zb + .05, cz1 = zb + .53;
     const ring = (grp, x, z, r, m) => { const t = new THREE.Mesh(new THREE.TorusGeometry(r, .004, 6, 40), m); t.rotation.x = Math.PI / 2; t.position.set(WX(x), .912, WZ(z)); grp.add(t); };
+    const gasBurner = (par, X, Z, r, y0, yt) => { const L = pts => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 32), dk = std(0x2e3033, .45, .55), ir = std(0x1a1b1d, .6, .35); /* 11-22 주방 소품 퀄리티업: 가스 화구 — 검은 원통 + 십자 막대 → 금속 버너 받침 + 불꽃 구멍 고리 + 검은 뚜껑 + 주철 받침(손가락 4 + 고리 + 발 4) */
+    mesh(L([[r * .32, 0], [r * .62, 0], [r * .64, .01], [r * .58, .02], [r * .34, .02]]), dk, X, y0, Z, par); { const t = mesh(new THREE.TorusGeometry(r * .47, .0045, 6, 32), std(0x8c7a5a, .35, .7), X, y0 + .021, Z, par, { cast: false }); t.rotation.x = Math.PI / 2; } mesh(L([[0, 0], [r * .4, 0], [r * .41, .004], [r * .3, .009], [0, .01]]), ir, X, y0 + .021, Z, par);
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4, d = r * .82; const f = mesh(BX(r * .8, .009, .01), ir, X + Math.cos(a) * d, yt - .0045, Z + Math.sin(a) * d, par); f.rotation.y = -a; const ft = mesh(BX(.01, yt - y0 - .012, .01), ir, X + Math.cos(a) * r * 1.2, (y0 + yt - .012) / 2, Z + Math.sin(a) * r * 1.2, par, { cast: false }); }
+    { const t = mesh(new THREE.TorusGeometry(r * 1.2, .005, 6, 36), ir, X, yt - .012, Z, par); t.rotation.x = Math.PI / 2; } };
     const gas = og('b4base'), hl = og('b4-1'), ind = og('b4-2'), grate = std(0x1c1d1f, .55, .4), ringM = std(0x8a8c90, .3);
     const pts = [[cx0 + .16, cz1 - .15, .085], [cx0 + .46, cz1 - .15, .08], [cx0 + .31, cz0 + .14, .07]];
     pbox(cx0, cx1, .9, .908, cz0, cz1, std(0xb9bbbd, .3, .85), gas);
     for (const [x, z, r] of pts) {
-      mesh(CY(r * .55, r * .6, .03, 20), grate, WX(x), .92, WZ(z), gas); mesh(CY(r * .3, r * .3, .012, 16), std(0x2a2b2d, .5), WX(x), .94, WZ(z), gas);
-      for (const a of [0, Math.PI / 2]) { const b = mesh(BX(r * 2.3, .012, .012), grate, WX(x), .945, WZ(z), gas); b.rotation.y = a; } }
+      gasBurner(gas, WX(x), WZ(z), r, .908, .951); }
     pbox(cx0, cx1, .9, .906, cz0, cz1, M.tv, hl);
     mesh(CY(.085, .085, .002, 32), std(0x6b1b14, .3, 0, { emissive: 0x9b1a0c, emissiveIntensity: .6 }), WX(pts[0][0]), .908, WZ(pts[0][1]), hl, { cast: false });
     ring(hl, pts[0][0], pts[0][1], .1, std(0xc8402a, .3)); ring(hl, pts[1][0], pts[1][1], .08, ringM); ring(hl, pts[2][0], pts[2][1], .07, ringM);
