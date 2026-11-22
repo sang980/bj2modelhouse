@@ -150,6 +150,13 @@ export function initInterior(o) {
         mk(g, sideG([[DH, 0], [DH, .44], [-.2857, 1.3], [-DH, 1.3], [-DH, 0]], t), W, SX1 - t, 0, 0);
         { const V = T.Vector3, xr = SX1 - .03, c = new T.CatmullRomCurve3([new V(xr, .61, .4), new V(xr, .7, .38), new V(xr, 1.12, 0), new V(xr, 1.5, -.3), new V(xr, 1.59, -.42), new V(xr, 1.5, -.52), new V(xr, 1.3, -.54)]); mk(g, new T.TubeGeometry(c, 48, .012, 10, false), W, 0, 0, 0); }
         return g; } },
+    { k: 'desk1200', g: '서재', name: '화이트 책상 1200', model: '화이트 책상 1200×600 (높이 750)', size: '1200 × 600 × 750 (폭×깊이×높이)', note: '흰 상판 · 흰 철제 다리 4 · 상판 밑 테두리', put: 'wall', room: ['알파룸', '침실2'],
+      build: () => { /* 요청 치수: 상판 1200×600, 높이 750 — 흰 상판(두께 25) + 모서리 흰 사각 철제 다리 4(아래 회색 수평 발) + 상판 밑 테두리 4변 */
+        const g = new T.Group(), W = 1.2, D = .6, H = .75, tt = .025, L = M.pkLeg, lx = W / 2 - .04, lz = D / 2 - .04;
+        rb(g, W, tt, D, .004, 0, H - tt, 0, M.pkTop);
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) { bx(g, .04, H - tt - .012, .04, sx * lx, .012, sz * lz, L); cy(g, .016, .012, sx * lx, 0, sz * lz, M.greyD, 14); }
+        for (const sz of [-1, 1]) bx(g, 2 * lx - .04, .05, .02, 0, H - tt - .05, sz * lz, L); for (const sx of [-1, 1]) bx(g, .02, .05, 2 * lz - .04, sx * lx, H - tt - .05, 0, L);
+        return g; } },
     { k: 'cindy', g: '침실', name: '확장형 화장대(거울)', model: '한샘 신디 서랍형 원목 확장형 화장대', size: '폭 800~1350 · 높이 1340 · 깊이 400', note: '원목 · 서랍 · 거울 포함 · 선택 후 [확장]', put: 'wall', room: ['침실1', '안방'], ext: true,
       build: s => { const g = new T.Group(), W = .8, D = .4, Ht = .75; bx(g, W, .028, D, 0, Ht - .028, 0, M.natural); bx(g, W - .04, .14, D - .04, 0, Ht - .168, 0, M.natural);
         for (const x of [-.19, .19]) { bx(g, .36, .11, .008, x, Ht - .155, D / 2 - .016, M.oakL); cy(g, .012, .012, x, Ht - .105, D / 2 - .006, M.chrome, 12).rotation.x = Math.PI / 2; }
