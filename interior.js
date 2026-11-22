@@ -68,10 +68,10 @@ export function initInterior(o) {
           const leg = mk(lg, new T.CylinderGeometry(.026, .018, L, 20), M.natural, (rt + r) / 2, L / 2, 0); leg.rotation.z = sp; cy(lg, .02, .006, r, 0, 0, M.greyD, 16); }
         return g; } },
     { k: 'cielo1500', g: '식탁', name: '확장형 원목 식탁', model: '한샘 씨엘로 모디프 확장형 원목 식탁 1500', size: '확장 전 1100×1100 · 확장 후 1500×1100 · 높이 750', note: '원목 · 의자 미포함 · 선택 후 [확장] 버튼', put: 'free', room: ['식당', '주방'], clear: .45, ext: true,
-      build: s => { const W = s.ext ? 1.5 : 1.1, D = 1.1, H = .75, g = new T.Group(); bx(g, W, .04, D, 0, H - .04, 0, M.oak);
+      build: s => { /* 11-22 루프 퀄리티업: 모서리 둥근 상판 · 아래로 가늘어지는 사각 원목 다리 · 펠트 받침 */ const W = s.ext ? 1.5 : 1.1, D = 1.1, H = .75, g = new T.Group(); rb(g, W, .04, D, .008, 0, H - .04, 0, M.oak);
         for (const x of (s.ext ? [-.2, .2] : [0])) bx(g, .004, .002, D - .004, x, H, 0, M.seam);
         const ai = .075; bx(g, W - 2 * ai, .08, .025, 0, H - .12, D / 2 - ai, M.oak); bx(g, W - 2 * ai, .08, .025, 0, H - .12, -(D / 2 - ai), M.oak); bx(g, .025, .08, D - 2 * ai, W / 2 - ai, H - .12, 0, M.oak); bx(g, .025, .08, D - 2 * ai, -(W / 2 - ai), H - .12, 0, M.oak);
-        for (const sx of [-1, 1]) for (const sz of [-1, 1]) bx(g, .065, H - .04, .065, sx * (W / 2 - .075), 0, sz * (D / 2 - .075), M.oak); return g; } },
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const lg = mk(g, new T.CylinderGeometry(.046, .032, H - .04, 4), M.oak, sx * (W / 2 - .075), (H - .04) / 2, sz * (D / 2 - .075)); lg.rotation.y = Math.PI / 4; cy(g, .02, .006, sx * (W / 2 - .075), 0, sz * (D / 2 - .075), M.greyD, 12); } return g; } },
     { k: 'mw23', g: '주방', name: '전자레인지', model: '삼성 세라믹 전자레인지 23L (MS23C3535AW)', size: '489 × 275 × 374 (가로×높이×깊이)', note: '화이트 · 조리대·렌지대 위에 놓임', put: 'top', room: ['주방', '식당'],
       build: () => { /* 11-22 루프 퀄리티업: 문 창은 점 구멍 망(어두운 유리 속 작은 점 격자) + 둘레 회색 테 · 문 오른쪽 끝 세로 손잡이 홈 · 옆면 통풍 틈 */
         const g = new T.Group(), W = .489, H = .275, D = .374; rb(g, W, H - .008, D, .014, 0, .008, 0, M.applW);
