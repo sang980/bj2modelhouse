@@ -192,6 +192,17 @@ export function initInterior(o) {
         rb(g, W, tt, D, .004, 0, H - tt, 0, M.pkTop);
         for (const sx of [-1, 1]) for (const sz of [-1, 1]) { bx(g, .04, H - tt - .012, .04, sx * lx, .012, sz * lz, L); cy(g, .016, .012, sx * lx, 0, sz * lz, M.greyD, 14); }
         for (const sz of [-1, 1]) bx(g, 2 * lx - .04, .05, .02, 0, H - tt - .05, sz * lz, L); for (const sx of [-1, 1]) bx(g, .02, .05, 2 * lz - .04, sx * lx, H - tt - .05, 0, L);
+        { /* 11-23 루프 퀄리티업: 비어 있던 상판 위 소품 — 반쯤 연 은색 노트북(검은 자판 줄·트랙패드·어두운 화면 은은한 빛) · 흰 막대형 LED 스탠드(둥근 받침·가는 기둥·아래 따뜻한 빛 띠) · 흰 머그(속 커피·고리 손잡이) · 천 표지 책 2권(종이 단면) */
+          const sil = std(0xc9ccd0, .32, .6), kb = cv(256, 96, (x, w, h) => { x.fillStyle = '#26282c'; x.fillRect(0, 0, w, h); x.fillStyle = '#3a3d42'; for (let r = 0; r < 5; r++) for (let k = 0; k < 14; k++) { const kw = r === 4 && k > 3 && k < 10 ? 0 : 14; if (kw) x.fillRect(5 + k * 17.7, 5 + r * 18, kw, 14); } x.fillRect(5 + 4 * 17.7, 5 + 4 * 18, 6 * 17.7 - 4, 14); });
+          const lp = new T.Group(); lp.position.set(-.12, H, .03); lp.rotation.y = -.08; g.add(lp); rb(lp, .32, .014, .22, .006, 0, 0, 0, sil);
+          bx(lp, .275, .0012, .095, 0, .014, -.04, std(0xffffff, .7, 0, { map: kb })); bx(lp, .1, .0008, .062, 0, .014, .06, std(0xd6d8db, .25, .5));
+          { const pv = new T.Group(); pv.position.set(0, .012, -.108); pv.rotation.x = -.28; lp.add(pv); rb(pv, .32, .21, .007, .005, 0, 0, 0, sil);
+            const sc = mk(pv, new T.PlaneGeometry(.29, .18), std(0x1d2733, .15, 0, { emissive: 0x3d5470, emissiveIntensity: .35 }), 0, .108, .0038); sc.castShadow = false; bx(pv, .32, .012, .0072, 0, 0, .0005, std(0x2a2c30, .5)); } /* 화면 아래 검은 띠 */
+          const wt = std(0xf5f5f2, .35), lx2 = .44, lz2 = -.17; cy(lp.parent, .065, .014, lx2, H, lz2, wt, 32); cy(g, .0065, .37, lx2, H + .014, lz2, wt, 12);
+          { const hd = rb(g, .3, .014, .045, .006, lx2 - .13, H + .384, lz2 + .01, wt); hd.rotation.y = .12; const led = mk(g, new T.PlaneGeometry(.26, .012), std(0xfff3dc, .3, 0, { emissive: 0xffe2b0, emissiveIntensity: .9 }), lx2 - .13, H + .3835, lz2 + .01); led.rotation.set(Math.PI / 2, 0, -.12); led.castShadow = false; }
+          { const mx = .22, mz = .14, mug = mk(g, new T.CylinderGeometry(.04, .037, .095, 28, 1, true), std(0xf7f6f2, .3, 0, { side: T.DoubleSide }), mx, H + .0475, mz); cy(g, .037, .006, mx, H, mz, std(0xf7f6f2, .3), 28); cy(g, .0375, .002, mx, H + .078, mz, std(0x3b2414, .25), 28);
+            const hl = mk(g, new T.TorusGeometry(.024, .006, 8, 20, Math.PI), std(0xf7f6f2, .3), mx + .04, H + .05, mz); hl.rotation.z = -Math.PI / 2; mug.castShadow = true; }
+          for (const [bw, bc, by, ry] of [[.23, 0x6e7f6a, 0, .05], [.21, 0xc9b79a, .028, -.08]]) { const bk = new T.Group(); bk.position.set(-.45, H + by, -.12); bk.rotation.y = ry; g.add(bk); rb(bk, bw, .026, .16, .003, 0, 0, 0, std(bc, .8)); bx(bk, bw - .012, .02, .004, 0, .003, .079, std(0xf3efe4, .9)); bx(bk, .004, .02, .15, bw / 2 - .002, .003, 0, std(0xf3efe4, .9)); } }
         return g; } },
     { k: 'chair5', g: '서재', name: '바퀴 의자', model: '사무용 바퀴 의자 (메시 등받이 · 팔걸이 · 5발 바퀴)', size: '폭 610 · 깊이 640 · 높이 1020 · 좌판 높이 485', note: '책상을 먼저 놓았으면 그 책상 앞에 책상을 보고 놓임 · [색상]으로 블랙/화이트', put: 'free', room: ['알파룸', '침실2'], clear: .1, cols: ['블랙', '화이트'], near: ['desk1200', 'peak1400'],
       build: s => { /* 5발 받침(끝마다 쌍바퀴) + 가스 실린더 + 좌판 + 살짝 뒤로 젖힌 메시 등받이 + 양 팔걸이 — 앞(+z)이 앉는 사람이 보는 쪽 */
