@@ -2535,6 +2535,13 @@ function diningSmall() {
   g.userData.len = L; return g;
 }
 // 큰 식탁(팬트리 없음 → 서쪽 벽이 0.5m 물러나 여유): 길이 1.7m, 의자 최대 6
+function fruitBowl(par, x, y, z) { const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = .4; par.add(g); /* 11-23 루프 주방 소품 퀄리티업: 식탁 가운데 흰 도자기 과일 그릇 — 낮은 굽 + 넓게 벌어진 볼(안쪽 면) + 오렌지 3(꼭지 잎) · 청사과 2(꼭지) · 레몬 1, 놓인 자리는 결정적 값 */
+  mesh(new THREE.LatheGeometry([[0, 0], [.045, 0], [.047, .008], [.042, .012], [.07, .03], [.11, .058], [.122, .068], [.118, .07], [.106, .062], [.066, .036], [0, .03]].map(([a, b]) => new THREE.Vector2(a, b)), 40), std(0xf3f1ec, .3, 0, { side: THREE.DoubleSide }), 0, 0, 0, g);
+  const S = new THREE.SphereGeometry(1, 20, 14), lf = std(0x4d7a2e, .7), st = std(0x5a4028, .8);
+  for (const [px, py, pz, r, col, k] of [[-.035, .06, -.02, .037, 0xef8a22, 0], [.03, .058, -.035, .036, 0xf09528, 0], [-.005, .095, .005, .035, 0xec8420, 0], [.045, .062, .03, .039, 0x9cc34a, 1], [-.04, .064, .045, .038, 0xa8c955, 1], [.005, .052, .07, .032, 0xf2d84a, 2]]) {
+    const f = mesh(S, std(col, k === 0 ? .55 : .4), px, py, pz, g); f.scale.set(r, r * (k === 1 ? .92 : k === 2 ? .78 : .95), r * (k === 2 ? 1.35 : 1)); if (k === 2) f.rotation.y = .6;
+    if (k === 0) { mesh(CY(.003, .003, .006, 6), st, px, py + r * .95, pz, g, { cast: false }); const l = mesh(S, lf, px + .008, py + r * .95, pz, g, { cast: false }); l.scale.set(.012, .003, .006); }
+    if (k === 1) mesh(CY(.0018, .0015, .016, 5), st, px, py + r * .95, pz, g, { cast: false }).rotation.z = .25; } }
 function diningLarge() {
   // 직사각형 6인용: 한쪽 끝을 벽에 붙이고 양옆으로 의자 3개씩
   const g = piece('식탁(대형)', 0, 0, 0), L = 1.95, W = .9;
@@ -2548,6 +2555,7 @@ function diningLarge() {
     g.userData.chairs[k] = diningChair(g, x, z, r);
   for (const px of cx) for (const pz of [-.24, .24]) { const m = mesh(CY(.16, .16, .004, 30), wvMat(), px, .757, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); placeSet(g, px, .768, pz, .1); }
   tablePlant(g, -.975, .755, 0);
+  fruitBowl(g, -.65, .755, 0); /* 두 자리 매트 사이 가운데 */
   g.userData.len = L; return g;
 }
 /* 6인 식탁(현관장+복도팬트리 + 아일랜드 없음, 요청): 길이 1.6m — 세탁실·발코니 벽면(z 2.41)에서 남쪽으로 뻗어 거실 경계(z 4.0)를 넘지 않게(복도 입구를 막지 않음)
@@ -2562,6 +2570,7 @@ function diningPantry6() {
   for (const x of cx.slice(1)) diningChair(g, x, -.6, 0); /* 서쪽(팬트리 쪽) 2 */
   for (const x of cx) for (const pz of [-.2, .2]) { if (pz < 0 && x === cx[0]) continue; const m = mesh(CY(.16, .16, .004, 30), wvMat(), x, .757, pz, g, { cast: false }); m.scale.set(1.25, 1, 1); placeSet(g, x, .768, pz, .1); }
   tablePlant(g, -.535, .7525, 0);
+  fruitBowl(g, -1.065, .7525, 0); /* 6인 식탁: 가운데·서쪽 자리 매트 사이 */
   g.userData.len = L; return g;
 }
 let _bslp = null; function bedSlippers(cx, cz, col, ry) { /* 11-23 루프 소품 퀄리티업: 침대 옆 바닥 실내 슬리퍼 한 켤레 — 발 모양 흰 밑창 + 펠트 천(결정적 잔결) + 앞 아치 끈, 앞코는 침대 반대쪽(내려서 바로 신게) */
