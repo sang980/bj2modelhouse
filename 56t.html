@@ -1141,6 +1141,8 @@ function addOpening(horiz, line, t, o, parent = structure) {
         for (const sd of [-1, 1]) { const vv = (a, b) => sd > 0 ? [a, b] : [-b, -a];
           const cg = new THREE.Group(); cg.position.set(horiz ? WX(u) : WX(line + sd * .04), yh, horiz ? WZ(line + sd * .04) : WZ(u)); cg.rotation.y = horiz ? (sd > 0 ? 0 : Math.PI) : (sd > 0 ? Math.PI / 2 : -Math.PI / 2); grp.add(cg); crescentParts(cg); } }
       put(o.from + ft, o.to - ft, y0 + ft, y1 - ft, -.006, .006, M.glass, { cast: false, recv: false });
+      { /* 11-22 설비 퀄리티업: 창 방충망 — 열리는 쪽 한 짝, 유리 바깥에 반투명 회색 망(밖이 살짝 흐리고 어둡게) + 얇은 은회색 틀 */ const SC = M._scr || (M._scr = { m: new THREE.MeshStandardMaterial({ color: 0x34373a, roughness: .9, transparent: true, opacity: .36, depthWrite: false, side: THREE.DoubleSide }), f: std(0xcfd1d3, .45, .3) }), so = (o.out ?? 1) > 0 ? 1 : -1, V = (p, q) => so > 0 ? [p, q] : [-q, -p], a = o.from + w / 2 + .03, b = o.to - ft, ya = y0 + ft, yb = y1 - ft;
+        put(a, b, ya, yb, ...V(.023, .025), SC.m, { cast: false, recv: false }); for (const [u0, u1, v0, v1] of [[a, a + .02, ya, yb], [b - .02, b, ya, yb], [a, b, ya, ya + .02], [a, b, yb - .02, yb]]) put(u0, u1, v0, v1, ...V(.02, .03), SC.f, { cast: false }); }
       if (o.sill !== false && y0 > .2) put(o.from - .04, o.to + .04, y0 - .028, y0 + .002, -t / 2 - .04, t / 2 + .01, M.white); // 양쪽 벽면보다 나오고 윗면도 창 아래 벽 윗면보다 2mm 위(같은 면이면 깜빡임)
     }
     if (o.rail) {
