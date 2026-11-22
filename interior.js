@@ -39,6 +39,7 @@ export function initInterior(o) {
   { const t = cv(128, 64, (x, w, h) => { x.fillStyle = '#16191d'; x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(150,158,166,.8)'; for (let yy = 3; yy < h; yy += 6) for (let xx = (yy % 12 === 3 ? 3 : 6); xx < w; xx += 6) { x.beginPath(); x.arc(xx, yy, 1.6, 0, 7); x.fill(); } }); t.repeat.set(2, 2); M.mwWin = std(0xffffff, .15, .2, { map: t }); M.mwRim = std(0x8a8e93, .4, .3); } /* 전자레인지 문 창: 점 구멍 망 */
   M.bumper = std(0x55585c, .5, 0, { side: T.DoubleSide }); /* 로봇청소기 앞 범퍼(열린 호) */
   M.robotLed = std(0x2f8f4e, .4, 0, { emissive: 0x35c46a, emissiveIntensity: .8 }); /* 충전 거치대 초록 불 */
+  M.dwPanel = std(0x2a2d31, .18, .2); M.dwIcon = std(0xe9ecef, .4, 0, { emissive: 0x9aa3ab, emissiveIntensity: .4 }); /* 식기세척기 조작 띠(어두운 유리) · 흰 터치 표시 */
   M.wrGold = std(0xc6a066, .3, .65); /* 로프트 침대 옷장: 금색 막대 손잡이 */
   { /* 11-22 루프: 킹 침대 이불 누빔 — 마름모 박음질 줄 + 칸마다 살짝 볼록한 밝기(무작위 없음) */
     const q = cv(256, 256, (x, w, h) => { x.fillStyle = '#e6e3dd'; x.fillRect(0, 0, w, h); const n = 4, c = w / n; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const gx = x.createRadialGradient(i * c + c / 2, j * c + c / 2, 2, i * c + c / 2, j * c + c / 2, c * .62); gx.addColorStop(0, 'rgba(255,255,255,.22)'); gx.addColorStop(1, 'rgba(160,150,135,.06)'); x.fillStyle = gx; x.save(); x.translate(i * c + c / 2, j * c + c / 2); x.rotate(Math.PI / 4); x.fillRect(-c * .36, -c * .36, c * .72, c * .72); x.restore(); }
@@ -96,7 +97,9 @@ export function initInterior(o) {
         bx(g, W - .036, .018, D - .012, 0, .222, .006, B); bx(g, W - .006, .175, .018, 0, .045, D / 2 - .009, F); bx(g, .14, .006, .004, 0, .19, D / 2 + .001, M.greyD); return g; } },
     { k: 'dw6', g: '주방', name: '식기세척기(카운터탑)', model: '삼성 비스포크 식기세척기 카운터탑 6인용', size: '555 × 480 × 500 (폭×높이×깊이)', note: '화이트 · 조리대 위에 놓임', put: 'top', room: ['주방', '식당'],
       build: () => { const g = new T.Group(), W = .555, H = .48, D = .5; rb(g, W, H - .01, D, .016, 0, .01, 0, M.applW); bx(g, W - .02, H - .07, .006, 0, .02, D / 2 + .002, std(0xf6f6f4, .25));
-        bx(g, W - .03, .034, .004, 0, H - .056, D / 2 + .004, M.grey); bx(g, .06, .012, .003, W / 2 - .07, H - .045, D / 2 + .007, M.display); bx(g, .26, .012, .005, 0, H - .095, D / 2 + .005, M.black);
+        bx(g, W - .03, .034, .004, 0, H - .056, D / 2 + .004, M.dwPanel); bx(g, .06, .012, .003, W / 2 - .07, H - .045, D / 2 + .007, M.display); bx(g, .26, .012, .005, 0, H - .095, D / 2 + .005, M.black);
+        for (let i = 0; i < 5; i++) bx(g, .016, .003, .002, -W / 2 + .06 + i * .045, H - .04, D / 2 + .0065, M.dwIcon); { const pw = mk(g, new T.TorusGeometry(.006, .0012, 6, 18), M.dwIcon, W / 2 - .14, H - .039, D / 2 + .0065); pw.rotation.set(0, 0, .5); } /* 11-22 루프 퀄리티업: 위 조작 띠를 어두운 유리로 + 흰 터치 표시 5·전원 고리 */
+        for (const [w2, h2, x2, y2] of [[W - .02, .003, 0, .019], [.003, H - .07, -(W - .02) / 2, .02], [.003, H - .07, (W - .02) / 2, .02]]) bx(g, w2, h2, .004, x2, y2, D / 2 + .003, M.greyD); /* 문 둘레 틈 */
         for (const sx of [-1, 1]) for (const sz of [-1, 1]) cy(g, .012, .01, sx * (W / 2 - .04), 0, sz * (D / 2 - .04), M.black, 12); return g; } },
     { k: 'king', g: '침실', name: '킹사이즈 침대', model: '킹사이즈 침대 1600 × 2000', size: '매트리스 1600 × 2000', note: '안방(침실1)에 놓임 · 헤드보드를 벽에', put: 'wall', room: ['침실1', '안방'],
       build: () => { /* 11-22 루프 퀄리티업: 바닥에서 살짝 뜬 패브릭 받침(어두운 걸레받이 그림자) · 누빔 이불(위 + 양옆·발치로 늘어짐) · 머리 쪽 흰 시트 접힘 · 헤드보드에 기댄 베개 2 + 앞 캐멀 쿠션·세이지 작은 쿠션 */
