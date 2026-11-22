@@ -45,7 +45,7 @@ export function initInterior(o) {
     const q = cv(256, 256, (x, w, h) => { x.fillStyle = '#e6e3dd'; x.fillRect(0, 0, w, h); const n = 4, c = w / n; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const gx = x.createRadialGradient(i * c + c / 2, j * c + c / 2, 2, i * c + c / 2, j * c + c / 2, c * .62); gx.addColorStop(0, 'rgba(255,255,255,.22)'); gx.addColorStop(1, 'rgba(160,150,135,.06)'); x.fillStyle = gx; x.save(); x.translate(i * c + c / 2, j * c + c / 2); x.rotate(Math.PI / 4); x.fillRect(-c * .36, -c * .36, c * .72, c * .72); x.restore(); }
       x.strokeStyle = 'rgba(120,110,95,.2)'; x.lineWidth = 1.3; x.setLineDash([4, 3]); for (let k = -n; k <= 2 * n; k++) { x.beginPath(); x.moveTo(k * c, 0); x.lineTo(k * c + h, h); x.stroke(); x.beginPath(); x.moveTo(k * c, 0); x.lineTo(k * c - h, h); x.stroke(); } }); q.repeat.set(2, 2);
     M.duvetQ = std(0xffffff, .92, 0, { map: q }); M.cushCamel = std(0xb9a383, .95); M.cushSage = std(0x9aa892, .95); }
-  M.book = [0x4a5d73, 0xc9b79c, 0x8e3b3b, 0xe8e4dc, 0x2f3a33, 0xb08a5c, 0x6c7a89].map(c => std(c, .8)); M.bin = [std(0xd8cdb8, .95), std(0x9a9da1, .95)]; /* 칸막이 책장: 책 표지 7색 · 천 수납 바구니 2색 */
+  M.book = [0x4a5d73, 0xc9b79c, 0x8e3b3b, 0xe8e4dc, 0x2f3a33, 0xb08a5c, 0x6c7a89].map(c => std(c, .8)); M.bin = [std(0xd8cdb8, .95), std(0x9a9da1, .95)]; M.bookBand = std(0xeadfc6, .6); M.bookBandD = std(0x3b3c3f, .6); M.pages = std(0xf2ecdc, .95); /* 11-22 루프: 책등 띠(밝은·어두운) · 위 책장 면(크림) */ /* 칸막이 책장: 책 표지 7색 · 천 수납 바구니 2색 */
   M.chair = [ /* 바퀴 의자 색: [몸체·다리, 좌판, 등받이 메시, 팔걸이 패드] */
     [M.black, std(0x34373c, .9), std(0x2a2c30, .85), M.black], [std(0xeeeeec, .4, .1), std(0x9a9ea3, .9), std(0xb3b6ba, .85), std(0xe9e9e7, .5)]];
 
@@ -54,6 +54,9 @@ export function initInterior(o) {
   const bx = (g, w, h, d, x, y0, z, mat) => mk(g, new T.BoxGeometry(w, h, d), mat, x, y0 + h / 2, z);
   const rb = (g, w, h, d, r, x, y0, z, mat) => mk(g, new RBG(w, h, d, 3, Math.max(.001, Math.min(r, w / 2 - .001, h / 2 - .001, d / 2 - .001))), mat, x, y0 + h / 2, z);
   const cy = (g, r, h, x, y0, z, mat, seg = 24, r2 = r) => mk(g, new T.CylinderGeometry(r, r2, h, seg), mat, x, y0 + h / 2, z);
+  const boxBatch = () => { const P = [], N = []; return { add(w, h, d, x, y0, z) { const b = new T.BoxGeometry(w, h, d).toNonIndexed(); b.translate(x, y0 + h / 2, z); for (const v of b.attributes.position.array) P.push(v); for (const v of b.attributes.normal.array) N.push(v); b.dispose(); }, mesh(g, mat) { if (!P.length) return; const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.Float32BufferAttribute(P, 3)); geo.setAttribute('normal', new T.Float32BufferAttribute(N, 3)); const m = new T.Mesh(geo, mat); m.receiveShadow = true; g.add(m); } }; }; /* 작은 상자 여러 개를 한 메시로(그리기 횟수 줄임) */
+  const bookBatch = () => ({ c: boxBatch(), d: boxBatch(), p: boxBatch(), done(g) { this.c.mesh(g, M.bookBand); this.d.mesh(g, M.bookBandD); this.p.mesh(g, M.pages); } });
+  const bookDeco = (BB, x, w, h, y0, zf, i) => { const lt = i % 7 === 1 || i % 7 === 3; for (const yy of i % 3 ? [h * .8] : [h * .12, h * .8]) (lt ? BB.d : BB.c).add(w - .004, .008, .002, x, y0 + yy, zf + .001); if (i % 4 === 1) (lt ? BB.d : BB.c).add(w * .45, .03, .002, x, y0 + h * .45, zf + .001); BB.p.add(w - .007, .0026, .186, x, y0 + h - .002, zf - .1); }; /* 11-22 루프 소품 퀄리티업: 세운 책 — 책등 위·아래 띠 + 가운데 제목 칸(몇 권) + 위로 보이는 크림색 책장 면(앞뒤 표지 안쪽) */
   const endShape = (L, Dp, a) => { const x0 = -L / 2, x1 = L / 2 - a, b = Dp / 2, s = new T.Shape(); s.moveTo(x0, -b); s.lineTo(x1, -b); s.absellipse(x1, 0, a, b, -Math.PI / 2, Math.PI / 2, false); s.lineTo(x0, b); s.closePath(); return s; };
   const opG = (g, k, v, x, y, z, n) => { const p = new T.Group(); p.position.set(x, y, z); p.userData.op = { k, v, n }; g.add(p); return p; }; /* 열리는 묶음: k 's' = 앞(+z)으로 v m 미끄러짐(서랍) · 'h' = 경첩 축으로 v rad 회전(문) */
   const upEx = (shape, h) => { const g = new T.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false, curveSegments: 28 }); g.rotateX(-Math.PI / 2); return g; };
@@ -205,8 +208,8 @@ export function initInterior(o) {
       build: s => { /* 사용자 스케치: 벽에 붙는 칸막이 책장 — 아래·가운데 줄은 3칸, 위 줄은 2칸(더 높음). 옆판·가로판 18T + 얇은 뒤판, 칸마다 책(높이·두께·색 고정 순서)이나 천 바구니 */
         const g = new T.Group(), W = 1, D = .3, H = 1.15, t = .018, B = s.col === 1 ? M.oakL : M.white, Wi = W - 2 * t, ys = [0, .36, .7, H - t], cells = [3, 3, 2];
         for (const sx of [-1, 1]) bx(g, t, H, D, sx * (W / 2 - t / 2), 0, 0, B); for (const y of ys) bx(g, Wi, t, D - .006, 0, y, .003, B); bx(g, Wi, H - 2 * t, .006, 0, t, -D / 2 + .003, B); /* 옆판 · 가로판 4 · 뒤판 */
-        const bh = [.24, .21, .26, .2, .23, .25, .22, .19], bt = [.03, .025, .035, .028, .04, .03, .026, .033]; let bi = 0;
-        const books = (x0, cw, y0, fill) => { let x = x0 + .01; while (x < x0 + cw * fill) { const h = bh[bi % 8], w = bt[bi % 8]; bx(g, w - .002, h, .2, x + w / 2, y0, D / 2 - .13, M.book[bi % 7]); x += w; bi++; } }; /* 세워 꽂은 책 */
+        const bh = [.24, .21, .26, .2, .23, .25, .22, .19], bt = [.03, .025, .035, .028, .04, .03, .026, .033]; let bi = 0; const BB = bookBatch();
+        const books = (x0, cw, y0, fill) => { let x = x0 + .01; while (x < x0 + cw * fill) { const h = bh[bi % 8], w = bt[bi % 8]; bx(g, w - .002, h, .2, x + w / 2, y0, D / 2 - .13, M.book[bi % 7]); bookDeco(BB, x + w / 2, w, h, y0, D / 2 - .03, bi); x += w; bi++; } }; /* 세워 꽂은 책 */
         const bin = (cx, cw, y0, h, m) => { rb(g, cw - .04, h, D - .07, .015, cx, y0, .02, m); bx(g, .1, .025, .004, cx, y0 + h - .06, D / 2 - .015 + .001, M.greyD); }; /* 천 바구니 + 손잡이 구멍 */
         const plan = [['bin0', 'books', 'bin1'], ['books', 'stack', 'books'], ['books', 'books']];
         cells.forEach((n, r) => { const y0 = ys[r] + t, y1 = ys[r + 1], cw = (Wi - (n - 1) * t) / n;
@@ -215,17 +218,17 @@ export function initInterior(o) {
             if (what === 'books') books(x0, cw, y0, r === 2 ? .55 : .7);
             else if (what.startsWith('bin')) bin(cx, cw, y0, Math.min(.26, y1 - y0 - .05), M.bin[+what[3]]);
             else for (let j = 0; j < 4; j++) bx(g, .22 - j * .015, .03, .17 - j * .01, cx - .02, y0 + j * .031, .02, M.book[(j + 2) % 7]); } }); /* 눕혀 쌓은 책 */
-        return g; } },
+        BB.done(g); return g; } },
     { k: 'shelf5w', g: '서재', name: '5단 책장(폭 500)', model: '흰색 5단 책장 500', size: '500 × 300 × 1800 (폭×깊이×높이)', note: '흰색 · 같은 높이 칸 5 · 로프트 침대 계단 옆 같은 좁은 틈(약 0.55~0.65m)에 쏙 · 책·바구니 포함', put: 'wall', room: ['알파룸', '침실2'],
       build: () => { /* 사용자 스케치: 계단 옆 좁은 틈에 들어가는 키 큰 5단 책장 — 옆판·가로판 18T, 아래 걸레받이(안으로 들어감), 얇은 뒤판, 칸마다 책·천 바구니(고정 순서) */
         const g = new T.Group(), W = .5, D = .3, H = 1.8, t = .018, B = M.white, Wi = W - 2 * t, kick = .05, n = 5, sp = (H - t - kick) / n;
         for (const sx of [-1, 1]) bx(g, t, H, D, sx * (W / 2 - t / 2), 0, 0, B); bx(g, Wi, kick, t, 0, 0, D / 2 - .03, B); bx(g, Wi, H - kick - t, .006, 0, kick, -D / 2 + .003, B);
         const ys = []; for (let k = 0; k < n; k++) ys.push(kick + k * sp); ys.push(H - t); for (const y of ys) bx(g, Wi, t, D - .006, 0, y, .003, B); /* 바닥판 · 선반 4 · 윗판 */
-        const bh = [.24, .21, .26, .2, .23, .25, .22, .19], bt = [.03, .025, .035, .028, .04, .03, .026, .033]; let bi = 3;
-        const books = (y0, fill) => { let x = -Wi / 2 + .01; while (x < -Wi / 2 + Wi * fill) { const h = bh[bi % 8], w = bt[bi % 8]; bx(g, w - .002, h, .2, x + w / 2, y0, D / 2 - .13, M.book[bi % 7]); x += w; bi++; } };
+        const bh = [.24, .21, .26, .2, .23, .25, .22, .19], bt = [.03, .025, .035, .028, .04, .03, .026, .033]; let bi = 3; const BB = bookBatch();
+        const books = (y0, fill) => { let x = -Wi / 2 + .01; while (x < -Wi / 2 + Wi * fill) { const h = bh[bi % 8], w = bt[bi % 8]; bx(g, w - .002, h, .2, x + w / 2, y0, D / 2 - .13, M.book[bi % 7]); bookDeco(BB, x + w / 2, w, h, y0, D / 2 - .03, bi); x += w; bi++; } };
         const bin = (y0, m) => { rb(g, Wi - .04, .24, D - .07, .015, 0, y0, .02, m); bx(g, .1, .025, .004, 0, y0 + .18, D / 2 - .014, M.greyD); };
         bin(ys[0] + t, M.bin[0]); books(ys[1] + t, .75); books(ys[2] + t, .45); for (let j = 0; j < 3; j++) bx(g, .2 - j * .015, .03, .16 - j * .01, .1, ys[2] + t + j * .031, .02, M.book[(j + 4) % 7]); books(ys[3] + t, .65); bin(ys[4] + t, M.bin[1]);
-        return g; } },
+        BB.done(g); return g; } },
     { k: 'cindy', g: '침실', name: '확장형 화장대(거울)', model: '한샘 신디 서랍형 원목 확장형 화장대', size: '폭 800~1350 · 높이 1340 · 깊이 400', note: '원목 · 서랍 · 거울 포함 · 선택 후 [확장]', put: 'wall', room: ['침실1', '안방'], ext: true,
       build: s => { /* 11-22 루프 퀄리티업: 모서리 둥근 상판 · 아래로 가늘어지는 둥근 원목 다리 · 서랍 앞 금색 둥근 손잡이 · 상판 위 둥근 쟁반 + 향수병 2(유리 + 금색 뚜껑) */
         const g = new T.Group(), W = .8, D = .4, Ht = .75; rb(g, W, .028, D, .006, 0, Ht - .028, 0, M.natural); bx(g, W - .04, .14, D - .04, 0, Ht - .168, 0, M.natural);
