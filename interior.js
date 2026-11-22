@@ -35,6 +35,7 @@ export function initInterior(o) {
     const ply = cv(128, 32, (x, w, h) => { x.fillStyle = '#dcc7a3'; x.fillRect(0, 0, w, h); const L = [[3, '#c4a77c'], [9, '#e6d4b4'], [14, '#bf9f72'], [20, '#e3cfac'], [26, '#c6a87d']]; for (const [y, c] of L) { x.fillStyle = c; x.fillRect(0, y, w, 2); } }); ply.repeat.set(6, 1);
     Object.assign(M, { pkPly: std(0xffffff, .6, 0, { map: ply }), pkTop: std(0xf3f2ee, .42), pkLeg: std(0xf1f1ee, .35, .3) }); }
   M.cdBrass = std(0xc9a25e, .3, .7); M.cdGlass = std(0xead8c0, .08, 0, { transparent: true, opacity: .6 }); /* 화장대 금색 손잡이·향수병 유리 */
+  M.stDoor = std(0xe6dccb, .18, .05); /* 스타일러 베이지 유광 문 */
   M.wrGold = std(0xc6a066, .3, .65); /* 로프트 침대 옷장: 금색 막대 손잡이 */
   { /* 11-22 루프: 킹 침대 이불 누빔 — 마름모 박음질 줄 + 칸마다 살짝 볼록한 밝기(무작위 없음) */
     const q = cv(256, 256, (x, w, h) => { x.fillStyle = '#e6e3dd'; x.fillRect(0, 0, w, h); const n = 4, c = w / n; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const gx = x.createRadialGradient(i * c + c / 2, j * c + c / 2, 2, i * c + c / 2, j * c + c / 2, c * .62); gx.addColorStop(0, 'rgba(255,255,255,.22)'); gx.addColorStop(1, 'rgba(160,150,135,.06)'); x.fillStyle = gx; x.save(); x.translate(i * c + c / 2, j * c + c / 2); x.rotate(Math.PI / 4); x.fillRect(-c * .36, -c * .36, c * .72, c * .72); x.restore(); }
@@ -219,8 +220,12 @@ export function initInterior(o) {
         bx(g, .52, .59, .024, 0, Ht, -D / 2 + .05, M.natural); bx(g, .46, .53, .004, 0, Ht + .03, -D / 2 + .064, M.mirror);
         if (s.ext) { bx(g, .55, .028, D, W / 2 + .275, Ht - .028, 0, M.natural); for (const sz of [-1, 1]) cy(g, .02, Ht - .028, W / 2 + .52, 0, sz * (D / 2 - .03), M.natural, 16, .013); } return g; } },
     { k: 'styler', g: '드레스룸', name: '스타일러', model: '의류관리기(스타일러)', size: '600 × 620 × 1965 (폭×깊이×높이)', note: '옷방(드레스룸)에 놓임', put: 'wall', room: ['드레스', '옷방'],
-      build: () => { const g = new T.Group(), W = .6, D = .62, H = 1.965; bx(g, W - .03, .06, D - .06, 0, 0, -.02, M.black); rb(g, W, H - .06, D - .03, .01, 0, .06, -.015, M.applW);
-        rb(g, W - .006, H - .08, .025, .008, 0, .07, D / 2 - .0125, M.cream); bx(g, .012, .9, .006, W / 2 - .04, .62, D / 2 + .003, M.grey); bx(g, .12, .022, .004, 0, H - .15, D / 2 + .002, M.display); return g; } },
+      build: () => { /* 11-22 루프 퀄리티업: 몸통 + 살짝 띄운 베이지 유광 문(둘레 어두운 틈) · 오른쪽 세로로 파인 손잡이 홈 · 위쪽 둥근 검은 표시창(청록 불빛 줄) · 맨 위 통풍 틈 · 아래 검은 받침 */
+        const g = new T.Group(), W = .6, D = .62, H = 1.965, F = D / 2; bx(g, W - .03, .06, D - .06, 0, 0, -.02, M.black); rb(g, W, H - .06, D - .03, .01, 0, .06, -.015, M.applW);
+        bx(g, W - .004, H - .072, .006, 0, .066, F - .028, M.greyD); rb(g, W - .012, H - .084, .025, .008, 0, .072, F - .0125, M.stDoor); /* 문 뒤 어두운 틈 + 문 */
+        bx(g, .016, .82, .012, W / 2 - .03, .62, F + .002, M.greyD); bx(g, .004, .82, .013, W / 2 - .021, .62, F + .0025, M.applW); /* 손잡이 홈 + 밝은 가장자리 */
+        rb(g, .17, .05, .006, .012, 0, H - .19, F + .003, M.black); bx(g, .1, .006, .002, 0, H - .168, F + .0065, M.display); for (const x of [-.06, .06]) bx(g, .008, .008, .002, x, H - .17, F + .0065, M.display); /* 표시창 */
+        for (let i = 0; i < 3; i++) bx(g, W - .16, .004, .003, 0, H - .07 - i * .012, F + .0015, M.greyD); return g; } }, /* 맨 위 통풍 틈 3줄 */
     { k: 'arte', g: '거실', name: '안마의자', model: 'LG 힐링미 오브제컬렉션 아르테 (MH20BR)', size: '753 × 1007 × 1127 (폭×길이×높이)', note: '코지 브라운 · 뒤로 젖힐 공간 약 30cm 띄움', put: 'wall', room: ['거실'], gap: .3,
       build: () => { const g = new T.Group(), W = .753; bx(g, .56, .14, .62, 0, 0, -.05, M.leatherD);
         const arm = new T.Shape(); arm.moveTo(-.44, .14); arm.lineTo(.3, .14); arm.lineTo(.3, .5); arm.quadraticCurveTo(.3, .66, .16, .66); arm.lineTo(-.44, .66); arm.closePath();
