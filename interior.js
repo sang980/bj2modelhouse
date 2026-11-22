@@ -70,12 +70,23 @@ export function initInterior(o) {
         cy(g, .4, .045, 0, H - .07, 0, M.natural, 48); cy(g, .17, .02, 0, H - .045, 0, M.natural, 32);
         for (const [x, z] of [[-.2775, -.2775], [.2775, -.2775], [-.2775, .2775], [.2775, .2775]]) { const r = Math.hypot(x, z), a = Math.atan2(z, x), lg = new T.Group(); lg.rotation.y = -a; g.add(lg); const sp = .06, L = H - .07, rt = r - L * Math.sin(sp);
           const leg = mk(lg, new T.CylinderGeometry(.026, .018, L, 20), M.natural, (rt + r) / 2, L / 2, 0); leg.rotation.z = sp; cy(lg, .02, .006, r, 0, 0, M.greyD, 16); }
+        { /* 11-23 루프 퀄리티업: 비어 있던 상판 가운데 — 테 있는 원목 원형 트레이 + 흰 무광 도자기 화병(어깨·좁은 입) + 유칼립투스 3줄기(동그란 은녹색 잎) */
+          const tr = mk(g, new T.LatheGeometry([[0, 0], [.15, 0], [.155, .004], [.156, .018], [.15, .018], [.147, .006], [0, .006]].map(([a, b]) => new T.Vector2(a, b)), 48), M.natural, 0, H, 0);
+          mk(g, new T.LatheGeometry([[0, 0], [.04, 0], [.052, .03], [.05, .09], [.032, .135], [.016, .15], [.017, .162], [.012, .162], [.011, .15], [0, .15]].map(([a, b]) => new T.Vector2(a, b)), 32), std(0xf1eee8, .7), -.03, H + .006, .02);
+          const lf = std(0x8fa59a, .7, 0, { side: T.DoubleSide }), stm = std(0x6f7d63, .8), Y = new T.Vector3(0, 1, 0);
+          for (let i = 0; i < 3; i++) { const a = i * 2.1 + .4, tl = .25 + i * .12, d = new T.Vector3(Math.cos(a) * Math.sin(tl), Math.cos(tl), Math.sin(a) * Math.sin(tl)), L2 = .26 + i * .05, b = new T.Vector3(-.03, H + .15, .02), s1 = mk(g, new T.CylinderGeometry(.0018, .0022, L2, 5), stm, b.x + d.x * L2 / 2, b.y + d.y * L2 / 2, b.z + d.z * L2 / 2); s1.quaternion.setFromUnitVectors(Y, d);
+            for (let k = 1; k <= 7; k++) { const t = k / 7.5, p = b.clone().addScaledVector(d, L2 * t), side = k % 2 ? 1 : -1, n = new T.Vector3(-d.z, 0, d.x).normalize().multiplyScalar(side * .014), lp = mk(g, new T.CircleGeometry(.013 - k * .0008, 12), lf, p.x + n.x, p.y + .004, p.z + n.z); lp.rotation.set(-Math.PI / 2 + .5 * side, a, 0); } } }
         return g; } },
     { k: 'cielo1500', g: '식탁', name: '확장형 원목 식탁', model: '한샘 씨엘로 모디프 확장형 원목 식탁 1500', size: '확장 전 1100×1100 · 확장 후 1500×1100 · 높이 750', note: '원목 · 의자 미포함 · 선택 후 [확장] 버튼', put: 'free', room: ['식당', '주방'], clear: .45, ext: true,
       build: s => { /* 11-22 루프 퀄리티업: 모서리 둥근 상판 · 아래로 가늘어지는 사각 원목 다리 · 펠트 받침 */ const W = s.ext ? 1.5 : 1.1, D = 1.1, H = .75, g = new T.Group(); rb(g, W, .04, D, .008, 0, H - .04, 0, M.oak);
         for (const x of (s.ext ? [-.2, .2] : [0])) bx(g, .004, .002, D - .004, x, H, 0, M.seam);
         const ai = .075; bx(g, W - 2 * ai, .08, .025, 0, H - .12, D / 2 - ai, M.oak); bx(g, W - 2 * ai, .08, .025, 0, H - .12, -(D / 2 - ai), M.oak); bx(g, .025, .08, D - 2 * ai, W / 2 - ai, H - .12, 0, M.oak); bx(g, .025, .08, D - 2 * ai, -(W / 2 - ai), H - .12, 0, M.oak);
-        for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const lg = mk(g, new T.CylinderGeometry(.046, .032, H - .04, 4), M.oak, sx * (W / 2 - .075), (H - .04) / 2, sz * (D / 2 - .075)); lg.rotation.y = Math.PI / 4; cy(g, .02, .006, sx * (W / 2 - .075), 0, sz * (D / 2 - .075), M.greyD, 12); } return g; } },
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const lg = mk(g, new T.CylinderGeometry(.046, .032, H - .04, 4), M.oak, sx * (W / 2 - .075), (H - .04) / 2, sz * (D / 2 - .075)); lg.rotation.y = Math.PI / 4; cy(g, .02, .006, sx * (W / 2 - .075), 0, sz * (D / 2 - .075), M.greyD, 12); }
+        { /* 11-23 루프 퀄리티업: 비어 있던 상판 — 가운데 길게 깐 오트밀 린넨 러너(양끝 술) + 낮은 흰 도자기 볼(안쪽 연회색) + 놋쇠 촛대 2(흰 긴 초) */
+          const rl = W * .78; bx(g, rl, .003, .34, 0, H, 0, std(0xd8ccb6, .92)); for (const sx of [-1, 1]) for (let i = 0; i < 14; i++) bx(g, .02, .002, .004, sx * (rl / 2 + .01), H, -.16 + i * .0246, std(0xcdbfa6, .95));
+          mk(g, new T.LatheGeometry([[0, 0], [.06, 0], [.075, .006], [.12, .045], [.124, .05], [.118, .05], [.07, .014], [0, .014]].map(([a, b]) => new T.Vector2(a, b)), 40), std(0xf3f1ec, .55, 0, { side: T.DoubleSide }), 0, H + .003, 0);
+          const br = std(0xc9a45c, .35, .4); for (const x of [-.26, .26]) { mk(g, new T.LatheGeometry([[0, 0], [.04, 0], [.042, .006], [.012, .018], [.009, .06], [.014, .14], [.009, .2], [.018, .21], [.018, .222], [0, .222]].map(([a, b]) => new T.Vector2(a, b)), 24), br, x, H + .003, .04 * Math.sign(x)); cy(g, .0105, .2, x, H + .225, .04 * Math.sign(x), std(0xf8f6f0, .6), 16); cy(g, .0012, .012, x, H + .425, .04 * Math.sign(x), std(0x1a1715, .8), 6); } }
+        return g; } },
     { k: 'mw23', g: '주방', name: '전자레인지', model: '삼성 세라믹 전자레인지 23L (MS23C3535AW)', size: '489 × 275 × 374 (가로×높이×깊이)', note: '화이트 · 조리대·렌지대 위에 놓임', put: 'top', room: ['주방', '식당'],
       build: () => { /* 11-22 루프 퀄리티업: 문 창은 점 구멍 망(어두운 유리 속 작은 점 격자) + 둘레 회색 테 · 문 오른쪽 끝 세로 손잡이 홈 · 옆면 통풍 틈 */
         const g = new T.Group(), W = .489, H = .275, D = .374; rb(g, W, H - .008, D, .014, 0, .008, 0, M.applW);
