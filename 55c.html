@@ -2706,6 +2706,20 @@ const bed2 = bed(.72, 7.0, Math.PI, 1.1, 2.0, '싱글 침대'); // 사진: 화�
   const L = 2.0, lyG = pillowG(.64, .19, .4), rm = []; bed2.traverse(o => { if (o.isMesh && o.geometry === lyG) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
   { const w = mesh(sqPillowG(.62, .48, .2), std(0xf6f5f2, .95, 0, { map: M.linen.map }), -.06, .8, -L / 2 + .17, bed2); w.rotation.set(-.2, .05, 0); }
   { const c = mesh(sqPillowG(.44, .42, .14), std(0xffffff, .95, 0, { map: geoTex }), .14, .74, -L / 2 + .4, bed2); c.rotation.set(-.42, -.18, -.04); const pip = mesh(new THREE.TorusGeometry(.2, .006, 6, 48), std(0x8a8c8f, .8), 0, 0, 0, c, { cast: false }); pip.scale.set(1.08, 1.03, 1); } } /* 11-21: 회색 파이핑 */ /* VR(55C 침실2): 뒤 큰 흰 베개 + 앞 원 무늬 쿠션(서로 박히지 않게 앞뒤로) */
+{ /* 11-23 루프 침대 위 인형: 55C 침실2 싱글 침대 — 흰 쿠션 앞(기하무늬 쿠션 옆)에 기대 앉은 오트밀 니트 토끼 인형: 둥근 몸·머리, 긴 귀 둘(하나는 앞으로 접힘, 분홍 귀 안), 흰 주둥이·분홍 코·검은 눈(반짝임), 팔·발(분홍 발바닥), 세이지 목도리(늘어진 끝), 흰 꼬리 — 니트 짜임은 결정적 무늬, 침대와 함께 움직임 */
+  const knit = hex => { const c = mkCanvas(128, 128), x = c.getContext('2d'); x.fillStyle = '#' + hex.toString(16).padStart(6, '0'); x.fillRect(0, 0, 128, 128);
+    for (let r = 0; r < 128; r += 4) for (let k = 0; k < 128; k += 4) { x.fillStyle = (r / 4) % 2 ? 'rgba(0,0,0,.07)' : 'rgba(255,255,255,.12)'; x.beginPath(); x.ellipse(k + 1.2, r + 2, 1.1, 2.1, .45, 0, 7); x.ellipse(k + 2.8, r + 2, 1.1, 2.1, -.45, 0, 7); x.fill(); }
+    return std(0xffffff, .97, 0, { map: toTex(c, { rep: [3, 3] }) }); };
+  const oat = knit(0xe6d8c0), cream = knit(0xf6f1e6), pink = std(0xe2aea8, .9), sage = knit(0x9fb092), L = 2.0, t = new THREE.Group(); t.position.set(-.3, .5, -L / 2 + .5); t.rotation.set(-.1, .32, 0); bed2.add(t);
+  const sp = (r, m, px, py, pz, sx = 1, sy = 1, sz = 1) => { const o = mesh(new THREE.SphereGeometry(r, 22, 14), m, px, py, pz, t); o.scale.set(sx, sy, sz); return o; };
+  sp(.068, oat, 0, .072, 0, 1, 1.08, .92); sp(.056, oat, 0, .178, .008, 1.04, .96, .96);
+  for (const s of [-1, 1]) { const e = new THREE.Group(); e.position.set(s * .026, .222, -.004); e.rotation.z = -s * .16; t.add(e); if (s > 0) e.rotation.x = 1.25;
+    const o = mesh(new THREE.SphereGeometry(.019, 18, 12), oat, 0, .06, 0, e); o.scale.set(1, 3.3, .55); const i = mesh(new THREE.SphereGeometry(.012, 14, 10), pink, 0, .058, .006, e, { cast: false }); i.scale.set(1, 3.6, .3);
+    sp(.021, oat, s * .062, .098, .032, 1, 1.7, 1).rotation.z = s * .35; sp(.026, oat, s * .036, .02, .056, 1, .72, 1.4); sp(.015, pink, s * .036, .02, .093, 1, .9, .25);
+    sp(.0062, std(0x151515, .25), s * .022, .19, .056); sp(.0019, std(0xffffff, .2, 0, { emissive: 0xffffff, emissiveIntensity: .3 }), s * .022 - .002, .193, .061); }
+  sp(.024, cream, 0, .163, .049, 1.25, .8, .7); sp(.0065, pink, 0, .174, .066, 1.2, .9, 1);
+  { const sc = mesh(new THREE.TorusGeometry(.044, .012, 10, 28), sage, 0, .132, .006, t); sc.rotation.x = Math.PI / 2; sc.scale.set(1, .95, 1); const tl = mesh(RB(.026, .07, .01, .004, 2), sage, .03, .1, .052, t); tl.rotation.set(.25, 0, .3); }
+  sp(.019, cream, 0, .05, -.064); }
 /* VR: 창 앞 흰 책상(양옆 판재 다리) + 노트북 · 노란 연필꽂이 · 파란 소품 · 그림 카드 · 탁상시계, 노란 셸 의자 */
 /* 알파룸(VR): 원형 테이블 의자 — 흰 부클레 둥근(배럴) 의자 2개가 테이블을 향함(테이블과 함께 움직임) */
 for (const [sx, sz] of [[-.5, .27], [.44, -.32]]) { const c = diningChair(alphaTable, sx, sz, Math.atan2(-sx, -sz)); c.traverse(o => { if (o.isMesh && o.material !== M.black) o.material = M.boucle; }); }
