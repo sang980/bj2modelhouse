@@ -1986,8 +1986,12 @@ let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; let SHV_B = 
   dispenser(5.97, 1.28, 5.87, 0xc9b8a0, Math.PI / 2); dispenser(5.97, 1.28, 5.95, 0x8f8a83, Math.PI / 2); grassPot(5.97, 1.28, 6.72); // 돌 선반 위
   toothSet(5.96, 1.28, 6.2, -Math.PI / 2, 0xd5ddd3); /* 11-22: 세면기 옆 돌 선반(벽 서쪽) — 세이지 컵 */
   /* VR: 욕실1·2 세면기 앞 황마 발매트 + 회색 슬리퍼(앞코가 세면기 쪽) */
-  mesh(RB(.5, .012, .36, .006, 2), std(0xd6cfc2, 1, 0, { map: juteMat }), WX(5.6), .006, WZ(.98), g, { cast: false }); slipperPair(5.6, .98, 0x8d8f91, Math.PI, .16);
-  mesh(RB(.36, .012, .5, .006, 2), std(0xd6cfc2, 1, 0, { map: juteMat }), WX(6.62), .006, WZ(6.02), g, { cast: false }); slipperPair(6.62, 6.02, 0x8d8f91, -Math.PI / 2, .16);
+  const bathMat = (w, d, h, m, x, z, r = .045) => { const bv = .004, a = w / 2 - r - bv, b = d / 2 - r - bv, s = new THREE.Shape(); /* 11-23 루프 욕실 소품(55A·55C와 같은 방식): 모서리 각진 얇은 판 발매트 → 모서리 둥글고 가장자리가 둥글게 말린 매트(무늬는 판 전체에 한 번 펴 바름) */
+    s.absarc(a, b, r, 0, Math.PI / 2); s.absarc(-a, b, r, Math.PI / 2, Math.PI); s.absarc(-a, -b, r, Math.PI, Math.PI * 1.5); s.absarc(a, -b, r, Math.PI * 1.5, Math.PI * 2);
+    const geo = new THREE.ExtrudeGeometry(s, { depth: h - 2 * bv, bevelEnabled: true, bevelThickness: bv, bevelSize: bv, bevelSegments: 3, curveSegments: 8 }); geo.rotateX(-Math.PI / 2); const p = geo.attributes.position, uv = geo.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + w / 2) / w, (p.getZ(i) + d / 2) / d);
+    return mesh(geo, m, x, bv, z, g, { cast: false }); };
+  bathMat(.5, .36, .012, std(0xd6cfc2, 1, 0, { map: juteMat, bumpMap: juteMat, bumpScale: 1.5 }), WX(5.6), WZ(.98), .02); /* 황마는 짠 매트라 모서리를 조금만 둥글게 */ slipperPair(5.6, .98, 0x8d8f91, Math.PI, .16);
+  bathMat(.36, .5, .012, std(0xd6cfc2, 1, 0, { map: juteMat, bumpMap: juteMat, bumpScale: 1.5 }), WX(6.62), WZ(6.02), .02); slipperPair(6.62, 6.02, 0x8d8f91, -Math.PI / 2, .16);
   // 샤워부스 안: 북쪽 벽 흰 선반 + 병, 모서리 키 큰 화분(VR)
   pbox(6.1, 6.38, 1.1, 1.12, 4.715, 4.81, M.whiteGloss, g); amber(6.18, 1.12, 4.76); mesh(CY(.03, .03, .2, 20), std(0xf1efe9, .35), WX(6.28), 1.22, WZ(4.76), g); /* 11-22: 새 가로 수전 손잡이와 겹치지 않게 선반 12cm 왼쪽으로 */
   { const px = 7.35, pz = 4.89, leafG = new THREE.SphereGeometry(.026, 10, 6), leafM = [std(0x5d7f4a, .75), std(0x6f8f55, .75), std(0x4f6e3e, .75)]; mesh(CY(.07, .06, .26, 24), std(0xe9e6df, .4), WX(px), .13, WZ(pz), g); // 잎이 촘촘한 가지(유칼립투스 느낌)

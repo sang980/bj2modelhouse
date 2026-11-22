@@ -2013,8 +2013,12 @@ let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; /* 11-22: �
       for (let k = 0; k < 4; k++) { const lf = _bLeaf || (_bLeaf = (() => { const s = new THREE.Shape(); s.moveTo(0, -.022); s.bezierCurveTo(.011, -.012, .011, .012, 0, .026); s.bezierCurveTo(-.011, .012, -.011, -.012, 0, -.022); const lg = new THREE.ShapeGeometry(s, 8), p = lg.attributes.position; for (let v = 0; v < p.count; v++) p.setZ(v, Math.abs(p.getX(v)) * .35 - p.getY(v) * p.getY(v) * 2); lg.computeVertexNormals(); return lg; })()); /* 잎: 납작한 공 → 가운데 접히고 끝이 처진 잎 모양(난수 호출 수 그대로) */
         const l = mesh(lf, _bLeafM || (_bLeafM = std(0x5f8a3a, .7, 0, { side: THREE.DoubleSide })), tip[0] + (rnd() - .5) * .06, tip[1] - .04 - k * .05, tip[2] + (rnd() - .5) * .06, g, { cast: false }); l.rotation.set(rnd(), rnd() * 6, rnd()); } } }
   /* VR: 욕실1·2 세면기 앞 흰 털 발매트 + 흰 슬리퍼(앞코가 세면기 쪽) */
-  mesh(RB(.38, .02, .54, .01, 2), shagMat, WX(1.12), .01, WZ(4.0), g, { cast: false }); slipperPair(1.12, 4.0, 0xf2f0eb, -Math.PI / 2, .16);
-  mesh(RB(.38, .02, .54, .01, 2), shagMat, WX(11.05), .01, WZ(1.95), g, { cast: false }); slipperPair(11.05, 1.95, 0xf2f0eb, Math.PI / 2, .16);
+  const bathMat = (w, d, h, m, x, z, r = .045) => { const bv = .004, a = w / 2 - r - bv, b = d / 2 - r - bv, s = new THREE.Shape(); /* 11-23 루프 욕실 소품(55A·55C와 같은 방식): 모서리 각진 얇은 판 발매트 → 모서리 둥글고 가장자리가 둥글게 말린 매트(무늬는 판 전체에 한 번 펴 바름) */
+    s.absarc(a, b, r, 0, Math.PI / 2); s.absarc(-a, b, r, Math.PI / 2, Math.PI); s.absarc(-a, -b, r, Math.PI, Math.PI * 1.5); s.absarc(a, -b, r, Math.PI * 1.5, Math.PI * 2);
+    const geo = new THREE.ExtrudeGeometry(s, { depth: h - 2 * bv, bevelEnabled: true, bevelThickness: bv, bevelSize: bv, bevelSegments: 3, curveSegments: 8 }); geo.rotateX(-Math.PI / 2); const p = geo.attributes.position, uv = geo.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + w / 2) / w, (p.getZ(i) + d / 2) / d);
+    return mesh(geo, m, x, bv, z, g, { cast: false }); };
+  bathMat(.38, .54, .02, shagMat, WX(1.12), WZ(4.0)); slipperPair(1.12, 4.0, 0xf2f0eb, -Math.PI / 2, .16);
+  bathMat(.38, .54, .02, shagMat, WX(11.05), WZ(1.95)); slipperPair(11.05, 1.95, 0xf2f0eb, Math.PI / 2, .16);
   // 욕실2: 서쪽 벽 걸이 수건(흰+회색 띠+초록), 변기 옆 남쪽 벽 휴지걸이, 돌 선반 위 디스펜서·화분, 샤워부스 북쪽 벽 선반 병
   hangTowels(10.175, 1.91, 1, 0, .26, 1.2, 0x2e7d78); /* VR 56T: 청록 물결 수건(욕실1과 같은) */
   { const ft = mesh(RB(.12, .035, .18, .012, 2), std(0xffffff, 1, 0, { map: towelTex }), WX(11.47), .836, WZ(1.95), g, { cast: false }); ft.rotation.y = .12; const br = mesh(RB(.03, .014, .08, .006, 2), std(0x1d1e20, .5), WX(11.47), .86, WZ(1.97), g, { cast: false }); br.rotation.y = -.3; } /* VR: 세면기 안 접은 흰 손수건 + 작은 검은 솔 */
