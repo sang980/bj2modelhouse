@@ -1340,6 +1340,7 @@ function paintTerrain(N, E) {
     const up = cnv(M, M), ug = up.getContext('2d'); ug.imageSmoothingEnabled = true; ug.drawImage(fc, 0, 0, M, M); const d = ug.getImageData(0, 0, M, M).data; oF = new Float32Array(M * M); for (let i = 0; i < M * M; i++) oF[i] = d[i * 4 + 3] / 255; }
   GEO.fmask = { M, E, a: new Float32Array(M * M) };
   /* 11-21 OSM에 숲 윤곽이 빠진 산(동쪽 남한산성 줄기 등 — 3km 보기에서 맨흙·회색으로 보이던 것): 건물(45m)·토지이용·도로(폭+30m)가 없는 경사지(7%↑)·높은 곳(해발 160m↑)은 숲 색. 나무 배치용 fmask는 그대로 */
+  const SSN_N = [[760, -960], [794, -988], [797, -1019], [804, -1049], [816, -1078], [834, -1107], [859, -1135], [893, -1160], [933, -1180], [975, -1191], [1040, -1203], [1108, -1217], [1190, -1250], [1278, -1280], [1305, -1288], [1389, -1310], [1470, -1318], [1470, -1500], [760, -1500]]; /* 성남대로 바깥(북·서) 차로 가장자리 + 10m를 남쪽 경계로 */
   const HOPE = ((GEO.env && GEO.env.green) || []).find(q => q.k === 'park' && polyDist(q.p, 650, 415) < 0); /* 11-21 카카오 스카이뷰: 희망대공원은 원형 광장·코트·도서관 빼고 언덕 전체가 숲(OSM 숲 윤곽은 가장자리 고리만) */
   let urb = null; if (GEO.bld) { const H = M >> 1, uc = cnv(H, H), ug2 = uc.getContext('2d'), S = H / (2 * E), pth = (P2, close) => { ug2.beginPath(); P2.forEach((p, k) => { const X = (p[0] + E) * S, Z = (p[1] + E) * S; k ? ug2.lineTo(X, Z) : ug2.moveTo(X, Z); }); if (close) ug2.closePath(); };
     ug2.fillStyle = ug2.strokeStyle = '#fff'; ug2.lineCap = ug2.lineJoin = 'round'; const B = GEO.bld; let bi = 0;
@@ -1356,6 +1357,7 @@ function paintTerrain(N, E) {
     let f = oF ? oF[j * M + i] * (polyDist(SITE, x, z) < 0 ? 0 : 1) : smooth(-12, 18, -polyDist(FOREST, x, z)), n = fbm(x / 260, z / 260), n2 = fbm(x / 1400 + 5, z / 1400);
     GEO.fmask.a[j * M + i] = f;
     const hgt = heightAt(x, z), sl = urb ? Math.hypot(heightAt(x + 15, z) - heightAt(x - 15, z), heightAt(x, z + 15) - heightAt(x, z - 15)) / 30 : 0, fT = urb && polyDist(SITE, x, z) > 60 ? (1 - urb[j * M + i]) * Math.max(smooth(.07, .16, sl), smooth(25, 60, hgt)) : 0; f = Math.max(f, fT * .92, HOPE && x > 470 && x < 960 && z > 185 && z < 735 && polyDist(HOPE.p, x, z) < -4 ? .95 : 0); /* 색만 숲(위 fmask는 이미 기록) */
+    if (x > 750 && x < 1480 && z > -1510 && z < -950 && inPoly(SSN_N, x, z)) f = Math.max(f, .93); /* 11-23 루프 카카오 스카이뷰 L3(1072,−1166): 산성동 고개(성남대로 굽이~남한산성 길) 북쪽 비탈은 길가까지 빽빽한 숲 — 큰길 둘레 30m를 시가지로 빼서 회색 맨땅 띠·얼룩이던 것(색만, 나무 배치 없음) */
     let r = 166 + 26 * (n - .5), gg = 161 + 22 * (n - .5), b = 151 + 16 * (n - .5);
     const parky = oF ? 0 : smooth(.62, .7, n2) * (1 - f); r += (112 - r) * parky * .7; gg += (138 - gg) * parky * .7; b += (92 - b) * parky * .7;
     const alt = smooth(80, 330, hgt);
