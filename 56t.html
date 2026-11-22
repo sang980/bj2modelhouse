@@ -1747,6 +1747,9 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   for (let x = 5.86 + .6; x < 8.2; x += .6) kb(x - .0015, x + .0015, .1, .86, zf - .002, zf + .002, seamMat);
   for (const y of [.36, .62]) kb(7.35, 8.29, y - .0015, y + .0015, zf - .002, zf + .002, seamMat);
   // 싱크(창 아래) + 수전
+  { const tx = 7.08, tz = 1.28, try_ = -.08, tg = new THREE.Group(); tg.position.set(WX(tx), .9, WZ(tz)); tg.rotation.y = try_; fixed.add(tg); /* 11-23 루프 주방 소품 퀄리티업: 싱크 옆 상판 앞쪽에 접어 둔 행주 — 흰 와플 짜임 + 양끝 남색 줄 2줄, 두 번 접은 두께(위 겹이 살짝 짧고 접힌 쪽이 둥금) */
+    const c = mkCanvas(256, 128), x = c.getContext('2d'); x.fillStyle = '#f4f2ec'; x.fillRect(0, 0, 256, 128); x.fillStyle = 'rgba(0,0,0,.05)'; for (let i = 0; i < 256; i += 6) x.fillRect(i, 0, 2, 128); for (let j = 0; j < 128; j += 6) x.fillRect(0, j, 256, 2); x.fillStyle = '#2f4a78'; for (const u of [18, 30, 220, 232]) x.fillRect(u, 0, 7, 128);
+    const tm = std(0xffffff, .95, 0, { map: toTex(c) }); mesh(RB(.2, .014, .13, .005, 2), tm, 0, .007, 0, tg); mesh(RB(.19, .014, .125, .005, 2), tm, -.004, .021, .002, tg, { cast: false }); mesh(CY(.012, .012, .125, 12), tm, .094, .014, .002, tg, { cast: false }).rotation.x = Math.PI / 2; }
   { const T = .9, bx = 6.86, bz = 1.12, sx = 6.87, sz = 1.3, ry = 0; /* 11-23 루프 주방 소품 퀄리티업(56T): 싱크 오른쪽 앞 상판 — 다른 타입과 같은 젖빛 연두 주방세제 펌프병 + 흰 도자기 받침 위 수세미 */
     mesh(new THREE.LatheGeometry([[0, 0], [.028, 0], [.031, .006], [.031, .13], [.024, .15], [.013, .162], [.013, .17], [0, .17]].map(([a, b]) => new THREE.Vector2(a, b)), 28), std(0xcfe3b9, .25, 0, { transparent: true, opacity: .82 }), WX(bx), T, WZ(bz), fixed);
     mesh(new THREE.LatheGeometry([[0, .004], [.027, .004], [.027, .085], [0, .085]].map(([a, b]) => new THREE.Vector2(a, b)), 24), std(0x9cc46a, .5), WX(bx), T, WZ(bz), fixed, { cast: false });
