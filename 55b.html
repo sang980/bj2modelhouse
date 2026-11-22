@@ -2324,10 +2324,12 @@ function kitchenPropsB() {
     const b = at(bg, wood, .96, T + .003, 5.45); b.rotation.y = .22;
     const sg = new THREE.Group(); sg.position.set(WX(1.0), T + .034, WZ(5.47)); sg.rotation.y = .5; g.add(sg); mesh(CY(.007, .008, .2, 10), wood, -.05, 0, 0, sg).rotation.z = Math.PI / 2; mesh(RB(.085, .007, .058, .02, 2), wood, .09, -.0045, 0, sg); }
   // ④ 쿡탑 위 스테인리스 냄비 — 가스(그릴 위)·하이라이트/인덕션(상판 위) 높이가 달라 옵션 묶음마다 하나씩
-  { const ss = std(0xd2d5d8, .22, .9);
-    for (const [k, y] of [['b4base', .951], ['b4-1', .906], ['b4-2', .906]]) { const pg = og(k), x = 1.51, z = 5.6;
-      at(CY(.105, .1, .13, 32), ss, x, y + .065, z, pg); at(CY(.11, .11, .008, 32), ss, x, y + .134, z, pg); at(CY(.018, .014, .03, 16), blk, x, y + .153, z, pg);
-      for (const s of [-1, 1]) { const h = at(new THREE.TorusGeometry(.025, .006, 8, 16, Math.PI), ss, x + s * .12, y + .11, z, pg); h.rotation.set(0, 0, s > 0 ? -Math.PI / 2 : Math.PI / 2); } } }
+  { const ss = std(0xd2d5d8, .22, .9), br = std(0xe4e6e8, .12, .95); /* 11-22 루프 주방 소품 퀄리티업: 원통 + 납작 판 냄비 → 바닥 모서리 둥근 몸통 + 말린 입술 테 + 살짝 볼록한 뚜껑(테 턱·김 구멍) + 크롬 받침 위 검정 꼭지 + 리벳 판 달린 고리 손잡이 */
+    const body = lathe([[0, 0], [.09, 0], [.101, .007], [.105, .022], [.105, .122], [.109, .126], [.108, .131], [.103, .131], [0, .131]], 40), lid = lathe([[0, .036], [.022, .035], [.06, .025], [.096, .009], [.106, .002], [.106, 0], [0, 0]], 40), knob = lathe([[0, 0], [.013, 0], [.017, .008], [.017, .018], [.013, .025], [0, .026]], 20);
+    for (const [k, y] of [['b4base', .951], ['b4-1', .906], ['b4-2', .906]]) { const pg = og(k), p = new THREE.Group(); p.position.set(WX(1.51), y, WZ(5.6)); pg.add(p);
+      mesh(body, ss, 0, 0, 0, p); mesh(lid, ss, 0, .131, 0, p); mesh(new THREE.TorusGeometry(.104, .0035, 6, 48), br, 0, .1325, 0, p, { cast: false }).rotation.x = Math.PI / 2; mesh(CY(.004, .004, .002, 8), blk, .07, .1495, .02, p, { cast: false });
+      mesh(CY(.02, .023, .006, 24), br, 0, .167, 0, p, { cast: false }); mesh(knob, blk, 0, .172, 0, p);
+      for (const s of [-1, 1]) { mesh(RB(.006, .03, .038, .003, 1), ss, s * .106, .094, 0, p, { cast: false }); for (const dz of [-.011, .011]) mesh(new THREE.SphereGeometry(.0032, 8, 6), br, s * .1085, .109, dz, p, { cast: false }); const h = mesh(new THREE.TorusGeometry(.024, .0055, 8, 18, Math.PI), ss, s * .118, .109, 0, p); h.rotation.set(0, 0, s > 0 ? -Math.PI / 2 : Math.PI / 2); } } }
   // ⑤ 쿡탑 줄 오른쪽 끝: 올리브유 병(올리브색 유리·금색 마개) + 긴 유리 파스타 병
   { const ox = 2.02, oz = 5.33; /* 11-21 주방 소품 퀄리티업: 올리브유 — 짙은 녹색 유리 속 황록 기름 + 둘러 감은 'OLIVE OIL' 라벨 + 금박 캡슐·크롬 따르개(56T와 같은 병) */
     at(lathe([[0, 0], [.035, 0], [.037, .006], [.037, .18], [.031, .2], [.02, .238], [.012, .254], [.012, .272], [.0133, .276], [0, .276]], 28), std(0x3d5a1a, .06, .1, { transparent: true, opacity: .5, depthWrite: false }), ox, T, oz);
