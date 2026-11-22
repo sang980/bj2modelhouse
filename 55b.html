@@ -1835,6 +1835,10 @@ decorStart('복도 그림'); { const g = fixed, x = 4.565;
   ceilingPanel(6.05, 6.55, 3.5, 4.0, 1.0, 2.6);
 }
 await phase('욕실과 발코니를 꾸미는 중', 61);
+function slimBin(cx, cz, ry) { const t = new THREE.Group(); t.position.set(WX(cx), 0, WZ(cz)); t.rotation.y = ry; fixed.add(t); /* 11-23 루프 욕실 소품 퀄리티업: 변기 옆 틈에 슬림 페달 휴지통 — 둥근 모서리 무광 웜화이트 몸통 + 살짝 큰 뚜껑(이음선) + 뒤 경첩 띠 + 앞 크롬 페달(로컬 +z가 앞) */
+  mesh(RB(.13, .286, .24, .02, 3), std(0xebe8e2, .55), 0, .147, 0, t); mesh(BX(.128, .004, .238), std(0x8d8f93, .5), 0, .291, 0, t, { cast: false }); mesh(RB(.136, .018, .246, .01, 2), std(0xf5f4f0, .42), 0, .301, 0, t);
+  mesh(BX(.1, .01, .012), std(0x9a9da1, .45, .3), 0, .292, -.123, t, { cast: false }); mesh(RB(.062, .012, .04, .005, 2), M.chrome, 0, .022, .136, t, { cast: false }); mesh(BX(.012, .012, .016), std(0x6d7074, .4, .4), 0, .022, .118, t, { cast: false }); }
+slimBin(5.24, .4, 0); slimBin(5.9, 6.25, Math.PI / 2); /* 욕실1: 변기와 둥근 세면기 사이 · 욕실2: 벽걸이 세면기 아래(변기 옆) */
 // ── 욕실1(공용): 북쪽 벽에 변기·반다리 세면기, 위에 거울장 + 돌 선반, 동쪽 벽 따라 욕조 ──
 { const g = fixed;
   toilet(4.9, .45, 0, towelMat(0, 'geo')); /* VR: 회색·검정 무늬 수건 */ roundBasin(5.6, .36, 0); // VR: 욕실1은 둥근 반다리 세면기
