@@ -240,7 +240,9 @@ export function initInterior(o) {
         for (const sx of [-1, 1]) { const ag = new T.ExtrudeGeometry(arm, { depth: .15, bevelEnabled: true, bevelSize: .02, bevelThickness: .02, bevelSegments: 3, curveSegments: 10 }); ag.rotateY(-Math.PI / 2); ag.translate(.075, 0, 0); mk(g, ag, M.leather, sx * (W / 2 - .1), 0, 0); }
         rb(g, .43, .12, .55, .05, 0, .38, 0, M.leatherL); const back = rb(g, .62, .78, .22, .08, 0, .37, -.36, M.leather); back.rotation.x = -.33;
         const head = rb(g, .4, .18, .12, .05, 0, .93, -.34, M.leatherL); head.rotation.x = -.33; for (const sx of [-1, 1]) { const wg = rb(g, .07, .7, .26, .03, sx * .33, .43, -.39, M.leatherD); wg.rotation.x = -.33; }
-        for (const sx of [-1, 1]) { const l = rb(g, .2, .55, .17, .06, sx * .112, .0, .36, M.leather); l.position.y = .27; l.rotation.x = -.35; } return g; } },
+        for (const sx of [-1, 1]) { const l = rb(g, .2, .55, .17, .06, sx * .112, .0, .36, M.leather); l.position.y = .27; l.rotation.x = -.35; const gr = new T.Mesh(new T.BoxGeometry(.11, .4, .012), M.leatherD); gr.position.set(0, .02, .081); l.add(gr); } /* 11-22 루프 퀄리티업: 다리 받침 안쪽 어두운 발 홈 */
+        for (const yy of [-.2, 0, .2]) { const sm = new T.Mesh(new T.BoxGeometry(.54, .006, .012), M.leatherD); sm.position.set(0, yy, .108); back.add(sm); } /* 등받이 박음질 줄 3 */
+        rb(g, .045, .02, .12, .008, W / 2 - .1, .685, .12, M.black); bx(g, .028, .002, .03, W / 2 - .1, .705, .15, M.display); return g; } }, /* 오른쪽 팔걸이 위 리모컨(작은 화면) */
     { k: 'robo500', g: '거실', name: '로봇청소기 수납장', model: '벨리카가구 픽스 E0 로봇청소기 다용도 수납장 500 (협탁 겸용)', size: '480 × 810 × 565 (폭×높이×깊이)', note: '아래 칸에 로봇청소기 · 협탁으로도', put: 'wall', room: ['거실', '침실1'],
       build: () => { const g = new T.Group(), W = .48, H = .81, D = .565; bx(g, W, .02, D, 0, H - .02, 0, M.white); for (const sx of [-1, 1]) bx(g, .018, H - .02, D, sx * (W / 2 - .009), 0, 0, M.white); bx(g, W - .036, H - .02, .012, 0, 0, -D / 2 + .006, M.white);
         for (const y of [0, .245, .62]) bx(g, W - .036, .018, D - .012, 0, y, .006, M.white); bx(g, W - .006, .16, .018, 0, .638, D / 2 - .009, M.white); bx(g, .14, .008, .005, 0, .76, D / 2 + .002, M.greyD);
