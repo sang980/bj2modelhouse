@@ -19,7 +19,7 @@ export function initInterior(o) {
   const M = {
     white: std(0xf4f3ef, .45), applW: std(0xf2f2ef, .3), cotton: std(0xefebe2, .5), seam: std(0x8c7a64, .7),
     natural: std(0xffffff, .55, 0, { map: wood('#d2ad7e', '#9c7448') }), oak: std(0xffffff, .5, 0, { map: wood('#b98b5b', '#7d5530') }), oakL: std(0xffffff, .5, 0, { map: wood('#dcc097', '#b08a5c') }),
-    glassDark: std(0x1c2024, .12, .2), mirror: std(0xe6ecef, .03, 1), leather: std(0x6d4f3d, .5), leatherD: std(0x3d302a, .6), leatherL: std(0x8a6a55, .5),
+    glassDark: std(0x1c2024, .12, .2), mirror: std(0xc9d3d8, .06, .55, { emissive: 0x6d7a82, emissiveIntensity: .25 }), /* 11-22: 금속 100%는 반사 환경이 없는 화질에서 새까맣게 보여 → 밝은 회청색 반금속 */ leather: std(0x6d4f3d, .5), leatherD: std(0x3d302a, .6), leatherL: std(0x8a6a55, .5),
     fabric: std(0xcec7bb, .92), chanFab: std(0xffffff, .9, 0, { map: chan }), linen: std(0xf5f4f0, .85), duvet: std(0xe4e1db, .92), pillow: std(0xf7f6f3, .9),
     black: std(0x232427, .5), grey: std(0x8e9194, .45), greyD: std(0x55585c, .5), cream: std(0xe9e3d7, .22), display: std(0x0f1113, .2, 0, { emissive: 0x2a6f9a, emissiveIntensity: .35 }),
     chrome: std(0xc9cccf, .25, .9), tamb: std(0xffffff, .5, 0, { map: tamb }), robot: std(0x2b2d31, .35), robotTop: std(0x4a4d52, .25),
@@ -34,6 +34,7 @@ export function initInterior(o) {
   { /* 소프시스 메이저 피크 책상: 상판 옆면 자작 합판 결(가로 겹 줄, 무작위 없음) */
     const ply = cv(128, 32, (x, w, h) => { x.fillStyle = '#dcc7a3'; x.fillRect(0, 0, w, h); const L = [[3, '#c4a77c'], [9, '#e6d4b4'], [14, '#bf9f72'], [20, '#e3cfac'], [26, '#c6a87d']]; for (const [y, c] of L) { x.fillStyle = c; x.fillRect(0, y, w, 2); } }); ply.repeat.set(6, 1);
     Object.assign(M, { pkPly: std(0xffffff, .6, 0, { map: ply }), pkTop: std(0xf3f2ee, .42), pkLeg: std(0xf1f1ee, .35, .3) }); }
+  M.cdBrass = std(0xc9a25e, .3, .7); M.cdGlass = std(0xead8c0, .08, 0, { transparent: true, opacity: .6 }); /* 화장대 금색 손잡이·향수병 유리 */
   M.wrGold = std(0xc6a066, .3, .65); /* 로프트 침대 옷장: 금색 막대 손잡이 */
   { /* 11-22 루프: 킹 침대 이불 누빔 — 마름모 박음질 줄 + 칸마다 살짝 볼록한 밝기(무작위 없음) */
     const q = cv(256, 256, (x, w, h) => { x.fillStyle = '#e6e3dd'; x.fillRect(0, 0, w, h); const n = 4, c = w / n; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const gx = x.createRadialGradient(i * c + c / 2, j * c + c / 2, 2, i * c + c / 2, j * c + c / 2, c * .62); gx.addColorStop(0, 'rgba(255,255,255,.22)'); gx.addColorStop(1, 'rgba(160,150,135,.06)'); x.fillStyle = gx; x.save(); x.translate(i * c + c / 2, j * c + c / 2); x.rotate(Math.PI / 4); x.fillRect(-c * .36, -c * .36, c * .72, c * .72); x.restore(); }
@@ -210,11 +211,13 @@ export function initInterior(o) {
         bin(ys[0] + t, M.bin[0]); books(ys[1] + t, .75); books(ys[2] + t, .45); for (let j = 0; j < 3; j++) bx(g, .2 - j * .015, .03, .16 - j * .01, .1, ys[2] + t + j * .031, .02, M.book[(j + 4) % 7]); books(ys[3] + t, .65); bin(ys[4] + t, M.bin[1]);
         return g; } },
     { k: 'cindy', g: '침실', name: '확장형 화장대(거울)', model: '한샘 신디 서랍형 원목 확장형 화장대', size: '폭 800~1350 · 높이 1340 · 깊이 400', note: '원목 · 서랍 · 거울 포함 · 선택 후 [확장]', put: 'wall', room: ['침실1', '안방'], ext: true,
-      build: s => { const g = new T.Group(), W = .8, D = .4, Ht = .75; bx(g, W, .028, D, 0, Ht - .028, 0, M.natural); bx(g, W - .04, .14, D - .04, 0, Ht - .168, 0, M.natural);
-        for (const x of [-.19, .19]) { bx(g, .36, .11, .008, x, Ht - .155, D / 2 - .016, M.oakL); cy(g, .012, .012, x, Ht - .105, D / 2 - .006, M.chrome, 12).rotation.x = Math.PI / 2; }
-        for (const sx of [-1, 1]) for (const sz of [-1, 1]) bx(g, .038, Ht - .028, .038, sx * (W / 2 - .03), 0, sz * (D / 2 - .03), M.natural);
+      build: s => { /* 11-22 루프 퀄리티업: 모서리 둥근 상판 · 아래로 가늘어지는 둥근 원목 다리 · 서랍 앞 금색 둥근 손잡이 · 상판 위 둥근 쟁반 + 향수병 2(유리 + 금색 뚜껑) */
+        const g = new T.Group(), W = .8, D = .4, Ht = .75; rb(g, W, .028, D, .006, 0, Ht - .028, 0, M.natural); bx(g, W - .04, .14, D - .04, 0, Ht - .168, 0, M.natural);
+        for (const x of [-.19, .19]) { bx(g, .36, .11, .008, x, Ht - .155, D / 2 - .016, M.oakL); mk(g, new T.SphereGeometry(.011, 14, 10), M.cdBrass, x, Ht - .1, D / 2 + .004); cy(g, .004, .01, x, Ht - .1, D / 2 - .006, M.cdBrass, 8).rotation.x = Math.PI / 2; }
+        for (const sx of [-1, 1]) for (const sz of [-1, 1]) cy(g, .02, Ht - .028, sx * (W / 2 - .03), 0, sz * (D / 2 - .03), M.natural, 16, .013);
+        cy(g, .095, .012, .22, Ht, .03, M.cream, 36); for (const [x, z, h] of [[.19, .02, .075], [.25, .05, .06]]) { cy(g, .021, h, x, Ht + .012, z, M.cdGlass, 20); cy(g, .011, .022, x, Ht + .012 + h, z, M.cdBrass, 16); }
         bx(g, .52, .59, .024, 0, Ht, -D / 2 + .05, M.natural); bx(g, .46, .53, .004, 0, Ht + .03, -D / 2 + .064, M.mirror);
-        if (s.ext) { bx(g, .55, .028, D, W / 2 + .275, Ht - .028, 0, M.natural); for (const sz of [-1, 1]) bx(g, .038, Ht - .028, .038, W / 2 + .52, 0, sz * (D / 2 - .03), M.natural); } return g; } },
+        if (s.ext) { bx(g, .55, .028, D, W / 2 + .275, Ht - .028, 0, M.natural); for (const sz of [-1, 1]) cy(g, .02, Ht - .028, W / 2 + .52, 0, sz * (D / 2 - .03), M.natural, 16, .013); } return g; } },
     { k: 'styler', g: '드레스룸', name: '스타일러', model: '의류관리기(스타일러)', size: '600 × 620 × 1965 (폭×깊이×높이)', note: '옷방(드레스룸)에 놓임', put: 'wall', room: ['드레스', '옷방'],
       build: () => { const g = new T.Group(), W = .6, D = .62, H = 1.965; bx(g, W - .03, .06, D - .06, 0, 0, -.02, M.black); rb(g, W, H - .06, D - .03, .01, 0, .06, -.015, M.applW);
         rb(g, W - .006, H - .08, .025, .008, 0, .07, D / 2 - .0125, M.cream); bx(g, .012, .9, .006, W / 2 - .04, .62, D / 2 + .003, M.grey); bx(g, .12, .022, .004, 0, H - .15, D / 2 + .002, M.display); return g; } },
