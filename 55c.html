@@ -1861,15 +1861,15 @@ function storeItem(g, kind, x, y, z, col = 0xe9e5dc, w = .24, d = .28) {
 }
 function toilet(x, z, rot, towel = null) { /* VR: 비데처럼 뚜껑 닫힘 + 오른쪽 조작부, towel: 뚜껑 위에 가로로 걸친 수건 재질 */
   const g = piece('양변기', x, z, rot, { movable: false });
-  mesh(new THREE.CylinderGeometry(.17, .13, .38, 32, 1, true), M.white, 0, .19, .05, g).scale.set(1, 1, 1.3); // 몸통(위가 뚫린 옆면)
+  mesh(new THREE.LatheGeometry([[.13, 0], [.128, .012], [.112, .05], [.108, .11], [.122, .2], [.152, .3], [.168, .355], [.172, .38]].map(([a, b]) => new THREE.Vector2(a, b)), 36), M.white, 0, 0, .05, g).scale.set(1, 1, 1.3); /* 11-22 욕실 퀄리티업: 곧은 원통 몸통 → 바닥에서 살짝 퍼지고 허리가 잘록했다 볼 쪽으로 부푸는 도기 받침(위는 열림) */ for (const s of [-1, 1]) { const cp = mesh(new THREE.SphereGeometry(.014, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), M.white, s * .125, 0, .1, g, { cast: false }); cp.scale.set(1, .7, 1); } /* 바닥 고정 볼트 덮개 */
   const bw = mesh(bowlLathe(.158, .19, .028), basinMat(), 0, .38, .05, g); bw.scale.set(1, 1, 1.28);       // 안이 파인 볼
   mesh(CY(.07, .07, .002, 24), std(0xd6e8ee, .04, 0, { transparent: true, opacity: .55 }), 0, .225, .07, g, { cast: false }).scale.set(1, 1, 1.25); // 고인 물
   const st = mesh(new THREE.TorusGeometry(.148, .022, 10, 44), M.white, 0, .398, .06, g); st.rotation.x = Math.PI / 2; st.scale.set(1, 1.27, .8); // 둥근 시트
   mesh(RB(.42, .07, .1, .03, 3), M.white, 0, .435, -.13, g); /* 비데 본체(뒤) */
-  { const lid = mesh(CY(.182, .182, .022, 40), M.white, 0, .425, .08, g); lid.scale.set(1, 1, 1.05); } /* 닫힌 뚜껑 */
+  { const lid = mesh(new THREE.LatheGeometry([[0, .028], [.1, .027], [.155, .022], [.178, .014], [.184, .006], [.182, 0], [0, 0]].map(([a, b]) => new THREE.Vector2(a, b)).reverse(), 40), M.white, 0, .414, .08, g); lid.scale.set(1, 1, 1.05); } /* 닫힌 뚜껑 — 11-22: 납작한 원판 → 가장자리가 둥글게 내려앉은 살짝 볼록한 뚜껑 */
   mesh(RB(.035, .05, .2, .012, 2), M.white, .215, .43, .02, g); for (let i = 0; i < 4; i++) mesh(CY(.006, .006, .004, 10), i ? std(0x8a8f96, .4) : std(0x3b7bd9, .4), .215, .457, -.04 + i * .033, g, { cast: false }); /* 오른쪽 조작부 + 버튼 */
   if (towel) drapeCloth(g, { hx: .17, z0: -.02, z1: .16, top: .442, hang: .14, r: .022, th: .008, mat: towel, nx: 30, nz: 14, wr: .004, seed: x * 3 + z }); /* 뚜껑 위 수건 */
-  mesh(RB(.42, .36, .18, .03), M.white, 0, .6, -.2, g); mesh(CY(.022, .022, .008, 20), M.chrome, .1, .782, -.2, g); // 물탱크 + 버튼
+  mesh(RB(.42, .34, .18, .03), M.white, 0, .59, -.2, g); mesh(RB(.44, .03, .2, .012, 2), M.white, 0, .775, -.2, g); /* 11-22: 물탱크 + 살짝 내민 뚜껑 */ { const rg = mesh(new THREE.TorusGeometry(.026, .004, 8, 28), M.chrome, .1, .791, -.2, g, { cast: false }); rg.rotation.x = Math.PI / 2; for (const s of [-1, 1]) mesh(new THREE.CylinderGeometry(.024, .024, .006, 20, 1, false, s > 0 ? 0 : Math.PI, Math.PI), std(0xe9eaec, .25, .6), .1 + s * .0012, .791, -.2, g, { cast: false }); } /* 듀얼 물내림 버튼(크롬 테 + 반원 2) */
   return g;
 }
 function vanity(x, z, rot, w = .8) {
