@@ -2243,6 +2243,15 @@ const switches = [];
 
 /* ───────── movable furniture ───────── */
 await phase('가구를 들이는 중', 72);
+function knitThrowArm(s, col) { /* 11-23 루프 소품 퀄리티업: 팔걸이에 걸친 꽈배기 니트 담요 — 팔걸이 위 + 좌석 쪽·바깥쪽으로 늘어진 두 자락(둥근 접힘), 바깥 자락 끝단 술, 쿠션(뒤쪽) 피해 앞쪽 0.32m — 꽈배기·고무단 무늬는 결정적 그림(색만 타입별) */
+  const kc = mkCanvas(256, 256), kx = kc.getContext('2d'); kx.fillStyle = '#' + new THREE.Color(col).getHexString(); kx.fillRect(0, 0, 256, 256);
+  for (let c = 0; c < 4; c++) { const x0 = 16 + c * 64; kx.fillStyle = 'rgba(70,55,40,.2)'; kx.fillRect(x0 - 3, 0, 3, 256); kx.fillRect(x0 + 35, 0, 3, 256);
+    for (let y = 0; y < 256; y += 32) { kx.strokeStyle = 'rgba(255,250,240,.45)'; kx.lineWidth = 6; kx.beginPath(); kx.moveTo(x0 + 6, y); kx.bezierCurveTo(x0 + 6, y + 13, x0 + 26, y + 19, x0 + 26, y + 32); kx.stroke(); kx.strokeStyle = 'rgba(60,45,30,.3)'; kx.lineWidth = 2.5; kx.beginPath(); kx.moveTo(x0 + 26, y); kx.bezierCurveTo(x0 + 26, y + 13, x0 + 6, y + 19, x0 + 6, y + 32); kx.stroke(); }
+    for (let y = 2; y < 256; y += 8) { kx.fillStyle = 'rgba(255,252,245,.22)'; kx.fillRect(x0 + 42, y, 16, 3); kx.fillStyle = 'rgba(60,45,30,.12)'; kx.fillRect(x0 + 42, y + 4, 16, 1); } }
+  const km = std(0xffffff, .95, 0, { map: toTex(kc, { rep: [1.4, 1.4] }), bumpMap: toTex(kc, { srgb: false, rep: [1.4, 1.4] }), bumpScale: 2.5 }), fr = std(new THREE.Color(col).multiplyScalar(.88).getHex(), .95), tg = new THREE.Group(); tg.position.set(1.125, 0, .28); s.add(tg);
+  mesh(RB(.25, .03, .32, .012, 2), km, 0, .726, 0, tg);
+  for (const [sx, y0] of [[-1, .44], [1, .37]]) { const h = .74 - y0; mesh(RB(.03, h, .32, .012, 2), km, sx * .127, y0 + h / 2, 0, tg); mesh(CY(.016, .016, .32, 12), km, sx * .113, .722, 0, tg).rotation.x = Math.PI / 2; }
+  for (let i = 0; i < 11; i++) mesh(CY(.0035, .0022, .045, 5), fr, .128, .348, -.15 + i * .03, tg, { cast: false }); }
 function sofa(x, z, rot, style = 'arm') {
   const g = piece('소파', x, z, rot); /* VR: 매끈한 흰 가죽 — arm(A·B 실사): 통좌석 + 낮은 등받이 + 창가 쪽(+x)에만 등받이 높이 팔걸이, 반대쪽은 열린 끝 / shelf(C·T): 양끝 같은 높이 낮은 둥근 받침(책 수납) + 좌석·등 쿠션 2개씩 */
   const lea = std(0xf4f2ee, .42), L = 2.45, D = .92;
@@ -2612,7 +2621,7 @@ function dresser(x, z, rot) {
 }
 
 // 평면도 방향: 소파는 서쪽 벽(팔걸이는 북쪽), TV는 동쪽 벽
-{ const s = sofa(5.66, 6.55, Math.PI / 2); s.scale.x = -1; /* 55A와 같은 팔걸이형 소파 — 쿠션만 55C 소품 */
+{ const s = sofa(5.66, 6.55, Math.PI / 2); s.scale.x = -1; knitThrowArm(s, 0xe2d5bd); /* 오트밀 */ /* 55A와 같은 팔걸이형 소파 — 쿠션만 55C 소품 */
   s.traverse(o => { if (o.isMesh && (o.material === M.check || o.material === M.navy)) o.visible = false; }); /* 기본 쿠션은 숨김 */
   const fur = std(0xd9d1c0, 1, 0, { map: M.boucle.map, bumpMap: M.boucle.bumpMap, bumpScale: 2.5 });
   const lin = c => std(c, .9, 0, { map: M.linen.map, bumpMap: M.linen.map, bumpScale: 1.2 }), wl = lin(0xf7f5f1); /* 11-21 소품 퀄리티업: 베이지·흰 쿠션 리넨 짜임 + 분홍 쿠션 벨벳, 털 쿠션 빼고 솔기 파이핑 */
