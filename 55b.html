@@ -1253,7 +1253,7 @@ for (const w of southWindows) {
   scene.add(rl); rectLights.push(rl);
 }
 // 55B 조명 위치: 0,1 거실 · 2 식당 · 3 침실1 · 4 침실2 · 5 알파룸 · 6 현관 · 7 드레스룸
-const lampSpots = [[3.4, 9.1], [4.4, 10.2], [3.2, 6.6], [7.5, 9.2], [2.85, 1.35], [2.85, 3.9], [6.3, 3.75], [8.4, 5.9]];
+const lampSpots = [[3.4, 9.1], [4.52, 10.2] /* 11-22: 4.4는 창가 커튼박스 끝에 반쯤 덮여 겹쳐 보였음 → 12cm 비킴 */, [3.2, 6.6], [7.5, 9.2], [2.85, 1.35], [2.85, 3.9], [6.3, 3.75], [8.4, 5.9]];
 const roomLights = lampSpots.map(([x, z]) => {
   const p = new THREE.PointLight(0xffdcb0, 0, 7, 2); p.position.set(WX(x), H - .25, WZ(z)); scene.add(p);
   dlFix(WX(x), WZ(z), .065);
