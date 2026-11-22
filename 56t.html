@@ -2412,6 +2412,13 @@ function diningLarge() {
   tablePlant(g, -.975, .755, 0);
   g.userData.len = L; return g;
 }
+let _bslp = null; function bedSlippers(cx, cz, col, ry) { /* 11-23 루프 소품 퀄리티업: 침대 옆 바닥 실내 슬리퍼 한 켤레 — 발 모양 흰 밑창 + 펠트 천(결정적 잔결) + 앞 아치 끈, 앞코는 침대 반대쪽(내려서 바로 신게) */
+  if (!_bslp) { const sh = new THREE.Shape(); sh.absellipse(0, .065, .052, .075, 0, Math.PI, false); sh.absellipse(0, -.055, .047, .085, Math.PI, Math.PI * 2, false); const sg = new THREE.ExtrudeGeometry(sh, { depth: .014, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 16 }); sg.rotateX(Math.PI / 2);
+    const strap = new THREE.CylinderGeometry(.053, .053, .09, 18, 1, true, -Math.PI / 2, Math.PI); strap.rotateX(-Math.PI / 2); strap.scale(1, .62, 1);
+    const c = mkCanvas(128, 128), x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, 128, 128); for (let i = 0; i < 900; i++) { const h = (k) => { const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return v - Math.floor(v); }; x.fillStyle = `rgba(0,0,0,${.03 + h(1) * .07})`; x.fillRect(h(2) * 128, h(3) * 128, 1, 2); }
+    _bslp = { sg, strap, sole: std(0xece9e2, .7), map: toTex(c) }; }
+  const cm = std(col, .9, 0, { map: _bslp.map, side: THREE.DoubleSide }), pr = new THREE.Group(); pr.position.set(WX(cx), .012, WZ(cz)); pr.rotation.y = ry; fixed.add(pr);
+  for (const [sx, r] of [[-.095, .08], [.095, -.06]]) { const sp = new THREE.Group(); sp.position.x = sx; sp.rotation.y = r; pr.add(sp); mesh(_bslp.sg, _bslp.sole, 0, .018, 0, sp, { cast: false }); mesh(_bslp.sg, cm, 0, .03, 0, sp); mesh(_bslp.strap, cm, 0, .03, .055, sp); } }
 function bed(x, z, rot, w = 1.6, l = 2.1, name = '침대', headTall = false) {
   const g = piece(name, x, z, rot);
   if (!headTall) { // 사진: 화이트 플로팅 프레임 + 하부 간접등
@@ -2631,6 +2638,7 @@ const diningPendB = new THREE.Group(); { const p = diningPendB; p.position.set(W
 decorDirect('식탁 펜던트', diningPendB); /* 11-21: 선택·삭제 가능 */
 await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
 // 침실1: 머리는 서쪽 벽(헤드보드 벽판), 양옆 협탁
+bedSlippers(10.1, 7.76, 0xc9d3c0, 0); /* 침실1 침대 남쪽 옆(러그 밖 바닥) 연한 세이지 슬리퍼 */
 { const b = bed(10.03, 6.6, Math.PI / 2, 1.6, 2.1, '침대'); /* VR(56T 침실1): 흰 침구(담요 없음), 뒤 베이지 베개 + 앞 베이지 띠·흰 단추 흰 쿠션 2 */
   const L = 2.1, rm = [], lightWood = std(0xe6d3b3, .55, 0, { map: M.linen.map }), wl = std(0xf7f6f2, .95, 0, { map: M.linen.map }), lyG = pillowG(.64, .19, .4), ly = [];
   b.traverse(o => { if (!o.isMesh) return; if (o.material === M.whiteGloss) o.material = lightWood; else if (o.material === M.check || o.material === M.throwBlue || o.material === M.charcoal || o.geometry === lyG) rm.push(o); }); rm.forEach(o => o.parent.remove(o)); b.traverse(o => { if (!o.isMesh || o.material !== M.linen || o.geometry.type !== 'BufferGeometry') return; /* 11-21 침구 퀄리티업: 흰 이불 윗면에 넓고 부드러운 주름 몇 줄(결정적 위치) — 옆으로 흘러내리는 곳에선 사라짐 */ const pa = o.geometry.attributes.position, CR = [[-.55, .05, -.12, .55, .024], [.62, -.02, .18, .48, .022], [-.28, .62, .12, .98, .018], [.42, .56, .7, .98, .016], [-.7, .66, -.52, 1.0, .014], [.05, -.2, .35, .1, .012]]; for (let i = 0; i < pa.count; i++) { const x = pa.getX(i), y = pa.getY(i), z = pa.getZ(i); if (y < .44) continue; let d = 0; for (const [ax, az, bx, bz, A] of CR) { const vx = bx - ax, vz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * vx + (z - az) * vz) / (vx * vx + vz * vz))), qx = x - ax - vx * t, qz = z - az - vz * t; d += A * Math.exp(-(qx * qx + qz * qz) / .006) * Math.sin(Math.PI * Math.min(1, t * 1.15 + .02)); } pa.setY(i, y + d * Math.max(0, Math.min(1, (y - .44) / .08))); } o.geometry.computeVertexNormals(); }); /* VR: 밝은 원목 프레임 · 베개는 뒤 큰 흰 베개 2 + 앞 띠 쿠션 2만(가운데 납작 베개·테두리 판·끈 장식은 지저분해 뺌) */
