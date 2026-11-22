@@ -46,8 +46,9 @@ export function initInterior(o) {
       x.strokeStyle = 'rgba(120,110,95,.2)'; x.lineWidth = 1.3; x.setLineDash([4, 3]); for (let k = -n; k <= 2 * n; k++) { x.beginPath(); x.moveTo(k * c, 0); x.lineTo(k * c + h, h); x.stroke(); x.beginPath(); x.moveTo(k * c, 0); x.lineTo(k * c - h, h); x.stroke(); } }); q.repeat.set(2, 2);
     M.duvetQ = std(0xffffff, .92, 0, { map: q }); M.cushCamel = std(0xb9a383, .95); M.cushSage = std(0x9aa892, .95); }
   M.book = [0x4a5d73, 0xc9b79c, 0x8e3b3b, 0xe8e4dc, 0x2f3a33, 0xb08a5c, 0x6c7a89].map(c => std(c, .8)); M.bin = [std(0xd8cdb8, .95), std(0x9a9da1, .95)]; M.bookBand = std(0xeadfc6, .6); M.bookBandD = std(0x3b3c3f, .6); M.pages = std(0xf2ecdc, .95); /* 11-22 루프: 책등 띠(밝은·어두운) · 위 책장 면(크림) */ /* 칸막이 책장: 책 표지 7색 · 천 수납 바구니 2색 */
+  const chairMesh = cv(32, 32, (x, w, h) => { x.fillStyle = '#2e2e2e'; x.fillRect(0, 0, w, h); x.strokeStyle = '#ffffff'; x.lineWidth = 7; for (const o of [-32, 0, 32]) { x.beginPath(); x.moveTo(o, 0); x.lineTo(o + 32, 32); x.moveTo(o + 32, 0); x.lineTo(o, 32); x.stroke(); } }); chairMesh.colorSpace = T.NoColorSpace; chairMesh.repeat.set(18, 18); const MO = () => ({ alphaMap: chairMesh, transparent: true, depthWrite: false, side: T.DoubleSide }); /* 11-22 루프: 바퀴 의자 등받이 메시 — 마름모 그물(줄은 불투명, 틈은 비침 · 멀리서는 반투명) */
   M.chair = [ /* 바퀴 의자 색: [몸체·다리, 좌판, 등받이 메시, 팔걸이 패드] */
-    [M.black, std(0x34373c, .9), std(0x2a2c30, .85), M.black], [std(0xeeeeec, .4, .1), std(0x9a9ea3, .9), std(0xb3b6ba, .85), std(0xe9e9e7, .5)]];
+    [M.black, std(0x34373c, .9), std(0x2a2c30, .85, 0, MO()), M.black], [std(0xeeeeec, .4, .1), std(0x9a9ea3, .9), std(0xa9adb2, .85, 0, MO()), std(0xe9e9e7, .5)]];
 
   /* ───── 도형 도우미(단위 m, 바닥 y=0, 앞 = +z) ───── */
   const mk = (g, geo, mat, x, y, z) => { const m = new T.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; g.add(m); return m; };
@@ -201,7 +202,8 @@ export function initInterior(o) {
         cy(g, .04, .06, 0, .05, 0, Bm, 20); cy(g, .03, .14, 0, .11, 0, Bm, 20); cy(g, .02, .14, 0, .24, 0, M.chrome, 16); bx(g, .22, .03, .24, 0, .38, 0, Bm); /* 가운데 축 · 실린더 · 좌판 받침 */
         rb(g, .5, .075, .48, .035, 0, .41, .02, Se); /* 좌판 */
         bx(g, .06, .03, .2, 0, .385, -.15, Bm); bx(g, .06, .26, .03, 0, .4, -.255, Bm); /* 등받이 연결대 */
-        { const bg = new T.Group(); bg.position.set(0, .55, -.255); bg.rotation.x = -.12; g.add(bg); rb(bg, .47, .48, .035, .04, 0, 0, 0, Bm); rb(bg, .41, .42, .02, .03, 0, .03, .014, Me); rb(bg, .34, .07, .03, .015, 0, .08, .02, Se); } /* 등받이 틀 + 메시 + 허리 받침 */
+        { const bg = new T.Group(); bg.position.set(0, .55, -.255); bg.rotation.x = -.12; g.add(bg); for (const sx of [-1, 1]) rb(bg, .035, .48, .03, .012, sx * .2175, 0, 0, Bm); for (const y of [0, .445]) rb(bg, .47, .035, .03, .012, 0, y, 0, Bm); bx(bg, .405, .415, .003, 0, .032, 0, Me).castShadow = false; rb(bg, .34, .07, .03, .015, 0, .08, .02, Se); } /* 11-22 루프: 꽉 막힌 판 → 등받이 테두리 틀(네 변) + 비치는 메시 그물 + 허리 받침 */
+        bx(g, .13, .012, .014, .17, .372, .12, Bm); rb(g, .035, .014, .05, .006, .245, .366, .12, M.black); /* 좌판 밑 오른쪽 높이 조절 레버 */
         for (const sx of [-1, 1]) { bx(g, .16, .025, .05, sx * .19, .385, -.03, Bm); bx(g, .03, .23, .05, sx * .27, .41, -.03, Bm); rb(g, .07, .03, .26, .012, sx * .27, .64, -.01, Pa); } /* 팔걸이 */
         return g; } },
     { k: 'cube1000', g: '서재', name: '칸막이 책장', model: '3단 칸막이 책장 1000 (아래 3칸 · 가운데 3칸 · 위 2칸)', size: '1000 × 300 × 1150 (폭×깊이×높이)', note: '창턱(1230) 아래에 들어가는 높이 · 책·천 바구니 포함 · [색상] 화이트/오크', put: 'wall', room: ['알파룸', '침실2'], cols: ['화이트', '오크'],
