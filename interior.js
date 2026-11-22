@@ -55,8 +55,12 @@ export function initInterior(o) {
   /* ───── 제품 목록(사용자 제공 사양) ───── */
   const CAT = [
     { k: 'round1000', g: '식탁', name: '원형 식탁', model: '한샘 미나 내추럴 원형 4인 1000', size: '지름 998 · 높이 744 · 다리 간격 555', note: '상판 코튼화이트 · 고무나무 원목 다리 · 의자 미포함', put: 'free', room: ['식당', '주방'], clear: .45,
-      build: () => { const g = new T.Group(); cy(g, .499, .025, 0, .719, 0, M.cotton, 72); cy(g, .17, .03, 0, .689, 0, M.natural, 32);
-        for (const [x, z] of [[-.2775, -.2775], [.2775, -.2775], [-.2775, .2775], [.2775, .2775]]) cy(g, .025, .69, x, 0, z, M.natural, 20, .023); return g; } },
+      build: () => { /* 11-22 루프 퀄리티업: 상판 가장자리 둥글게 깎은 단면(선반) · 상판 밑 원목 테두리 · 아래로 가늘어지며 살짝 벌어진 원목 다리 4(바닥 간격 555 그대로) + 펠트 받침 */
+        const g = new T.Group(), H = .744; mk(g, new T.LatheGeometry([[0, 0], [.488, 0], [.495, .003], [.499, .0115], [.4975, .019], [.49, .025], [0, .025]].map(([a, b]) => new T.Vector2(a, b)), 72), M.cotton, 0, H - .025, 0);
+        cy(g, .4, .045, 0, H - .07, 0, M.natural, 48); cy(g, .17, .02, 0, H - .045, 0, M.natural, 32);
+        for (const [x, z] of [[-.2775, -.2775], [.2775, -.2775], [-.2775, .2775], [.2775, .2775]]) { const r = Math.hypot(x, z), a = Math.atan2(z, x), lg = new T.Group(); lg.rotation.y = -a; g.add(lg); const sp = .06, L = H - .07, rt = r - L * Math.sin(sp);
+          const leg = mk(lg, new T.CylinderGeometry(.026, .018, L, 20), M.natural, (rt + r) / 2, L / 2, 0); leg.rotation.z = sp; cy(lg, .02, .006, r, 0, 0, M.greyD, 16); }
+        return g; } },
     { k: 'cielo1500', g: '식탁', name: '확장형 원목 식탁', model: '한샘 씨엘로 모디프 확장형 원목 식탁 1500', size: '확장 전 1100×1100 · 확장 후 1500×1100 · 높이 750', note: '원목 · 의자 미포함 · 선택 후 [확장] 버튼', put: 'free', room: ['식당', '주방'], clear: .45, ext: true,
       build: s => { const W = s.ext ? 1.5 : 1.1, D = 1.1, H = .75, g = new T.Group(); bx(g, W, .04, D, 0, H - .04, 0, M.oak);
         for (const x of (s.ext ? [-.2, .2] : [0])) bx(g, .004, .002, D - .004, x, H, 0, M.seam);
