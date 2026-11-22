@@ -2219,6 +2219,11 @@ ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
   /* 욕조 위 흰 벽선반 + 갈색 펌프병 2(검정 라벨) */
   { pbox(.11, .24, 1.0, 1.02, 2.91, 3.31, std(0xf4f3f0, .35), g); pbox(.22, .24, 1.02, 1.035, 2.91, 3.31, std(0xf4f3f0, .35), g);
     for (const [z, lb] of [[3.03, 'SHAMPOO'], [3.15, 'BODY WASH']]) pumpBottle(.165, 1.02, z, 0x6b3a12, .17, .03, -Math.PI / 2, true, lb); } /* 11-21 글자 라벨 */
+  function jarCandle(par, x, y, z, glass, op, label, ry = 0) { const L = (pts, n) => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), n); /* 11-23 루프 욕실 소품: 유리병 캔들 — 두꺼운 바닥·얇은 벽의 속 빈 유리병(입구 둥근 테) + 안쪽 크림 왁스(가운데 녹아 오목) + 그을린 면 심지(살짝 기욺) + 앞쪽 띠 라벨(글자 없음) + 위 가는 줄 */
+    mesh(L([[0, 0], [.031, 0], [.0325, .003], [.0325, .082], [.031, .084], [.0295, .082], [.0295, .009], [0, .009]], 32), std(glass, .12, 0, { transparent: true, opacity: op }), x, y, z, par, { cast: false });
+    mesh(L([[0, 0], [.029, 0], [.029, .05], [.0265, .0515], [.013, .0488], [0, .0478]], 28), std(0xf3ecdf, .65), x, y + .009, z, par, { cast: false }); mesh(CY(.0011, .0011, .012, 6), std(0x1a1715, .8), x, y + .063, z, par, { cast: false }).rotation.z = .2;
+    const lb = mesh(new THREE.CylinderGeometry(.0333, .0333, .026, 28, 1, true, -.8, 1.6), std(label, .85), x, y + .036, z, par, { cast: false }); lb.rotation.y = ry; const ln = mesh(new THREE.CylinderGeometry(.0335, .0335, .0018, 28, 1, true, -.7, 1.4), std(0x3a332c, .7), x, y + .044, z, par, { cast: false }); ln.rotation.y = ry; }
+  jarCandle(g, WX(.165), 1.02, WZ(3.255), 0x7a4a1c, .78, 0xefe7d6, Math.PI / 2); /* 11-23 루프: 욕조 위 벽선반 펌프병 옆 호박색 유리 캔들(크림 띠) */
   let _slp = null; const slipperPair = (cx, cz, col, ry = 0, gap = .18) => { /* 슬리퍼 한 켤레: 발 모양 바닥(흰 밑창 + 천) + 앞쪽 아치 끈 */
     if (!_slp) { const sh = new THREE.Shape(); sh.absellipse(0, .06, .05, .07, 0, Math.PI, false); sh.absellipse(0, -.05, .045, .08, Math.PI, Math.PI * 2, false);
       const sg = new THREE.ExtrudeGeometry(sh, { depth: .014, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 16 }); sg.rotateX(Math.PI / 2);
