@@ -2628,6 +2628,21 @@ function flutedPedestal(x, z, withLamp) { const g = piece('사이드 테이블',
       const c = mkCanvas(256, 112), x = c.getContext('2d'); x.fillStyle = '#efe7d6'; x.fillRect(0, 0, 256, 112); x.strokeStyle = '#3a332c'; x.lineWidth = 2; x.strokeRect(10, 10, 236, 92); x.fillStyle = '#2b2622'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = 'bold 40px serif'; x.fillText('NOIR', 128, 46); x.font = '18px serif'; x.fillText('fig & cedar', 128, 80);
       const lb = mesh(new THREE.CylinderGeometry(.031, .031, .03, 24, 1, true, -.75, 1.5), std(0xffffff, .8, 0, { map: toTex(c) }), cx, y0 + .036, cz, g, { cast: false }); lb.rotation.y = Math.PI / 2;
       const brass = std(0xb8955a, .32, .85); mesh(L([[0, 0], [.0322, 0], [.0322, .0055], [.0305, .0075], [.012, .0082], [0, .0082]], 32), brass, -.13, y0, -.035, g, { cast: false }); mesh(L([[0, 0], [.006, 0], [.0085, .003], [.0075, .006], [0, .0065]], 16), brass, -.13, y0 + .0082, -.035, g, { cast: false }); } }
+  if (!withLamp) { /* 11-23 루프 소품 퀄리티업: 비어 있던 창가 협탁 — 린넨 표지 책 2권(종이 단면) 위 작은 원형 탁상시계(크림 몸통 + 놋쇠 테·꼭지 + 10시 10분 문자판 + 두 발) + 흰 도자기 접시에 금반지 */
+    let y = .55; for (const [col, w, h, ry] of [[0xc9c2b4, .2, .026, .2], [0x6f8a7a, .17, .02, .05]]) { const b = new THREE.Group(); b.position.set(-.02, y + h / 2, .03); b.rotation.y = ry; g.add(b); mesh(RB(w, h, .14, .003), std(col, .85), 0, 0, 0, b); mesh(BX(w - .008, h - .006, .13), std(0xf3efe4, .9), .004, 0, 0, b, { cast: false }); y += h; }
+    const cx = -.03, cy = y + .053, cz = .03, br = std(0xb8955a, .32, .85), cr = std(0xf1ebdf, .45);
+    mesh(CY(.045, .045, .032, 36), cr, cx, cy, cz, g).rotation.z = Math.PI / 2;
+    const rim = mesh(new THREE.TorusGeometry(.045, .004, 8, 36), br, cx + .016, cy, cz, g, { cast: false }); rim.rotation.y = Math.PI / 2;
+    const fc = mkCanvas(128, 128), x = fc.getContext('2d'); x.fillStyle = '#f7f3ea'; x.fillRect(0, 0, 128, 128); x.translate(64, 64); x.strokeStyle = '#2b2a28';
+    for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2, r0 = i % 3 ? 50 : 44; x.lineWidth = i % 3 ? 2 : 4; x.beginPath(); x.moveTo(Math.sin(a) * r0, -Math.cos(a) * r0); x.lineTo(Math.sin(a) * 57, -Math.cos(a) * 57); x.stroke(); }
+    x.lineCap = 'round'; for (const [a, r, lw] of [[(10 + 10 / 60) / 12 * Math.PI * 2, 30, 6], [10 / 60 * Math.PI * 2, 44, 4]]) { x.lineWidth = lw; x.beginPath(); x.moveTo(0, 0); x.lineTo(Math.sin(a) * r, -Math.cos(a) * r); x.stroke(); }
+    x.strokeStyle = '#b04a32'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(0, 8); x.lineTo(0, -48); x.stroke(); x.fillStyle = '#2b2a28'; x.beginPath(); x.arc(0, 0, 4, 0, 7); x.fill();
+    const face = mesh(new THREE.CircleGeometry(.041, 36), std(0xffffff, .5, 0, { map: toTex(fc) }), cx + .0165, cy, cz, g, { cast: false }); face.rotation.y = Math.PI / 2;
+    mesh(new THREE.CircleGeometry(.041, 36), std(0xe8f0f2, .05, 0, { transparent: true, opacity: .18, depthWrite: false }), cx + .0185, cy, cz, g, { cast: false }).rotation.y = Math.PI / 2;
+    for (const s of [-1, 1]) mesh(new THREE.SphereGeometry(.007, 10, 8), br, cx, y + .006, cz + s * .026, g, { cast: false });
+    mesh(CY(.007, .009, .008, 16), br, cx, cy + .049, cz, g, { cast: false });
+    mesh(new THREE.LatheGeometry([[0, 0], [.03, 0], [.04, .004], [.046, .011], [.044, .012], [.036, .006], [0, .005]].map(([a, b]) => new THREE.Vector2(a, b)), 32), std(0xf7f6f2, .3), .1, .55, -.1, g, { cast: false });
+    mesh(new THREE.TorusGeometry(.009, .0018, 8, 24), std(0xd9b46a, .25, 1), .105, .5577, -.095, g, { cast: false }).rotation.x = Math.PI / 2; }
   return g; }
 flutedPedestal(6.16, 8.42, true);
 flutedPedestal(6.16, 10.78, false);
