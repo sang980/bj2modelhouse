@@ -36,6 +36,7 @@ export function initInterior(o) {
     Object.assign(M, { pkPly: std(0xffffff, .6, 0, { map: ply }), pkTop: std(0xf3f2ee, .42), pkLeg: std(0xf1f1ee, .35, .3) }); }
   M.cdBrass = std(0xc9a25e, .3, .7); M.cdGlass = std(0xead8c0, .08, 0, { transparent: true, opacity: .6 }); /* 화장대 금색 손잡이·향수병 유리 */
   M.stDoor = std(0xe6dccb, .18, .05); /* 스타일러 베이지 유광 문 */
+  { const t = cv(128, 64, (x, w, h) => { x.fillStyle = '#16191d'; x.fillRect(0, 0, w, h); x.fillStyle = 'rgba(150,158,166,.8)'; for (let yy = 3; yy < h; yy += 6) for (let xx = (yy % 12 === 3 ? 3 : 6); xx < w; xx += 6) { x.beginPath(); x.arc(xx, yy, 1.6, 0, 7); x.fill(); } }); t.repeat.set(2, 2); M.mwWin = std(0xffffff, .15, .2, { map: t }); M.mwRim = std(0x8a8e93, .4, .3); } /* 전자레인지 문 창: 점 구멍 망 */
   M.wrGold = std(0xc6a066, .3, .65); /* 로프트 침대 옷장: 금색 막대 손잡이 */
   { /* 11-22 루프: 킹 침대 이불 누빔 — 마름모 박음질 줄 + 칸마다 살짝 볼록한 밝기(무작위 없음) */
     const q = cv(256, 256, (x, w, h) => { x.fillStyle = '#e6e3dd'; x.fillRect(0, 0, w, h); const n = 4, c = w / n; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const gx = x.createRadialGradient(i * c + c / 2, j * c + c / 2, 2, i * c + c / 2, j * c + c / 2, c * .62); gx.addColorStop(0, 'rgba(255,255,255,.22)'); gx.addColorStop(1, 'rgba(160,150,135,.06)'); x.fillStyle = gx; x.save(); x.translate(i * c + c / 2, j * c + c / 2); x.rotate(Math.PI / 4); x.fillRect(-c * .36, -c * .36, c * .72, c * .72); x.restore(); }
@@ -69,8 +70,10 @@ export function initInterior(o) {
         const ai = .075; bx(g, W - 2 * ai, .08, .025, 0, H - .12, D / 2 - ai, M.oak); bx(g, W - 2 * ai, .08, .025, 0, H - .12, -(D / 2 - ai), M.oak); bx(g, .025, .08, D - 2 * ai, W / 2 - ai, H - .12, 0, M.oak); bx(g, .025, .08, D - 2 * ai, -(W / 2 - ai), H - .12, 0, M.oak);
         for (const sx of [-1, 1]) for (const sz of [-1, 1]) bx(g, .065, H - .04, .065, sx * (W / 2 - .075), 0, sz * (D / 2 - .075), M.oak); return g; } },
     { k: 'mw23', g: '주방', name: '전자레인지', model: '삼성 세라믹 전자레인지 23L (MS23C3535AW)', size: '489 × 275 × 374 (가로×높이×깊이)', note: '화이트 · 조리대·렌지대 위에 놓임', put: 'top', room: ['주방', '식당'],
-      build: () => { const g = new T.Group(), W = .489, H = .275, D = .374; rb(g, W, H - .008, D, .014, 0, .008, 0, M.applW);
-        bx(g, W - .17, H - .075, .004, -.06, .04, D / 2 + .001, M.glassDark); bx(g, W - .15, .012, .003, -.06, H - .03, D / 2 + .001, M.white);
+      build: () => { /* 11-22 루프 퀄리티업: 문 창은 점 구멍 망(어두운 유리 속 작은 점 격자) + 둘레 회색 테 · 문 오른쪽 끝 세로 손잡이 홈 · 옆면 통풍 틈 */
+        const g = new T.Group(), W = .489, H = .275, D = .374; rb(g, W, H - .008, D, .014, 0, .008, 0, M.applW);
+        bx(g, W - .158, H - .063, .003, -.06, .034, D / 2 + .0005, M.mwRim); bx(g, W - .17, H - .075, .004, -.06, .04, D / 2 + .001, M.mwWin); bx(g, W - .15, .012, .003, -.06, H - .03, D / 2 + .001, M.white);
+        bx(g, .008, H - .09, .004, W / 2 - .12, .045, D / 2 + .0015, M.greyD); for (const sx of [-1, 1]) for (let i = 0; i < 6; i++) bx(g, .002, .008, .1, sx * (W / 2 + .0005), H - .07 - i * .016, -.08, M.greyD); /* 손잡이 홈 · 옆 통풍 틈 */
         bx(g, .1, H - .04, .003, W / 2 - .06, .02, D / 2 + .001, std(0xe8e8e5, .35)); bx(g, .055, .016, .003, W / 2 - .06, H - .07, D / 2 + .003, M.display);
         const d = mk(g, new T.CylinderGeometry(.019, .019, .012, 28), M.chrome, W / 2 - .06, .12, D / 2 + .007); d.rotation.x = Math.PI / 2;
         for (const sx of [-1, 1]) for (const sz of [-1, 1]) cy(g, .012, .008, sx * (W / 2 - .04), 0, sz * (D / 2 - .04), M.black, 12); return g; } },
