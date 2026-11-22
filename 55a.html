@@ -987,6 +987,10 @@ function makeDoor({ parent, horiz, line, t, hu, du, side, lw, lh, lt = .04, styl
   pivot.rotation.y = d.cur;
   for (const m of leafParts) { m.userData.door = d; doorMeshes.push(m); }
   doors.push(d);
+  if (handle === 'lever') { /* 11-22 설비 퀄리티업: 방문 말발굽 도어스토퍼 — 문짝 아래 손잡이 쪽, 열린 문의 방 쪽 면에 붙은 은색 몸통 + 바닥까지 내려온 다리 + 검은 고무 발(문과 함께 움직여 벽과 안 겹침) */
+    let dt = thetaO - thetaC; while (dt > Math.PI) dt -= 2 * Math.PI; while (dt < -Math.PI) dt += 2 * Math.PI; const sz = (dt > 0 ? 1 : -1), hx = lw - .1, hz = sz * (lt / 2 + .011);
+    const DS = makeDoor._ds || (makeDoor._ds = { h: RB(.036, .05, .022, .007, 2), a: CY(.0045, .0045, .05, 10), f: CY(.011, .013, .012, 16), m: std(0xc9ccd0, .35, .8), r: std(0x1c1d1f, .8) });
+    pivot.add(mesh(DS.h, DS.m, hx, .085, hz, null, { cast: false })); pivot.add(mesh(DS.a, DS.m, hx, .04, hz + sz * .004, null, { cast: false })); pivot.add(mesh(DS.f, DS.r, hx, .007, hz + sz * .004, null, { cast: false })); }
   return d;
 }
 function angDiff(a, b) { return Math.atan2(Math.sin(b - a), Math.cos(b - a)); }
