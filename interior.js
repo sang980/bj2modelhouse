@@ -35,6 +35,7 @@ export function initInterior(o) {
     const ply = cv(128, 32, (x, w, h) => { x.fillStyle = '#dcc7a3'; x.fillRect(0, 0, w, h); const L = [[3, '#c4a77c'], [9, '#e6d4b4'], [14, '#bf9f72'], [20, '#e3cfac'], [26, '#c6a87d']]; for (const [y, c] of L) { x.fillStyle = c; x.fillRect(0, y, w, 2); } }); ply.repeat.set(6, 1);
     Object.assign(M, { pkPly: std(0xffffff, .6, 0, { map: ply }), pkTop: std(0xf3f2ee, .42), pkLeg: std(0xf1f1ee, .35, .3) }); }
   M.wrGold = std(0xc6a066, .3, .65); /* 로프트 침대 옷장: 금색 막대 손잡이 */
+  M.book = [0x4a5d73, 0xc9b79c, 0x8e3b3b, 0xe8e4dc, 0x2f3a33, 0xb08a5c, 0x6c7a89].map(c => std(c, .8)); M.bin = [std(0xd8cdb8, .95), std(0x9a9da1, .95)]; /* 칸막이 책장: 책 표지 7색 · 천 수납 바구니 2색 */
   M.chair = [ /* 바퀴 의자 색: [몸체·다리, 좌판, 등받이 메시, 팔걸이 패드] */
     [M.black, std(0x34373c, .9), std(0x2a2c30, .85), M.black], [std(0xeeeeec, .4, .1), std(0x9a9ea3, .9), std(0xb3b6ba, .85), std(0xe9e9e7, .5)]];
 
@@ -171,6 +172,31 @@ export function initInterior(o) {
         { const bg = new T.Group(); bg.position.set(0, .55, -.255); bg.rotation.x = -.12; g.add(bg); rb(bg, .47, .48, .035, .04, 0, 0, 0, Bm); rb(bg, .41, .42, .02, .03, 0, .03, .014, Me); rb(bg, .34, .07, .03, .015, 0, .08, .02, Se); } /* 등받이 틀 + 메시 + 허리 받침 */
         for (const sx of [-1, 1]) { bx(g, .16, .025, .05, sx * .19, .385, -.03, Bm); bx(g, .03, .23, .05, sx * .27, .41, -.03, Bm); rb(g, .07, .03, .26, .012, sx * .27, .64, -.01, Pa); } /* 팔걸이 */
         return g; } },
+    { k: 'cube1000', g: '서재', name: '칸막이 책장', model: '3단 칸막이 책장 1000 (아래 3칸 · 가운데 3칸 · 위 2칸)', size: '1000 × 300 × 1150 (폭×깊이×높이)', note: '창턱(1230) 아래에 들어가는 높이 · 책·천 바구니 포함 · [색상] 화이트/오크', put: 'wall', room: ['알파룸', '침실2'], cols: ['화이트', '오크'],
+      build: s => { /* 사용자 스케치: 벽에 붙는 칸막이 책장 — 아래·가운데 줄은 3칸, 위 줄은 2칸(더 높음). 옆판·가로판 18T + 얇은 뒤판, 칸마다 책(높이·두께·색 고정 순서)이나 천 바구니 */
+        const g = new T.Group(), W = 1, D = .3, H = 1.15, t = .018, B = s.col === 1 ? M.oakL : M.white, Wi = W - 2 * t, ys = [0, .36, .7, H - t], cells = [3, 3, 2];
+        for (const sx of [-1, 1]) bx(g, t, H, D, sx * (W / 2 - t / 2), 0, 0, B); for (const y of ys) bx(g, Wi, t, D - .006, 0, y, .003, B); bx(g, Wi, H - 2 * t, .006, 0, t, -D / 2 + .003, B); /* 옆판 · 가로판 4 · 뒤판 */
+        const bh = [.24, .21, .26, .2, .23, .25, .22, .19], bt = [.03, .025, .035, .028, .04, .03, .026, .033]; let bi = 0;
+        const books = (x0, cw, y0, fill) => { let x = x0 + .01; while (x < x0 + cw * fill) { const h = bh[bi % 8], w = bt[bi % 8]; bx(g, w - .002, h, .2, x + w / 2, y0, D / 2 - .13, M.book[bi % 7]); x += w; bi++; } }; /* 세워 꽂은 책 */
+        const bin = (cx, cw, y0, h, m) => { rb(g, cw - .04, h, D - .07, .015, cx, y0, .02, m); bx(g, .1, .025, .004, cx, y0 + h - .06, D / 2 - .015 + .001, M.greyD); }; /* 천 바구니 + 손잡이 구멍 */
+        const plan = [['bin0', 'books', 'bin1'], ['books', 'stack', 'books'], ['books', 'books']];
+        cells.forEach((n, r) => { const y0 = ys[r] + t, y1 = ys[r + 1], cw = (Wi - (n - 1) * t) / n;
+          for (let k = 1; k < n; k++) bx(g, t, y1 - y0, D - .006, -Wi / 2 + k * (cw + t) - t / 2, y0, .003, B); /* 칸막이 */
+          for (let c = 0; c < n; c++) { const x0 = -Wi / 2 + c * (cw + t), cx = x0 + cw / 2, what = plan[r][c];
+            if (what === 'books') books(x0, cw, y0, r === 2 ? .55 : .7);
+            else if (what.startsWith('bin')) bin(cx, cw, y0, Math.min(.26, y1 - y0 - .05), M.bin[+what[3]]);
+            else for (let j = 0; j < 4; j++) bx(g, .22 - j * .015, .03, .17 - j * .01, cx - .02, y0 + j * .031, .02, M.book[(j + 2) % 7]); } }); /* 눕혀 쌓은 책 */
+        return g; } },
+    { k: 'shelf5w', g: '서재', name: '5단 책장(폭 500)', model: '흰색 5단 책장 500', size: '500 × 300 × 1800 (폭×깊이×높이)', note: '흰색 · 같은 높이 칸 5 · 로프트 침대 계단 옆 같은 좁은 틈(약 0.55~0.65m)에 쏙 · 책·바구니 포함', put: 'wall', room: ['알파룸', '침실2'],
+      build: () => { /* 사용자 스케치: 계단 옆 좁은 틈에 들어가는 키 큰 5단 책장 — 옆판·가로판 18T, 아래 걸레받이(안으로 들어감), 얇은 뒤판, 칸마다 책·천 바구니(고정 순서) */
+        const g = new T.Group(), W = .5, D = .3, H = 1.8, t = .018, B = M.white, Wi = W - 2 * t, kick = .05, n = 5, sp = (H - t - kick) / n;
+        for (const sx of [-1, 1]) bx(g, t, H, D, sx * (W / 2 - t / 2), 0, 0, B); bx(g, Wi, kick, t, 0, 0, D / 2 - .03, B); bx(g, Wi, H - kick - t, .006, 0, kick, -D / 2 + .003, B);
+        const ys = []; for (let k = 0; k < n; k++) ys.push(kick + k * sp); ys.push(H - t); for (const y of ys) bx(g, Wi, t, D - .006, 0, y, .003, B); /* 바닥판 · 선반 4 · 윗판 */
+        const bh = [.24, .21, .26, .2, .23, .25, .22, .19], bt = [.03, .025, .035, .028, .04, .03, .026, .033]; let bi = 3;
+        const books = (y0, fill) => { let x = -Wi / 2 + .01; while (x < -Wi / 2 + Wi * fill) { const h = bh[bi % 8], w = bt[bi % 8]; bx(g, w - .002, h, .2, x + w / 2, y0, D / 2 - .13, M.book[bi % 7]); x += w; bi++; } };
+        const bin = (y0, m) => { rb(g, Wi - .04, .24, D - .07, .015, 0, y0, .02, m); bx(g, .1, .025, .004, 0, y0 + .18, D / 2 - .014, M.greyD); };
+        bin(ys[0] + t, M.bin[0]); books(ys[1] + t, .75); books(ys[2] + t, .45); for (let j = 0; j < 3; j++) bx(g, .2 - j * .015, .03, .16 - j * .01, .1, ys[2] + t + j * .031, .02, M.book[(j + 4) % 7]); books(ys[3] + t, .65); bin(ys[4] + t, M.bin[1]);
+        return g; } },
     { k: 'cindy', g: '침실', name: '확장형 화장대(거울)', model: '한샘 신디 서랍형 원목 확장형 화장대', size: '폭 800~1350 · 높이 1340 · 깊이 400', note: '원목 · 서랍 · 거울 포함 · 선택 후 [확장]', put: 'wall', room: ['침실1', '안방'], ext: true,
       build: s => { const g = new T.Group(), W = .8, D = .4, Ht = .75; bx(g, W, .028, D, 0, Ht - .028, 0, M.natural); bx(g, W - .04, .14, D - .04, 0, Ht - .168, 0, M.natural);
         for (const x of [-.19, .19]) { bx(g, .36, .11, .008, x, Ht - .155, D / 2 - .016, M.oakL); cy(g, .012, .012, x, Ht - .105, D / 2 - .006, M.chrome, 12).rotation.x = Math.PI / 2; }
@@ -264,10 +290,11 @@ export function initInterior(o) {
         const P2 = (t, k) => ax === 0 ? [t, wl + sgn * k] : [wl + sgn * k, t];
         for (let t = along[0] + f.w / 2 + .03; t <= along[1] - f.w / 2 - .03; t += .05) {
           /* 벽 면 찾기(방 경계는 벽 중심선): 경계가 벽이면 안쪽으로 첫 빈 바닥까지, 비어 있으면 바깥쪽으로 첫 벽까지 */
-          let face = 0; if (hm.at(...P2(t, 0)) > WALL) { face = null; for (let k = 0; k <= .3; k += .01) if (hm.at(...P2(t, k)) < .06) { face = k; break; } if (face === null) continue; }
+          let face = 0; if (hm.at(...P2(t, 0)) > WALL) { face = null; for (let k = 0; k <= .3; k += .01) { const v = hm.at(...P2(t, k)); if (v < .06 || (v > f.h + .03 && v < WALL)) { face = k; break; } } if (face === null) continue; } /* 가구보다 높이 떠 있는 창턱 밑은 빈 바닥으로 봄 → 낮은 가구는 창 아래 벽에 바짝 */
           else { for (let k = 0; k >= -.15; k -= .01) if (hm.at(...P2(t, k)) > WALL) { face = k + .01; break; } }
           const off = wl + sgn * (face + gap + f.d / 2), cx = ax === 0 ? t : off, cz = ax === 0 ? off : t;
-          const occ = cells(hm, cx + fx * .05, cz + fz * .05, f.w - .03, f.d + .08, r).filter(v => v > .06).length; /* 앞 10cm 여유 포함 */
+          const [opx, opz] = P2(t, face + gap + .05), over = cells(hm, opx, opz, f.w - .03, .1, r).filter(v => v > f.h + .03 && v < WALL).length; /* 등 쪽 10cm 안의 높은 창턱(가구 위로 지나감)은 겹침에서 뺌 */
+          const occ = Math.max(0, cells(hm, cx + fx * .05, cz + fz * .05, f.w - .03, f.d + .08, r).filter(v => v > .06).length - over); /* 앞 10cm 여유 포함 */
           const [bpx, bpz] = P2(t, face - .03), behind = cells(hm, bpx, bpz, f.w - .03, .03, r), wallFrac = behind.filter(v => v > WALL).length / behind.length;
           consider(occ * 5 + (1 - wallFrac) * 40 + Math.abs(t - (along[0] + along[1]) / 2) * .3 + doorPen(cx, cz, (ax === 0 ? f.w : f.d) / 2, (ax === 0 ? f.d : f.w) / 2) * 30, cx, cz, r, 0); } }
       if (best && best.s < 20) { setAt(best.cx, best.cz, best.r); return true; } best = null;
