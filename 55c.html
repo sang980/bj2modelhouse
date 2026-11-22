@@ -2442,9 +2442,10 @@ function bed(x, z, rot, w = 1.6, l = 2.1, name = '침대', headTall = false) {
 }
 function sideTable(x, z, withVase) {
   const g = piece('사이드 테이블', x, z, 0);
-  mesh(CY(.22, .22, .025, 40), M.black, 0, .56, 0, g);
-  mesh(CY(.02, .02, .55), M.black, 0, .28, 0, g);
-  mesh(CY(.16, .16, .015, 40), M.black, 0, .008, 0, g);
+  { const L = pts => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), 48); /* 11-22 소품 퀄리티업: 사이드 테이블 — 납작한 원판·막대·원판 → 둥글게 말린 테 상판 + 상판 밑 받침 칼라 + 위로 가늘어지는 기둥(가운데 가는 홈) + 가장자리가 낮아지는 돔형 받침 */
+    mesh(L([[0, 0], [.205, 0], [.215, .003], [.22, .011], [.219, .019], [.212, .025], [0, .025]]), M.black, 0, .5475, 0, g); mesh(CY(.026, .04, .018, 24), M.black, 0, .538, 0, g);
+    mesh(CY(.016, .023, .5, 20), M.black, 0, .286, 0, g); mesh(CY(.0175, .0175, .004, 20), std(0x3a3b3e, .4, .3), 0, .3, 0, g, { cast: false });
+    mesh(L([[0, 0], [.16, 0], [.162, .005], [.152, .014], [.07, .026], [.032, .034], [0, .036]]), M.black, 0, 0, 0, g); }
   if (!withVase) { /* 11-21 사용자: 소품 퀄리티업 — 빈 협탁에 천 표지 책 2권(종이 단면) + 호박색 유리 디퓨저(갈대 스틱) */
     let y = .5725; for (const [col, w, h, ry] of [[0xd9cbb0, .17, .024, .28], [0x51627a, .145, .019, .12]]) { const b = new THREE.Group(); b.position.set(.05, y + h / 2, -.04); b.rotation.y = ry; g.add(b); mesh(RB(w, h, .21, .003), std(col, .85), 0, 0, 0, b); mesh(BX(w - .008, h - .006, .2), std(0xf3efe4, .9), .004, 0, 0, b, { cast: false }); y += h; }
     mesh(new THREE.LatheGeometry([[0, 0], [.032, 0], [.034, .004], [.034, .066], [.027, .082], [.012, .088], [.012, .093], [0, .093]].map(([a, b]) => new THREE.Vector2(a, b)), 28), std(0xb7772f, .05, 0, { transparent: true, opacity: .55, depthWrite: false }), -.09, .5725, .08, g, { cast: false }); mesh(CY(.0305, .0305, .045, 22), std(0x8a4a18, .15), -.09, .601, .08, g, { cast: false }); mesh(new THREE.CylinderGeometry(.0347, .0347, .026, 28, 1, true), std(0xefe8da, .75), -.09, .6125, .08, g, { cast: false }); mesh(CY(.012, .012, .02, 16), std(0x1b1b1d, .4), -.09, .672, .08, g, { cast: false }); /* 11-22: 속 빈 원통 → 어깨선 있는 호박 유리병 + 속 향 액체 + 크림 띠 라벨 */
