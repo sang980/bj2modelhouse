@@ -2057,7 +2057,8 @@ function sofa(x, z, rot, style = 'arm') {
     mesh(RB(.2, .3, D, .05, 4), lea, 1.125, .56, 0, g); /* 창가 쪽 팔걸이: 등받이와 같은 높이 */
   } else {
     mesh(RB(1.85, .27, D, .04, 4), lea, 0, .185, 0, g); /* 좌석 받침 */
-    for (const sx of [-.4625, .4625]) { mesh(RB(.91, .13, .8, .05, 4), lea, sx, .385, .06, g); const b = mesh(RB(.9, .3, .17, .07, 4), lea, sx, .56, -.37, g); b.rotation.x = -.08; } /* 좌석·등 쿠션 */
+    { const WM = std(0xe2ded7, .5); for (const sx of [-.4625, .4625]) { mesh(RB(.91, .13, .8, .05, 4), lea, sx, .385, .06, g); const b = mesh(RB(.9, .3, .17, .07, 4), lea, sx, .56, -.37, g); b.rotation.x = -.08;
+      mesh(CY(.0055, .0055, .86, 8), WM, sx, .4354, .4454, g, { cast: false }).rotation.z = Math.PI / 2; mesh(CY(.0055, .0055, .84, 8), WM, 0, .1295, .0645, b, { cast: false }).rotation.z = Math.PI / 2; } } /* 좌석·등 쿠션 */ /* 11-22 루프: 쿠션마다 앞 윗모서리 웰트(박음질 테) — 55A·55B·55C 소파와 같은 마감 */
     /* 양끝 열린 책장(VR): 위판·바닥판(바깥 앞 모서리 둥글게, 위판 높이 0.42m로 양쪽 같게) + 둥근 바깥 벽 + 뒤판, 앞(방 쪽)으로 책등이 보이게 세운 책·잡지 */
     const R = .14, t = .022, arcP = (cx, cz, r, a0, a1, n = 10) => { const p = []; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; p.push([cx + Math.cos(a) * r, cz + Math.sin(a) * r]); } return p; };
     const ext = (pts, sg, y0, y1) => { const s = new THREE.Shape(); pts.forEach(([px, pz], i) => i ? s.lineTo(sg * px, pz) : s.moveTo(sg * px, pz)); const geo = new THREE.ExtrudeGeometry(s, { depth: y1 - y0, bevelEnabled: false }); geo.rotateX(Math.PI / 2); return mesh(geo, lea, 0, y1, 0, g); };
