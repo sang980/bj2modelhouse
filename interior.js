@@ -31,6 +31,9 @@ export function initInterior(o) {
     let s2 = 11; const r2 = () => (s2 = (s2 * 16807) % 2147483647) / 2147483647;
     const stone = cv(256, 256, (x, w, h) => { x.fillStyle = '#eeede9'; x.fillRect(0, 0, w, h); for (let i = 0; i < 520; i++) { const px = r2() * w, py = r2() * h, r = 1.5 + r2() * 7; x.fillStyle = r2() < .55 ? 'rgba(140,138,132,.028)' : 'rgba(255,255,255,.07)'; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill(); } });
     Object.assign(M, { skFront: std(0xffffff, .5, 0, { map: stone }), skBody: std(0xd9d2c6, .6), skStair: std(0xd3cbbe, .6), skStairF: std(0xe1dbd1, .55), skGap: std(0x6f685e, .8), skHandle: std(0xd6d8da, .32, .25), skThrow: std(0xc8b393, .95), skCl: [0xe9e4da, 0x3b4a5e, 0xb9b2a6, 0x7d8466, 0xf4f2ee].map(c => std(c, .9)) }); }
+  { /* 소프시스 메이저 피크 책상: 상판 옆면 자작 합판 결(가로 겹 줄, 무작위 없음) */
+    const ply = cv(128, 32, (x, w, h) => { x.fillStyle = '#dcc7a3'; x.fillRect(0, 0, w, h); const L = [[3, '#c4a77c'], [9, '#e6d4b4'], [14, '#bf9f72'], [20, '#e3cfac'], [26, '#c6a87d']]; for (const [y, c] of L) { x.fillStyle = c; x.fillRect(0, y, w, 2); } }); ply.repeat.set(6, 1);
+    Object.assign(M, { pkPly: std(0xffffff, .6, 0, { map: ply }), pkTop: std(0xf3f2ee, .42), pkLeg: std(0xf1f1ee, .35, .3) }); }
 
   /* ───── 도형 도우미(단위 m, 바닥 y=0, 앞 = +z) ───── */
   const mk = (g, geo, mat, x, y, z) => { const m = new T.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; g.add(m); return m; };
@@ -102,6 +105,17 @@ export function initInterior(o) {
           bx(g, .362, .017, .012, 1.201, y0 + .018, zf - .03, M.skGap); /* 서랍 밑 손 넣는 틈 */
           const p = opG(g, 's', Math.min(.42, dd * .8), 0, 0, 0, '계단 서랍'), bz = zf - .016 - dd / 2; bx(p, .372, .245, .016, 1.201, y0 + .035, zf - .008, M.skStairF);
           bx(p, .324, .01, dd, 1.201, y0 + .04, bz, S); for (const sx of [-1, 1]) bx(p, .01, .16, dd, 1.201 + sx * .157, y0 + .04, bz, S); bx(p, .304, .16, .01, 1.201, y0 + .04, bz - dd / 2 + .005, S); }
+        return g; } },
+    { k: 'peak1400', g: '서재', name: '책상 1400', model: '소프시스 E0등급 메이저 피크 1400×600 데스크 책상', size: '1400 × 600 × 720 (폭×깊이×높이)', note: '화이트 상판(옆면 자작 합판 결) · 흰 철제 다리 · 양 끝 바닥 받침봉 · 뒤쪽 대각 보강대 · 옆 가방 고리', put: 'wall', room: ['알파룸', '침실2'],
+      build: () => { /* 상세 도면: 상판 1400×600, 높이 720 — 양 끝은 다리 2개 + 위·아래 가로봉으로 닫힌 'ㅁ'자 철제 프레임(바닥에 검은 수평 발), 뒤쪽엔 다리에서 상판 밑으로 가는 대각 보강대, 오른쪽 앞에 가방 고리 */
+        const g = new T.Group(), W = 1.4, D = .6, H = .72, tt = .025, Lg = M.pkLeg, lx = W / 2 - .05, lz = D / 2 - .035;
+        mk(g, new T.BoxGeometry(W, tt, D), [M.pkPly, M.pkPly, M.pkTop, M.pkTop, M.pkPly, M.pkPly], 0, H - tt / 2, 0); /* 상판: 윗면·밑면 흰색, 네 옆면 자작 결 */
+        for (const sx of [-1, 1]) { const x = sx * lx;
+          for (const sz of [-1, 1]) { bx(g, .028, H - tt - .018, .028, x, .018, sz * lz, Lg); cy(g, .013, .018, x, 0, sz * lz, M.black, 14); } /* 다리 + 검은 수평 발 */
+          bx(g, .026, .028, 2 * lz - .028, x, H - tt - .028, 0, Lg); bx(g, .026, .026, 2 * lz - .028, x, .045, 0, Lg); /* 위 가로봉(상판 받침) · 아래 받침봉 */
+          const a = [x, .3], b = [sx * (lx - .4), H - tt - .004], L = Math.hypot(b[0] - a[0], b[1] - a[1]), br = mk(g, new T.BoxGeometry(L, .008, .008), Lg, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, -lz + .006); br.rotation.z = Math.atan2(b[1] - a[1], b[0] - a[0]); } /* 뒤 대각 보강대 */
+        bx(g, .52 * W, .02, .022, 0, H - tt - .02, -lz, Lg); /* 뒤 가로 보강(상판 밑) */
+        { const hk = mk(g, new T.TorusGeometry(.016, .0028, 6, 18, Math.PI * 1.25), Lg, lx + .022, H - tt - .05, lz - .05); hk.rotation.y = Math.PI / 2; hk.rotation.z = Math.PI * .87; bx(g, .005, .035, .005, lx + .022, H - tt - .04, lz - .05, Lg); } /* 오른쪽 앞 가방 고리 */
         return g; } },
     { k: 'cindy', g: '침실', name: '확장형 화장대(거울)', model: '한샘 신디 서랍형 원목 확장형 화장대', size: '폭 800~1350 · 높이 1340 · 깊이 400', note: '원목 · 서랍 · 거울 포함 · 선택 후 [확장]', put: 'wall', room: ['침실1', '안방'], ext: true,
       build: s => { const g = new T.Group(), W = .8, D = .4, Ht = .75; bx(g, W, .028, D, 0, Ht - .028, 0, M.natural); bx(g, W - .04, .14, D - .04, 0, Ht - .168, 0, M.natural);
@@ -175,6 +189,9 @@ export function initInterior(o) {
     const hm = heightMap(rx0 - pad, rx1 + pad, rz0 - pad, rz1 + pad, [g]), WALL = 1.8; const mid = [(rx0 + rx1) / 2, (rz0 + rz1) / 2];
     const setAt = (cx, cz, r, y = 0) => { const ca = Math.cos(r), sa = Math.sin(r); g.rotation.y = r; g.position.set(cx - (f.cx * ca + f.cz * sa), y, cz - (-f.cx * sa + f.cz * ca)); };
     let best = null; const consider = (score, cx, cz, r, y) => { if (!best || score < best.s) best = { s: score, cx, cz, r, y }; };
+    /* 문 앞 비우기: 보이는 문(방문·수납장 문)의 개구부에서 벽과 직각 방향으로 0.8m 안에는 가구를 놓지 않게 점수 벌점 */
+    const DZ = (o.doors || []).filter(d => d.box && d.pivot && vis(d.pivot)).map(d => { const b = d.box, alongX = b.maxX - b.minX > b.maxZ - b.minZ, ex = alongX ? .03 : .8, ez = alongX ? .8 : .03; return [b.minX - ex, b.maxX + ex, b.minZ - ez, b.maxZ + ez]; });
+    const doorPen = (cx, cz, hw, hd) => DZ.some(z => cx + hw > z[0] && cx - hw < z[1] && cz + hd > z[2] && cz - hd < z[3]) ? 1 : 0;
     if (C.put === 'top') { /* 렌지대 칸 먼저 → 조리대 위(위 수납장 밑까지 보이게 1.3m 높이 지도) */
       const lowM = heightMap(rx0 - pad, rx1 + pad, rz0 - pad, rz1 + pad, [g], CAM_H);
       for (const h of added) { const HC = BY[h.userData.cat]; if (!HC.slots || h === g) continue; const ff = foot(g); for (const sl of HC.slots) { if (ff.w > sl[3] || ff.h > sl[4] || ff.d > sl[5]) continue; const taken = added.some(a => a !== g && BY[a.userData.cat].put === 'top' && a.position.distanceTo(slotWorld(h, sl)) < .2); if (taken) continue; const p = slotWorld(h, sl); g.rotation.y = h.rotation.y; g.position.copy(p); return true; } }
@@ -196,13 +213,13 @@ export function initInterior(o) {
           const off = wl + sgn * (face + gap + f.d / 2), cx = ax === 0 ? t : off, cz = ax === 0 ? off : t;
           const occ = cells(hm, cx + fx * .05, cz + fz * .05, f.w - .03, f.d + .08, r).filter(v => v > .06).length; /* 앞 10cm 여유 포함 */
           const [bpx, bpz] = P2(t, face - .03), behind = cells(hm, bpx, bpz, f.w - .03, .03, r), wallFrac = behind.filter(v => v > WALL).length / behind.length;
-          consider(occ * 5 + (1 - wallFrac) * 40 + Math.abs(t - (along[0] + along[1]) / 2) * .3, cx, cz, r, 0); } }
+          consider(occ * 5 + (1 - wallFrac) * 40 + Math.abs(t - (along[0] + along[1]) / 2) * .3 + doorPen(cx, cz, (ax === 0 ? f.w : f.d) / 2, (ax === 0 ? f.d : f.w) / 2) * 30, cx, cz, r, 0); } }
       if (best && best.s < 20) { setAt(best.cx, best.cz, best.r); return true; } best = null;
     }
     /* 빈 바닥(식탁 등): 둘레 여유까지 비어 있는 곳 중 방 가운데에 가까운 곳 */
     const cl = C.clear || .1;
     for (const r of [0, Math.PI / 2]) { const ww = r ? f.d : f.w, dd = r ? f.w : f.d; for (let cx = rx0 + ww / 2 + .05; cx <= rx1 - ww / 2 - .05; cx += .1) for (let cz = rz0 + dd / 2 + .05; cz <= rz1 - dd / 2 - .05; cz += .1) {
-      const occ = cells(hm, cx, cz, f.w + 2 * cl, f.d + 2 * cl, r, .05).filter(v => v > .06).length; consider(occ + Math.hypot(cx - mid[0], cz - mid[1]) * .8, cx, cz, r, 0); } }
+      const occ = cells(hm, cx, cz, f.w + 2 * cl, f.d + 2 * cl, r, .05).filter(v => v > .06).length; consider(occ + Math.hypot(cx - mid[0], cz - mid[1]) * .8 + doorPen(cx, cz, ww / 2, dd / 2) * 60, cx, cz, r, 0); } }
     if (best) setAt(best.cx, best.cz, best.r); else setAt(mid[0], mid[1], 0);
     return true;
   }
