@@ -2565,9 +2565,17 @@ await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
       for (let y = 0; y < 256; y += 32) { kx.strokeStyle = 'rgba(255,250,240,.6)'; kx.lineWidth = 6; kx.beginPath(); kx.moveTo(x0 + 6, y); kx.bezierCurveTo(x0 + 6, y + 13, x0 + 26, y + 19, x0 + 26, y + 32); kx.stroke(); kx.strokeStyle = 'rgba(105,85,55,.32)'; kx.lineWidth = 2.5; kx.beginPath(); kx.moveTo(x0 + 26, y); kx.bezierCurveTo(x0 + 26, y + 13, x0 + 6, y + 19, x0 + 6, y + 32); kx.stroke(); }
       for (let y = 2; y < 256; y += 8) { kx.fillStyle = 'rgba(255,252,245,.28)'; kx.fillRect(x0 + 42, y, 16, 3); kx.fillStyle = 'rgba(110,90,60,.12)'; kx.fillRect(x0 + 42, y + 4, 16, 1); } }
     const km = std(0xffffff, .95, 0, { map: toTex(kc, { rep: [1.6, 1.6] }), bumpMap: toTex(kc, { srgb: false, rep: [1.6, 1.6] }), bumpScale: 2.5 }), tg = new THREE.Group(); tg.position.set(.58, .45, 0); tg.rotation.y = .08; s.add(tg);
-    mesh(RB(.46, .05, .43, .02, 2), km, 0, .025, .21, tg); mesh(CY(.026, .026, .46, 16), km, 0, .024, .435, tg).rotation.z = Math.PI / 2; /* 좌석 위 접은 부분 + 앞 모서리 둥근 접힘 */
-    const hg = mesh(RB(.46, .2, .04, .015, 2), km, 0, -.08, .462, tg); hg.rotation.x = .05; /* 좌석 앞으로 늘어진 끝 */
-    for (let i = 0; i < 15; i++) mesh(CY(.0035, .0022, .045, 5), std(0xd9cbb1, .95), -.21 + i * .03, -.2, .468 + (i % 2) * .003, tg, { cast: false }); /* 끝단 술 */ }
+    { const sg = new THREE.Group(); sg.rotation.y = -Math.PI / 2; tg.add(sg); const P = [], th = .04, add = (u, w) => P.push([u, w]); /* 11-23 루프: 판 두 장 + 원통을 맞붙여 납작한 판처럼 보이던 담요 → 좌석 위에 접어 얹고 앞 모서리를 둥글게 감싸 늘어진 한 장 천(늘어진 자락은 아래로 갈수록 살짝 벌어지고 세로 주름, 끝단 술은 주름 따라) */
+      for (let u = 0; u < .405; u += .015) add(u, .02); for (let k = 0; k <= 10; k++) { const t = Math.PI / 2 - k / 10 * Math.PI / 2; add(.41 + Math.cos(t) * .07, -.05 + Math.sin(t) * .07); } for (let y = -.062; y > -.195; y -= .012) add(.48, y);
+      const N = P.length, M = 27, S = [0], pos = [], uv = [], idx = [], wv = (z, hf) => .006 * hf * Math.sin(z * 57 + .7) + .008 * hf * hf; for (let i = 1; i < N; i++) S.push(S[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
+      for (const sdTB of [1, -1]) for (let i = 0; i < N; i++) { const p0 = P[Math.max(0, i - 1)], p1 = P[Math.min(N - 1, i + 1)], tl = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), nx = -(p1[1] - p0[1]) / tl, ny = (p1[0] - p0[0]) / tl, hf = Math.max(0, Math.min(1, (-.05 - P[i][1]) / .14));
+        for (let j = 0; j < M; j++) { const v = j / (M - 1), z = (v - .5) * .46 * (1 + .05 * hf), o = wv(z, hf) + sdTB * th / 2; pos.push(P[i][0] + nx * o, P[i][1] + ny * o, z); uv.push(v * 1.2, S[i] / .38); } }
+      const id = (o, i, j) => o + i * M + j, B0 = N * M, q = (p, r, t, u) => idx.push(p, r, u, r, t, u);
+      for (let i = 0; i < N - 1; i++) { for (let j = 0; j < M - 1; j++) { q(id(0, i, j), id(0, i, j + 1), id(0, i + 1, j + 1), id(0, i + 1, j)); q(id(B0, i, j), id(B0, i + 1, j), id(B0, i + 1, j + 1), id(B0, i, j + 1)); }
+        q(id(0, i, 0), id(0, i + 1, 0), id(B0, i + 1, 0), id(B0, i, 0)); q(id(0, i, M - 1), id(B0, i, M - 1), id(B0, i + 1, M - 1), id(0, i + 1, M - 1)); }
+      for (let j = 0; j < M - 1; j++) { q(id(0, 0, j), id(B0, 0, j), id(B0, 0, j + 1), id(0, 0, j + 1)); q(id(0, N - 1, j), id(0, N - 1, j + 1), id(B0, N - 1, j + 1), id(B0, N - 1, j)); }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx); geo.computeVertexNormals(); mesh(geo, km, 0, 0, 0, sg);
+      const hy = P[N - 1][1]; for (let i = 0; i < 15; i++) { const z = (-.21 + i * .03) * 1.05; mesh(CY(.0035, .0022, .045, 5), std(0xd9cbb1, .95), .48 + wv(z, 1), hy - .022, z, sg, { cast: false }); } } }
   // (작은 사이드 선반은 팔걸이 속에 묻혀 끝면이 팔걸이 옆면과 겹쳐 검은 줄이 깜빡였음 → 삭제)
   // VR: 창 쪽 끝 낮은 받침 위 검은 테 흑백 사진 액자(소파 끝면은 무늬 없이 흰색 그대로)
   const bw = toTex((() => { const c = mkCanvas(256, 192), x = c.getContext('2d'); x.scale(4, 4); const gr = x.createLinearGradient(0, 0, 0, 48); gr.addColorStop(0, '#d9d9d9'); gr.addColorStop(1, '#6d6d6d'); x.fillStyle = gr; x.fillRect(0, 0, 64, 48);
