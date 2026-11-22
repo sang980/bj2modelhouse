@@ -153,6 +153,16 @@ export function initInterior(o) {
           const a = [x, .3], b = [sx * (lx - .4), H - tt - .004], L = Math.hypot(b[0] - a[0], b[1] - a[1]), br = mk(g, new T.BoxGeometry(L, .008, .008), Lg, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, -lz + .006); br.rotation.z = Math.atan2(b[1] - a[1], b[0] - a[0]); } /* 뒤 대각 보강대 */
         bx(g, .52 * W, .02, .022, 0, H - tt - .02, -lz, Lg); /* 뒤 가로 보강(상판 밑) */
         { const hk = mk(g, new T.TorusGeometry(.016, .0028, 6, 18, Math.PI * 1.25), Lg, lx + .022, H - tt - .05, lz - .05); hk.rotation.y = Math.PI / 2; hk.rotation.z = Math.PI * .87; bx(g, .005, .035, .005, lx + .022, H - tt - .04, lz - .05, Lg); } /* 오른쪽 앞 가방 고리 */
+        { /* 11-23 루프 퀄리티업: 비어 있던 상판 위 소품 — 27인치 모니터(얇은 검은 테 · 어두운 화면 은은한 빛 · 뒤 기둥 + 납작한 타원 받침) · 흰 슬림 키보드(옅은 회색 자판 줄) · 흰 무선 마우스 · 원목 연필꽂이(연필 3) */
+          const blk = std(0x1c1d20, .45, .2), wt = std(0xf2f2ef, .35), y = H;
+          { const b = mk(g, new T.CylinderGeometry(.11, .11, .012, 36), std(0x2a2b2e, .35, .5), -.05, y + .006, -.15); b.scale.set(1, 1, .72); rb(g, .045, .3, .02, .008, -.05, y + .012, -.19, std(0x2a2b2e, .35, .5));
+            const pn = new T.Group(); pn.position.set(-.05, y + .34, -.17); pn.rotation.x = -.06; g.add(pn); rb(pn, .62, .37, .022, .006, 0, -.185, 0, blk);
+            const sc = mk(pn, new T.PlaneGeometry(.596, .336), std(0x1b2430, .15, 0, { emissive: 0x34506e, emissiveIntensity: .32 }), 0, .008, .0115); sc.castShadow = false; bx(pn, .62, .022, .0232, 0, -.185, 0, blk); }
+          { const kt = cv(512, 160, (x, w, h) => { x.fillStyle = '#f4f4f1'; x.fillRect(0, 0, w, h); x.fillStyle = '#dcdcd8'; for (let r = 0; r < 5; r++) for (let k = 0; k < 15; k++) { if (r === 4 && k > 3 && k < 11) continue; x.fillRect(8 + k * 33.2, 8 + r * 30, 28, 25); } x.fillRect(8 + 4 * 33.2, 8 + 4 * 30, 7 * 33.2 - 5, 25); });
+            const kb = rb(g, .44, .012, .13, .004, -.05, y, .08, wt); kb.rotation.x = -.03; bx(g, .425, .0012, .115, -.05, y + .0122, .08, std(0xffffff, .6, 0, { map: kt })); }
+          { const ms = mk(g, new T.SphereGeometry(.03, 20, 12), wt, .3, y + .004, .09); ms.scale.set(.72, .42, 1.15); bx(g, .0015, .002, .03, .3, y + .016, .07, std(0xcfcfcb, .5)); }
+          { const px = .52, pz = -.16, wd = std(0xc49a6c, .6); mk(g, new T.CylinderGeometry(.034, .034, .1, 24, 1, true), std(0xc49a6c, .6, 0, { side: T.DoubleSide }), px, y + .05, pz); cy(g, .034, .006, px, y, pz, wd, 24);
+            for (const [ox, oz, rz, col] of [[-.01, .006, .12, 0x2d4f8a], [.012, -.004, -.1, 0xe3b33a], [0, -.012, .04, 0x202124]]) { const pc = mk(g, new T.CylinderGeometry(.0035, .0035, .16, 6), std(col, .5), px + ox, y + .085, pz + oz); pc.rotation.set(oz * 4, 0, rz); } } }
         return g; } },
     { k: 'loftWR', g: '침실', name: '로프트 침대(수납계단+옷장 4)', model: '수납계단형 로프트 침대 2046 + 옷장 500 4개(B·B·A·A)', size: '침대 2046×1143×1800 · 계단 353(전체 길이 2399) · 침대 밑 1300 · 옷장 500×555×1300', note: '흰 몸통 · 가드·앞 레일 오크/화이트 [색상] · 옷장 문 4·서랍 4·계단 서랍 4를 누르면 열림 · 계단 손잡이 레일 · [좌우 바꾸기]로 계단 쪽', put: 'wall', room: ['알파룸', '침실2'], flip: true, cols: ['오크', '화이트'],
       build: s => { /* 도면: 침대 길이 2046(양 끝판 포함)·깊이 1143·가드 위 1800, 바닥판 밑 1300 / 계단 353×1143, 4단(단 290)·서랍마다 둥근 손잡이, 손잡이 레일 꼭대기 1590 / 옷장 500×555×1300 — B(문 + 서랍 210·210) 2개, A(긴 문) 2개, 문은 왼쪽 경첩·오른쪽 금색 막대 손잡이
