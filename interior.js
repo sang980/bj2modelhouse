@@ -227,12 +227,13 @@ export function initInterior(o) {
         return g; } },
     { k: 'chair5', g: '서재', name: '바퀴 의자', model: '사무용 바퀴 의자 (메시 등받이 · 팔걸이 · 5발 바퀴)', size: '폭 610 · 깊이 640 · 높이 1020 · 좌판 높이 485', note: '책상을 먼저 놓았으면 그 책상 앞에 책상을 보고 놓임 · [색상]으로 블랙/화이트', put: 'free', room: ['알파룸', '침실2'], clear: .1, cols: ['블랙', '화이트'], near: ['desk1200', 'peak1400'],
       build: s => { /* 5발 받침(끝마다 쌍바퀴) + 가스 실린더 + 좌판 + 살짝 뒤로 젖힌 메시 등받이 + 양 팔걸이 — 앞(+z)이 앉는 사람이 보는 쪽 */
-        const [Bm, Se, Me, Pa] = M.chair[s.col || 0], g = new T.Group();
+        const [Bm, Se, Me, Pa] = M.chair[s.col || 0], g = new T.Group(); /* 11-23 루프 퀄리티업: 네모 막대 다리 → 가운데서 끝으로 가늘어지며 끝이 살짝 들린 둥근 다리 · 좌판 앞 둥글게 말린 턱(허벅지 닿는 곳) · 좌판 밑 틸트 조절 손잡이 */
+        const LEG = (() => { const sh = new T.Shape(); sh.moveTo(.035, .045); sh.lineTo(.285, .05); sh.quadraticCurveTo(.31, .052, .312, .064); sh.quadraticCurveTo(.31, .074, .285, .074); sh.lineTo(.035, .088); sh.closePath(); const e = new T.ExtrudeGeometry(sh, { depth: .032, bevelEnabled: true, bevelThickness: .007, bevelSize: .006, bevelSegments: 2, curveSegments: 6 }); e.translate(0, 0, -.016); return e; })();
         for (let i = 0; i < 5; i++) { const sg = new T.Group(); sg.rotation.y = i * Math.PI * 2 / 5 + Math.PI / 2; g.add(sg);
-          bx(sg, .3, .03, .045, .165, .06, 0, Bm); bx(sg, .03, .035, .05, .3, .03, 0, Bm);
+          mk(sg, LEG, Bm, 0, 0, 0); bx(sg, .03, .035, .05, .3, .03, 0, Bm);
           for (const z of [-.016, .016]) { const w = mk(sg, new T.CylinderGeometry(.028, .028, .016, 16), M.black, .3, .028, z); w.rotation.x = Math.PI / 2; } }
         cy(g, .04, .06, 0, .05, 0, Bm, 20); cy(g, .03, .14, 0, .11, 0, Bm, 20); cy(g, .02, .14, 0, .24, 0, M.chrome, 16); bx(g, .22, .03, .24, 0, .38, 0, Bm); /* 가운데 축 · 실린더 · 좌판 받침 */
-        rb(g, .5, .075, .48, .035, 0, .41, .02, Se); /* 좌판 */
+        rb(g, .5, .075, .48, .035, 0, .41, .02, Se); /* 좌판 */ { const wf = mk(g, new T.CylinderGeometry(.032, .032, .45, 18), Se, 0, .447, .236); wf.rotation.z = Math.PI / 2; const kn = mk(g, new T.CylinderGeometry(.024, .022, .03, 18), M.black, 0, .372, .135); kn.rotation.x = Math.PI / 2; }
         bx(g, .06, .03, .2, 0, .385, -.15, Bm); bx(g, .06, .26, .03, 0, .4, -.255, Bm); /* 등받이 연결대 */
         { const bg = new T.Group(); bg.position.set(0, .55, -.255); bg.rotation.x = -.12; g.add(bg); for (const sx of [-1, 1]) rb(bg, .035, .48, .03, .012, sx * .2175, 0, 0, Bm); for (const y of [0, .445]) rb(bg, .47, .035, .03, .012, 0, y, 0, Bm); bx(bg, .405, .415, .003, 0, .032, 0, Me).castShadow = false; rb(bg, .34, .07, .03, .015, 0, .08, .02, Se); } /* 11-22 루프: 꽉 막힌 판 → 등받이 테두리 틀(네 변) + 비치는 메시 그물 + 허리 받침 */
         bx(g, .13, .012, .014, .17, .372, .12, Bm); rb(g, .035, .014, .05, .006, .245, .366, .12, M.black); /* 좌판 밑 오른쪽 높이 조절 레버 */
