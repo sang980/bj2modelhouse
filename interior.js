@@ -34,6 +34,7 @@ export function initInterior(o) {
   { /* 소프시스 메이저 피크 책상: 상판 옆면 자작 합판 결(가로 겹 줄, 무작위 없음) */
     const ply = cv(128, 32, (x, w, h) => { x.fillStyle = '#dcc7a3'; x.fillRect(0, 0, w, h); const L = [[3, '#c4a77c'], [9, '#e6d4b4'], [14, '#bf9f72'], [20, '#e3cfac'], [26, '#c6a87d']]; for (const [y, c] of L) { x.fillStyle = c; x.fillRect(0, y, w, 2); } }); ply.repeat.set(6, 1);
     Object.assign(M, { pkPly: std(0xffffff, .6, 0, { map: ply }), pkTop: std(0xf3f2ee, .42), pkLeg: std(0xf1f1ee, .35, .3) }); }
+  M.wrGold = std(0xc6a066, .3, .65); /* 로프트 침대 옷장: 금색 막대 손잡이 */
 
   /* ───── 도형 도우미(단위 m, 바닥 y=0, 앞 = +z) ───── */
   const mk = (g, geo, mat, x, y, z) => { const m = new T.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; g.add(m); return m; };
@@ -116,6 +117,38 @@ export function initInterior(o) {
           const a = [x, .3], b = [sx * (lx - .4), H - tt - .004], L = Math.hypot(b[0] - a[0], b[1] - a[1]), br = mk(g, new T.BoxGeometry(L, .008, .008), Lg, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, -lz + .006); br.rotation.z = Math.atan2(b[1] - a[1], b[0] - a[0]); } /* 뒤 대각 보강대 */
         bx(g, .52 * W, .02, .022, 0, H - tt - .02, -lz, Lg); /* 뒤 가로 보강(상판 밑) */
         { const hk = mk(g, new T.TorusGeometry(.016, .0028, 6, 18, Math.PI * 1.25), Lg, lx + .022, H - tt - .05, lz - .05); hk.rotation.y = Math.PI / 2; hk.rotation.z = Math.PI * .87; bx(g, .005, .035, .005, lx + .022, H - tt - .04, lz - .05, Lg); } /* 오른쪽 앞 가방 고리 */
+        return g; } },
+    { k: 'loftWR', g: '침실', name: '로프트 침대(수납계단+옷장 4)', model: '수납계단형 로프트 침대 2046 + 옷장 500 4개(B·B·A·A)', size: '침대 2046×1143×1800 · 계단 353(전체 길이 2399) · 침대 밑 1300 · 옷장 500×555×1300', note: '흰 몸통 · 가드·앞 레일 오크/화이트 [색상] · 옷장 문 4·서랍 4·계단 서랍 4를 누르면 열림 · 계단 손잡이 레일 · [좌우 바꾸기]로 계단 쪽', put: 'wall', room: ['알파룸', '침실2'], flip: true, cols: ['오크', '화이트'],
+      build: s => { /* 도면: 침대 길이 2046(양 끝판 포함)·깊이 1143·가드 위 1800, 바닥판 밑 1300 / 계단 353×1143, 4단(단 290)·서랍마다 둥근 손잡이, 손잡이 레일 꼭대기 1590 / 옷장 500×555×1300 — B(문 + 서랍 210·210) 2개, A(긴 문) 2개, 문은 왼쪽 경첩·오른쪽 금색 막대 손잡이
+          가드(1148×340)·앞 레일은 [색상]으로 오크/화이트, 계단 서랍 앞은 오크. 옷장 안: 봉에 옷(앞뒤로 걸림) · 서랍 상자 */
+        const g = new T.Group(), W = M.white, GC = s.col === 1 ? M.white : M.oak, DH = 1.143 / 2, t = .018, UB = 1.3;
+        const sideG = (pts, th) => { const sh = new T.Shape(); pts.forEach(([z, y], i) => i ? sh.lineTo(-z, y) : sh.moveTo(-z, y)); const geo = new T.ExtrudeGeometry(sh, { depth: th, bevelEnabled: false, curveSegments: 12 }); geo.rotateY(Math.PI / 2); return geo; }; /* 옆판 모양([z, y] 윤곽 → x 두께) */
+        const bar = (p, x, y0, w, h, zF, mat) => { bx(p, w, h, .012, x, y0, zF + .014, mat); if (w > h) for (const k of [-1, 1]) bx(p, .012, h, .016, x + k * (w / 2 - .03), y0, zF + .008, mat); else for (const yy of [y0 + .03, y0 + h - .042]) bx(p, w, .012, .016, x, yy, zF + .008, mat); }; /* 막대 손잡이(다리 2개로 띄움) */
+        /* 침대: 왼 끝판(위 모서리 둥글게) · 오른 끝판(위에 작은 홈 2) · 앞(색상)·뒤 레일 · 바닥판 · 매트리스·이불·베개 · 가드(오른쪽 위 둥글게) + 흰 고정쇠 3 */
+        const rc = (z0, z1, r) => [[z0, 0], [z1, 0], [z1, 1.8 - r], [z1 - r * .3, 1.8 - r * .3], [z1 - r, 1.8], [z0 + r, 1.8], [z0 + r * .3, 1.8 - r * .3], [z0, 1.8 - r]];
+        mk(g, sideG(rc(-DH, DH, .06), t), W, -1.023, 0, 0);
+        { const pts = [[-DH, 0], [DH, 0], [DH, 1.76], [DH - .012, 1.788], [DH - .04, 1.8]]; for (const nz of [.3, -.12]) for (let k = 0; k <= 8; k++) { const a = Math.PI * k / 8; pts.push([nz + .055 * Math.cos(a), 1.8 - .055 * Math.sin(a)]); } pts.push([-DH + .04, 1.8], [-DH + .012, 1.788], [-DH, 1.76]); mk(g, sideG(pts, t), W, 1.005, 0, 0); }
+        bx(g, 2.01, .16, .02, 0, UB, DH - .01, GC); bx(g, 2.01, .16, .02, 0, UB, -DH + .01, W); bx(g, 2.01, .02, 2 * DH - .04, 0, UB, 0, W);
+        rb(g, 1.98, .14, 1.08, .04, 0, UB + .02, -.005, M.linen); rb(g, 1.3, .04, 1.1, .02, .3, UB + .145, -.005, M.duvet); rb(g, .4, .12, .6, .05, -.75, UB + .16, -.1, M.pillow);
+        { const L = 1.148, h = .34, r = .07, sh = new T.Shape(); sh.moveTo(0, 0); sh.lineTo(L, 0); sh.lineTo(L, h - r); sh.quadraticCurveTo(L, h, L - r, h); sh.lineTo(0, h); sh.closePath(); mk(g, new T.ExtrudeGeometry(sh, { depth: t, bevelEnabled: false, curveSegments: 10 }), GC, -1.005, UB + .16, DH - t - .002);
+          for (const f of [.13, .5, .87]) bx(g, .045, .05, .012, -1.005 + f * L, UB + .135, DH + .006, W); }
+        /* 옷장 4(B·B·A·A): 속 빈 몸통 + 문(왼 경첩) + B는 서랍 2 · 안에 봉과 옷 */
+        const zf = DH - .004, zb = zf - .555, Dc = .537, zc = (zb + zf - t) / 2;
+        ['B', 'B', 'A', 'A'].forEach((ty, k) => { const cx = -.75 + k * .5;
+          for (const sx of [-1, 1]) bx(g, t, UB - t, Dc, cx + sx * .241, 0, zc, W); bx(g, .5, t, Dc, cx, UB - t, zc, W); bx(g, .464, t, Dc, cx, 0, zc, W); bx(g, .464, UB - 2 * t, .006, cx, t, zb + .003, W);
+          const y0 = ty === 'B' ? .422 : .002, dh = UB - .002 - y0, p = opG(g, 'h', -1.75, cx - .248, 0, zf - t, '옷장 문'); bx(p, .496, dh, t, .248, y0, t / 2, W); bar(p, .45, .65, .012, .38, t, M.wrGold);
+          bx(g, .464, .012, .012, cx, 1.17, zc, M.chrome); const gl = ty === 'B' ? .6 : .86; for (let i = 0; i < 4; i++) { const x = cx - .15 + i * .1; bx(g, .008, .008, .36, x, 1.155, zc, M.greyD); rb(g, .03, gl, .42, .01, x, 1.16 - gl, zc, M.skCl[(i + k) % 5]); }
+          if (ty === 'B') { bx(g, .464, t, Dc, cx, .42, zc, W); for (const yd of [.002, .212]) { const q = opG(g, 's', .4, 0, 0, 0, '옷장 서랍'), bz = zf - t - .24; bx(q, .496, .206, t, cx, yd, zf - t / 2, W); bar(q, cx + .03, yd + .15, .3, .012, zf, M.wrGold);
+            bx(q, .434, .01, .48, cx, yd + .03, bz, W); for (const sx of [-1, 1]) bx(q, .01, .14, .48, cx + sx * .212, yd + .03, bz, W); bx(q, .414, .14, .01, cx, yd + .03, bz - .235, W); } } });
+        /* 수납계단(침대 오른쪽 끝, 353×1143): 4단 — 앞에서 뒤로 올라감, 단마다 오크 서랍 + 둥근 은색 손잡이, 바깥 옆판은 계단 따라 비스듬히, 흰 손잡이 레일(꼭대기 1590) */
+        const SX1 = 1.376, sw = SX1 - t - 1.023, scx = 1.023 + sw / 2;
+        for (let i = 0; i < 4; i++) { const y0 = i * .29, zF = DH - i * .2857, zB = -DH, dz = zF - zB, zm = (zF + zB) / 2;
+          bx(g, sw, t, dz, scx, y0 + .272, zm, W); if (!i) bx(g, sw, t, dz - t, scx, 0, zm - t / 2, W); bx(g, sw, .254, .01, scx, y0 + t, zB + .005, W);
+          const dd = Math.min(.42, dz - .06), p = opG(g, 's', Math.min(.32, dd * .8), 0, 0, 0, '계단 서랍'), bz = zF - t - dd / 2; bx(p, sw - .006, .262, t, scx, y0 + .006, zF - t / 2, M.oak);
+          { const kn = mk(p, new T.CylinderGeometry(.016, .016, .018, 18), M.chrome, scx, y0 + .15, zF + .009); kn.rotation.x = Math.PI / 2; }
+          bx(p, sw - .04, .01, dd, scx, y0 + .03, bz, W); for (const sx of [-1, 1]) bx(p, .01, .2, dd, scx + sx * (sw / 2 - .025), y0 + .03, bz, W); bx(p, sw - .06, .2, .01, scx, y0 + .03, bz - dd / 2 + .005, W); }
+        mk(g, sideG([[DH, 0], [DH, .44], [-.2857, 1.3], [-DH, 1.3], [-DH, 0]], t), W, SX1 - t, 0, 0);
+        { const V = T.Vector3, xr = SX1 - .03, c = new T.CatmullRomCurve3([new V(xr, .61, .4), new V(xr, .7, .38), new V(xr, 1.12, 0), new V(xr, 1.5, -.3), new V(xr, 1.59, -.42), new V(xr, 1.5, -.52), new V(xr, 1.3, -.54)]); mk(g, new T.TubeGeometry(c, 48, .012, 10, false), W, 0, 0, 0); }
         return g; } },
     { k: 'cindy', g: '침실', name: '확장형 화장대(거울)', model: '한샘 신디 서랍형 원목 확장형 화장대', size: '폭 800~1350 · 높이 1340 · 깊이 400', note: '원목 · 서랍 · 거울 포함 · 선택 후 [확장]', put: 'wall', room: ['침실1', '안방'], ext: true,
       build: s => { const g = new T.Group(), W = .8, D = .4, Ht = .75; bx(g, W, .028, D, 0, Ht - .028, 0, M.natural); bx(g, W - .04, .14, D - .04, 0, Ht - .168, 0, M.natural);
