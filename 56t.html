@@ -2485,6 +2485,15 @@ await yieldUI(); // 가구 단계도 나눠서(로딩 화면 멈춤 방지)
   const lin = c => std(c, .9, 0, { map: M.linen.map, bumpMap: M.linen.map, bumpScale: 1.2 }), wl = lin(0xf7f6f2); /* 11-21 소품 퀄리티업: 무늬 없는 쿠션은 리넨 짜임, 다섯 쿠션 모두 솔기 파이핑 */
   [[-.72, lin(0xe8d13a)], [-.36, std(0xffffff, .9, 0, { map: leafTex })], [0, wl], [.36, lin(0xf0cf80)], [.72, wl]].forEach(([px, m], i) => {
     const p = mesh(sqPillowG(.44, .42, .18), m, -px, .63, -.2 + (i % 2) * .04, s); p.rotation.set(-.22, (i - 2) * .05, (i % 2 ? .06 : -.05)); sqPipe(p, .44, .42, i === 1 ? std(0xa9c43a, .85) : m); }); /* 모서리 뾰족한 사각 쿠션 */
+  { /* 11-23 루프 소품 퀄리티업: 소파 창가 쪽 좌석에 오트밀 꽈배기 니트 담요 — 접어 얹고 한쪽 끝을 좌석 앞으로 늘어뜨림(둥근 접힘 + 끝단 술), 꽈배기·고무단 무늬는 결정적 그림 */
+    const kc = mkCanvas(256, 256), kx = kc.getContext('2d'); kx.fillStyle = '#e2d5bd'; kx.fillRect(0, 0, 256, 256);
+    for (let c = 0; c < 4; c++) { const x0 = 16 + c * 64; kx.fillStyle = 'rgba(120,100,70,.2)'; kx.fillRect(x0 - 3, 0, 3, 256); kx.fillRect(x0 + 35, 0, 3, 256);
+      for (let y = 0; y < 256; y += 32) { kx.strokeStyle = 'rgba(255,250,240,.6)'; kx.lineWidth = 6; kx.beginPath(); kx.moveTo(x0 + 6, y); kx.bezierCurveTo(x0 + 6, y + 13, x0 + 26, y + 19, x0 + 26, y + 32); kx.stroke(); kx.strokeStyle = 'rgba(105,85,55,.32)'; kx.lineWidth = 2.5; kx.beginPath(); kx.moveTo(x0 + 26, y); kx.bezierCurveTo(x0 + 26, y + 13, x0 + 6, y + 19, x0 + 6, y + 32); kx.stroke(); }
+      for (let y = 2; y < 256; y += 8) { kx.fillStyle = 'rgba(255,252,245,.28)'; kx.fillRect(x0 + 42, y, 16, 3); kx.fillStyle = 'rgba(110,90,60,.12)'; kx.fillRect(x0 + 42, y + 4, 16, 1); } }
+    const km = std(0xffffff, .95, 0, { map: toTex(kc, { rep: [1.6, 1.6] }), bumpMap: toTex(kc, { srgb: false, rep: [1.6, 1.6] }), bumpScale: 2.5 }), tg = new THREE.Group(); tg.position.set(.58, .45, 0); tg.rotation.y = .08; s.add(tg);
+    mesh(RB(.46, .05, .43, .02, 2), km, 0, .025, .21, tg); mesh(CY(.026, .026, .46, 16), km, 0, .024, .435, tg).rotation.z = Math.PI / 2; /* 좌석 위 접은 부분 + 앞 모서리 둥근 접힘 */
+    const hg = mesh(RB(.46, .2, .04, .015, 2), km, 0, -.08, .462, tg); hg.rotation.x = .05; /* 좌석 앞으로 늘어진 끝 */
+    for (let i = 0; i < 15; i++) mesh(CY(.0035, .0022, .045, 5), std(0xd9cbb1, .95), -.21 + i * .03, -.2, .468 + (i % 2) * .003, tg, { cast: false }); /* 끝단 술 */ }
   // (작은 사이드 선반은 팔걸이 속에 묻혀 끝면이 팔걸이 옆면과 겹쳐 검은 줄이 깜빡였음 → 삭제)
   // VR: 창 쪽 끝 낮은 받침 위 검은 테 흑백 사진 액자(소파 끝면은 무늬 없이 흰색 그대로)
   const bw = toTex((() => { const c = mkCanvas(256, 192), x = c.getContext('2d'); x.scale(4, 4); const gr = x.createLinearGradient(0, 0, 0, 48); gr.addColorStop(0, '#d9d9d9'); gr.addColorStop(1, '#6d6d6d'); x.fillStyle = gr; x.fillRect(0, 0, 64, 48);
