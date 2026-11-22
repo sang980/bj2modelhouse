@@ -415,6 +415,10 @@ function synthPlanned() {
     const fx = -uz, fz = ux, rr = rng(Math.round(cx * 7 + cz * 13));
     const box = (x, z, L, D) => [[x - ux * L / 2 - fx * D / 2, z - uz * L / 2 - fz * D / 2], [x + ux * L / 2 - fx * D / 2, z + uz * L / 2 - fz * D / 2], [x + ux * L / 2 + fx * D / 2, z + uz * L / 2 + fz * D / 2], [x - ux * L / 2 + fx * D / 2, z - uz * L / 2 + fz * D / 2]];
     const inside = Q => Q.every(q => polyDist(P, q[0], q[1]) < -6);
+    if (/해링턴스퀘어/.test(nm)) { /* 11-23 루프 카카오 스카이뷰 L3 동 번호(남쪽 300·400번대 OSM 윤곽으로 위치 보정, 1.285m/px): 띠 격자로 4개 동만 띄엄띄엄 서던 것 → 산성대로 쪽 띠 안 실제 자리 14개 동(101~106·108~110, 201~205), 300·400번대와 같은 방향(155°) — 층수는 골조 공사 중이라 동마다 조금씩 다르게 */
+      const hu = [-.906, .423], hf = [-.423, -.906], hb = (x, z, L, D) => [[x - hu[0] * L / 2 - hf[0] * D / 2, z - hu[1] * L / 2 - hf[1] * D / 2], [x + hu[0] * L / 2 - hf[0] * D / 2, z + hu[1] * L / 2 - hf[1] * D / 2], [x + hu[0] * L / 2 + hf[0] * D / 2, z + hu[1] * L / 2 + hf[1] * D / 2], [x - hu[0] * L / 2 + hf[0] * D / 2, z - hu[1] * L / 2 + hf[1] * D / 2]];
+      for (const [x, z, f] of [[207.9, 1358.4, 19], [259.3, 1317.2, 23], [314.6, 1285.1, 27], [418.5, 1243.6, 25], [489.2, 1207.6, 28], [555.3, 1174.2, 26], [489.2, 1267.4, 22], [404.3, 1315.6, 24], [318.4, 1345.5, 20], [672.8, 1126.1, 24], [745.3, 1087.1, 26], [798.6, 1095.5, 22], [721.5, 1140.5, 21], [661.1, 1176.5, 25]]) { const Q = hb(x, z, 40, 17); push(1, f, f * 2.9 + 1, Q); (GEO.heri = GEO.heri || []).push([Q, f * 2.9 + 1, '#3f73b5']); n++; }
+      continue; }
     if (rule.tower) { const pod = box(cx, cz, 60, 40); if (inside(pod)) { push(2, 3, 12, pod); for (const o of [-14, 14]) { const T = box(cx + ux * o, cz + uz * o, 22, 20), f = rule.f[0] + (rr() * (rule.f[1] - rule.f[0]) | 0); push(1, f, 12 + (f - 3) * 2.9, T); n++; } } continue; }
     let u0 = 1e9, u1 = -1e9, v0 = 1e9, v1 = -1e9; for (const p of P) { const u = (p[0] - cx) * ux + (p[1] - cz) * uz, v = (p[0] - cx) * fx + (p[1] - cz) * fz; u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v); }
     for (let u = u0 + rule.su / 2; u < u1; u += rule.su) for (let v = v0 + rule.sv / 2; v < v1; v += rule.sv) {
