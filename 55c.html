@@ -2572,6 +2572,9 @@ function diningPantry6() {
   fruitBowl(g, -1.065, .7525, 0); /* 6인 식탁: 가운데·서쪽 자리 매트 사이 */
   g.userData.len = L; return g;
 }
+function openBook(par, x, y, z, ry, col) { const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; par.add(g); /* 11-23 루프 소품 퀄리티업: 침대 위에 펼쳐 엎어 둔 책 — 표지 두 쪽이 책등에서 ㅅ자로 내려앉고 안쪽에 흰 종이 묶음, 책등 띠 */
+  const cv = std(col, .7), pg = std(0xf5f1e6, .9); for (const s of [-1, 1]) { const h = new THREE.Group(); h.position.set(0, .045, 0); h.rotation.z = -s * .3; g.add(h); mesh(RB(.145, .005, .215, .002, 1), cv, s * .0725, .0025, 0, h); mesh(BX(.138, .012, .2), pg, s * .069, -.0065, 0, h, { cast: false }); }
+  mesh(CY(.008, .008, .215, 10), cv, 0, .046, 0, g, { cast: false }).rotation.x = Math.PI / 2; return g; }
 let _bslp = null; function bedSlippers(cx, cz, col, ry) { /* 11-23 루프 소품 퀄리티업: 침대 옆 바닥 실내 슬리퍼 한 켤레 — 발 모양 흰 밑창 + 펠트 천(결정적 잔결) + 앞 아치 끈, 앞코는 침대 반대쪽(내려서 바로 신게) */
   if (!_bslp) { const sh = new THREE.Shape(); sh.absellipse(0, .065, .052, .075, 0, Math.PI, false); sh.absellipse(0, -.055, .047, .085, Math.PI, Math.PI * 2, false); const sg = new THREE.ExtrudeGeometry(sh, { depth: .014, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 16 }); sg.rotateX(Math.PI / 2);
     const strap = new THREE.CylinderGeometry(.053, .053, .09, 18, 1, true, -Math.PI / 2, Math.PI); strap.rotateX(-Math.PI / 2); strap.scale(1, .62, 1);
@@ -2671,7 +2674,7 @@ const diningS = diningSmall(), diningL = diningLarge(), diningP6 = diningPantry6
 const dining = diningS; // (예전 코드 호환용)
 // 평면도 방향: 침대 헤드는 서쪽 벽, 붙박이장(옵션 10)은 동쪽 벽
 bedSlippers(10.05, 7.66, 0xdcc0b4, 0); /* 안방 침대 남쪽 옆(러그 밖 바닥) 먼지 분홍 슬리퍼 */
-{ const b = bed(9.96, 6.45, Math.PI / 2, 1.6, 2.1, '침대'); /* VR(55C): 밝은 원목 프레임 · 베이지 담요 · 베이지/흰 베개 */
+{ const b = bed(9.96, 6.45, Math.PI / 2, 1.6, 2.1, '침대'); openBook(b, .38, .55, -.05, .5, 0xb7673f); /* VR(55C): 밝은 원목 프레임 · 베이지 담요 · 베이지/흰 베개 */
   const beige = std(0xcfbea4, .98, 0, { map: M.throwBlue.map }), pb = std(0xcdb79c, .95, 0, { map: M.linen.map }), pw = std(0xf7f6f2, .95, 0, { map: M.linen.map });
   const lyG = pillowG(.64, .19, .4), rm = [], L = 2.1;
   b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = beige; else if (o.material === M.charcoal || o.material === M.check || o.geometry === lyG) rm.push(o); }); rm.forEach(o => o.parent.remove(o));

@@ -2462,6 +2462,9 @@ function diningLarge() {
   fruitBowl(g, -.65, .755, 0); /* 두 자리 매트 사이 가운데 */
   g.userData.len = L; return g;
 }
+function openBook(par, x, y, z, ry, col) { const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; par.add(g); /* 11-23 루프 소품 퀄리티업: 침대 위에 펼쳐 엎어 둔 책 — 표지 두 쪽이 책등에서 ㅅ자로 내려앉고 안쪽에 흰 종이 묶음, 책등 띠 */
+  const cv = std(col, .7), pg = std(0xf5f1e6, .9); for (const s of [-1, 1]) { const h = new THREE.Group(); h.position.set(0, .045, 0); h.rotation.z = -s * .3; g.add(h); mesh(RB(.145, .005, .215, .002, 1), cv, s * .0725, .0025, 0, h); mesh(BX(.138, .012, .2), pg, s * .069, -.0065, 0, h, { cast: false }); }
+  mesh(CY(.008, .008, .215, 10), cv, 0, .046, 0, g, { cast: false }).rotation.x = Math.PI / 2; return g; }
 let _bslp = null; function bedSlippers(cx, cz, col, ry) { /* 11-23 루프 소품 퀄리티업: 침대 옆 바닥 실내 슬리퍼 한 켤레 — 발 모양 흰 밑창 + 펠트 천(결정적 잔결) + 앞 아치 끈, 앞코는 침대 반대쪽(내려서 바로 신게) */
   if (!_bslp) { const sh = new THREE.Shape(); sh.absellipse(0, .065, .052, .075, 0, Math.PI, false); sh.absellipse(0, -.055, .047, .085, Math.PI, Math.PI * 2, false); const sg = new THREE.ExtrudeGeometry(sh, { depth: .014, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 16 }); sg.rotateX(Math.PI / 2);
     const strap = new THREE.CylinderGeometry(.053, .053, .09, 18, 1, true, -Math.PI / 2, Math.PI); strap.rotateX(-Math.PI / 2); strap.scale(1, .62, 1);
@@ -2642,7 +2645,7 @@ await yieldUI();
 // 침실1: 머리는 서쪽 벽(헤드보드 벽판), 양옆 협탁
 // 침실1(VR): 진회색 이불 + 짙은 초록 쿠션, 양옆 흰 물결무늬(플루팅) 받침 협탁
 bedSlippers(7.25, 8.55, 0xd8cbb3, Math.PI); /* 안방 침대 북쪽 옆 오트밀 슬리퍼 */
-const bed1B = bed(6.98, 9.6, Math.PI / 2, 1.6, 2.1, '침대');
+const bed1B = bed(6.98, 9.6, Math.PI / 2, 1.6, 2.1, '침대'); openBook(bed1B, .38, .55, .12, .5, 0xd9c7a5); /* 쿠션(진초록) 앞이라 밝은 리넨 표지, 발치 쪽으로 */
 /* 11-21 침구 퀄리티업: 벨벳 쿠션 — 결정적 '눌린 결' 얼룩 + 고운 털 결 + 은은한 요철, 가장자리 솔기에 같은 천 파이핑(둥근 줄) */
 function pipeOn(o, mat) { if (!o.geometry.boundingBox) o.geometry.computeBoundingBox(); const bb = o.geometry.boundingBox, w = bb.max.x - bb.min.x, hh = bb.max.y - bb.min.y, P = [];
   for (let i = 0; i < 48; i++) { const a = i / 48 * Math.PI * 2, cx = Math.cos(a), sy = Math.sin(a); P.push(new THREE.Vector3(Math.sign(cx) * Math.pow(Math.abs(cx), .3) * w / 2 * .995, Math.sign(sy) * Math.pow(Math.abs(sy), .3) * hh / 2 * .995, 0)); }
