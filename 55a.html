@@ -2439,7 +2439,12 @@ decorStart('TV·TV장', true, [], true); { const pts = [new THREE.Vector2(0, 0)]
   for (let i = 0; i < pa.count; i++) { const t = pa.getY(i) / .34; pa.setX(i, pa.getX(i) + .05 * t * t); pa.setZ(i, pa.getZ(i) * (1 - .12 * Math.sin(t * Math.PI))); } // 위로 갈수록 한쪽으로 기울고 납작하게
   vg.computeVertexNormals();
   const vase = mesh(vg, std(0xf3f1ec, .3), WX(8.55), .42, WZ(5.6), fixed); vase.rotation.y = .6;
-  fernPlant(fixed, WX(8.55) + Math.cos(.6) * .05, .42 + .33, WZ(5.6) - Math.sin(.6) * .05, .85); } decorEnd(); /* 잎이 TV벽을 뚫고 침실1로 나오지 않게 .95→.85 */
+  fernPlant(fixed, WX(8.55) + Math.cos(.6) * .05, .42 + .33, WZ(5.6) - Math.sin(.6) * .05, .85);
+  { const tb = new THREE.Group(); tb.position.set(WX(8.56), .42, WZ(7.62)); tb.rotation.y = Math.PI / 2 + .12; fixed.add(tb); /* 11-23 루프 소품 퀄리티업: TV장 오른쪽 끝 각티슈 — 둥근 모서리 흰 상자(옅은 사선 결) + 위 타원 입구(어두운 틈) + 뽑혀 나온 휴지 한 장(물결 + 위끝 말림) */
+    const c = mkCanvas(256, 128), x = c.getContext('2d'); x.fillStyle = '#f7f6f2'; x.fillRect(0, 0, 256, 128); x.strokeStyle = 'rgba(160,160,152,.28)'; x.lineWidth = 2; for (let i = -16; i < 40; i++) { x.beginPath(); x.moveTo(i * 10, 0); x.lineTo(i * 10 + 128, 128); x.stroke(); }
+    mesh(RB(.24, .09, .12, .008, 2), std(0xffffff, .5, 0, { map: toTex(c) }), 0, .045, 0, tb); const sl = mesh(new THREE.CircleGeometry(1, 28), std(0x2a2b2e, .85), 0, .0905, 0, tb, { cast: false }); sl.rotation.x = -Math.PI / 2; sl.scale.set(.075, .018, 1);
+    const tg = new THREE.PlaneGeometry(.11, .1, 10, 8), p = tg.attributes.position; for (let i = 0; i < p.count; i++) { const u = p.getX(i), v = p.getY(i) + .05; p.setZ(i, Math.sin(u / .11 * Math.PI * 2.4) * .007 + v * v * .9); } tg.computeVertexNormals();
+    const ts = mesh(tg, std(0xfdfdfb, .9, 0, { side: THREE.DoubleSide }), 0, .14, 0, tb, { cast: false }); ts.rotation.x = -.12; } } decorEnd(); /* 잎이 TV벽을 뚫고 침실1로 나오지 않게 .95→.85 */
 // 주방 상판 소품(사진): 레트로 커피머신, 전기주전자, 블랙 레일 도구, 끝쪽 블랙 보틀·양념병·은색 볼·화이트 볼 화분
 // 좌표는 주방 반전 전 기준(k 그룹 안에서 함께 반전됨). 상판 높이 .9
 function kitchenProps(k) {
