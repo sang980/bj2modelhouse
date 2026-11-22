@@ -1825,14 +1825,15 @@ function thickSurf(P, nx, ny, th, flip = false) { const N = (nx + 1) * (ny + 1),
   for (let j = 0; j < ny; j++) { const u = j * (nx + 1); strip(u, u + nx + 1, u + 1); strip(u + nx, u + 2 * nx + 1, u + nx - 1); }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); return g; }
 /* 침구 천: 매트리스 위(로컬 x 폭, z 길이, y 위)를 덮고 양옆(hang)·발치 z1 쪽(foot)으로 둥글게 흘러내림 — 모서리는 살짝 퍼지고, 처진 부분엔 세로 주름 */
-function drapeCloth(parent, { hx, z0, z1, top, hang = .2, foot = 0, r = .05, th = .03, mat, nx = 40, nz = 44, wr = .006, seed = 1, floor = .02 }) {
+function drapeCloth(parent, { hx, z0, z1, top, hang = .2, foot = 0, r = .05, th = .03, mat, nx = 40, nz = 44, wr = .006, seed = 1, floor = .02, rum = null }) { /* rum = [높이, 시작 z]: 11-22 침구 퀄리티업 — 이불·발치 담요 윗면에 같은 위치 함수의 큰 구김(완만한 부풂·눌림 + 비스듬한 잔주름), 담요가 이불을 따라가 뚫지 않음, 접힌 윗단 쪽 0.3m는 서서히 0 */
   const arc = Math.PI * r / 2, a0x = hx - r, Lz = z1 - z0, a0z = Lz - r, SX = a0x + arc + hang, SZ = foot ? a0z + arc + foot : Lz, P = new Float32Array((nx + 1) * (nz + 1) * 3), hl = Math.max(hang, foot);
   for (let j = 0; j <= nz; j++) for (let i = 0; i <= nx; i++) { const k = (j * (nx + 1) + i) * 3, s = (i / nx * 2 - 1) * SX, t = j / nz * SZ, sx = s < 0 ? -1 : 1;
     const ex = Math.max(0, Math.abs(s) - a0x), ez = foot ? Math.max(0, t - a0z) : 0, d = Math.hypot(ex, ez); let x = s, z = z0 + t, y = top;
     if (d > 0) { /* 평평한 윗면 밖: 모서리 둥글림(반지름 r) 후 수직으로 처짐 — 옆·발치·모서리 모두 같은 거리 함수라 접힘 없음 */
       const ux = ex / d, uz = ez / d, c = (z0 + t) * ux + s * uz, wv = wr * Math.max(0, d - arc) / hl * (1.6 + Math.sin(c * 17 + seed) + .5 * Math.sin(c * 29 + seed * 2.3)), h = (d <= arc ? r * Math.sin(d / r) : r) + wv;
       if (ex > 0) x = sx * (a0x + h * ux); if (ez > 0) z = z0 + a0z + h * uz; y = top - (d <= arc ? r - r * Math.cos(d / r) : r + d - arc); }
-    P[k] = x; P[k + 2] = z; P[k + 1] = Math.max(floor, y + wr * .5 * Math.sin(x * 17 + seed) * Math.sin(z * 11 + seed * 1.7)); }
+    const ru = rum ? rum[0] * Math.min(1, Math.max(0, (z - rum[1]) / .3)) * (d > 0 ? Math.max(0, 1 - d / .1) : 1) * (.65 * Math.sin(x * 4.1 + z * 1.3 + .7) * Math.sin(z * 3.2 - x * 2.2 + 1.9) + .25 * Math.sin(x * 7.3 - z * 5.9 + 2.4) + .1 * Math.sin(x * 13.1 + z * 9.7)) : 0;
+    P[k] = x; P[k + 2] = z; P[k + 1] = Math.max(floor, y + ru + wr * .5 * Math.sin(x * 17 + seed) * Math.sin(z * 11 + seed * 1.7)); }
   return mesh(thickSurf(P, nx, nz, th), mat, 0, 0, 0, parent); }
 /* 푹신한 베개·쿠션(w×h×d, 가장 얇은 축이 두께): 둥근 사각 윤곽 + 가운데 볼록, 가장자리로 얇아짐(같은 크기는 형상 공유) */
 const _pillowC = new Map();
@@ -2484,9 +2485,9 @@ function bed(x, z, rot, w = 1.6, l = 2.1, name = '침대', headTall = false) {
   } else
   mesh(RB(w + .06, .26, l, .02), M.oak, 0, .13, 0, g);
   mesh(RB(w, .24, l - .06, .06), M.linen, 0, .38, .02, g);
-  drapeCloth(g, { hx: w / 2 + .02, z0: -l * .16, z1: l / 2 - .01, top: .54, hang: .2, foot: .18, r: .06, th: .04, mat: M.linen, seed: w * 7 }); /* 이불: 옆·발치로 둥글게 흘러내림 */
+  drapeCloth(g, { hx: w / 2 + .02, z0: -l * .16, z1: l / 2 - .01, top: .54, hang: .2, foot: .18, r: .06, th: .04, mat: M.linen, seed: w * 7, nz: 60, nx: 48, rum: [.011, -l * .16] }); /* 이불: 옆·발치로 둥글게 흘러내림 */
   { const hw = w / 2 - .05, pts = []; for (let i = 0; i <= 24; i++) { const t = i / 24 * 2 - 1; pts.push(new THREE.Vector2(.028 * Math.sqrt(Math.max(0, 1 - Math.pow(Math.abs(t), 6))), t * hw)); } const f = mesh(new THREE.LatheGeometry(pts, 20), M.linen, 0, .525, -l * .16, g); f.rotation.z = Math.PI / 2; } /* 접힌 이불 윗단: 양 끝을 둥글게 오므려 옆으로 삐져나오지 않게 */
-  drapeCloth(g, { hx: w / 2 + .04, z0: l / 2 - .75, z1: l / 2 - .14, top: .56, hang: .25, r: .08, th: .008, mat: M.throwBlue, nz: 24, wr: .008, seed: w * 3 + 1 }); /* 발치 러너(담요) */
+  drapeCloth(g, { hx: w / 2 + .04, z0: l / 2 - .75, z1: l / 2 - .14, top: .56, hang: .25, r: .08, th: .008, mat: M.throwBlue, nz: 30, wr: .008, seed: w * 3 + 1, rum: [.011, -l * .16] }); /* 발치 러너(담요) */
   if (headTall) mesh(RB(w + .06, .9, .06, .02), M.oak, 0, .45, -l / 2 - .02, g);
   const pw = w > 1.2 ? 2 : 1;
   for (let i = 0; i < pw; i++) { const px = pw === 1 ? 0 : (i ? .38 : -.38); const p = mesh(pillowG(.64, .19, .4), M.linen, px, .58, -l / 2 + .3, g); p.rotation.x = -.35; p.position.y = .62; }
