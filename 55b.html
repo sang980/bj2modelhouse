@@ -2295,6 +2295,14 @@ decorStart('TV·TV장', true, [], true); { const g = fixed, x = 5.61, top = .452
     mesh(L([[0, 0], [.009, 0], [.0125, .006], [.0115, .012], [.006, .0155], [0, .016]]), spk, jx, top + .1405, jz, g, { cast: false }); }
   } tissueBox(5.385, .452, 8.62, Math.PI / 2 + .1); decorEnd();
 await yieldUI();
+function towelHolder(x, z, ry, base, rod) { /* 11-23 루프 주방 소품 퀄리티업: 키친타월 거치대 — 둥근 받침 + 가운데 봉·구슬 꼭지 + 엠보싱(마름모) 무늬 두루마리(속 갈색 종이심) + 방 쪽으로 한 장 풀려 나온 끝장 (ry: 끝장이 나오는 쪽, 0이면 +z) */
+  const g = new THREE.Group(); g.position.set(WX(x), .9, WZ(z)); g.rotation.y = ry; fixed.add(g); const L = (pts, n) => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), n);
+  mesh(L([[0, 0], [.07, 0], [.075, .004], [.074, .009], [.066, .012], [0, .012]], 36), base, 0, 0, 0, g); mesh(CY(.0055, .0055, .3, 12), rod, 0, .15, 0, g, { cast: false }); mesh(new THREE.SphereGeometry(.012, 14, 10), rod, 0, .305, 0, g, { cast: false });
+  if (!towelHolder.pm) { const c = mkCanvas(128, 128), x2 = c.getContext('2d'); x2.fillStyle = '#fbfbf8'; x2.fillRect(0, 0, 128, 128); x2.fillStyle = 'rgba(140,140,128,.12)'; for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { const cx = i * 16 + (j % 2) * 8 + 4, cy = j * 16 + 8; x2.beginPath(); x2.moveTo(cx, cy - 5); x2.lineTo(cx + 4, cy); x2.lineTo(cx, cy + 5); x2.lineTo(cx - 4, cy); x2.closePath(); x2.fill(); }
+    const tx = toTex(c); tx.wrapS = tx.wrapT = THREE.RepeatWrapping; tx.repeat.set(5, 4); towelHolder.pm = std(0xffffff, .9, 0, { map: tx }); towelHolder.fm = std(0xffffff, .9, 0, { map: tx, side: THREE.DoubleSide }); towelHolder.core = std(0xb08a5a, .9, 0, { side: THREE.DoubleSide }); }
+  mesh(L([[.022, .014], [.06, .014], [.063, .018], [.063, .24], [.06, .244], [.022, .244]], 40), towelHolder.pm, 0, 0, 0, g); mesh(new THREE.CylinderGeometry(.0222, .0222, .228, 24, 1, true), towelHolder.core, 0, .129, 0, g, { cast: false });
+  { const b = .32, fl = .078, f = mesh(new THREE.PlaneGeometry(fl, .222), towelHolder.fm, .0634 + fl / 2 * Math.sin(b), .129, fl / 2 * Math.cos(b), g, { cast: false }); f.rotation.y = Math.PI / 2 + b; } return g; }
+towelHolder(2.18, 5.55, -.7, std(0xc9a77c, .6), std(0x2a2b2d, .45, .3)); /* 쿡탑 줄 오른쪽 끝 — 올리브유·파스타 병 앞, 원목 받침·검은 봉 */
 // 주방 상판 소품(사진): 레트로 커피머신, 전기주전자, 블랙 레일 도구, 끝쪽 블랙 보틀·양념병·은색 볼·화이트 볼 화분
 // 좌표는 주방 반전 전 기준(k 그룹 안에서 함께 반전됨). 상판 높이 .9
 function kitchenProps(k) {
