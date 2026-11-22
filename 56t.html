@@ -1319,6 +1319,9 @@ for (const w of southWindows) {
 }
 // 56T 조명 위치: 0,1 거실 · 2 식당 · 3 침실1 · 4 침실2 · 5 알파룸 · 6 현관 · 7 드레스룸
 const lampSpots = [[6.3, 6.0], [7.6, 7.2], [7.0, 3.1], [10.4, 6.0], [1.4, 6.7], [4.0, 6.7], [2.7, 3.3], [10.8, 3.7]];
+{ const sx = 2.4, sz = 2.8; /* 11-22 루프 설비 퀄리티업: 현관 천장 동작 감지 센서(현관등 연동) — 흰 납작 받침 + 아래로 볼록한 겹눈 렌즈(면 나뉜 반구), 현관문 가까이 */
+  mesh(CY(.045, .047, .012, 32), M.white, WX(sx), H - .006, WZ(sz), ceilingGroup, { cast: false, recv: false });
+  mesh(new THREE.SphereGeometry(.027, 12, 5, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std(0xf1f0ec, .3, 0, { flatShading: true }), WX(sx), H - .012, WZ(sz), ceilingGroup, { cast: false, recv: false }); }
 const roomLights = lampSpots.map(([x, z]) => {
   const p = new THREE.PointLight(0xffdcb0, 0, 7, 2); p.position.set(WX(x), H - .25, WZ(z)); scene.add(p);
   dlFix(WX(x), WZ(z), .065);
