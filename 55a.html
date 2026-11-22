@@ -2564,6 +2564,13 @@ function diningPantry6() {
   tablePlant(g, -.535, .7525, 0);
   g.userData.len = L; return g;
 }
+let _bslp = null; function bedSlippers(cx, cz, col, ry) { /* 11-23 루프 소품 퀄리티업: 침대 옆 바닥 실내 슬리퍼 한 켤레 — 발 모양 흰 밑창 + 펠트 천(결정적 잔결) + 앞 아치 끈, 앞코는 침대 반대쪽(내려서 바로 신게) */
+  if (!_bslp) { const sh = new THREE.Shape(); sh.absellipse(0, .065, .052, .075, 0, Math.PI, false); sh.absellipse(0, -.055, .047, .085, Math.PI, Math.PI * 2, false); const sg = new THREE.ExtrudeGeometry(sh, { depth: .014, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 16 }); sg.rotateX(Math.PI / 2);
+    const strap = new THREE.CylinderGeometry(.053, .053, .09, 18, 1, true, -Math.PI / 2, Math.PI); strap.rotateX(-Math.PI / 2); strap.scale(1, .62, 1);
+    const c = mkCanvas(128, 128), x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.fillRect(0, 0, 128, 128); for (let i = 0; i < 900; i++) { const h = (k) => { const v = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return v - Math.floor(v); }; x.fillStyle = `rgba(0,0,0,${.03 + h(1) * .07})`; x.fillRect(h(2) * 128, h(3) * 128, 1, 2); }
+    _bslp = { sg, strap, sole: std(0xece9e2, .7), map: toTex(c) }; }
+  const cm = std(col, .9, 0, { map: _bslp.map, side: THREE.DoubleSide }), pr = new THREE.Group(); pr.position.set(WX(cx), .012, WZ(cz)); pr.rotation.y = ry; fixed.add(pr);
+  for (const [sx, r] of [[-.095, .08], [.095, -.06]]) { const sp = new THREE.Group(); sp.position.x = sx; sp.rotation.y = r; pr.add(sp); mesh(_bslp.sg, _bslp.sole, 0, .018, 0, sp, { cast: false }); mesh(_bslp.sg, cm, 0, .03, 0, sp); mesh(_bslp.strap, cm, 0, .03, .055, sp); } }
 function bed(x, z, rot, w = 1.6, l = 2.1, name = '침대', headTall = false) {
   const g = piece(name, x, z, rot);
   if (!headTall) { // 사진: 화이트 플로팅 프레임 + 하부 간접등
@@ -2650,6 +2657,7 @@ coffeeTable(6.84, 6.65, 0);
 const diningS = diningSmall(), diningL = diningLarge(), diningP6 = diningPantry6();
 const dining = diningS; // (예전 코드 호환용)
 // 평면도 방향: 침대 헤드는 서쪽 벽, 붙박이장(옵션 10)은 동쪽 벽
+bedSlippers(10.05, 7.55, 0xb9bcc0, 0); /* 안방 침대 남쪽 옆 연회색 슬리퍼 */
 { const b = bed(9.96, 6.45, Math.PI / 2, 1.6, 2.1, '침대'); /* VR 55A: 선명한 로열 블루 러너 + 짙은 회색 헤링본 쿠션 */
   const hc = mkCanvas(256, 256), x = hc.getContext('2d'); x.scale(4, 4); x.fillStyle = '#4b4d51'; x.fillRect(0, 0, 64, 64); x.lineWidth = 2;
   for (let c = 0; c < 8; c++) for (let r = -1; r < 9; r++) { x.strokeStyle = (c + r) % 2 ? '#7d7f84' : '#36383c'; x.beginPath(); if (c % 2) { x.moveTo(c * 8, r * 8); x.lineTo(c * 8 + 8, r * 8 + 8); } else { x.moveTo(c * 8 + 8, r * 8); x.lineTo(c * 8, r * 8 + 8); } x.stroke(); }
