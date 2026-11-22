@@ -1920,7 +1920,9 @@ let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; let SHV_B = 
     mesh(BX(.004, .008, r * 2 * 1.42 + .002), _tp.blue, r - .002, L / 2 + .004, 0, t, { cast: false }); mesh(CY(.0065, .0065, .006, 16), _tp.neck, 0, -L / 2 - .003, 0, t, { cast: false }); mesh(CY(.0095, .0105, .018, 20), _tp.cap, 0, -L / 2 - .015, 0, t, { cast: false }); };
   // 욕실1: 남쪽 벽(z 1.635, 문과 욕조 사이) 수건 — 흰+회색 띠 + 녹슨 주황(VR)
   hangTowels(5.82, 1.635, 0, -1, .5, 1.42, 0xd06a3e);
-  paperHolder(4.575, .82, 1, 0, .72);                              // 변기 옆 서쪽 벽
+  const callBell = (cx, cz, nx, nz, y, par) => { const t = new THREE.Group(); t.position.set(WX(cx), 0, WZ(cz)); t.rotation.y = Math.atan2(nx, nz); par.add(t); /* 11-22 루프 설비 퀄리티업: 욕실 비상 호출 버튼(월패드 연동) — 변기 옆 벽 흰 판 + 가운데 빨간 누름 버튼(테) + 아래 회색 '비상' 표시 띠 */
+  mesh(RB(.075, .115, .012, .006, 2), std(0xf5f4f0, .4), 0, y, .006, t, { cast: false }); mesh(CY(.021, .021, .004, 24), std(0xd9d9d6, .35, .3), 0, y + .015, .0135, t, { cast: false }).rotation.x = Math.PI / 2; mesh(CY(.016, .017, .009, 24), std(0xd2312b, .35), 0, y + .015, .019, t, { cast: false }).rotation.x = Math.PI / 2; mesh(BX(.04, .009, .002), std(0x8a8d91, .6), 0, y - .03, .0125, t, { cast: false }); };
+  paperHolder(4.575, .82, 1, 0, .72); callBell(4.575, .62, 1, 0, 1.05, g);                              // 변기 옆 서쪽 벽
   dispenser(5.05, 1.25, .18, 0xc9b8a0); dispenser(5.14, 1.25, .18, 0x8f8a83); grassPot(4.78, 1.25, .18); // 돌 선반 위
   toothSet(5.48, 1.25, .175, Math.PI, 0xe9dfcf); /* 11-22: 세면기 위 돌 선반 — 디스펜서와 세면기 사이 */
   // 욕조 서쪽 테두리(남쪽 끝) 위 유리병 + 주황 꽃·잎 가지
@@ -1939,7 +1941,7 @@ let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; let SHV_B = 
   amber(6.795, 1.14, .7); amber(6.795, 1.14, .79, .15);
   // 욕실2: 기존 수건걸이 자리(동쪽 벽) — 흰+회색 띠 + 초록(VR)
   hangTowels(7.525, 5.93, -1, 0, .26, 1.2, 0x2e6b4a);
-  paperHolder(6.5, 6.895, 0, -1, .72);                              // 변기 옆 남쪽 벽
+  paperHolder(6.5, 6.895, 0, -1, .72); callBell(6.3, 6.895, 0, -1, 1.05, g);                              // 변기 옆 남쪽 벽
   dispenser(5.97, 1.28, 5.87, 0xc9b8a0, Math.PI / 2); dispenser(5.97, 1.28, 5.95, 0x8f8a83, Math.PI / 2); grassPot(5.97, 1.28, 6.72); // 돌 선반 위
   toothSet(5.96, 1.28, 6.2, -Math.PI / 2, 0xd5ddd3); /* 11-22: 세면기 옆 돌 선반(벽 서쪽) — 세이지 컵 */
   /* VR: 욕실1·2 세면기 앞 황마 발매트 + 회색 슬리퍼(앞코가 세면기 쪽) */

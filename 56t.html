@@ -1950,7 +1950,9 @@ let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; /* 11-22: �
     mesh(BX(.004, .008, r * 2 * 1.42 + .002), _tp.blue, r - .002, L / 2 + .004, 0, t, { cast: false }); mesh(CY(.0065, .0065, .006, 16), _tp.neck, 0, -L / 2 - .003, 0, t, { cast: false }); mesh(CY(.0095, .0105, .018, 20), _tp.cap, 0, -L / 2 - .015, 0, t, { cast: false }); };
   // 욕실1: 동쪽 벽(욕조와 문 사이) 수건 + 녹슨 주황, 변기 옆 남쪽 벽 휴지걸이, 돌 선반 위 디스펜서·화분, 욕조 위 북쪽 벽 샤워 선반, 욕조 테두리 꽃 유리병
   hangTowels(1.73, 4.0, -1, 0, .44, 1.42, 0x2e7d78); /* VR 56T: 흰 수건 + 청록 물결 수건 */
-  paperHolder(1.01, 5.24, 0, -1, .72);
+  const callBell = (cx, cz, nx, nz, y, par) => { const t = new THREE.Group(); t.position.set(WX(cx), 0, WZ(cz)); t.rotation.y = Math.atan2(nx, nz); par.add(t); /* 11-22 루프 설비 퀄리티업: 욕실 비상 호출 버튼(월패드 연동) — 변기 옆 벽 흰 판 + 가운데 빨간 누름 버튼(테) + 아래 회색 '비상' 표시 띠 */
+  mesh(RB(.075, .115, .012, .006, 2), std(0xf5f4f0, .4), 0, y, .006, t, { cast: false }); mesh(CY(.021, .021, .004, 24), std(0xd9d9d6, .35, .3), 0, y + .015, .0135, t, { cast: false }).rotation.x = Math.PI / 2; mesh(CY(.016, .017, .009, 24), std(0xd2312b, .35), 0, y + .015, .019, t, { cast: false }).rotation.x = Math.PI / 2; mesh(BX(.04, .009, .002), std(0x8a8d91, .6), 0, y - .03, .0125, t, { cast: false }); };
+  paperHolder(1.01, 5.24, 0, -1, .72); callBell(.81, 5.24, 0, -1, 1.05, g);
   { const tm = std(0x8a8d90, .45); pbox(.29, .39, 1.25, 1.256, 3.78, 3.98, tm, g, { cast: false }); for (const [x0, x1, z0, z1] of [[.29, .297, 3.78, 3.98], [.383, .39, 3.78, 3.98], [.297, .383, 3.78, 3.787], [.297, .383, 3.973, 3.98]]) pbox(x0, x1, 1.256, 1.267, z0, z1, tm, g, { cast: false }); } /* VR: 디스펜서 받친 회색 트레이 — 11-22: 얇은 판 → 둘레 턱이 올라온 트레이 */
   dispenser(.34, 1.256, 3.84, 0xc9b8a0, Math.PI / 2); dispenser(.34, 1.256, 3.92, 0x8f8a83, Math.PI / 2); grassPot(.34, 1.25, 5.06); grassPot(.34, 1.25, 4.93); /* VR: 선반 끝 작은 화분 2 */ toothSet(.335, 1.25, 4.22, -Math.PI / 2, 0xd8e4e3); /* 11-22: 세면기 옆 돌 선반 — 연청록 컵 */
   for (let i = 0; i < 16; i++) { rnd(); rnd(); } /* 세면기 안 흰 조약돌 장식은 뺌(사용자 요청 — 동글동글 얼룩처럼 보임). 다른 소품 배치가 바뀌지 않게 난수 호출 수만 유지 */
@@ -1975,7 +1977,7 @@ let _bLeaf = null, _bLeafM = null, _gBlade = null, _gBladeM = null; /* 11-22: �
   // 욕실2: 서쪽 벽 걸이 수건(흰+회색 띠+초록), 변기 옆 남쪽 벽 휴지걸이, 돌 선반 위 디스펜서·화분, 샤워부스 북쪽 벽 선반 병
   hangTowels(10.175, 1.91, 1, 0, .26, 1.2, 0x2e7d78); /* VR 56T: 청록 물결 수건(욕실1과 같은) */
   { const ft = mesh(RB(.12, .035, .18, .012, 2), std(0xffffff, 1, 0, { map: towelTex }), WX(11.47), .836, WZ(1.95), g, { cast: false }); ft.rotation.y = .12; const br = mesh(RB(.03, .014, .08, .006, 2), std(0x1d1e20, .5), WX(11.47), .86, WZ(1.97), g, { cast: false }); br.rotation.y = -.3; } /* VR: 세면기 안 접은 흰 손수건 + 작은 검은 솔 */
-  paperHolder(11.25, 2.905, 0, -1, .72);
+  paperHolder(11.25, 2.905, 0, -1, .72); callBell(11.45, 2.905, 0, -1, 1.05, g);
   dispenser(11.71, 1.28, 1.72, 0xc9b8a0, -Math.PI / 2); dispenser(11.71, 1.28, 1.8, 0x8f8a83, -Math.PI / 2); grassPot(11.71, 1.28, 2.78); toothSet(11.71, 1.28, 2.16, Math.PI / 2, 0xe9dfcf); /* 11-22: 세면기 옆 돌 선반(벽 동쪽) */
   pbox(10.28, 10.54, 1.1, 1.12, .635, .73, M.whiteGloss, g); amber(10.36, 1.12, .68); /* 11-22: 새 가로 수전 손잡이와 겹치지 않게 선반 12cm 왼쪽으로 */ { const X = WX(10.46), Z = WZ(.68), wm = std(0xf1efe9, .35); mesh(new THREE.LatheGeometry([[0, 0], [.026, 0], [.03, .006], [.03, .165], [.025, .182], [.015, .19], [0, .19]].map(([a, b]) => new THREE.Vector2(a, b)), 28), wm, X, 1.12, Z, g); mesh(new THREE.CylinderGeometry(.0306, .0306, .07, 28, 1, true), ambLab('LOTION'), X, 1.12 + .085, Z, g, { cast: false }); mesh(CY(.0165, .0172, .026, 18), std(0xfafaf8, .2), X, 1.12 + .203, Z, g); mesh(CY(.0172, .0172, .002, 18), std(0xd8d6d0, .4), X, 1.12 + .196, Z, g, { cast: false }); } /* 흰 원통 → 어깨 있는 흰 로션병 + 라벨 + 뚜껑(이음선) */
 }
