@@ -1489,13 +1489,26 @@ function footShape(L, W) { const s = new THREE.Shape(); s.moveTo(0, -L / 2);
 const _shoeGeo = {}; const shoeGeo = (k, f) => _shoeGeo[k] || (_shoeGeo[k] = f());
 const soleG = (th) => shoeGeo('sole' + th, () => { const g = new THREE.ExtrudeGeometry(footShape(.26, .095), { depth: th, bevelEnabled: true, bevelThickness: .004, bevelSize: .004, bevelSegments: 2, curveSegments: 10 }); g.rotateX(Math.PI / 2); g.translate(0, th + .004, 0); return g; });
 const domeG = () => shoeGeo('dome', () => new THREE.SphereGeometry(1, 22, 10, 0, Math.PI * 2, 0, Math.PI / 2));
+const sneakUpG = () => shoeGeo('sneakUp', () => { /* 11-23 운동화 갑피: 발 길이를 따라 둥근 사각(초타원) 단면 27개를 이어 붙임 — 구간별 높이(뒤꿈치 칼라 ↑ · 발목 홈 ↓ · 혀 ↑ · 앞코로 낮아짐)와 폭(뒤꿈치 좁게 · 앞볼 넓게 · 앞코 둥글게), 양 끝은 마개 */
+  const lerpT = (T, u) => { for (let i = 1; i < T.length; i++) if (u <= T[i][0]) { const [a, va] = T[i - 1], [b, vb] = T[i], k = (u - a) / (b - a); return va + (vb - va) * k * k * (3 - 2 * k); } return T[T.length - 1][1]; };
+  const HT = [[0, .062], [.07, .074], [.2, .061], [.3, .064], [.42, .08], [.5, .074], [.7, .057], [.85, .046], [.95, .034], [1, .018]], HW = [[0, .02], [.06, .032], [.3, .035], [.65, .046], [.85, .043], [.95, .031], [1, .012]];
+  const N = 26, M = 18, L = .25, pos = [], idx = [];
+  for (let i = 0; i <= N; i++) { const u = i / N, z = -L / 2 + u * L, h = lerpT(HT, u), w = lerpT(HW, u);
+    for (let j = 0; j <= M; j++) { const th = j / M * Math.PI, c = Math.cos(th), s = Math.sin(th); pos.push(w * Math.sign(c) * Math.abs(c) ** (2 / 3), h * Math.abs(s) ** (2 / 3), z); } }
+  for (let i = 0; i < N; i++) for (let j = 0; j < M; j++) { const a = i * (M + 1) + j, b = a + 1, c = a + M + 1, d = c + 1; idx.push(a, b, c, b, d, c); }
+  for (const i of [0, N]) { const base = pos.length / 3; pos.push(0, lerpT(HT, i / N) * .45, -L / 2 + i / N * L); for (let j = 0; j <= M; j++) { const v = (i * (M + 1) + j) * 3; pos.push(pos[v], pos[v + 1], pos[v + 2]); }
+    for (let j = 0; j <= M; j++) { const p = base + 1 + j, q = base + 1 + (j + 1) % (M + 1); if (i) idx.push(base, p, q); else idx.push(base, q, p); } }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  g.userData.top = z => lerpT(HT, Math.min(1, Math.max(0, (z + L / 2) / L))); return g; });
 // 신발 한 짝(로컬 +z 앞코, 바닥 y 0)
 function shoeOne(g, ox, kind, col) { const m = std(col, kind === 'loafer' ? .28 : kind === 'pump' ? .3 : .7), dark = std(0x221c18, .55), hole = std(0x2a2522, .9);
   const at = (geo, mat, x, y, z) => mesh(geo, mat, ox + x, y, z, g, { cast: false });
-  if (kind === 'sneaker') { at(soleG(.026), std(0xf3f2ee, .6), 0, 0, 0); const d = at(domeG(), m, 0, .028, -.004); d.scale.set(.044, .068, .118);
-    const o = at(new THREE.CircleGeometry(1, 20), hole, 0, .083, -.065); o.scale.set(.028, .038, 1); o.rotation.x = -Math.PI / 2 + .45;
-    for (let i = 0; i < 4; i++) at(BX(.04 - i * .004, .003, .006), std(0xfafafa, .7), 0, .088 - i * .007, -.025 + i * .02);
-    at(RB(.03, .04, .012, .005, 2), m, 0, .07, -.12); }
+  if (kind === 'sneaker') { /* 11-23 루프 현관 소품: 반타원 돔(위에서 보면 구멍·끈이 얼굴처럼 보이던 것) → 둥근 단면을 이어 만든 갑피(뒤꿈치 칼라·발목 홈·혀·앞코로 낮아지는 등) + 흰 밑창 테, 발목 구멍(어두운 안) + 도톰한 칼라 테, 혀를 따라 신발끈 5, 뒤꿈치 고리 */
+    at(soleG(.022), std(0xf3f2ee, .6), 0, 0, 0); const U = sneakUpG(), y0 = .022, { top } = U.userData; at(U, m, 0, y0, 0);
+    const zc = -.07, yc = y0 + top(zc), o = at(new THREE.CircleGeometry(1, 24), hole, 0, yc + .0015, zc); o.scale.set(.021, .029, 1); o.rotation.x = -Math.PI / 2;
+    const r = at(new THREE.TorusGeometry(1, .2, 8, 32), m, 0, yc + .0005, zc); r.scale.set(.022, .03, .025); r.rotation.x = -Math.PI / 2;
+    for (let k = 0; k < 5; k++) { const z = -.01 + k * .015; at(BX(.028 - k * .002, .003, .005), std(0xfafafa, .7), 0, y0 + top(z) + .001, z); }
+    at(RB(.018, .028, .006, .003, 2), std(0xe9e6df, .7), 0, y0 + top(-.125) - .004, -.127); }
   else if (kind === 'loafer') { at(soleG(.012), dark, 0, 0, 0); const d = at(domeG(), m, 0, .016, -.002); d.scale.set(.043, .05, .118);
     const o = at(new THREE.CircleGeometry(1, 20), hole, 0, .058, -.045); o.scale.set(.03, .05, 1); o.rotation.x = -Math.PI / 2 + .25; at(BX(.05, .006, .016), dark, 0, .058, .015); }
   else if (kind === 'pump') { const ins = at(soleG(.004), std(0xd9c9b2, .7), 0, .006, -.005); ins.rotation.x = .33; ins.position.y = .045;
@@ -1835,6 +1848,7 @@ decorStart('복도 그림'); { const g = fixed, x = 4.565;
 { const g = fixed, z = 4.57, a = 5.81, b = 6.895, w3 = (b - a) / 3; /* 평면도: 욕실2 북쪽 벽(면 4.57)·서쪽 벽 조각(5.81)·동쪽 외벽(6.90) 사이 */
   pbox(a + .02, b - .02, 0, .1, 4.22, z - .04, M.black, g);
   shoeCabinet({ parent: g, axis: 'z', front: 4.18, back: z, a0: a, a1: b, n: 3, mat: M.mirrorEntry, frame: true }); // VR: 블랙 테 전신거울 문 3짝(클릭하면 열림) + 안쪽 선반·신발
+  /* 11-23 루프 현관 소품: 현관 바닥에 벗어 둔 운동화 한 켤레 — 뒤꿈치는 실내 단 쪽, 앞코는 현관문 쪽(신발장 안 운동화와 같은 모양, 흰 테라조에 묻히지 않게 진한 색 + 흰 밑창) */ shoePair(g, WX(5.94), OV + .002, WZ(3.5), Math.PI / 2 - .07, 'sneaker', 0x3a3c40);
   ceilingPanel(6.05, 6.55, 3.5, 4.0, 1.0, 2.6);
 }
 await phase('욕실과 발코니를 꾸미는 중', 61);
