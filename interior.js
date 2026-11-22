@@ -132,8 +132,8 @@ export function initInterior(o) {
         rb(g, 1.98, .14, 1.08, .04, 0, UB + .02, -.005, M.linen); rb(g, 1.3, .04, 1.1, .02, .3, UB + .145, -.005, M.duvet); rb(g, .4, .12, .6, .05, -.75, UB + .16, -.1, M.pillow);
         { const L = 1.148, h = .34, r = .07, sh = new T.Shape(); sh.moveTo(0, 0); sh.lineTo(L, 0); sh.lineTo(L, h - r); sh.quadraticCurveTo(L, h, L - r, h); sh.lineTo(0, h); sh.closePath(); mk(g, new T.ExtrudeGeometry(sh, { depth: t, bevelEnabled: false, curveSegments: 10 }), GC, -1.005, UB + .16, DH - t - .002);
           for (const f of [.13, .5, .87]) bx(g, .045, .05, .012, -1.005 + f * L, UB + .135, DH + .006, W); }
-        /* 옷장 4(B·B·A·A): 속 빈 몸통 + 문(왼 경첩) + B는 서랍 2 · 안에 봉과 옷 */
-        const zf = DH - .004, zb = zf - .555, Dc = .537, zc = (zb + zf - t) / 2;
+        /* 옷장 4(B·B·A·A): 속 빈 몸통 + 문(왼 경첩) + B는 서랍 2 · 안에 봉과 옷 — 11-22 요청: 깊이 555 옷장은 침대 앞이 아니라 뒤쪽(벽 쪽)에 붙임, 앞쪽 약 0.59m는 빈 공간 */
+        const zb = -DH + .004, zf = zb + .555, Dc = .537, zc = (zb + zf - t) / 2;
         ['B', 'B', 'A', 'A'].forEach((ty, k) => { const cx = -.75 + k * .5;
           for (const sx of [-1, 1]) bx(g, t, UB - t, Dc, cx + sx * .241, 0, zc, W); bx(g, .5, t, Dc, cx, UB - t, zc, W); bx(g, .464, t, Dc, cx, 0, zc, W); bx(g, .464, UB - 2 * t, .006, cx, t, zb + .003, W);
           const y0 = ty === 'B' ? .422 : .002, dh = UB - .002 - y0, p = opG(g, 'h', -1.75, cx - .248, 0, zf - t, '옷장 문'); bx(p, .496, dh, t, .248, y0, t / 2, W); bar(p, .45, .65, .012, .38, t, M.wrGold);
