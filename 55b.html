@@ -827,7 +827,7 @@ let DRUM_M = null; function drumMat() { if (DRUM_M) return DRUM_M; const c = mkC
   x.fillStyle = '#9aa0a8'; for (let k = 0; k < 3; k++) { x.save(); x.translate(128, 128); x.rotate(k * Math.PI * 2 / 3); x.fillRect(-9, 40, 18, 82); x.restore(); } /* 리프터 3개 */
   return (DRUM_M = std(0xffffff, .5, .4, { map: toTex(c) })); }
 function washerDetail(w, tint, dryer, cy) { const dy = cy - .06; /* 몸통 앞면(z .35)에 앞면 그림·문 테·고무 테·드럼·볼록 유리·손잡이·다이얼 */
-  mesh(new THREE.PlaneGeometry(.6, .82), washerFace(tint, dryer), 0, cy, .3505, w, { cast: false });
+  mesh(new THREE.PlaneGeometry(.6, .82), washerFace(tint, dryer), 0, cy, .352, w, { cast: false });
   mesh(new THREE.TorusGeometry(.245, .022, 14, 56), std(0xc9ccd0, .2, .85), 0, dy, .362, w, { cast: false }); mesh(new THREE.TorusGeometry(.205, .013, 10, 48), std(0x33363b, .45, .2), 0, dy, .368, w, { cast: false });
   const dome = mesh(new THREE.SphereGeometry(.4, 40, 8, 0, Math.PI * 2, 0, .553), std(0x34414d, .04, .2, { transparent: true, opacity: .42, depthWrite: false }), 0, dy, .02, w, { cast: false }); dome.rotation.x = Math.PI / 2;
   mesh(RB(.022, .1, .016, .006), std(0x8d9299, .35, .6), .228, dy, .372, w, { cast: false }); const d = mesh(CY(.032, .032, .022, 28), M.chrome, .17, cy + .35, .36, w, { cast: false }); d.rotation.x = Math.PI / 2;
@@ -842,7 +842,7 @@ let LJ_T = null; function jugProp(g, x, y, z, ry) { if (!LJ_T) { const c = mkCan
   { const b = .008, sh = new THREE.Shape(), r = .014; sh.moveTo(-.062 + r, b); sh.lineTo(.062 - r, b); sh.quadraticCurveTo(.062, b, .062, b + r); sh.lineTo(.062, .222); sh.quadraticCurveTo(.062, .237, .047, .237); sh.lineTo(.012, .237); sh.quadraticCurveTo(-.002, .237, -.006, .224); sh.lineTo(-.01, .205); sh.lineTo(-.05, .197); sh.quadraticCurveTo(-.062, .193, -.062, .178); sh.lineTo(-.062, b + r); sh.quadraticCurveTo(-.062, b, -.062 + r, b);
     const ho = new THREE.Path(); ho.moveTo(.018, .178); ho.lineTo(.044, .178); ho.quadraticCurveTo(.05, .178, .05, .186); ho.lineTo(.05, .214); ho.quadraticCurveTo(.05, .222, .044, .222); ho.lineTo(.018, .222); ho.quadraticCurveTo(.01, .222, .01, .214); ho.lineTo(.01, .186); ho.quadraticCurveTo(.01, .178, .018, .178); sh.holes.push(ho);
     const eg = new THREE.ExtrudeGeometry(sh, { depth: .074, bevelEnabled: true, bevelThickness: .008, bevelSize: .008, bevelSegments: 2, curveSegments: 8 }); eg.translate(0, 0, -.037); mesh(eg, std(0x2f6fb3, .32), 0, 0, 0, p); }
-  mesh(new THREE.PlaneGeometry(.112, .14), std(0xffffff, .4, 0, { map: LJ_T }), 0, .098, .0459, p, { cast: false }); mesh(BX(.118, .146, .001), std(0x24578f, .4), 0, .098, .045, p, { cast: false });
+  mesh(new THREE.PlaneGeometry(.112, .14), std(0xffffff, .4, 0, { map: LJ_T }), 0, .098, .0485, p, { cast: false }); mesh(BX(.118, .146, .001), std(0x24578f, .4), 0, .098, .0468, p, { cast: false });
   mesh(CY(.021, .022, .014, 20), std(0x2f6fb3, .32), -.032, .207, 0, p); mesh(CY(.024, .024, .004, 20), std(0xe9edf0, .4), -.032, .214, 0, p);
   mesh(CY(.0285, .026, .036, 24), std(0x8fc7ef, .2, 0, { transparent: true, opacity: .82 }), -.032, .234, 0, p); mesh(CY(.0287, .0287, .003, 24), std(0x6fa9d6, .3), -.032, .25, 0, p, { cast: false });
   for (let i = 0; i < 3; i++) mesh(CY(.0281 - i * .0006, .0281 - i * .0006, .0012, 24), std(0xffffff, .5, 0, { transparent: true, opacity: .55 }), -.032, .222 + i * .008, 0, p, { cast: false }); return p; } /* 세제통 */
@@ -1802,7 +1802,7 @@ await phase('거실을 꾸미는 중', 56);
   pbox(x - .03, x, 0, H, 8.14, 11.1, slab, g);   // 침실1 문(7.2~8.05) 문틀 뒤에서 시작
   { const seam = std(0xb9b5ad, .7); for (let z = 8.14 + .6; z < 11.08; z += .6) pbox(x - .034, x - .03, 0, H, z - .0015, z + .0015, seam, g, { cast: false }); pbox(x - .034, x - .03, 1.2 - .0015, 1.2 + .0015, 8.14, 11.1, seam, g, { cast: false }); }
   decorStart('TV·TV장', true); /* 11-21: TV·TV장·화병 한 묶음으로 선택·삭제 */
-  tvBody(g, x - .07, x - .034, .98, 1.72, 8.75, 10.3); tvScreen(g, WX(x - .0705), 1.35, WZ(9.525), 1.54, .73); // 벽걸이 TV(11-21 화면 테·반사광·대기등)
+  tvBody(g, x - .07, x - .034, .98, 1.72, 8.75, 10.3); tvScreen(g, WX(x - .0725), 1.35, WZ(9.525), 1.54, .73); // 벽걸이 TV(11-21 화면 테·반사광·대기등)
   decorEnd();
   // VR: TV 왼쪽 대형 월패드(검은 유리 화면 + 아래 파란 LED)
   { const ui = toTex(padScreen(832, 405)); /* 11-21 화면 고해상도(TV 왼쪽 대형 월패드 .39×.19m) */
@@ -2833,7 +2833,7 @@ function laptopHQ(parent, { x = 0, y = 0, z = 0, ry = 0, body = 0xc9ccd0, metal 
   const im = new THREE.InstancedMesh(C.keyGeo, km, mats.length), m4 = new THREE.Matrix4(), q0 = new THREE.Quaternion(), sv = new THREE.Vector3(), pv = new THREE.Vector3();
   mats.forEach(([kx, kz, w, h], i) => { m4.compose(pv.set(kx, T + .0002, kz), q0, sv.set(w, .0013, h)); im.setMatrixAt(i, m4); }); im.instanceMatrix.needsUpdate = true; lp.add(im);
   mesh(BX(.274, .0004, zz + .081 + .002), C['kw' + keyCol] || (C['kw' + keyCol] = std(new THREE.Color(keyCol).lerp(new THREE.Color(body), .45).getHex(), .6, .2)), 0, T + .0004, (zz - .081) / 2 - .0005, lp, { cast: false }); /* 키 사이 바닥(살짝 어둡게) */
-  for (const sx of [-1, 1]) mesh(BX(.011, .0004, .1), C.grillM || (C.grillM = std(0xffffff, .5, .4, { map: C.grill })), sx * .1445, T + .0007, -.033, lp, { cast: false }); /* 스피커 그릴 */
+  for (const sx of [-1, 1]) mesh(BX(.011, .0004, .1), C.grillM || (C.grillM = std(0xffffff, .5, .4, { map: C.grill })), sx * .1445, T + .0013, -.033, lp, { cast: false }); /* 스피커 그릴 */
   mesh(RB(.118, .0006, .072, .005, 2), C['p' + body] || (C['p' + body] = std(pad ?? new THREE.Color(body).multiplyScalar(.92).getHex(), .16, metal * .8)), 0, T + .0004, .066, lp, { cast: false }); /* 유리 트랙패드 */
   { const h = mesh(CY(.0045, .0045, .26, 14), C.hinge || (C.hinge = std(0x2a2b2e, .4, .5)), 0, T * .55, -D / 2 + .006, lp, { cast: false }); h.rotation.z = Math.PI / 2; }
   const sc = new THREE.Group(); sc.position.set(0, T - .001, -D / 2 + .007); sc.rotation.x = open; lp.add(sc);

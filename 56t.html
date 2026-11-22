@@ -826,7 +826,7 @@ let DRUM_M = null; function drumMat() { if (DRUM_M) return DRUM_M; const c = mkC
   x.fillStyle = '#9aa0a8'; for (let k = 0; k < 3; k++) { x.save(); x.translate(128, 128); x.rotate(k * Math.PI * 2 / 3); x.fillRect(-9, 40, 18, 82); x.restore(); } /* 리프터 3개 */
   return (DRUM_M = std(0xffffff, .5, .4, { map: toTex(c) })); }
 function washerDetail(w, tint, dryer, cy) { const dy = cy - .06; /* 몸통 앞면(z .35)에 앞면 그림·문 테·고무 테·드럼·볼록 유리·손잡이·다이얼 */
-  mesh(new THREE.PlaneGeometry(.6, .82), washerFace(tint, dryer), 0, cy, .3505, w, { cast: false });
+  mesh(new THREE.PlaneGeometry(.6, .82), washerFace(tint, dryer), 0, cy, .352, w, { cast: false });
   mesh(new THREE.TorusGeometry(.245, .022, 14, 56), std(0xc9ccd0, .2, .85), 0, dy, .362, w, { cast: false }); mesh(new THREE.TorusGeometry(.205, .013, 10, 48), std(0x33363b, .45, .2), 0, dy, .368, w, { cast: false });
   const dome = mesh(new THREE.SphereGeometry(.4, 40, 8, 0, Math.PI * 2, 0, .553), std(0x34414d, .04, .2, { transparent: true, opacity: .42, depthWrite: false }), 0, dy, .02, w, { cast: false }); dome.rotation.x = Math.PI / 2;
   mesh(RB(.022, .1, .016, .006), std(0x8d9299, .35, .6), .228, dy, .372, w, { cast: false }); const d = mesh(CY(.032, .032, .022, 28), M.chrome, .17, cy + .35, .36, w, { cast: false }); d.rotation.x = Math.PI / 2;
@@ -841,7 +841,7 @@ let LJ_T = null; function jugProp(g, x, y, z, ry) { if (!LJ_T) { const c = mkCan
   { const b = .008, sh = new THREE.Shape(), r = .014; sh.moveTo(-.062 + r, b); sh.lineTo(.062 - r, b); sh.quadraticCurveTo(.062, b, .062, b + r); sh.lineTo(.062, .222); sh.quadraticCurveTo(.062, .237, .047, .237); sh.lineTo(.012, .237); sh.quadraticCurveTo(-.002, .237, -.006, .224); sh.lineTo(-.01, .205); sh.lineTo(-.05, .197); sh.quadraticCurveTo(-.062, .193, -.062, .178); sh.lineTo(-.062, b + r); sh.quadraticCurveTo(-.062, b, -.062 + r, b);
     const ho = new THREE.Path(); ho.moveTo(.018, .178); ho.lineTo(.044, .178); ho.quadraticCurveTo(.05, .178, .05, .186); ho.lineTo(.05, .214); ho.quadraticCurveTo(.05, .222, .044, .222); ho.lineTo(.018, .222); ho.quadraticCurveTo(.01, .222, .01, .214); ho.lineTo(.01, .186); ho.quadraticCurveTo(.01, .178, .018, .178); sh.holes.push(ho);
     const eg = new THREE.ExtrudeGeometry(sh, { depth: .074, bevelEnabled: true, bevelThickness: .008, bevelSize: .008, bevelSegments: 2, curveSegments: 8 }); eg.translate(0, 0, -.037); mesh(eg, std(0x2f6fb3, .32), 0, 0, 0, p); }
-  mesh(new THREE.PlaneGeometry(.112, .14), std(0xffffff, .4, 0, { map: LJ_T }), 0, .098, .0459, p, { cast: false }); mesh(BX(.118, .146, .001), std(0x24578f, .4), 0, .098, .045, p, { cast: false });
+  mesh(new THREE.PlaneGeometry(.112, .14), std(0xffffff, .4, 0, { map: LJ_T }), 0, .098, .0485, p, { cast: false }); mesh(BX(.118, .146, .001), std(0x24578f, .4), 0, .098, .0468, p, { cast: false });
   mesh(CY(.021, .022, .014, 20), std(0x2f6fb3, .32), -.032, .207, 0, p); mesh(CY(.024, .024, .004, 20), std(0xe9edf0, .4), -.032, .214, 0, p);
   mesh(CY(.0285, .026, .036, 24), std(0x8fc7ef, .2, 0, { transparent: true, opacity: .82 }), -.032, .234, 0, p); mesh(CY(.0287, .0287, .003, 24), std(0x6fa9d6, .3), -.032, .25, 0, p, { cast: false });
   for (let i = 0; i < 3; i++) mesh(CY(.0281 - i * .0006, .0281 - i * .0006, .0012, 24), std(0xffffff, .5, 0, { transparent: true, opacity: .55 }), -.032, .222 + i * .008, 0, p, { cast: false }); return p; } /* 세제통 */
@@ -1853,7 +1853,7 @@ await phase('거실을 꾸미는 중', 56);
   for (let z = 5.45 + .53; z < 8.05; z += .53) pbox(x - .034, x - .03, 0, H, z - .002, z + .002, std(0xbdb5a8, .7), g, { cast: false });
   pbox(x - .034, x - .03, 1.25 - .002, 1.25 + .002, 5.45, 8.09, std(0xbdb5a8, .7), g, { cast: false });
   decorStart('TV·TV장', true); /* 11-21: TV·TV장·소품 한 묶음으로 선택·삭제 */
-  tvBody(g, x - .07, x - .03, .98, 1.72, 6.0, 7.55); tvScreen(g, WX(x - .0705), 1.35, WZ(6.775), 1.54, .73); /* 11-21 화면 테·반사광·대기등 */
+  tvBody(g, x - .07, x - .03, .98, 1.72, 6.0, 7.55); tvScreen(g, WX(x - .0725), 1.35, WZ(6.775), 1.54, .73); /* 11-21 화면 테·반사광·대기등 */
   const tvw = std(0xf6f5f2, .3), mint = new THREE.MeshStandardMaterial({ color: 0xbfe0d8, roughness: .1, metalness: .1, transparent: true, opacity: .85, map: toTex((() => { const c = mkCanvas(1024, 128), x = c.getContext('2d'); x.fillStyle = '#e4e8e7'; x.fillRect(0, 0, 1024, 128); /* 11-21 소품 퀄리티업: 민트 유리문 — 은은한 사선 반사광 띠 + 가는 흰 테(문 2짝 가운데 줄눈) */
     for (const [u, w, a] of [[160, 60, .5], [250, 22, .35], [620, 80, .45], [720, 26, .3]]) { const g2 = x.createLinearGradient(u, 0, u + w, 0); g2.addColorStop(0, 'rgba(255,255,255,0)'); g2.addColorStop(.5, `rgba(255,255,255,${a})`); g2.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g2; x.beginPath(); x.moveTo(u + 30, 0); x.lineTo(u + w + 30, 0); x.lineTo(u + w - 30, 128); x.lineTo(u - 30, 128); x.fill(); }
     x.strokeStyle = '#ffffff'; x.lineWidth = 6; x.strokeRect(3, 3, 1018, 122); return c; })()) });

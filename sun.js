@@ -49,7 +49,7 @@ export function initSun(o) {
   const R = window.__homeSky ? 95 : 62, eyeC = window.__homeEye ? window.__homeEye.clone() : new THREE.Vector3(C.x, 1.5, C.z);
   const cnv = (n, f) => { const c = document.createElement('canvas'); c.width = c.height = n; f(c.getContext('2d'), n); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
   const sunTex = cnv(128, (x, n) => { const g = x.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.11, 'rgba(255,252,240,1)'); g.addColorStop(.16, 'rgba(255,238,200,.6)'); g.addColorStop(.42, 'rgba(255,214,150,.14)'); g.addColorStop(1, 'rgba(255,200,120,0)'); x.fillStyle = g; x.fillRect(0, 0, n, n); });
-  const spr = (tex, s) => { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false, toneMapped: false })); m.scale.setScalar(s); m.renderOrder = -5; m.visible = false; sky.add(m); return m; };
+  const spr = (tex, s) => { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false, toneMapped: false })); m.scale.setScalar(s); m.renderOrder = -5; m.visible = false; m.raycast = () => {}; sky.add(m); return m; }; /* 11-23: 해·달 스프라이트는 클릭·배치용 레이캐스트에서 뺌 — 카메라 없는 레이캐스터가 장면을 훑을 때 'Raycaster.camera' 콘솔 오류(sun.js가 늦게 불러와지면 나타남) */
   const sunS = spr(sunTex, R * .16);
   const moonCnv = document.createElement('canvas'); moonCnv.width = moonCnv.height = 128; const moonTex = new THREE.CanvasTexture(moonCnv); moonTex.colorSpace = THREE.SRGBColorSpace;
   const moonS = spr(moonTex, R * .075); let moonDrawn = -1;
