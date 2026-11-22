@@ -1360,6 +1360,17 @@ function slatBlind(a0, a1, yTop, n, pitch, w, alongZ, toRoom, col) { /* 11-22 �
   const yb = y + pitch - .035, yt = yTop - .03, hT = yt - yb; mesh(RB(L, .014, .052, .005, 2), m, 0, yb, cz, g, { cast: false });
   for (const u of [-L * .32, L * .32]) { for (const dz of [-.027, .027]) mesh(BX(.016, hT, .0008), tp, u, (yt + yb) / 2, cz + dz, g, { cast: false }); mesh(CY(.0011, .0011, hT, 5), tp, u, (yt + yb) / 2, cz, g, { cast: false }); }
   { const tl = yb - .25; mesh(CY(.0012, .0012, yt - tl, 5), tp, L / 2 - .03, (yt + tl) / 2, cz + .03, g, { cast: false }); mesh(CY(.005, .007, .03, 10), m, L / 2 - .03, tl - .012, cz + .03, g, { cast: false }); } return g; }
+function zebraBlind(a0, a1, y0, y1, w, alongZ, toRoom) { /* 11-22 소품 퀄리티업: 콤비(지브라) 블라인드 — 줄무늬 그림 판 한 장 → 앞·뒤 두 겹 천(막힌 띠·비치는 띠, 열린 상태로 겹침) + 둥근 카세트 + 무게 바 + 옆으로 늘어진 구슬 줄 */
+  const L = a1 - a0, g = blindGroup(a0, a1, w, alongZ, toRoom), cH = .07, top = y1 - cH, fb = y0 + .025, H = top - fb, nb = Math.max(2, Math.round(H / .05)), wt = std(0xf2f1ed, .5);
+  const band = off => { const c = mkCanvas(4, 64), x = c.getContext('2d'); x.fillStyle = 'rgba(245,244,240,.36)'; x.fillRect(0, 0, 4, 64); x.fillStyle = 'rgba(245,244,240,.97)'; x.fillRect(0, off, 4, 34); if (off + 34 > 64) x.fillRect(0, 0, 4, off + 34 - 64); return std(0xffffff, .85, 0, { map: toTex(c, { rep: [1, nb] }), transparent: true, depthWrite: false, side: THREE.DoubleSide }); };
+  for (const [z, off] of [[.006, 2], [.016, 0]]) mesh(new THREE.PlaneGeometry(L, H), band(off), 0, fb + H / 2, z, g, { cast: false }); /* 열린 상태: 앞·뒤 막힌 띠가 겹쳐 사이 비치는 줄로 밖이 보임 */
+  mesh(RB(L + .004, .026, .022, .008, 2), wt, 0, y0 + .013, .011, g, { cast: false }); mesh(RB(L + .02, cH, .06, .014, 3), wt, 0, top + cH / 2, .03, g, { cast: false });
+  for (const dz of [.014, .03]) mesh(CY(.0016, .0016, .95, 5), std(0xd9d8d3, .5), L / 2 - .02, top - .475, dz, g, { cast: false }); mesh(CY(.006, .006, .03, 10), std(0xd9d8d3, .5), L / 2 - .02, top - .965, .022, g, { cast: false }); return g; }
+function romanShade(a0, a1, y0, y1, w, alongZ, toRoom, map, nf = 3) { /* 11-22 소품 퀄리티업: 로만셰이드 — 접힘 그늘을 그린 납작한 판 → 위는 평평하고 아래로 천이 앞으로 부풀며 접혀 쌓인 입체 주름(맨 아래가 가장 깊음) + 헤드레일 + 맨 아래 접힘 속 막대 */
+  const L = a1 - a0, g = blindGroup(a0, a1, w, alongZ, toRoom), hR = .03, top = y1 - hR, H = top - y0, fh = .07, geo = new THREE.PlaneGeometry(L, H, 1, 90), p = geo.attributes.position; geo.translate(0, y0 + H / 2, 0);
+  for (let i = 0; i < p.count; i++) { const y = p.getY(i) - y0, k = Math.floor(y / fh); let z = .004; if (k < nf) { const u = y / fh - k; z += (k ? .028 : .036) * Math.pow(Math.sin(Math.PI * u), 1.4); } p.setZ(i, z); }
+  geo.computeVertexNormals(); mesh(geo, std(0xffffff, .9, 0, { map, side: THREE.DoubleSide }), 0, 0, 0, g, { cast: false });
+  mesh(RB(L + .01, hR, .045, .006, 2), std(0xf4f3ef, .5), 0, top + hR / 2, .022, g, { cast: false }); { const r = mesh(CY(.005, .005, L - .01, 8), std(0xe9e8e3, .6), 0, y0 + .006, .008, g, { cast: false }); r.rotation.z = Math.PI / 2; } return g; }
 function curtainSet(x0, x1, w0, w1, dm = M.curtainGrey) { // 창 양옆: 회색 암막(dm) + 속커튼, 천장 커튼박스
   decorStart('커튼'); /* 11-21 사용자: 커튼·블라인드도 지울 수 있게(창마다 한 묶음, 커튼박스는 천장이라 그대로) */ curtain(x0, w0 + .15, 8.0, 2.27, fixed, M.sheer); curtain(w1 - .15, x1, 8.0, 2.27, fixed, M.sheer);
   curtain(x0, x0 + .42, 7.92, 2.27, fixed, dm, 9, .045); curtain(x1 - .42, x1, 7.92, 2.27, fixed, dm, 9, .045);
@@ -1652,7 +1663,7 @@ ceilingPanel(3.65, 4.25, 6.3, 6.9, 1.0, 2.8);
 // 침실2 커튼 + VR: 흰 콤비(지브라) 블라인드 — 창 위쪽
 decorStart('커튼'); curtain(.15, .65, 8.02); curtain(2.2, 2.7, 8.02); decorEnd();
 decorStart('블라인드'); { const zb = toTex((() => { const c = mkCanvas(8, 32), x = c.getContext('2d'); x.fillStyle = '#f4f3ef'; x.fillRect(0, 0, 8, 32); x.fillStyle = 'rgba(244,243,239,.55)'; x.fillRect(0, 16, 8, 16); return c; })(), { rep: [1, 9] });
-  pbox(.65, 2.26, 1.75, 2.2, 8.08, 8.1, std(0xffffff, .85, 0, { map: zb, transparent: true, opacity: .96 }), fixed, { cast: false }); pbox(.65, 2.26, 1.73, 1.75, 8.075, 8.104, std(0xe9e8e4, .5), fixed, { cast: false }); pbox(.63, 2.28, 2.2, 2.27, 8.06, 8.11, std(0xf2f1ed, .5), fixed, { cast: false }); } decorEnd();
+  zebraBlind(.65, 2.26, 1.73, 2.27, 8.1, false, -1); } decorEnd(); /* 11-22: 줄무늬 판 → 앞·뒤 두 겹 천 + 카세트·무게 바·구슬 줄 */
 
 // 현관(평면도): 서쪽 욕실1 벽을 따라 기본 신발장(앞벽 ~ 중문 앞, 욕실1 문 전까지) + 동쪽은 현관창고(기본) 또는 현관장+복도팬트리(물품옵션 1)
 
