@@ -1312,6 +1312,13 @@ function updateLightPool(dt, pos, instant) {
 { const sx = 3.05, sz = 2.55; /* 11-22 루프 설비 퀄리티업: 현관 천장 동작 감지 센서(현관등 연동) — 흰 납작 받침 + 아래로 볼록한 겹눈 렌즈(면 나뉜 반구), 현관문 가까이 */
   mesh(CY(.045, .047, .012, 32), M.white, WX(sx), H - .006, WZ(sz), ceilingGroup, { cast: false, recv: false });
   mesh(new THREE.SphereGeometry(.027, 12, 5, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std(0xf1f0ec, .3, 0, { flatShading: true }), WX(sx), H - .012, WZ(sz), ceilingGroup, { cast: false, recv: false }); }
+function dryRack(a0, a1, b0, b1, alongX, y = 2.12) { /* 11-22 루프 설비 퀄리티업: 천장형 빨래건조대 — 알루미늄 봉 2 + 양끝 흰 연결대 + 천장 받침 4에서 내려온 가는 줄 + 봉 끝 마개 (a: 봉 방향 좌표, b: 두 봉 자리) */
+  const al = std(0xd7dadd, .3, .7), wt = std(0xf4f4f2, .4), L = a1 - a0, am = (a0 + a1) / 2, P = (a, b) => alongX ? [WX(a), WZ(b)] : [WX(b), WZ(a)];
+  for (const b of [b0, b1]) { const [x, z] = P(am, b), m = mesh(CY(.012, .012, L, 12), al, x, y, z, ceilingGroup, { cast: false }); if (alongX) m.rotation.z = Math.PI / 2; else m.rotation.x = Math.PI / 2;
+    for (const a of [a0, a1]) { const [cx, cz] = P(a, b); mesh(new THREE.SphereGeometry(.014, 10, 8), wt, cx, y, cz, ceilingGroup, { cast: false }); } }
+  for (const a of [a0 + .08, a1 - .08]) { const [x, z] = P(a, (b0 + b1) / 2), c = mesh(RB(alongX ? .03 : Math.abs(b1 - b0) + .06, .03, alongX ? Math.abs(b1 - b0) + .06 : .03, .008, 1), wt, x, y + .02, z, ceilingGroup, { cast: false });
+    for (const b of [b0, b1]) { const [px, pz] = P(a, b); mesh(CY(.0025, .0025, H - y - .05, 6), std(0x9aa0a6, .5, .3), px, (H + y) / 2, pz, ceilingGroup, { cast: false }); mesh(RB(.06, .03, .06, .008, 1), wt, px, H - .015, pz, ceilingGroup, { cast: false }); } } }
+dryRack(3.85, 4.85, 1.25, 1.55, true); /* 발코니(다용도실) 가운데 천장 — 보일러(북서)·세탁기(동) 피해 */
 const roomLights = lampSpots.map(([x, z]) => {
   const p = new THREE.PointLight(0xffdcb0, 0, 7, 2); p.position.set(WX(x), H - .25, WZ(z)); scene.add(p);
   dlFix(WX(x), WZ(z), .065);
