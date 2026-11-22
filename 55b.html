@@ -2680,6 +2680,14 @@ recolorBed(bed1B, 0x6e7173, 0x1f5446, 0x23604f, true); /* 안방: 진초록 벨�
 { const w = 1.6, l = 2.1, hx = w / 2 + .04, parts = []; /* VR: 러너 양옆 끝단 흰 술 장식(침대 로컬: 러너 z l/2-.75 ~ l/2-.14, 끝단 높이 .23) */
   for (const s of [-1, 1]) for (let zz = l / 2 - .74; zz <= l / 2 - .15; zz += .02) { const t = new THREE.CylinderGeometry(.0028, .002, .06, 5); t.translate(s * (hx + .006), .2, zz); t.rotateZ(0); parts.push(t); }
   mesh(mergeGeometries(parts, false), std(0xf2efe8, .9), 0, 0, 0, bed1B, { cast: false }); }
+function phoneDown(par, x, y, z, ry, col, frame = 0xa7abb0) { /* 11-23 루프 소품 퀄리티업: 엎어 둔 스마트폰 — 모서리 둥근 금속 테 몸통 + 젖빛 뒷판 + 왼쪽 위 카메라 섬(금속 테 렌즈 3개·검은 유리) + 작은 플래시 (y: 몸통 가운데) */
+  const G = phoneDown._g || (phoneDown._g = (() => { const rr = (w, d, r) => { const s = new THREE.Shape(), a = w / 2, b = d / 2; s.moveTo(-a + r, -b); s.lineTo(a - r, -b); s.quadraticCurveTo(a, -b, a, -b + r); s.lineTo(a, b - r); s.quadraticCurveTo(a, b, a - r, b); s.lineTo(-a + r, b); s.quadraticCurveTo(-a, b, -a, b - r); s.lineTo(-a, -b + r); s.quadraticCurveTo(-a, -b, -a + r, -b); return s; };
+    const ex = (s, dp, bv) => { const g = new THREE.ExtrudeGeometry(s, { depth: dp, bevelEnabled: true, bevelThickness: bv, bevelSize: bv, bevelSegments: 2, curveSegments: 6 }); g.rotateX(Math.PI / 2); g.translate(0, dp / 2, 0); return g; };
+    return { body: ex(rr(.0696, .1476, .0098), .0062, .001), back: ex(rr(.0672, .1452, .0088), .0004, .0002), isl: ex(rr(.03, .03, .0075), .0012, .0005), ring: CY(.0058, .0058, .0018, 20), lens: CY(.0043, .0043, .0004, 20), fl: CY(.0018, .0018, .0006, 12), ink: std(0x0c0d10, .08, .3), fls: std(0xf3ead0, .4) }; })());
+  const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; par.add(g); const fm = std(frame, .3, .8), bm = std(col, .5, .1);
+  mesh(G.body, fm, 0, 0, 0, g, { cast: false }); mesh(G.back, bm, 0, .0044, 0, g, { cast: false }); mesh(G.isl, std(col, .3, .1), -.0138, .0060, -.0528, g, { cast: false });
+  for (const [dx, dz] of [[-.0068, -.0068], [-.0068, .0068], [.0068, 0]]) { mesh(G.ring, fm, -.0138 + dx, .0076, -.0528 + dz, g, { cast: false }); mesh(G.lens, G.ink, -.0138 + dx, .0086, -.0528 + dz, g, { cast: false }); }
+  mesh(G.fl, G.fls, -.0138 + .0072, .0074, -.0528 - .0088, g, { cast: false }); return g; }
 function flutedPedestal(x, z, withLamp) { const g = piece('사이드 테이블', x, z, 0), w = std(0xf6f5f2, .45);
   const geo = new THREE.CylinderGeometry(.19, .21, .52, 48, 1); const p = geo.attributes.position; for (let i = 0; i < p.count; i++) { const a = Math.atan2(p.getZ(i), p.getX(i)), r = Math.hypot(p.getX(i), p.getZ(i)); if (r > .05) { const k = 1 + .045 * Math.cos(a * 16); p.setX(i, p.getX(i) * k); p.setZ(i, p.getZ(i) * k); } } geo.computeVertexNormals();
   mesh(geo, w, 0, .26, 0, g); mesh(CY(.22, .22, .03, 40), w, 0, .535, 0, g);
@@ -2698,6 +2706,7 @@ function flutedPedestal(x, z, withLamp) { const g = piece('사이드 테이블',
       const c = mkCanvas(256, 112), x = c.getContext('2d'); x.fillStyle = '#efe7d6'; x.fillRect(0, 0, 256, 112); x.strokeStyle = '#3a332c'; x.lineWidth = 2; x.strokeRect(10, 10, 236, 92); x.fillStyle = '#2b2622'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = 'bold 40px serif'; x.fillText('NOIR', 128, 46); x.font = '18px serif'; x.fillText('fig & cedar', 128, 80);
       const lb = mesh(new THREE.CylinderGeometry(.031, .031, .03, 24, 1, true, -.75, 1.5), std(0xffffff, .8, 0, { map: toTex(c) }), cx, y0 + .036, cz, g, { cast: false }); lb.rotation.y = Math.PI / 2;
       const brass = std(0xb8955a, .32, .85); mesh(L([[0, 0], [.0322, 0], [.0322, .0055], [.0305, .0075], [.012, .0082], [0, .0082]], 32), brass, -.13, y0, -.035, g, { cast: false }); mesh(L([[0, 0], [.006, 0], [.0085, .003], [.0075, .006], [0, .0065]], 16), brass, -.13, y0 + .0082, -.035, g, { cast: false }); } }
+  if (withLamp) phoneDown(g, -.02, .55 + .0044, .125, 1.45, 0x2f3134, 0x3d4044); /* 화병 앞에 엎어 둔 검은 휴대폰 */
   if (!withLamp) { /* 11-23 루프 소품 퀄리티업: 비어 있던 창가 협탁 — 린넨 표지 책 2권(종이 단면) 위 작은 원형 탁상시계(크림 몸통 + 놋쇠 테·꼭지 + 10시 10분 문자판 + 두 발) + 흰 도자기 접시에 금반지 */
     let y = .55; for (const [col, w, h, ry] of [[0xc9c2b4, .2, .026, .2], [0x6f8a7a, .17, .02, .05]]) { const b = new THREE.Group(); b.position.set(-.02, y + h / 2, .03); b.rotation.y = ry; g.add(b); mesh(RB(w, h, .14, .003), std(col, .85), 0, 0, 0, b); mesh(BX(w - .008, h - .006, .13), std(0xf3efe4, .9), .004, 0, 0, b, { cast: false }); y += h; }
     const cx = -.03, cy = y + .053, cz = .03, br = std(0xb8955a, .32, .85), cr = std(0xf1ebdf, .45);
