@@ -252,6 +252,17 @@ export function initInterior(o) {
             if (what === 'books') books(x0, cw, y0, r === 2 ? .55 : .7);
             else if (what.startsWith('bin')) bin(cx, cw, y0, Math.min(.26, y1 - y0 - .05), M.bin[+what[3]]);
             else for (let j = 0; j < 4; j++) bx(g, .22 - j * .015, .03, .17 - j * .01, cx - .02, y0 + j * .031, .02, M.book[(j + 2) % 7]); } }); /* 눕혀 쌓은 책 */
+        { /* 11-23 루프 소품 퀄리티업: 비어 있던 책장 윗면 — 흰 도자기 화분 산세베리아(짙은 초록 가로 무늬·노란 테 잎 7장) + 원목 테 사진 액자(뒤로 기대 세움) + 무광 도자기 볼 */
+          const L = (pts, n = 28) => new T.LatheGeometry(pts.map(([a, b]) => new T.Vector2(a, b)), n);
+          mk(g, L([[0, 0], [.045, 0], [.05, .006], [.056, .1], [.052, .104], [.047, .1], [.047, .09], [0, .09]]), std(0xf1efe9, .35), -.33, H, 0); cy(g, .047, .004, -.33, H + .086, 0, std(0x3b2b1f, .95));
+          const sv = cv(64, 128, (x, w, h) => { x.fillStyle = '#2f5a32'; x.fillRect(0, 0, w, h); x.strokeStyle = 'rgba(150,185,120,.45)'; x.lineWidth = 2.5; for (let y = 6; y < h; y += 11) { x.beginPath(); for (let k = 0; k <= 8; k++) { const px = k * 8, py = y + Math.sin(k * 1.3 + y) * 2; k ? x.lineTo(px, py) : x.moveTo(px, py); } x.stroke(); } x.fillStyle = '#d6cc63'; x.fillRect(13, 0, 6, h); x.fillRect(45, 0, 6, h); });
+          const lm = std(0xffffff, .55, 0, { map: sv, side: T.DoubleSide });
+          for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2 + (i % 2) * .3, tilt = .06 + (i % 3) * .06, h = .24 + ((i * 5) % 4) * .035, bl = new T.Group(); bl.position.set(-.33 + Math.cos(a) * .016, H + .088, Math.sin(a) * .016); bl.rotation.set(Math.sin(a) * tilt, a * .7, -Math.cos(a) * tilt); g.add(bl);
+            const cg = new T.ConeGeometry(.03, h, 4, 1); cg.scale(1, 1, .18); const m = new T.Mesh(cg, lm); m.position.y = h / 2; m.castShadow = true; bl.add(m); }
+          const ph = cv(220, 300, (x, w, h) => { const gr = x.createLinearGradient(0, 0, 0, h * .6); gr.addColorStop(0, '#8fb8d8'); gr.addColorStop(1, '#e8eef0'); x.fillStyle = gr; x.fillRect(0, 0, w, h); x.fillStyle = '#f3d58a'; x.beginPath(); x.arc(150, 80, 22, 0, 7); x.fill(); x.fillStyle = '#7da36a'; x.beginPath(); x.moveTo(0, 200); x.quadraticCurveTo(70, 150, 130, 190); x.quadraticCurveTo(180, 165, 220, 185); x.lineTo(220, 300); x.lineTo(0, 300); x.fill(); x.fillStyle = '#5d7f50'; x.fillRect(0, 240, w, 60); });
+          const fr = new T.Group(); fr.position.set(.06, H, .02); fr.rotation.y = -.18; g.add(fr); const tl = new T.Group(); tl.rotation.x = -.13; fr.add(tl);
+          rb(tl, .14, .19, .014, .004, 0, .002, 0, s.col === 1 ? M.white : M.oakL); mk(tl, new T.PlaneGeometry(.112, .158), std(0xffffff, .6, 0, { map: ph }), 0, .097, .0072); bx(fr, .012, .12, .012, 0, 0, -.045, M.greyD);
+          mk(g, L([[0, 0], [.03, 0], [.034, .004], [.06, .03], [.072, .05], [.068, .052], [.056, .036], [.03, .012], [0, .012]], 32), std(0xd9cfc0, .7), .33, H, .01); }
         BB.done(g); return g; } },
     { k: 'shelf5w', g: '서재', name: '5단 책장(폭 500)', model: '흰색 5단 책장 500', size: '500 × 300 × 1800 (폭×깊이×높이)', note: '흰색 · 같은 높이 칸 5 · 로프트 침대 계단 옆 같은 좁은 틈(약 0.55~0.65m)에 쏙 · 책·바구니 포함', put: 'wall', room: ['알파룸', '침실2'],
       build: () => { /* 사용자 스케치: 계단 옆 좁은 틈에 들어가는 키 큰 5단 책장 — 옆판·가로판 18T, 아래 걸레받이(안으로 들어감), 얇은 뒤판, 칸마다 책·천 바구니(고정 순서) */
