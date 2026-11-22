@@ -35,6 +35,8 @@ export function initInterior(o) {
     const ply = cv(128, 32, (x, w, h) => { x.fillStyle = '#dcc7a3'; x.fillRect(0, 0, w, h); const L = [[3, '#c4a77c'], [9, '#e6d4b4'], [14, '#bf9f72'], [20, '#e3cfac'], [26, '#c6a87d']]; for (const [y, c] of L) { x.fillStyle = c; x.fillRect(0, y, w, 2); } }); ply.repeat.set(6, 1);
     Object.assign(M, { pkPly: std(0xffffff, .6, 0, { map: ply }), pkTop: std(0xf3f2ee, .42), pkLeg: std(0xf1f1ee, .35, .3) }); }
   M.wrGold = std(0xc6a066, .3, .65); /* 로프트 침대 옷장: 금색 막대 손잡이 */
+  M.chair = [ /* 바퀴 의자 색: [몸체·다리, 좌판, 등받이 메시, 팔걸이 패드] */
+    [M.black, std(0x34373c, .9), std(0x2a2c30, .85), M.black], [std(0xeeeeec, .4, .1), std(0x9a9ea3, .9), std(0xb3b6ba, .85), std(0xe9e9e7, .5)]];
 
   /* ───── 도형 도우미(단위 m, 바닥 y=0, 앞 = +z) ───── */
   const mk = (g, geo, mat, x, y, z) => { const m = new T.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; g.add(m); return m; };
@@ -157,6 +159,18 @@ export function initInterior(o) {
         for (const sx of [-1, 1]) for (const sz of [-1, 1]) { bx(g, .04, H - tt - .012, .04, sx * lx, .012, sz * lz, L); cy(g, .016, .012, sx * lx, 0, sz * lz, M.greyD, 14); }
         for (const sz of [-1, 1]) bx(g, 2 * lx - .04, .05, .02, 0, H - tt - .05, sz * lz, L); for (const sx of [-1, 1]) bx(g, .02, .05, 2 * lz - .04, sx * lx, H - tt - .05, 0, L);
         return g; } },
+    { k: 'chair5', g: '서재', name: '바퀴 의자', model: '사무용 바퀴 의자 (메시 등받이 · 팔걸이 · 5발 바퀴)', size: '폭 610 · 깊이 640 · 높이 1020 · 좌판 높이 485', note: '책상을 먼저 놓았으면 그 책상 앞에 책상을 보고 놓임 · [색상]으로 블랙/화이트', put: 'free', room: ['알파룸', '침실2'], clear: .1, cols: ['블랙', '화이트'], near: ['desk1200', 'peak1400'],
+      build: s => { /* 5발 받침(끝마다 쌍바퀴) + 가스 실린더 + 좌판 + 살짝 뒤로 젖힌 메시 등받이 + 양 팔걸이 — 앞(+z)이 앉는 사람이 보는 쪽 */
+        const [Bm, Se, Me, Pa] = M.chair[s.col || 0], g = new T.Group();
+        for (let i = 0; i < 5; i++) { const sg = new T.Group(); sg.rotation.y = i * Math.PI * 2 / 5 + Math.PI / 2; g.add(sg);
+          bx(sg, .3, .03, .045, .165, .06, 0, Bm); bx(sg, .03, .035, .05, .3, .03, 0, Bm);
+          for (const z of [-.016, .016]) { const w = mk(sg, new T.CylinderGeometry(.028, .028, .016, 16), M.black, .3, .028, z); w.rotation.x = Math.PI / 2; } }
+        cy(g, .04, .06, 0, .05, 0, Bm, 20); cy(g, .03, .14, 0, .11, 0, Bm, 20); cy(g, .02, .14, 0, .24, 0, M.chrome, 16); bx(g, .22, .03, .24, 0, .38, 0, Bm); /* 가운데 축 · 실린더 · 좌판 받침 */
+        rb(g, .5, .075, .48, .035, 0, .41, .02, Se); /* 좌판 */
+        bx(g, .06, .03, .2, 0, .385, -.15, Bm); bx(g, .06, .26, .03, 0, .4, -.255, Bm); /* 등받이 연결대 */
+        { const bg = new T.Group(); bg.position.set(0, .55, -.255); bg.rotation.x = -.12; g.add(bg); rb(bg, .47, .48, .035, .04, 0, 0, 0, Bm); rb(bg, .41, .42, .02, .03, 0, .03, .014, Me); rb(bg, .34, .07, .03, .015, 0, .08, .02, Se); } /* 등받이 틀 + 메시 + 허리 받침 */
+        for (const sx of [-1, 1]) { bx(g, .16, .025, .05, sx * .19, .385, -.03, Bm); bx(g, .03, .23, .05, sx * .27, .41, -.03, Bm); rb(g, .07, .03, .26, .012, sx * .27, .64, -.01, Pa); } /* 팔걸이 */
+        return g; } },
     { k: 'cindy', g: '침실', name: '확장형 화장대(거울)', model: '한샘 신디 서랍형 원목 확장형 화장대', size: '폭 800~1350 · 높이 1340 · 깊이 400', note: '원목 · 서랍 · 거울 포함 · 선택 후 [확장]', put: 'wall', room: ['침실1', '안방'], ext: true,
       build: s => { const g = new T.Group(), W = .8, D = .4, Ht = .75; bx(g, W, .028, D, 0, Ht - .028, 0, M.natural); bx(g, W - .04, .14, D - .04, 0, Ht - .168, 0, M.natural);
         for (const x of [-.19, .19]) { bx(g, .36, .11, .008, x, Ht - .155, D / 2 - .016, M.oakL); cy(g, .012, .012, x, Ht - .105, D / 2 - .006, M.chrome, 12).rotation.x = Math.PI / 2; }
@@ -232,6 +246,8 @@ export function initInterior(o) {
     /* 문 앞 비우기: 보이는 문(방문·수납장 문)의 개구부에서 벽과 직각 방향으로 0.8m 안에는 가구를 놓지 않게 점수 벌점 */
     const DZ = (o.doors || []).filter(d => d.box && d.pivot && vis(d.pivot)).map(d => { const b = d.box, alongX = b.maxX - b.minX > b.maxZ - b.minZ, ex = alongX ? .03 : .8, ez = alongX ? .8 : .03; return [b.minX - ex, b.maxX + ex, b.minZ - ez, b.maxZ + ez]; });
     const doorPen = (cx, cz, hw, hd) => DZ.some(z => cx + hw > z[0] && cx - hw < z[1] && cz + hd > z[2] && cz - hd < z[3]) ? 1 : 0;
+    if (C.near) { const dk = added.slice().reverse().find(a => a !== g && C.near.includes(a.userData.cat) && vis(a)); /* 의자: 가장 최근에 놓은 책상 앞 0.3m에 책상을 보고 */
+      if (dk) { const fd = foot(dk), r = dk.rotation.y, ca = Math.cos(r), sa = Math.sin(r), lx = fd.cx, lz = fd.cz + fd.d / 2 + .3; setAt(dk.position.x + lx * ca + lz * sa, dk.position.z - lx * sa + lz * ca, r + Math.PI); return true; } }
     if (C.put === 'top') { /* 렌지대 칸 먼저 → 조리대 위(위 수납장 밑까지 보이게 1.3m 높이 지도) */
       const lowM = heightMap(rx0 - pad, rx1 + pad, rz0 - pad, rz1 + pad, [g], CAM_H);
       for (const h of added) { const HC = BY[h.userData.cat]; if (!HC.slots || h === g) continue; const ff = foot(g); for (const sl of HC.slots) { if (ff.w > sl[3] || ff.h > sl[4] || ff.d > sl[5]) continue; const taken = added.some(a => a !== g && BY[a.userData.cat].put === 'top' && a.position.distanceTo(slotWorld(h, sl)) < .2); if (taken) continue; const p = slotWorld(h, sl); g.rotation.y = h.rotation.y; g.position.copy(p); return true; } }
