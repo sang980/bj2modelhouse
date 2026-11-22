@@ -2254,16 +2254,17 @@ function kitchenPropsT() {
     mill(8.25, 1.14, .15, wood, M.chrome); }
 }
 kitchenPropsT();
-let _tCush = null;
+let _tCush = null, _tChairG = null;
 function diningChair(parent, cx, cz, rot) { /* VR(56T): 밝은 원목 프레임 + 흰 쿠션 좌석 + 원목 기둥 사이 넓은 흰 등받이 쿠션 */
   const c = new THREE.Group(); c.position.set(cx, 0, cz); c.rotation.y = rot; parent.add(c);
   const cu = _tCush || (_tCush = std(0xf6f5f1, .85, 0, { map: M.linen.map, bumpMap: M.linen.map, bumpScale: 1 })), w = M.oak; /* 11-21: 쿠션 리넨 결 */
-  for (const [lx, lz] of [[-.19, .18], [.19, .18]]) mesh(BX(.034, .44, .034), w, lx, .22, lz, c); /* 앞다리 */
-  for (const lx of [-.19, .19]) { const p = mesh(BX(.034, .88, .034), w, lx, .44, -.19, c); p.rotation.x = -.05; } /* 뒷다리 = 등받이 기둥 */
-  for (const lz of [-.19, .18]) mesh(BX(.38, .05, .025), w, 0, .42, lz, c); for (const lx of [-.19, .19]) mesh(BX(.025, .05, .37), w, lx, .42, 0, c); /* 좌석 틀 */
+  const G = _tChairG || (_tChairG = (() => { const tap = (h, w0, w1) => { const g = RB(w0, h, w0, .006, 2), p = g.attributes.position; for (let i = 0; i < p.count; i++) { const t = (p.getY(i) + h / 2) / h, k = (w1 + (w0 - w1) * t) / w0; p.setX(i, p.getX(i) * k); p.setZ(i, p.getZ(i) * k); } g.computeVertexNormals(); return g; }; return { fl: tap(.44, .036, .026), bl: tap(.88, .036, .027), sx: RB(.38, .052, .024, .006, 2), sz: RB(.024, .052, .36, .006, 2), st: RB(.016, .02, .35, .005, 2), sb: RB(.36, .02, .016, .005, 2), top: RB(.41, .04, .032, .01, 3), gl: CY(.012, .013, .005, 16), fm: std(0xe9e5dc, .95) }; })()); /* 11-22 의자 퀄리티업: 네모 막대 다리 → 아래로 가늘어지는 둥근 모서리 다리 + 둥근 좌석 틀 + 다리 사이 옆·뒤 가로대 + 다리 끝 흰 펠트 받침 + 둥근 위 가로대 */
+  for (const [lx, lz] of [[-.19, .18], [.19, .18]]) { mesh(G.fl, w, lx, .225, lz, c); mesh(G.gl, G.fm, lx, .0025, lz, c, { cast: false }); } /* 앞다리 */
+  for (const lx of [-.19, .19]) { const p = mesh(G.bl, w, lx, .445, -.19, c); p.rotation.x = -.05; mesh(G.gl, G.fm, lx, .0025, -.168, c, { cast: false }); mesh(G.st, w, lx, .15, .0, c); } mesh(G.sb, w, 0, .15, -.175, c); /* 뒷다리 = 등받이 기둥, 옆·뒤 가로대 */
+  for (const lz of [-.19, .18]) mesh(G.sx, w, 0, .42, lz, c); for (const lx of [-.19, .19]) mesh(G.sz, w, lx, .42, 0, c); /* 좌석 틀 */
   rrPipe(mesh(RB(.43, .07, .43, .025, 3), cu, 0, .47, .0, c), .422, .422, .028, 'xz', .029, cu); /* 좌석 쿠션 + 윗모서리 웰트 */
   const b = mesh(RB(.36, .26, .045, .02, 3), cu, 0, .72, -.205, c); b.rotation.x = -.05; rrPipe(b, .352, .252, .022, 'xy', .0165, cu); /* 넓은 등받이 쿠션 + 앞모서리 웰트 */
-  const t = mesh(BX(.4, .035, .03), w, 0, .87, -.215, c); t.rotation.x = -.05; /* 위 가로대 */
+  const t = mesh(G.top, w, 0, .87, -.215, c); t.rotation.x = -.05; /* 위 가로대 */
   return c;
 }
 await yieldUI();
