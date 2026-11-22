@@ -2276,9 +2276,18 @@ function knitThrowArm(s, col) { /* 11-23 루프 소품 퀄리티업: 팔걸이�
     for (let y = 0; y < 256; y += 32) { kx.strokeStyle = 'rgba(255,250,240,.45)'; kx.lineWidth = 6; kx.beginPath(); kx.moveTo(x0 + 6, y); kx.bezierCurveTo(x0 + 6, y + 13, x0 + 26, y + 19, x0 + 26, y + 32); kx.stroke(); kx.strokeStyle = 'rgba(60,45,30,.3)'; kx.lineWidth = 2.5; kx.beginPath(); kx.moveTo(x0 + 26, y); kx.bezierCurveTo(x0 + 26, y + 13, x0 + 6, y + 19, x0 + 6, y + 32); kx.stroke(); }
     for (let y = 2; y < 256; y += 8) { kx.fillStyle = 'rgba(255,252,245,.22)'; kx.fillRect(x0 + 42, y, 16, 3); kx.fillStyle = 'rgba(60,45,30,.12)'; kx.fillRect(x0 + 42, y + 4, 16, 1); } }
   const km = std(0xffffff, .95, 0, { map: toTex(kc, { rep: [1.4, 1.4] }), bumpMap: toTex(kc, { srgb: false, rep: [1.4, 1.4] }), bumpScale: 2.5 }), fr = std(new THREE.Color(col).multiplyScalar(.88).getHex(), .95), tg = new THREE.Group(); tg.position.set(1.125, 0, .28); s.add(tg);
-  mesh(RB(.25, .03, .32, .012, 2), km, 0, .726, 0, tg);
-  for (const [sx, y0] of [[-1, .44], [1, .37]]) { const h = .74 - y0; mesh(RB(.03, h, .32, .012, 2), km, sx * .127, y0 + h / 2, 0, tg); mesh(CY(.016, .016, .32, 12), km, sx * .113, .722, 0, tg).rotation.x = Math.PI / 2; }
-  for (let i = 0; i < 11; i++) mesh(CY(.0035, .0022, .045, 5), fr, .128, .348, -.15 + i * .03, tg, { cast: false }); }
+  { const P = [], th = .025, add = (x, y) => P.push([x, y]); /* 11-23 루프: 상자 3개(위·양옆)를 맞붙여 각져 보이던 담요 → 팔걸이 둥근 모서리를 감싸 흘러내리는 한 장 천(두께 2.5cm, 자락은 아래로 갈수록 살짝 벌어지고 세로 주름, 앞뒤 끝·자락 끝단 두께) */
+    for (let y = .44; y < .655; y += .012) add(-.1145, y); for (let k = 0; k <= 10; k++) { const a = Math.PI - k / 10 * Math.PI / 2; add(-.05 + Math.cos(a) * .0645, .66 + Math.sin(a) * .0645); }
+    for (let x = -.038; x < .045; x += .012) add(x, .7245); for (let k = 0; k <= 10; k++) { const a = Math.PI / 2 - k / 10 * Math.PI / 2; add(.05 + Math.cos(a) * .0645, .66 + Math.sin(a) * .0645); } for (let y = .648; y > .366; y -= .012) add(.1145, y);
+    const N = P.length, M = 25, S = [0], pos = [], uv = [], idx = [], wv = (z, hf, sd) => .009 * hf * Math.sin(z * 57 + (sd > 0 ? 1.3 : 0)) + .014 * hf * hf; for (let i = 1; i < N; i++) S.push(S[i - 1] + Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]));
+    for (const sdTB of [1, -1]) for (let i = 0; i < N; i++) { const a = P[Math.max(0, i - 1)], b = P[Math.min(N - 1, i + 1)], tl = Math.hypot(b[0] - a[0], b[1] - a[1]), nx = -(b[1] - a[1]) / tl, ny = (b[0] - a[0]) / tl, hf = Math.max(0, Math.min(1, (.66 - P[i][1]) / .29)), sd = Math.sign(P[i][0]) || 1;
+      for (let j = 0; j < M; j++) { const v = j / (M - 1), z = (v - .5) * .32 * (1 + .07 * hf), o = wv(z, hf, sd) + sdTB * th / 2; pos.push(P[i][0] + nx * o, P[i][1] + ny * o, z); uv.push(v, S[i] / .32); } }
+    const id = (o, i, j) => o + i * M + j, B0 = N * M, q = (a, b, c, d) => idx.push(a, b, d, b, c, d);
+    for (let i = 0; i < N - 1; i++) { for (let j = 0; j < M - 1; j++) { q(id(0, i, j), id(0, i, j + 1), id(0, i + 1, j + 1), id(0, i + 1, j)); q(id(B0, i, j), id(B0, i + 1, j), id(B0, i + 1, j + 1), id(B0, i, j + 1)); }
+      q(id(0, i, 0), id(0, i + 1, 0), id(B0, i + 1, 0), id(B0, i, 0)); q(id(0, i, M - 1), id(B0, i, M - 1), id(B0, i + 1, M - 1), id(0, i + 1, M - 1)); }
+    for (let j = 0; j < M - 1; j++) { q(id(0, 0, j), id(B0, 0, j), id(B0, 0, j + 1), id(0, 0, j + 1)); q(id(0, N - 1, j), id(0, N - 1, j + 1), id(B0, N - 1, j + 1), id(B0, N - 1, j)); }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx); geo.computeVertexNormals(); mesh(geo, km, 0, 0, 0, tg);
+    const hy = P[N - 1][1]; for (let i = 0; i < 11; i++) { const z = (-.15 + i * .03) * 1.07; mesh(CY(.0035, .0022, .045, 5), fr, .1145 + wv(z, 1, 1), hy - .022, z, tg, { cast: false }); } } }
 function sofa(x, z, rot, style = 'arm') {
   const g = piece('소파', x, z, rot); /* VR: 매끈한 흰 가죽 — arm(A·B 실사): 통좌석 + 낮은 등받이 + 창가 쪽(+x)에만 등받이 높이 팔걸이, 반대쪽은 열린 끝 / shelf(C·T): 양끝 같은 높이 낮은 둥근 받침(책 수납) + 좌석·등 쿠션 2개씩 */
   const lea = std(0xf4f2ee, .42), L = 2.45, D = .92;
