@@ -305,7 +305,14 @@ export function initInterior(o) {
         cy(g, .165, .085, 0, .02, .03, M.robot, 40); cy(g, .167, .02, 0, .03, .03, M.greyD, 40); /* 11-22 루프 퀄리티업: 로봇청소기 — 윗판 안쪽 밝은 원판 · 라이다 탑(어두운 띠) · 앞쪽 범퍼 호 · 청록 표시등 · 뒤 충전 거치대(검은 쐐기 + 초록 불) */
         cy(g, .148, .004, 0, .105, .03, M.robotTop, 40); cy(g, .042, .022, 0, .109, -.03, M.robotTop, 24); cy(g, .043, .006, 0, .116, -.03, M.black, 24);
         { const bp = mk(g, new T.CylinderGeometry(.169, .169, .05, 32, 1, true, -Math.PI / 2.4, Math.PI / 1.2), M.bumper, 0, .055, .03); } bx(g, .03, .004, .008, 0, .109, .14, M.display);
-        bx(g, .22, .1, .075, 0, .02, -.215, M.robot); bx(g, .012, .012, .004, .07, .09, -.176, M.robotLed); return g; } },
+        bx(g, .22, .1, .075, 0, .02, -.215, M.robot); bx(g, .012, .012, .004, .07, .09, -.176, M.robotLed);
+        { /* 11-23 루프 소품 퀄리티업: 협탁으로 쓸 때 비어 있던 윗면 — 세이지 유약 도자기 받침 스탠드(놋쇠 목 + 아래가 넓은 리넨 갓, 은은한 빛) + 눕혀 쌓은 책 2권(종이 단면) */
+          const L = (pts, n = 28) => new T.LatheGeometry(pts.map(([a, b]) => new T.Vector2(a, b)), n), y0 = H, lx = -.1, lz = -.11;
+          mk(g, L([[0, 0], [.035, 0], [.06, .03], [.068, .075], [.058, .13], [.03, .165], [.014, .175], [0, .175]], 32), std(0xa9b8a0, .25), lx, y0, lz);
+          cy(g, .009, .05, lx, y0 + .175, lz, std(0xc9a45c, .35, .7), 12); cy(g, .004, .1, lx, y0 + .225, lz, std(0xc9a45c, .35, .7), 8);
+          mk(g, new T.CylinderGeometry(.085, .115, .16, 36, 1, true), std(0xf4efe4, .9, 0, { side: T.DoubleSide, emissive: 0xffe6bf, emissiveIntensity: .25 }), lx, y0 + .3, lz);
+          for (const [k, w, h, d, col, ry] of [[0, .2, .028, .27, 0x5b6f86, .12], [1, .17, .022, .23, 0xd8c7a6, -.08]]) { const b = new T.Group(); b.position.set(.1, y0 + (k ? .028 : 0), .08); b.rotation.y = ry; g.add(b); const cm = std(col, .8); bx(b, w, .003, d, 0, 0, 0, cm); bx(b, w, .003, d, 0, h - .003, 0, cm); bx(b, .004, h - .006, d, -w / 2 + .002, .003, 0, cm); bx(b, w - .012, h - .006, d - .01, .002, .003, 0, std(0xf3efe4, .9)); } /* 표지 위·아래 판 + 책등, 종이 묶음은 안쪽으로 들여 단면이 보이게 */ }
+        return g; } },
   ];
   const BY = Object.fromEntries(CAT.map(c => [c.k, c]));
 
