@@ -27,6 +27,10 @@ export function initInterior(o) {
   const MUSE = [ /* 이름, 몸통, 문·서랍 앞, 선반·상판 */
     ['화이트', M.white, M.white, M.white], ['화이트오크', M.white, M.white, M.oakL], ['오크', M.oakL, M.oakL, M.oakL],
     ['오크화이트', M.oakL, M.white, M.oakL], ['그레이', std(0x8f9295, .5), std(0x8f9295, .5), std(0x8f9295, .5)], ['그레이화이트', std(0x8f9295, .5), M.white, M.white]];
+  { /* 삼익 빅룸 벙커침대 재질: 문·서랍 앞 = 흰 돌 무늬(옅은 얼룩, 자체 시드라 다른 무늬 순서에 영향 없음) · 몸통·계단 = 따뜻한 그레이지 · 은색 막대 손잡이 · 니트 담요 */
+    let s2 = 11; const r2 = () => (s2 = (s2 * 16807) % 2147483647) / 2147483647;
+    const stone = cv(256, 256, (x, w, h) => { x.fillStyle = '#eeede9'; x.fillRect(0, 0, w, h); for (let i = 0; i < 520; i++) { const px = r2() * w, py = r2() * h, r = 1.5 + r2() * 7; x.fillStyle = r2() < .55 ? 'rgba(140,138,132,.028)' : 'rgba(255,255,255,.07)'; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill(); } });
+    Object.assign(M, { skFront: std(0xffffff, .5, 0, { map: stone }), skBody: std(0xd9d2c6, .6), skStair: std(0xd3cbbe, .6), skStairF: std(0xe1dbd1, .55), skGap: std(0x6f685e, .8), skHandle: std(0xd6d8da, .32, .25), skThrow: std(0xc8b393, .95), skCl: [0xe9e4da, 0x3b4a5e, 0xb9b2a6, 0x7d8466, 0xf4f2ee].map(c => std(c, .9)) }); }
 
   /* ───── 도형 도우미(단위 m, 바닥 y=0, 앞 = +z) ───── */
   const mk = (g, geo, mat, x, y, z) => { const m = new T.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; g.add(m); return m; };
@@ -34,6 +38,7 @@ export function initInterior(o) {
   const rb = (g, w, h, d, r, x, y0, z, mat) => mk(g, new RBG(w, h, d, 3, Math.max(.001, Math.min(r, w / 2 - .001, h / 2 - .001, d / 2 - .001))), mat, x, y0 + h / 2, z);
   const cy = (g, r, h, x, y0, z, mat, seg = 24, r2 = r) => mk(g, new T.CylinderGeometry(r, r2, h, seg), mat, x, y0 + h / 2, z);
   const endShape = (L, Dp, a) => { const x0 = -L / 2, x1 = L / 2 - a, b = Dp / 2, s = new T.Shape(); s.moveTo(x0, -b); s.lineTo(x1, -b); s.absellipse(x1, 0, a, b, -Math.PI / 2, Math.PI / 2, false); s.lineTo(x0, b); s.closePath(); return s; };
+  const opG = (g, k, v, x, y, z, n) => { const p = new T.Group(); p.position.set(x, y, z); p.userData.op = { k, v, n }; g.add(p); return p; }; /* 열리는 묶음: k 's' = 앞(+z)으로 v m 미끄러짐(서랍) · 'h' = 경첩 축으로 v rad 회전(문) */
   const upEx = (shape, h) => { const g = new T.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false, curveSegments: 28 }); g.rotateX(-Math.PI / 2); return g; };
 
   /* ───── 제품 목록(사용자 제공 사양) ───── */
@@ -75,6 +80,29 @@ export function initInterior(o) {
       build: () => { const g = new T.Group(); rb(g, 1.66, .3, 2.06, .03, 0, 0, 0, M.fabric); rb(g, 1.6, .24, 2, .05, 0, .3, 0, M.linen);
         rb(g, 1.7, .07, 1.5, .03, 0, .52, .27, M.duvet); for (const sx of [-1, 1]) rb(g, .03, .24, 1.5, .012, sx * .835, .33, .27, M.duvet); rb(g, 1.7, .22, .03, .012, 0, .35, 1.03, M.duvet);
         for (const x of [-.4, .4]) rb(g, .62, .14, .4, .065, x, .53, -.72, M.pillow); rb(g, 1.72, 1.02, .1, .035, 0, 0, -1.08, M.chanFab).material = M.chanFab; return g; } },
+    { k: 'bunkSS', g: '침실', name: '수납 벙커침대(행거·서랍)', model: '삼익가구 빅룸 빅수납 행거 서랍 벙커침대 SS · C타입(행거+서랍+행거)', size: '본체 2000×1122×1026 · 계단 포함 길이 2400 · 안전가드 1200×400', note: '슈퍼싱글 · 행거 2칸(안 깊이 1055·높이 980) + 서랍 4 · 3단 수납계단(높이 900) · 문·서랍을 누르면 열림 · 매트리스 별도 · [좌우 바꾸기]로 계단 쪽', put: 'wall', room: ['알파룸', '침실2'], flip: true,
+      build: () => { /* 상세 도면: 본체 2000(길이)×1122(깊이)×1026(높이), 앞(+z) = 왼 문(행거) · 서랍 4 · 오른 문(행거), 위 앞쪽 머리 쪽에 1200×400 안전가드, 발 쪽 끝에 400×900 3단 계단(단마다 서랍, 뒤로 갈수록 높아짐, 맨 위 900)
+          몸통은 속이 빈 칸(옆판·윗판·바닥판·뒤판·칸막이) — 문·서랍·계단 서랍은 누르면(E·탭) 열림: 행거 칸엔 앞뒤 방향 봉에 옷, 서랍엔 개어 둔 옷 */
+        const g = new T.Group(), L = 2, D = 1.122, H = 1.026, F = D / 2, t = .018, zc = -.009, Dc = D - t, B = M.skBody, Fr = M.skFront, Hd = M.skHandle, Hi = H - .048 - t;
+        bx(g, L - .04, .03, D - .06, 0, 0, -.03, M.greyD); bx(g, L, t, Dc, 0, .03, zc, B); bx(g, L, t, Dc, 0, H - t, zc, B); /* 걸레받이(안으로 들어감) · 바닥판 · 윗판 */
+        for (const sx of [-1, 1]) bx(g, t, Hi, Dc, sx * (L / 2 - t / 2), .048, zc, B); bx(g, L - 2 * t, Hi, .008, 0, .048, -F + .004, B); for (const x of [-.335, .335]) bx(g, t, Hi, Dc - .008, x, .048, zc + .004, B); /* 옆판 · 뒤판 · 칸막이 */
+        const bar = (p, cx, y0, w, h, zF) => { bx(p, w, h, .01, cx, y0, zF + .012, Hd); if (w > h) for (const k of [-1, 1]) bx(p, .01, h, .012, cx + k * (w / 2 - .02), y0, zF + .006, Hd); else for (const kk of [.02, h - .03]) bx(p, w, .01, .012, cx, y0 + kk, zF + .006, Hd); }; /* 은색 막대 손잡이(다리 2개로 앞판에서 띄움) */
+        for (const sx of [-1, 1]) { const p = opG(g, 'h', sx * -1.75, sx * (L / 2 - .002), 0, F - t, '행거 문'); bx(p, .661, H - .05, t, -sx * .3305, .035, t / 2, Fr); bar(p, -sx * .3305, .74, .014, .17, t); /* 문(바깥쪽 끝 경첩) */
+          const cx = sx * .663; bx(g, .012, .012, Dc - .06, cx, .9, zc, Hd); for (let i = 0; i < 5; i++) { const z = .4 - i * .19; bx(g, .38, .008, .008, cx, .875, z, M.greyD); rb(g, .42, .58, .035, .012, cx, .29, z, M.skCl[(i + (sx > 0 ? 2 : 0)) % 5]); } } /* 행거 봉(앞뒤 방향) + 옷걸이·옷 5벌 */
+        const dh = (H - .05) / 4; for (let i = 0; i < 4; i++) { const y0 = .035 + i * dh, p = opG(g, 's', .5, 0, 0, 0, '서랍'), bz = F - t - .4875, bh = .182; /* 서랍 4(안 590×975×170) */
+          bx(p, .666, dh - .004, t, 0, y0 + .002, F - t / 2, Fr); bar(p, 0, y0 + dh - .055, .22, .012, F);
+          bx(p, .61, .012, .975, 0, y0 + .03, bz, B); for (const sx of [-1, 1]) bx(p, .012, bh, .975, sx * .299, y0 + .03, bz, B); bx(p, .586, bh, .012, 0, y0 + .03, bz - .4815, B);
+          if (i >= 2) for (const [x, c] of [[-.15, 0], [.12, 3]]) rb(p, .24, .07, .3, .02, x, y0 + .042, .1, M.skCl[c]); }
+        rb(g, 1.98, .2, 1.05, .04, 0, H, -.02, M.linen); /* 매트리스(별도 구매) */
+        rb(g, 1.1, .045, 1.08, .02, .42, H + .19, -.02, M.skThrow); rb(g, .04, .3, 1.08, .015, .985, H - .08, -.02, M.skThrow); /* 발 쪽 니트 담요(끝으로 늘어짐) */
+        rb(g, .42, .13, .62, .06, -.74, H + .2, -.06, M.pillow); { const c = rb(g, .12, .42, .42, .05, -.93, H + .2, -.02, M.pillow); c.rotation.z = -.18; }
+        rb(g, 1.2, .4, .022, .03, -.35, H, F - .03, M.white); for (const [dx, dy] of [[-.55, .06], [.55, .06], [.55, .33], [-.55, .33]]) bx(g, .012, .012, .004, -.35 + dx, H + dy, F - .017, M.greyD); /* 안전가드 + 고정 나사 */
+        for (let i = 0; i < 3; i++) { const y0 = i * .3, zf = F - i * .3, dz = .9 - i * .3, zm = zf - dz / 2, S = M.skStair, dd = [.575, .475, .225][i]; /* 계단 단: 디딤판·바닥판·옆판·뒤판 + 서랍(안 312×155×dd) */
+          bx(g, .398, .018, dz, 1.201, y0 + .28, zm, S); bx(g, .398, .018, dz - .016, 1.201, y0, zm - .008, S); for (const sx of [-1, 1]) bx(g, .018, .262, dz - .016, 1.201 + sx * .19, y0 + .018, zm - .008, S); bx(g, .362, .262, .01, 1.201, y0 + .018, zf - dz + .005, S);
+          bx(g, .362, .017, .012, 1.201, y0 + .018, zf - .03, M.skGap); /* 서랍 밑 손 넣는 틈 */
+          const p = opG(g, 's', Math.min(.42, dd * .8), 0, 0, 0, '계단 서랍'), bz = zf - .016 - dd / 2; bx(p, .372, .245, .016, 1.201, y0 + .035, zf - .008, M.skStairF);
+          bx(p, .324, .01, dd, 1.201, y0 + .04, bz, S); for (const sx of [-1, 1]) bx(p, .01, .16, dd, 1.201 + sx * .157, y0 + .04, bz, S); bx(p, .304, .16, .01, 1.201, y0 + .04, bz - dd / 2 + .005, S); }
+        return g; } },
     { k: 'cindy', g: '침실', name: '확장형 화장대(거울)', model: '한샘 신디 서랍형 원목 확장형 화장대', size: '폭 800~1350 · 높이 1340 · 깊이 400', note: '원목 · 서랍 · 거울 포함 · 선택 후 [확장]', put: 'wall', room: ['침실1', '안방'], ext: true,
       build: s => { const g = new T.Group(), W = .8, D = .4, Ht = .75; bx(g, W, .028, D, 0, Ht - .028, 0, M.natural); bx(g, W - .04, .14, D - .04, 0, Ht - .168, 0, M.natural);
         for (const x of [-.19, .19]) { bx(g, .36, .11, .008, x, Ht - .155, D / 2 - .016, M.oakL); cy(g, .012, .012, x, Ht - .105, D / 2 - .006, M.chrome, 12).rotation.x = Math.PI / 2; }
@@ -101,14 +129,24 @@ export function initInterior(o) {
 
   /* ───── 상태 ───── */
   const base = movables.slice(), added = [], gone = [];
-  const disposeG = g => g.traverse(m => { if (m.isMesh) m.geometry.dispose(); });
+  /* 가구의 문·서랍 여닫기: 페이지 문 클릭(E·탭) 목록(doorMeshes)에 스위치처럼(isSwitch → toggle) 끼워 넣음 — 페이지 문 목록(doors)은 건드리지 않음. 가구를 지우거나 다시 만들면 목록에서 뺌 */
+  const DM = o.doorMeshes || null, opMoving = new Set(); let opRaf = 0, opT = 0, opTick = 0;
+  const disposeG = g => g.traverse(m => { if (!m.isMesh) return; m.geometry.dispose(); if (DM && m.userData.door) { const i = DM.indexOf(m); if (i >= 0) DM.splice(i, 1); } });
+  function opStep(now) { const dt = Math.min(.05, (now - (opT || now)) / 1000); opT = now;
+    for (const p of opMoving) { const s = p.userData.opS, diff = s.target - s.cur; if (Math.abs(diff) < .002) { s.cur = s.target; opMoving.delete(p); } else s.cur += diff * Math.min(1, dt * 7);
+      if (p.userData.op.k === 's') p.position.z = s.z0 + s.cur * p.userData.op.v; else p.rotation.y = s.cur * p.userData.op.v; }
+    if (++opTick % 3 === 0 || !opMoving.size) renderer.shadowMap.needsUpdate = true; /* 그림자도 따라가게(3프레임마다 + 멈출 때) */
+    if (opMoving.size) opRaf = requestAnimationFrame(opStep); else { opRaf = 0; opT = 0; } }
+  function wireOps(inner) { if (!DM) return; inner.traverse(p => { if (!p.userData.op) return; p.userData.opS = { cur: 0, target: 0, z0: p.position.z };
+    const d = { isSwitch: true, name: p.userData.op.n || '서랍', toggle() { const s = p.userData.opS; s.target = s.target ? 0 : 1; opMoving.add(p); if (!opRaf) opRaf = requestAnimationFrame(opStep); } };
+    p.traverse(m => { if (m.isMesh) { m.userData.door = d; DM.push(m); } }); }); }
   const vis = g => { for (let p = g; p; p = p.parent) if (!p.visible) return false; return true; };
   function makeItem(k, st) {
     const C = BY[k]; if (!C) return null; const s = Object.assign({ ext: false, flip: false, col: 0 }, st || {});
     const g = new T.Group(); g.userData = { name: C.name, movable: true, solid: false, cat: k, st: s, home: { x: 0, z: 0, r: 0 } };
-    const inner = C.build(s); if (s.flip) inner.scale.x = -1; g.add(inner); g.userData.inner = inner; return g;
+    const inner = C.build(s); if (s.flip) inner.scale.x = -1; g.add(inner); g.userData.inner = inner; wireOps(inner); return g;
   }
-  function rebuild(g) { const C = BY[g.userData.cat], old = g.userData.inner; g.remove(old); disposeG(old); const inner = C.build(g.userData.st); if (g.userData.st.flip) inner.scale.x = -1; g.add(inner); g.userData.inner = inner; o.select(g); refresh(); }
+  function rebuild(g) { const C = BY[g.userData.cat], old = g.userData.inner; g.remove(old); disposeG(old); const inner = C.build(g.userData.st); if (g.userData.st.flip) inner.scale.x = -1; g.add(inner); g.userData.inner = inner; wireOps(inner); o.select(g); refresh(); }
   /* 로컬 바닥 크기(회전 0): 폭·깊이·중심 어긋남 */
   function foot(g) { const r = g.rotation.y, p = g.position.clone(); g.rotation.y = 0; g.position.set(0, 0, 0); g.updateMatrixWorld(true); const b = new T.Box3().setFromObject(g.userData.inner || g); g.rotation.y = r; g.position.copy(p); g.updateMatrixWorld(true);
     return { w: b.max.x - b.min.x, d: b.max.z - b.min.z, h: b.max.y, cx: (b.min.x + b.max.x) / 2, cz: (b.min.z + b.max.z) / 2 }; }
