@@ -1050,6 +1050,11 @@ function addOpening(horiz, line, t, o, parent = structure) {
         put(a + .024, a + .051, 1.185, 1.212, f + .028, f + .031, std(0xd9dadc, .35, .5), { cast: false });
         put(a + .034, a + .041, .89, .897, f + .028, f + .03, std(0x6fd6ff, .3, 0, { emissive: 0x3ab8ff, emissiveIntensity: .7 }), { cast: false });
         put(a + .014, a + .061, .865, .871, f + .028, f + .03, sv, { cast: false }); }
+      { /* 11-22 루프 설비 퀄리티업: 현관문 실내 쪽 위 도어클로저(경첩 쪽 은회색 몸통 + 양끝 마개 + 축 + 꺾인 두 마디 팔 + 문틀 윗면 받침쇠) + 문 가운데 외시경(크롬 테 + 어두운 렌즈) */
+        const Q = put, f = lt / 2, b0 = o.from + fw + .08, bm = std(0xa9adb2, .4, .6), dk2 = std(0x2a2c30, .4, .3);
+        Q(b0, b0 + .3, lh - .11, lh - .045, f, f + .05, bm); Q(b0 - .012, b0, lh - .105, lh - .05, f + .004, f + .046, dk2, { cast: false }); Q(b0 + .3, b0 + .312, lh - .105, lh - .05, f + .004, f + .046, dk2, { cast: false });
+        Q(b0 + .27, b0 + .29, lh - .09, lh - .065, f + .05, f + .062, dk2, { cast: false }); Q(b0 + .12, b0 + .29, lh - .075, lh - .06, f + .062, f + .072, bm, { cast: false }); Q(b0 + .1, b0 + .13, lh - .075, lh - .005, f + .062, f + .072, bm, { cast: false }); Q(b0 + .07, b0 + .16, lh - .005, lh + .01, f + .03, f + .1, bm, { cast: false });
+        const pm = (o.from + o.to) / 2; Q(pm - .013, pm + .013, 1.487, 1.513, f, f + .007, M.chrome, { cast: false }); Q(pm - .006, pm + .006, 1.494, 1.506, f + .007, f + .009, std(0x101114, .1, .2), { cast: false }); }
     } else {
       // 여닫이 문: 경첩(o.hinge 'a'|'b')을 축으로 회전, 열리는 쪽 o.side(+1/-1). 처음엔 열린 상태
       const hu = o.hinge === 'b' ? o.to - fw : o.from + fw;
