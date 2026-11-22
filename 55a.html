@@ -806,6 +806,8 @@ let TVS_M = null; function tvScreenMat() { if (TVS_M) return TVS_M; const c = mk
   x.fillStyle = 'rgba(255,255,255,.035)'; x.beginPath(); x.moveTo(560, 0); x.lineTo(700, 0); x.lineTo(420, 600); x.lineTo(280, 600); x.fill();
   x.strokeStyle = '#1d1f23'; x.lineWidth = 10; x.strokeRect(5, 5, 1014, 590); x.strokeStyle = 'rgba(255,255,255,.06)'; x.lineWidth = 2; x.strokeRect(11, 11, 1002, 578);
   return (TVS_M = std(0xffffff, .06, .3, { map: toTex(c) })); }
+let CRG = null; function crescentParts(g) { /* 11-22 창 잠금 손잡이 퀄리티업: 네모 판 + 막대 → 둥근 받침판 + 반달 잠금 캠 + 축 마개 + 위로 젖힌 작은 레버(로컬 +z가 방 쪽, x가 창 방향) */ if (!CRG) CRG = { base: RB(.022, .09, .007, .003, 2), cam: new THREE.CylinderGeometry(.016, .016, .006, 20, 1, false, -Math.PI / 2, Math.PI), m: std(0xcfd1d3, .32, .75), cap: new THREE.CylinderGeometry(.006, .0065, .005, 16), lev: RB(.008, .042, .008, .0035, 2), tip: new THREE.SphereGeometry(.0055, 12, 8) };
+  mesh(CRG.base, CRG.m, 0, 0, .0035, g, { cast: false }); const c = mesh(CRG.cam, CRG.m, 0, .012, .009, g, { cast: false }); c.rotation.x = Math.PI / 2; const p = mesh(CRG.cap, CRG.m, 0, .012, .0135, g, { cast: false }); p.rotation.x = Math.PI / 2; const l = mesh(CRG.lev, CRG.m, .006, .036, .016, g, { cast: false }); l.rotation.z = -.3; mesh(CRG.tip, CRG.m, .0125, .056, .016, g, { cast: false }); }
 function tvBody(par, xf, xb, y0, y1, z0, z1) { /* 11-22 TV 퀄리티업: 통짜 검은 상자(옆에서 각진 4cm 모서리) → 얇은 패널(1.4cm, 둥근 모서리) + 둘레 짙은 금속 테 + 뒤쪽 가운데 볼록한 몸통(벽 쪽, 둥근 모서리) */ const h = y1 - y0, w = z1 - z0, cy = (y0 + y1) / 2, cz = WZ((z0 + z1) / 2), mt = std(0x3a3c40, .3, .8); mesh(RB(.014, h, w, .005, 3), M.tv, WX(xf + .007), cy, cz, par); mesh(RB(.006, h + .004, w + .004, .002, 2), mt, WX(xf + .005), cy, cz, par, { cast: false }); const d = xb - xf - .014; if (d > .004) mesh(RB(d, h * .7, w * .72, Math.min(.012, d / 2 - .001), 3), M.tv, WX(xf + .014 + d / 2), cy - h * .06, cz, par); }
 function tvScreen(parent, x, y, z, w, h) { const s = mesh(new THREE.PlaneGeometry(w, h), tvScreenMat(), x, y, z, parent, { cast: false }); s.rotation.y = -Math.PI / 2; mesh(new THREE.SphereGeometry(.003, 8, 6), new THREE.MeshStandardMaterial({ color: 0x300000, emissive: 0xff2a1a, emissiveIntensity: .9 }), x - .001, y - h / 2 - .006, z, parent, { cast: false }); return s; }
 /* 11-21 사용자: 침대 위 장식 퀄리티업 — 담요(러너) 와플 짜임: 기존 잡티 그림(전역 난수 사용 횟수 그대로) 위에 결정적 격자(홈 + 칸 밝은 면)를 덧그림 */
@@ -1054,8 +1056,7 @@ function addOpening(horiz, line, t, o, parent = structure) {
         /* 창 잠금 손잡이(크레센트): 가운데 맞닿는 창틀 양쪽 면 — 창은 가운데 높이, 큰 미닫이는 1.05m */
         const yh = y1 - y0 > 1.6 ? y0 + 1.05 : (y0 + y1) / 2;
         for (const sd of [-1, 1]) { const vv = (a, b) => sd > 0 ? [a, b] : [-b, -a];
-          put(u - .011, u + .011, yh - .045, yh + .045, ...vv(.04, .047), M.chrome, { cast: false });
-          put(u - .006, u + .006, yh - .004, yh + .04, ...vv(.047, .058), M.chrome, { cast: false }); } }
+          const cg = new THREE.Group(); cg.position.set(horiz ? WX(u) : WX(line + sd * .04), yh, horiz ? WZ(line + sd * .04) : WZ(u)); cg.rotation.y = horiz ? (sd > 0 ? 0 : Math.PI) : (sd > 0 ? Math.PI / 2 : -Math.PI / 2); grp.add(cg); crescentParts(cg); } }
       put(o.from + ft, o.to - ft, y0 + ft, y1 - ft, -.006, .006, M.glass, { cast: false, recv: false });
       if (o.sill !== false && y0 > .2) put(o.from - .04, o.to + .04, y0 - .03, y0, -t / 2 - .04, t / 2, M.white);
     }
