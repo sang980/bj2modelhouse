@@ -165,7 +165,7 @@ export function initInterior(o) {
         mk(g, sideG(rc(-DH, DH, .06), t), W, -1.023, 0, 0);
         { const pts = [[-DH, 0], [DH, 0], [DH, 1.76], [DH - .012, 1.788], [DH - .04, 1.8]]; for (const nz of [.3, -.12]) for (let k = 0; k <= 8; k++) { const a = Math.PI * k / 8; pts.push([nz + .055 * Math.cos(a), 1.8 - .055 * Math.sin(a)]); } pts.push([-DH + .04, 1.8], [-DH + .012, 1.788], [-DH, 1.76]); mk(g, sideG(pts, t), W, 1.005, 0, 0); }
         bx(g, 2.01, .16, .02, 0, UB, DH - .01, GC); bx(g, 2.01, .16, .02, 0, UB, -DH + .01, W); bx(g, 2.01, .02, 2 * DH - .04, 0, UB, 0, W);
-        rb(g, 1.98, .14, 1.08, .04, 0, UB + .02, -.005, M.linen); rb(g, 1.3, .04, 1.1, .02, .3, UB + .145, -.005, M.duvet); rb(g, .4, .12, .6, .05, -.75, UB + .16, -.1, M.pillow);
+        rb(g, 1.98, .14, 1.08, .04, 0, UB + .02, -.005, M.linen); rb(g, 1.42, .05, 1.1, .02, .26, UB + .145, -.005, M.duvetQ); rb(g, .2, .028, 1.11, .012, -.36, UB + .168, -.005, M.linen); { const p = rb(g, .4, .13, .62, .06, -.76, UB + .16, -.1, M.pillow); p.rotation.z = -.22; const c = rb(g, .12, .28, .3, .05, -.5, UB + .17, .2, M.cushSage); c.rotation.set(.12, .3, .32); } /* 11-22 루프: 단색 이불 판 → 누빔 이불 + 머리 쪽 접어 내린 흰 시트 + 끝판에 기댄 베개 + 세이지 작은 쿠션 */
         { const L = 1.148, h = .34, r = .07, sh = new T.Shape(); sh.moveTo(0, 0); sh.lineTo(L, 0); sh.lineTo(L, h - r); sh.quadraticCurveTo(L, h, L - r, h); sh.lineTo(0, h); sh.closePath(); mk(g, new T.ExtrudeGeometry(sh, { depth: t, bevelEnabled: false, curveSegments: 10 }), GC, -1.005, UB + .16, DH - t - .002);
           for (const f of [.13, .5, .87]) bx(g, .045, .05, .012, -1.005 + f * L, UB + .135, DH + .006, W); }
         /* 옷장 4(B·B·A·A): 속 빈 몸통 + 문(왼 경첩) + B는 서랍 2 · 안에 봉과 옷 — 11-22 요청: 깊이 555 옷장은 침대 앞이 아니라 뒤쪽(벽 쪽)에 붙임, 앞쪽 약 0.59m는 빈 공간 */
