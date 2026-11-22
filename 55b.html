@@ -3957,6 +3957,15 @@ await yieldUI();
     if ((r.x1 - r.x0) * (r.z1 - r.z0) > 9) { const [lx, lz] = used[used.length - 1], cx = (r.x0 + r.x1) / 2, cz = (r.z0 + r.z1) / 2, d = ([a, b]) => Math.hypot(cx + a * (r.x1 - r.x0) / 2 - lx, cz + b * (r.z1 - r.z0) / 2 - lz); place(r, ringB.concat(ringA).sort((a, b) => d(b) - d(a)), sprinkler); } // 넓은 방(거실·주방)은 첫 헤드와 먼 쪽에 하나 더
   }
 }
+{ /* 11-22 욕실 설비 퀄리티업: 바닥 배수구(유가) — 욕실마다 아래로 광선을 쏴 위에 아무것도 없고(변기·세면대·욕조·매트 아님) 둘레 15cm도 같은 높이인 타일 바닥 자리에 스테인리스 사각 배수구(테 + 슬롯 덮개 그림) */
+  const rc = new THREE.Raycaster(), down = new THREE.Vector3(0, -1, 0), o3 = new THREE.Vector3(), ms = []; scene.traverse(o => { if (o.isMesh) ms.push(o); });
+  const hitY = (x, z) => { rc.set(o3.set(x, 1.2, z), down); rc.far = 1.4; const h = rc.intersectObjects(ms, false).find(h => visibleDeep(h.object) && !(h.object.material && h.object.material.transparent)); return h ? h.point.y : null; };
+  const c = mkCanvas(128, 128), x = c.getContext('2d'); x.fillStyle = '#c9ccd0'; x.fillRect(0, 0, 128, 128); x.fillStyle = '#26282c'; for (let i = 0; i < 9; i++) x.fillRect(20, 20 + i * 10.3, 88, 5); x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = 3; x.strokeRect(11, 11, 106, 106); x.fillStyle = 'rgba(255,255,255,.25)'; x.fillRect(4, 4, 120, 3);
+  const fm = std(0xffffff, .3, .85, { map: toTex(c) }), rimM = std(0xc9ccd0, .3, .85), rimG = RB(.125, .004, .125, .0015, 2);
+  for (const r of rooms) { if (!r.sp || !/욕실|화장실/.test(r.n)) continue; const cx = (r.x0 + r.x1) / 2, cz = (r.z0 + r.z1) / 2;
+    for (const [a, b] of [[.55, .55], [-.55, .55], [.55, -.55], [-.55, -.55], [0, .55], [0, -.55], [.55, 0], [-.55, 0], [0, 0]]) { const X = WX(cx + a * (r.x1 - r.x0) / 2), Z = WZ(cz + b * (r.z1 - r.z0) / 2), y = hitY(X, Z); if (y == null || y > .009 || y < -.05) continue;
+      if ([[.15, 0], [-.15, 0], [0, .15], [0, -.15], [.1, .1], [-.1, -.1]].some(([dx, dz]) => { const yy = hitY(X + dx, Z + dz); return yy == null || Math.abs(yy - y) > .003; })) continue;
+      mesh(rimG, rimM, X, y + .0015, Z, fixed, { cast: false }); const p = mesh(new THREE.PlaneGeometry(.105, .105), fm, X, y + .0042, Z, fixed, { cast: false }); p.rotation.x = -Math.PI / 2; break; } } }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
