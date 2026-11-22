@@ -2071,8 +2071,7 @@ pbox(10.655, 10.67, .6, .82, 2.54, 2.78, M.chrome, fixed); pbox(10.654, 10.656, 
   const wt = towelMat(0xf6f5f1); for (const [zz, k] of [[.042, 1], [.07, .94]]) { const tw = mesh(RB(w * .9, .45 * k, .014, .006, 2), wt, 0, y - .225 * k + .01, zz, t); tw.rotation.x = zz > .05 ? -.03 : .02; }
   mesh(CY(.016, .016, w * .9, 14), wt, 0, y + .004, .056, t).rotation.z = Math.PI / 2;
   const nv = leafTowelMat(); mesh(RB(w * .55, .3, .012, .005, 2), nv, 0, y - .17, .082, t).rotation.x = -.04; mesh(CY(.012, .012, w * .55, 12), nv, 0, y + .006, .062, t).rotation.z = Math.PI / 2; }
-// 바닥 매트(세면기 앞)
-mesh(BX(.5, .01, .34), std(0x6f7276, .95), WX(9.95), .012, WZ(3.02), fixed, { cast: false });
+/* 11-23 루프: 예전 회색 판 바닥 매트(세면기 앞) 삭제 — 아래 새 발매트와 겹쳐 가장자리가 두 겹으로 보이고 슬리퍼 밑창을 덮던 것 */
 ceilingPanel(9.75, 10.25, 3.0, 3.5, .8, 2.2);
 
 // ── 발코니(다용도실, 사진·영상): 세탁기+건조기, 보일러(받침장), 2단 선반, 수전, 작은 창 ──
@@ -2232,15 +2231,19 @@ ceilingPanel(4.3, 4.7, 1.2, 1.6, .7, 2.0);
       const strap = new THREE.CylinderGeometry(.05, .05, .085, 18, 1, true, -Math.PI / 2, Math.PI); strap.rotateX(-Math.PI / 2); strap.scale(1, .62, 1); _slp = { sg, strap, sole: std(0xe9e6df, .7) }; }
     const cm = std(col, .85, 0, { map: fiber, side: THREE.DoubleSide }), pr = new THREE.Group(); pr.position.set(WX(cx), .012, WZ(cz)); pr.rotation.y = ry; g.add(pr);
     for (const [sx, r] of [[-gap / 2, .06], [gap / 2, -.05]]) { const sp = new THREE.Group(); sp.position.x = sx; sp.rotation.y = r; pr.add(sp); mesh(_slp.sg, _slp.sole, 0, .018, 0, sp, { cast: false }); mesh(_slp.sg, cm, 0, .03, 0, sp); mesh(_slp.strap, cm, 0, .03, .05, sp); } };
+  const bathMat = (w, d, h, m, x, z) => { const r = .045, bv = .004, a = w / 2 - r - bv, b = d / 2 - r - bv, s = new THREE.Shape(); /* 11-23 루프 욕실 소품: 모서리 각진 얇은 판 발매트 → 모서리 둥글고 가장자리가 둥글게 말린 도톰한 매트(무늬는 판 전체에 한 번 펴 바름) */
+    s.absarc(a, b, r, 0, Math.PI / 2); s.absarc(-a, b, r, Math.PI / 2, Math.PI); s.absarc(-a, -b, r, Math.PI, Math.PI * 1.5); s.absarc(a, -b, r, Math.PI * 1.5, Math.PI * 2);
+    const geo = new THREE.ExtrudeGeometry(s, { depth: h - 2 * bv, bevelEnabled: true, bevelThickness: bv, bevelSize: bv, bevelSegments: 3, curveSegments: 8 }); geo.rotateX(-Math.PI / 2); const p = geo.attributes.position, uv = geo.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) + w / 2) / w, (p.getZ(i) + d / 2) / d);
+    return mesh(geo, m, x, bv, z, g, { cast: false }); };
   /* 회색 발매트 + 남색 슬리퍼(앞코가 세면대 쪽) */
   { const fib = toTex((() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#8b8d8f'; x.fillRect(0, 0, 64, 64); for (let i = 0; i < 700; i++) { const v = 110 + rnd() * 60 | 0; x.fillStyle = `rgb(${v},${v + 2},${v + 4})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 1); } return c; })(), { rep: [3, 2] });
-    mesh(RB(.62, .02, .42, .01, 2), shagM('#c9c8c4'), WX(1.28), .01, WZ(4.61), g, { cast: false }); /* VR 55C: 회색 털 매트 + 흰 슬리퍼 — 열린 문짝이 뚫지 않게 문 회전 범위 밖 */
+    bathMat(.62, .42, .02, shagM('#c9c8c4'), WX(1.28), WZ(4.61)); /* VR 55C: 회색 털 매트 + 흰 슬리퍼 — 열린 문짝이 뚫지 않게 문 회전 범위 밖 */
     slipperPair(1.28, 4.61, 0xf2f0eb); }
   /* VR 욕실2: 돌 선반 위 갈색 유리 펌프병, 세면기 앞 진회색 발매트 + 연하늘 슬리퍼(앞코가 세면기 쪽) */
   mesh(CY(.032, .03, .1, 18), std(0xf4f2ee, .35), WX(10.2), 1.33, WZ(2.36), g); /* VR 55C: 오른쪽 흰 항아리 2(컵과 짝) + 왼쪽 작은 유리병 3 */
   for (const [x, h, c] of [[9.6, .09, 0x6f8f5a], [9.66, .07, 0xb07a3a], [9.72, .08, 0xdfe6e4]]) { mesh(new THREE.LatheGeometry([[0, 0], [.02, 0], [.022, .01], [.022, h * .6], [.008, h * .8], [.007, h], [0, h]].map(([a, b]) => new THREE.Vector2(a, b)), 18), std(c, .1, 0, { transparent: true, opacity: .8 }), WX(x), 1.28, WZ(2.36), g, { cast: false }); mesh(CY(.008, .008, .015, 10), std(0xc9b48a, .7), WX(x), 1.28 + h + .006, WZ(2.36), g, { cast: false }); }
   { const fib = toTex((() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#56595c'; x.fillRect(0, 0, 64, 64); for (let i = 0; i < 700; i++) { const v = 70 + rnd() * 40 | 0; x.fillStyle = `rgb(${v},${v + 2},${v + 4})`; x.fillRect(rnd() * 64, rnd() * 64, 1, 1); } return c; })(), { rep: [3, 2] });
-    mesh(RB(.46, .02, .36, .01, 2), shagM('#c4c3bf'), WX(9.85), .01, WZ(3.02), g, { cast: false }); slipperPair(9.85, 3.02, 0xe6ddcc, Math.PI, .16); } /* VR 55C: 회색 털 매트 + 베이지 슬리퍼 */
+    bathMat(.46, .36, .02, shagM('#c4c3bf'), WX(9.85), WZ(3.02)); slipperPair(9.85, 3.02, 0xe6ddcc, Math.PI, .16); } /* VR 55C: 회색 털 매트 + 베이지 슬리퍼 */
 }
 // ── 실외기실 (사진): 비어 있는 공간 + 바닥 안내선(실외기·피난사다리 위치) ──
 { const S = 512, c = mkCanvas(S, S), x = c.getContext('2d'); x.clearRect(0, 0, S, S); x.strokeStyle = 'rgba(30,30,30,.85)'; x.lineWidth = 6; x.setLineDash([22, 14]);
