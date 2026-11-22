@@ -2122,6 +2122,11 @@ function sofa(x, z, rot, style = 'arm') {
   else { pil(M.check, -.5, -.12, .06, .15, .46); pil(M.navy, -.7, -.18, -.04, .3, .4); }
   return g;
 }
+function tvRemote(par, x, y, z, ry) { const r = new THREE.Group(); r.position.set(x, y, z); r.rotation.y = ry; par.add(r); /* 11-23 루프 소품 퀄리티업: 커피테이블 위 TV 리모컨 — 둥근 모서리 무광 검정 몸통 + 빨간 전원 버튼 + 회색 원형 방향키(가운데 확인) + 숫자 버튼 3×4 + 볼륨·채널 긴 버튼 2 */
+  const bt = std(0x5a5d63, .5), nc = { cast: false }; mesh(RB(.048, .015, .175, .007, 2), std(0x1b1c1f, .45), 0, .0075, 0, r);
+  mesh(CY(.0045, .0045, .002, 12), std(0xc8312b, .4), -.012, .0155, -.07, r, nc); mesh(new THREE.TorusGeometry(.011, .003, 6, 20), bt, 0, .0155, -.035, r, nc).rotation.x = Math.PI / 2; mesh(CY(.0055, .0055, .002, 14), bt, 0, .0155, -.035, r, nc);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 4; j++) mesh(BX(.008, .0015, .006), bt, (i - 1) * .013, .0155, j * .012, r, nc);
+  for (const sx of [-1, 1]) mesh(RB(.012, .002, .028, .003, 1), bt, sx * .011, .0155, .065, r, nc); }
 function coffeeTable(x, z, rot) {
   const g = piece('커피테이블', x, z, rot); // 사진: 스모크 유리 타원 상판 + 흰 판재 다리, 뒤쪽 흰 원형 보조테이블
   const top = mesh(CY(.5, .5, .018, 48), M.smoke, 0, .38, 0, g); top.scale.set(.75, 1, 1.25);
@@ -2838,6 +2843,7 @@ function nestTables(x, z) { // 원형 2단 네스팅 테이블(베이지 우드 
   mesh(CY(.42, .42, .035, 48), wood, -.15, .45, -.2, g); mesh(CY(.25, .28, .43, 40), base, -.15, .215, -.2, g);
   mesh(CY(.36, .36, .035, 48), wood, .3, .32, .35, g); mesh(CY(.22, .25, .3, 40), base, .3, .15, .35, g);
   tablePlant(g, -.2, .47, -.25);
+  tvRemote(g, -.33, .4675, .02, .45); /* 검은 화병(.05,-.02)·화분 피해 위판 앞쪽 */
   for (let i = 0; i < 2; i++) mesh(BOOK.geo(.22 - i * .03, .028, .28 - i * .03, 'lie'), BOOK.mats[[7, 0][i]], .35, .352 + i * .028, .3, g).rotation.y = .3 - i * .15; /* 11-21: 단색 상자 → 책등 글자·표지·종이 단면 */ /* 책 2권 */
   { const c = mkCanvas(256, 128), x = c.getContext('2d'), hh = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }; x.fillStyle = '#1c1c1e'; x.fillRect(0, 0, 256, 128); for (let i = 0; i < 420; i++) { x.fillStyle = 'rgba(' + (hh(i, 3) < .5 ? '200,196,186,' : '120,116,110,') + (.12 + hh(i, 5) * .25).toFixed(2) + ')'; x.beginPath(); x.arc(hh(i, 7) * 256, hh(i, 11) * 128, .6 + hh(i, 13) * 1.2, 0, 7); x.fill(); } /* VR: 검정 둥근 도자 오브제 — 11-22 소품 퀄리티업: 공 + 원통 → 돌림판 몸통(어깨·좁은 목) + 속 빈 입구 + 유약 위 옅은 반점(결정적 값) */ const vm = std(0xffffff, .3, .05, { map: toTex(c, { rep: [2, 1] }) }); mesh(new THREE.LatheGeometry([[0, 0], [.032, 0], [.05, .008], [.066, .03], [.071, .055], [.066, .08], [.05, .1], [.026, .112], [.019, .122], [.0205, .133], [.0175, .134], [.015, .126], [.01, .118], [0, .117]].map(([a, b]) => new THREE.Vector2(a, b)), 40), vm, .05, .478, -.02, g); }
   return g;

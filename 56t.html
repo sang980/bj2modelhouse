@@ -2095,6 +2095,11 @@ function sofa(x, z, rot, style = 'arm') {
   else { pil(M.check, -.5, -.12, .06, .15, .46); pil(M.navy, -.7, -.18, -.04, .3, .4); }
   return g;
 }
+function tvRemote(par, x, y, z, ry) { const r = new THREE.Group(); r.position.set(x, y, z); r.rotation.y = ry; par.add(r); /* 11-23 루프 소품 퀄리티업: 커피테이블 위 TV 리모컨 — 둥근 모서리 무광 검정 몸통 + 빨간 전원 버튼 + 회색 원형 방향키(가운데 확인) + 숫자 버튼 3×4 + 볼륨·채널 긴 버튼 2 */
+  const bt = std(0x5a5d63, .5), nc = { cast: false }; mesh(RB(.048, .015, .175, .007, 2), std(0x1b1c1f, .45), 0, .0075, 0, r);
+  mesh(CY(.0045, .0045, .002, 12), std(0xc8312b, .4), -.012, .0155, -.07, r, nc); mesh(new THREE.TorusGeometry(.011, .003, 6, 20), bt, 0, .0155, -.035, r, nc).rotation.x = Math.PI / 2; mesh(CY(.0055, .0055, .002, 14), bt, 0, .0155, -.035, r, nc);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 4; j++) mesh(BX(.008, .0015, .006), bt, (i - 1) * .013, .0155, j * .012, r, nc);
+  for (const sx of [-1, 1]) mesh(RB(.012, .002, .028, .003, 1), bt, sx * .011, .0155, .065, r, nc); }
 function coffeeTable(x, z, rot) {
   const g = piece('커피테이블', x, z, rot); // 사진: 스모크 유리 타원 상판 + 흰 판재 다리, 뒤쪽 흰 원형 보조테이블
   const top = mesh(CY(.5, .5, .018, 48), M.smoke, 0, .38, 0, g); top.scale.set(.75, 1, 1.25);
@@ -2514,6 +2519,7 @@ rug(6.85, 6.8, 0, M.shag, 1.7, 0xe4e3df); /* 11-22: 재질·높이를 인자로(
   wallArt(fixed, { name: '소파 위 그림', cx: 5.21, cy: 1.55, cz: 6.75, nx: 1, nz: 0, w: 1.5, h: .7, fw: .022, d: .04, frame: std(0xc9cbcd, .3, .7), mat: 0, art }); } /* 은색 테 + 유리 + 벽 그림자 */
 // VR 커피테이블: 두꺼운 흰 타원 상판 + 그 아래 연노랑 층 + 흰 받침, 위에 노란 화병 둥근 잎 화분 · 검은 책 2권 + 흰 커피잔
 function coffeeOvalT(x, z) { const g = piece('커피테이블', x, z, 0), w = std(0xf7f6f3, .3);
+  tvRemote(g, .12, .405, .33, -.6);
   const top = mesh(CY(.5, .5, .07, 56), w, 0, .37, 0, g); top.scale.set(.7, 1, 1.1);
   const tier = mesh(CY(.52, .52, .05, 56), std(0xf0d98f, .22), 0, .31, 0, g); tier.scale.set(.7, 1, 1.1);
   const base = mesh(CY(.3, .33, .285, 40), w, 0, .1425, 0, g); base.scale.set(.7, 1, 1.1);
