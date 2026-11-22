@@ -1436,6 +1436,11 @@ function romanShade(a0, a1, y0, y1, w, alongZ, toRoom, map, nf = 3) { /* 11-22 �
   for (let i = 0; i < p.count; i++) { const y = p.getY(i) - y0, k = Math.floor(y / fh); let z = .004; if (k < nf) { const u = y / fh - k; z += (k ? .028 : .036) * Math.pow(Math.sin(Math.PI * u), 1.4); } p.setZ(i, z); }
   geo.computeVertexNormals(); mesh(geo, std(0xffffff, .9, 0, { map, side: THREE.DoubleSide }), 0, 0, 0, g, { cast: false });
   mesh(RB(L + .01, hR, .045, .006, 2), std(0xf4f3ef, .5), 0, top + hR / 2, .022, g, { cast: false }); { const r = mesh(CY(.005, .005, L - .01, 8), std(0xe9e8e3, .6), 0, y0 + .006, .008, g, { cast: false }); r.rotation.z = Math.PI / 2; } return g; }
+function glassDoorMat(hex) { /* 11-22 주방 퀄리티업: 가전 유리 문(냉장고·김치냉장고) — 무광 판 → 55A·55C와 같은 유리 문(은은한 사선 반사광 2줄 + 가장자리 살짝 어둡게, 결정적 그림, 매끈한 반사), 색별로 한 번만 만듦 */
+  const C = glassDoorMat.c || (glassDoorMat.c = {}); if (C[hex]) return C[hex]; const c = mkCanvas(256, 512), x = c.getContext('2d'); x.fillStyle = '#' + hex.toString(16).padStart(6, '0'); x.fillRect(0, 0, 256, 512); const dark = ((hex >> 16) & 255) < 90;
+  for (const [v, w, a] of [[120, 70, dark ? .14 : .55], [230, 26, dark ? .1 : .4]]) { const g2 = x.createLinearGradient(0, v, 0, v + w); g2.addColorStop(0, 'rgba(255,255,255,0)'); g2.addColorStop(.5, 'rgba(255,255,255,' + a + ')'); g2.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g2; x.beginPath(); x.moveTo(0, v + 60); x.lineTo(256, v); x.lineTo(256, v + w); x.lineTo(0, v + w + 60); x.fill(); }
+  const e = x.createLinearGradient(0, 0, 256, 0); e.addColorStop(0, 'rgba(0,0,0,.05)'); e.addColorStop(.06, 'rgba(0,0,0,0)'); e.addColorStop(.94, 'rgba(0,0,0,0)'); e.addColorStop(1, 'rgba(0,0,0,.05)'); x.fillStyle = e; x.fillRect(0, 0, 256, 512);
+  return (C[hex] = std(0xffffff, dark ? .08 : .16, dark ? .3 : .05, { map: toTex(c) })); }
 function curtainSet(x0, x1, w0, w1) { // 창 양옆: 회색 암막 + 속커튼, 천장 커튼박스
   decorStart('커튼'); /* 11-21 사용자: 커튼·블라인드도 지울 수 있게(창마다 한 묶음, 커튼박스는 천장이라 그대로) */ curtain(x0, w0 + .15, 8.0, 2.27, fixed, M.sheer); curtain(w1 - .15, x1, 8.0, 2.27, fixed, M.sheer);
   curtain(x0, x0 + .42, 7.92, 2.27, fixed, M.curtainGrey, 9, .045); curtain(x1 - .42, x1, 7.92, 2.27, fixed, M.curtainGrey, 9, .045);
@@ -1768,8 +1773,8 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   { const k0 = og('b5base'), k1 = og('b5-1'), k2 = og('b5-2'), inner = std(0xebe9e4, .5), a = 1.45, b = 2.55;
     // 기본: 스탠드형 김치냉장고(화이트 글라스, 위 1도어 + 아래 서랍 2) + 위 수납장
     pbox(5.25, xf - .02, 0, 1.85, a + .06, b - .06, std(0x2a2b2d, .5), k0); // VR: 김치냉장고(위 흰 문 2짝 · 아래 베이지 서랍 2단)
-    for (const [z0, z1] of [[a + .07, (a + b) / 2 - .006], [(a + b) / 2 + .006, b - .07]]) pbox(xf - .02, xf, 1.0, 1.79, z0, z1, std(0xf3f2ee, .2, .05), k0); /* 위 수납장(1.8~)과 앞면이 겹치지 않게 1.79까지 */
-    for (const [y0, y1] of [[.52, .98], [.04, .5]]) pbox(xf - .02, xf, y0, y1, a + .07, b - .07, std(0xdfd3c2, .25, .05), k0);
+    for (const [z0, z1] of [[a + .07, (a + b) / 2 - .006], [(a + b) / 2 + .006, b - .07]]) pbox(xf - .02, xf, 1.0, 1.79, z0, z1, glassDoorMat(0xf3f2ee), k0); /* 위 수납장(1.8~)과 앞면이 겹치지 않게 1.79까지 */
+    for (const [y0, y1] of [[.52, .98], [.04, .5]]) pbox(xf - .02, xf, y0, y1, a + .07, b - .07, glassDoorMat(0xdfd3c2), k0);
     { const zc = (a + b) / 2; for (const [y0, y1, z0, z1] of [[1.0, 1.8, zc - .006, zc + .006], [.98, 1.0, a + .06, b - .06], [.5, .52, a + .06, b - .06], [.03, 1.8, a + .055, a + .065], [.03, 1.8, b - .065, b - .055], [1.79, 1.8, a + .06, b - .06]]) pbox(xf, xf + .004, y0, y1, z0, z1, M.black, k0); } // VR: 검은 줄눈
     pbox(5.21, xf, 1.8, H, a, b, M.kdoor, k0); pbox(5.21, xf, 0, 1.8, a, a + .02, M.kdoor, k0); pbox(5.21, xf, 0, 1.8, b - .02, b, M.kdoor, k0);
     // 5-1: 바닥~천장 키큰장 2도어
@@ -1780,9 +1785,9 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
     pbox(5.3, 5.67, 1.02, 1.3, a + .1, a + .58, std(0xf3f3f1, .35), k2); pbox(5.67, 5.675, 1.06, 1.26, a + .12, a + .4, mwWinMat(), k2); { const pn = mesh(new THREE.PlaneGeometry(.15, .22), mwPanelMat(), WX(5.6705), 1.16, WZ(a + .49), k2, { cast: false }); pn.rotation.y = Math.PI / 2; mesh(RB(.012, .2, .012, .004), std(0xd7d9db, .25, .8), WX(5.68), 1.16, WZ(a + .405), k2, { cast: false }); } /* 11-21 전자레인지 조작부·망 무늬 창·손잡이 */
     pbox(5.35, 5.65, 1.02, 1.16, a + .7, a + 1.0, std(0xd9d6cf, .4), k2); for (const x2 of [5.44, 5.56]) pbox(x2 - .012, x2 + .012, 1.159, 1.161, a + .74, a + .96, std(0x1b1c1f, .5), k2, { cast: false }); pbox(5.65, 5.665, 1.08, 1.1, a + .9, a + .93, std(0x2a2b2e, .4), k2, { cast: false }); { const dl = mesh(CY(.013, .013, .01, 20), M.chrome, WX(5.655), 1.08, WZ(a + .76), k2, { cast: false }); dl.rotation.z = Math.PI / 2; } } /* 토스터 투입구·레버·다이얼 */
   // 냉장고(화이트 글라스 4도어) + 위 브리지장
-  const fW = std(0xf1f0ec, .18, .05), fGap = std(0x9a9893, .7), r0 = 2.57, r1 = 3.45;
+  const fW = glassDoorMat(0xf1f0ec), fGap = std(0x9a9893, .7), r0 = 2.57, r1 = 3.45;
   kb(5.25, xf - .02, 0, 1.85, r0, r1, std(0xe4e2dd, .5));
-  for (const [y0, y1] of [[1.0, 1.85], [.05, .98]]) for (const [z0, z1] of [[r0 + .01, (r0 + r1) / 2 - .01], [(r0 + r1) / 2 + .01, r1 - .01]]) kb(xf - .02, xf, y0, y1, z0, z1, y0 > .5 ? fW : std(0xdfd3c2, .25, .05)); // VR: 위 흰색 · 아래 베이지
+  for (const [y0, y1] of [[1.0, 1.85], [.05, .98]]) for (const [z0, z1] of [[r0 + .01, (r0 + r1) / 2 - .01], [(r0 + r1) / 2 + .01, r1 - .01]]) kb(xf - .02, xf, y0, y1, z0, z1, y0 > .5 ? fW : glassDoorMat(0xdfd3c2)); // VR: 위 흰색 · 아래 베이지
   // VR: 가전 문 테두리·사이 줄눈이 검은색(냉장고·김치냉장고)
   { const z0 = r0, z1 = r1, zc = (z0 + z1) / 2; kb(xf, xf + .004, .03, 1.86, zc - .006, zc + .006, M.black); kb(xf, xf + .004, .98, 1.01, z0 + .01, z1 - .01, M.black);
     kb(xf, xf + .004, .03, 1.86, z0 + .002, z0 + .012, M.black); kb(xf, xf + .004, .03, 1.86, z1 - .012, z1 - .002, M.black); kb(xf, xf + .004, 1.85, 1.87, z0, z1, M.black); }
