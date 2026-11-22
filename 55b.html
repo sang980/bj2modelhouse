@@ -2257,6 +2257,11 @@ function fernPlant(parent, x, y, z, s = 1) {
 }
 await yieldUI();
 // TV장 창가 쪽 끝 소품(VR): 흰 도자기 화병 + 깃털 잎 식물, 작은 흰 뚜껑 항아리
+function tissueBox(px, py, pz, ry) { const tb = new THREE.Group(); tb.position.set(WX(px), py, WZ(pz)); tb.rotation.y = ry; fixed.add(tb); /* 11-23 루프 소품 퀄리티업: TV장 위 각티슈 — 둥근 모서리 흰 상자(옅은 사선 결) + 위 타원 입구 + 뽑혀 나온 휴지 한 장(물결 + 위끝 말림), 55A와 같은 모양 */
+  const c = mkCanvas(256, 128), x = c.getContext('2d'); x.fillStyle = '#f7f6f2'; x.fillRect(0, 0, 256, 128); x.strokeStyle = 'rgba(160,160,152,.28)'; x.lineWidth = 2; for (let i = -16; i < 40; i++) { x.beginPath(); x.moveTo(i * 10, 0); x.lineTo(i * 10 + 128, 128); x.stroke(); }
+  mesh(RB(.24, .09, .12, .008, 2), std(0xffffff, .5, 0, { map: toTex(c) }), 0, .045, 0, tb); const sl = mesh(new THREE.CircleGeometry(1, 28), std(0x2a2b2e, .85), 0, .0905, 0, tb, { cast: false }); sl.rotation.x = -Math.PI / 2; sl.scale.set(.075, .018, 1);
+  const tg = new THREE.PlaneGeometry(.11, .1, 10, 8), p = tg.attributes.position; for (let i = 0; i < p.count; i++) { const u = p.getX(i), v = p.getY(i) + .05; p.setZ(i, Math.sin(u / .11 * Math.PI * 2.4) * .007 + v * v * .9); } tg.computeVertexNormals();
+  const ts = mesh(tg, std(0xfdfdfb, .9, 0, { side: THREE.DoubleSide }), 0, .14, 0, tb, { cast: false }); ts.rotation.x = -.12; return tb; }
 decorStart('TV·TV장', true, [], true); { const g = fixed, x = 5.61, top = .452, ceramic = std(0xf1efea, .32);
   const vase = new THREE.LatheGeometry([[0, 0], [.07, 0], [.1, .06], [.112, .14], [.095, .235], [.055, .3], [.044, .318], [.05, .33], [.043, .33]].map(([a, b]) => new THREE.Vector2(a, b)), 40);
   mesh(vase, ceramic, WX(x - .22), top, WZ(10.62), g); fernPlant(g, WX(x - .22), top + .32, WZ(10.62));
@@ -2269,7 +2274,7 @@ decorStart('TV·TV장', true, [], true); { const g = fixed, x = 5.61, top = .452
     mesh(new THREE.TorusGeometry(.0645, .0011, 4, 48), std(0x6d6458, .8), jx, top + .1075, jz, g, { cast: false }).rotation.x = Math.PI / 2;
     mesh(L([[0, .108], [.066, .108], [.07, .111], [.065, .121], [.048, .134], [.026, .1405], [0, .142]]), spk, jx, top, jz, g);
     mesh(L([[0, 0], [.009, 0], [.0125, .006], [.0115, .012], [.006, .0155], [0, .016]]), spk, jx, top + .1405, jz, g, { cast: false }); }
-  } decorEnd();
+  } tissueBox(5.385, .452, 8.62, Math.PI / 2 + .1); decorEnd();
 await yieldUI();
 // 주방 상판 소품(사진): 레트로 커피머신, 전기주전자, 블랙 레일 도구, 끝쪽 블랙 보틀·양념병·은색 볼·화이트 볼 화분
 // 좌표는 주방 반전 전 기준(k 그룹 안에서 함께 반전됨). 상판 높이 .9

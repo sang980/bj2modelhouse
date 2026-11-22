@@ -2562,6 +2562,11 @@ function coffeeOvalT(x, z) { const g = piece('커피테이블', x, z, 0), w = st
   return g; }
 coffeeOvalT(6.9, 6.85);
 // TV장 소품(VR): 오른쪽(창 쪽) 흰 돌 링 + 노란 타원 링이 엇갈린 조형물, 왼쪽 흰 질감 화병 2개 + 큰 잎 열대식물
+function tissueBox(px, py, pz, ry) { const tb = new THREE.Group(); tb.position.set(WX(px), py, WZ(pz)); tb.rotation.y = ry; fixed.add(tb); /* 11-23 루프 소품 퀄리티업: TV장 위 각티슈 — 둥근 모서리 흰 상자(옅은 사선 결) + 위 타원 입구 + 뽑혀 나온 휴지 한 장(물결 + 위끝 말림), 55A와 같은 모양 */
+  const c = mkCanvas(256, 128), x = c.getContext('2d'); x.fillStyle = '#f7f6f2'; x.fillRect(0, 0, 256, 128); x.strokeStyle = 'rgba(160,160,152,.28)'; x.lineWidth = 2; for (let i = -16; i < 40; i++) { x.beginPath(); x.moveTo(i * 10, 0); x.lineTo(i * 10 + 128, 128); x.stroke(); }
+  mesh(RB(.24, .09, .12, .008, 2), std(0xffffff, .5, 0, { map: toTex(c) }), 0, .045, 0, tb); const sl = mesh(new THREE.CircleGeometry(1, 28), std(0x2a2b2e, .85), 0, .0905, 0, tb, { cast: false }); sl.rotation.x = -Math.PI / 2; sl.scale.set(.075, .018, 1);
+  const tg = new THREE.PlaneGeometry(.11, .1, 10, 8), p = tg.attributes.position; for (let i = 0; i < p.count; i++) { const u = p.getX(i), v = p.getY(i) + .05; p.setZ(i, Math.sin(u / .11 * Math.PI * 2.4) * .007 + v * v * .9); } tg.computeVertexNormals();
+  const ts = mesh(tg, std(0xfdfdfb, .9, 0, { side: THREE.DoubleSide }), 0, .14, 0, tb, { cast: false }); ts.rotation.x = -.12; return tb; }
 decorStart('TV·TV장', true, [], true); { const g = fixed, cx = 8.79 - .24, top = .42;
   const ceramic = std(0xf3f1ec, .55);
   const wr = new THREE.Mesh(new THREE.TorusGeometry(.105, .046, 18, 44), ceramic); wr.scale.set(1, 1.12, .72); wr.rotation.y = Math.PI / 2 - .25; wr.position.set(WX(cx + .02), top + .165, WZ(7.62)); wr.castShadow = true; g.add(wr);
@@ -2569,7 +2574,7 @@ decorStart('TV·TV장', true, [], true); { const g = fixed, cx = 8.79 - .24, top
   const v1 = new THREE.Mesh(texturedVaseGeo(.36, .052), ceramic); v1.position.set(WX(cx + .05), top, WZ(5.76)); v1.castShadow = true; g.add(v1);
   const v2 = new THREE.Mesh(texturedVaseGeo(.5, .062), ceramic); v2.position.set(WX(cx - .02), top, WZ(5.93)); v2.castShadow = true; g.add(v2);
   const tp = tropicalPlantGeo(9, .7), pl = new THREE.Group(); pl.position.set(WX(cx - .04), top + .48, WZ(5.93)); pl.scale.x = .5; g.add(pl); // 벽 쪽(동쪽)으로는 잎을 절반만 — 벽을 뚫고 침실1에 보이지 않게
-  const lv = new THREE.Mesh(tp.leaves, plantLeafMat); lv.castShadow = true; pl.add(lv); pl.add(new THREE.Mesh(tp.stems, plantStemMat)); } decorEnd();
+  const lv = new THREE.Mesh(tp.leaves, plantLeafMat); lv.castShadow = true; pl.add(lv); pl.add(new THREE.Mesh(tp.stems, plantStemMat)); } tissueBox(8.55, .42, 7.08, Math.PI / 2 + .12); decorEnd();
 await yieldUI();
 // 주방 아일랜드(옵션 3-1·3-3, 고정식) — 상판과 나란히, 식탁은 아일랜드 남쪽에 붙임
 { const g = item('b3isl', '아일랜드식탁');
