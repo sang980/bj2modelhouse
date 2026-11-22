@@ -2248,9 +2248,17 @@ function ottoman(x, z, rot) {
   const s = mesh(CY(.3, .3, .32, 40, 1), M.white, 0, .16, 0, g); s.scale.set(1.2, 1, .7);
   return g;
 }
-function rug(x, z, rot) {
+function rugFringe(g, P, top, col) { /* 11-22 소품 퀄리티업: 털 러그 가장자리 — 반듯한 상자 옆면 → 윗면 가장자리에서 바깥·아래로 늘어진 털 테두리(가닥 길이가 제각각이라 밑선이 들쭉날쭉, 결정적 그림, 알파 잘라내기) */
+  if (!rugFringe.T) { const c = mkCanvas(128, 64), x = c.getContext('2d'); x.lineCap = 'round'; for (let i = 0; i < 260; i++) { const h1 = ((i * 73) % 97) / 97, h2 = ((i * 151 + 17) % 89) / 89, h3 = ((i * 29 + 5) % 61) / 61, px = h1 * 128; x.strokeStyle = 'rgba(255,255,255,' + (.75 + h3 * .25) + ')'; x.lineWidth = 1 + (i % 3) * .6; x.beginPath(); x.moveTo(px, 0); x.lineTo(px + (h2 - .5) * 6, 26 + h2 * 38); x.stroke(); } rugFringe.T = toTex(c); }
+  const n = P.length, pos = [], uv = [], idx = []; let A = 0; for (let k = 0; k < n; k++) { const a = P[k], b = P[(k + 1) % n]; A += a[0] * b[1] - b[0] * a[1]; } const sg = A > 0 ? 1 : -1, en = k => { const a = P[(k + n) % n], b = P[(k + 1 + n) % n], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; return [sg * (b[1] - a[1]) / L, -sg * (b[0] - a[0]) / L]; };
+  let acc = 0; for (let k = 0; k <= n; k++) { const p = P[k % n]; if (k) acc += Math.hypot(p[0] - P[k - 1][0], p[1] - P[k - 1][1]); const e1 = en(k - 1), e2 = en(k), nx0 = e1[0] + e2[0], nz0 = e1[1] + e2[1], nl = Math.hypot(nx0, nz0) || 1, nx = nx0 / nl, nz = nz0 / nl;
+    pos.push(p[0] - nx * .004, top, p[1] - nz * .004, p[0] + nx * .014, .002, p[1] + nz * .014); uv.push(acc / .12, 1, acc / .12, 0); if (k < n) { const a = k * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx); geo.computeVertexNormals();
+  return mesh(geo, std(col, 1, 0, { map: rugFringe.T, alphaTest: .45, side: THREE.DoubleSide }), 0, 0, 0, g, { cast: false }); }
+function rug(x, z, rot, mat = M.rug, sy = 1, fcol = 0xb9b8b4) {
   const g = piece('러그', x, z, rot, { solid: false });
-  mesh(RB(2.0, .018, 2.8, .006), M.rug, 0, .01, 0, g, { cast: false });
+  const m = mesh(RB(2.0, .018, 2.8, .006), mat, 0, .01, 0, g, { cast: false }); m.scale.y = sy;
+  rugFringe(g, [[-1, -1.4], [1, -1.4], [1, 1.4], [-1, 1.4]], .01 + .009 * sy, fcol); /* 11-22: 털 테두리 */
   return g;
 }
 const lampLight = new THREE.PointLight(0xffe2b8, 0, 4, 2);
@@ -2560,7 +2568,7 @@ function dresser(x, z, rot) {
 M.shagGrey = (() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = '#9c9b98'; x.fillRect(0, 0, 256, 256); x.lineCap = 'round';
   for (let i = 0; i < 2400; i++) { const px = rnd() * 256, py = rnd() * 256, a = rnd() * 6.28, l = 5 + rnd() * 10, v = 120 + rnd() * 105 | 0; x.strokeStyle = `rgb(${v},${v},${Math.max(0, v - 3)})`; x.lineWidth = 1.4 + rnd() * 1.8; x.beginPath(); x.moveTo(px, py); x.quadraticCurveTo(px + Math.cos(a + 1) * l * .6, py + Math.sin(a + 1) * l * .6, px + Math.cos(a) * l, py + Math.sin(a) * l); x.stroke(); }
   return std(0xffffff, 1, 0, { map: toTex(c, { rep: [3, 4] }), bumpMap: toTex(c, { srgb: false, rep: [3, 4] }), bumpScale: 5 }); })();
-{ const lr = rug(6.79, 6.6, 0); lr.traverse(o => { if (o.isMesh) { o.material = M.shagGrey; o.scale.y = 1.7; } }); }
+rug(6.79, 6.6, 0, M.shagGrey, 1.7, 0xadaca8); /* 11-22: 재질·높이를 인자로(털 테두리는 따로 색) */
 coffeeTable(6.84, 6.65, 0); /* 55A와 같은 커피테이블 */
 const diningS = diningSmall(), diningL = diningLarge(), diningP6 = diningPantry6();
 const dining = diningS; // (예전 코드 호환용)
