@@ -973,7 +973,9 @@ function makeDoor({ parent, horiz, line, t, hu, du, side, lw, lh, lt = .04, styl
     const HG = makeDoor._hg || (makeDoor._hg = { ros: CY(.027, .027, .008, 28), neck: CY(.009, .009, .03, 16), lev: RB(.13, .018, .014, .007, 3) }), hx = lw - .065;
     for (const sz of [-1, 1]) { const r = add(mesh(HG.ros, M.chrome, hx, 1.0, sz * (lt / 2 + .004), null, { cast: false })); r.rotation.x = Math.PI / 2;
       const nk = add(mesh(HG.neck, M.chrome, hx, 1.0, sz * (lt / 2 + .023), null, { cast: false })); nk.rotation.x = Math.PI / 2;
-      add(mesh(HG.lev, M.chrome, hx - .055, 1.0, sz * (lt / 2 + .038 + .007), null, { cast: false })); } }
+      add(mesh(HG.lev, M.chrome, hx - .055, 1.0, sz * (lt / 2 + .038 + .007), null, { cast: false })); }
+    const HN = makeDoor._hn || (makeDoor._hn = { k: CY(.0068, .0068, .088, 14), c: CY(.0072, .0055, .006, 14), m: std(0xb9bcc0, .3, .85) }); /* 11-22 문 퀄리티업: 경첩이 없던 방문 → 문 경첩 3(세운 통 + 위·아래 꼭지, 무광 니켈) — 문짝과 함께 돎 */
+    for (const hy of [.24, lh / 2 + .01, lh - .2]) { pivot.add(mesh(HN.k, HN.m, -.0045, hy, 0, null, { cast: false })); pivot.add(mesh(HN.c, HN.m, -.0045, hy + .047, 0, null, { cast: false })); const b = mesh(HN.c, HN.m, -.0045, hy - .047, 0, null, { cast: false }); b.rotation.x = Math.PI; pivot.add(b); } }
   // 닫힘/열림 각도 (로컬 +x가 문짝 방향)
   const thetaC = horiz ? (du > 0 ? 0 : Math.PI) : -du * Math.PI / 2;
   const thetaO = horiz ? -side * Math.PI / 2 : (side > 0 ? 0 : Math.PI);
