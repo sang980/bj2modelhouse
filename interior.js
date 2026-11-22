@@ -35,6 +35,10 @@ export function initInterior(o) {
     const ply = cv(128, 32, (x, w, h) => { x.fillStyle = '#dcc7a3'; x.fillRect(0, 0, w, h); const L = [[3, '#c4a77c'], [9, '#e6d4b4'], [14, '#bf9f72'], [20, '#e3cfac'], [26, '#c6a87d']]; for (const [y, c] of L) { x.fillStyle = c; x.fillRect(0, y, w, 2); } }); ply.repeat.set(6, 1);
     Object.assign(M, { pkPly: std(0xffffff, .6, 0, { map: ply }), pkTop: std(0xf3f2ee, .42), pkLeg: std(0xf1f1ee, .35, .3) }); }
   M.wrGold = std(0xc6a066, .3, .65); /* 로프트 침대 옷장: 금색 막대 손잡이 */
+  { /* 11-22 루프: 킹 침대 이불 누빔 — 마름모 박음질 줄 + 칸마다 살짝 볼록한 밝기(무작위 없음) */
+    const q = cv(256, 256, (x, w, h) => { x.fillStyle = '#e6e3dd'; x.fillRect(0, 0, w, h); const n = 4, c = w / n; for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const gx = x.createRadialGradient(i * c + c / 2, j * c + c / 2, 2, i * c + c / 2, j * c + c / 2, c * .62); gx.addColorStop(0, 'rgba(255,255,255,.22)'); gx.addColorStop(1, 'rgba(160,150,135,.06)'); x.fillStyle = gx; x.save(); x.translate(i * c + c / 2, j * c + c / 2); x.rotate(Math.PI / 4); x.fillRect(-c * .36, -c * .36, c * .72, c * .72); x.restore(); }
+      x.strokeStyle = 'rgba(120,110,95,.2)'; x.lineWidth = 1.3; x.setLineDash([4, 3]); for (let k = -n; k <= 2 * n; k++) { x.beginPath(); x.moveTo(k * c, 0); x.lineTo(k * c + h, h); x.stroke(); x.beginPath(); x.moveTo(k * c, 0); x.lineTo(k * c - h, h); x.stroke(); } }); q.repeat.set(2, 2);
+    M.duvetQ = std(0xffffff, .92, 0, { map: q }); M.cushCamel = std(0xb9a383, .95); M.cushSage = std(0x9aa892, .95); }
   M.book = [0x4a5d73, 0xc9b79c, 0x8e3b3b, 0xe8e4dc, 0x2f3a33, 0xb08a5c, 0x6c7a89].map(c => std(c, .8)); M.bin = [std(0xd8cdb8, .95), std(0x9a9da1, .95)]; /* 칸막이 책장: 책 표지 7색 · 천 수납 바구니 2색 */
   M.chair = [ /* 바퀴 의자 색: [몸체·다리, 좌판, 등받이 메시, 팔걸이 패드] */
     [M.black, std(0x34373c, .9), std(0x2a2c30, .85), M.black], [std(0xeeeeec, .4, .1), std(0x9a9ea3, .9), std(0xb3b6ba, .85), std(0xe9e9e7, .5)]];
@@ -84,9 +88,13 @@ export function initInterior(o) {
         bx(g, W - .03, .034, .004, 0, H - .056, D / 2 + .004, M.grey); bx(g, .06, .012, .003, W / 2 - .07, H - .045, D / 2 + .007, M.display); bx(g, .26, .012, .005, 0, H - .095, D / 2 + .005, M.black);
         for (const sx of [-1, 1]) for (const sz of [-1, 1]) cy(g, .012, .01, sx * (W / 2 - .04), 0, sz * (D / 2 - .04), M.black, 12); return g; } },
     { k: 'king', g: '침실', name: '킹사이즈 침대', model: '킹사이즈 침대 1600 × 2000', size: '매트리스 1600 × 2000', note: '안방(침실1)에 놓임 · 헤드보드를 벽에', put: 'wall', room: ['침실1', '안방'],
-      build: () => { const g = new T.Group(); rb(g, 1.66, .3, 2.06, .03, 0, 0, 0, M.fabric); rb(g, 1.6, .24, 2, .05, 0, .3, 0, M.linen);
-        rb(g, 1.7, .07, 1.5, .03, 0, .52, .27, M.duvet); for (const sx of [-1, 1]) rb(g, .03, .24, 1.5, .012, sx * .835, .33, .27, M.duvet); rb(g, 1.7, .22, .03, .012, 0, .35, 1.03, M.duvet);
-        for (const x of [-.4, .4]) rb(g, .62, .14, .4, .065, x, .53, -.72, M.pillow); rb(g, 1.72, 1.02, .1, .035, 0, 0, -1.08, M.chanFab).material = M.chanFab; return g; } },
+      build: () => { /* 11-22 루프 퀄리티업: 바닥에서 살짝 뜬 패브릭 받침(어두운 걸레받이 그림자) · 누빔 이불(위 + 양옆·발치로 늘어짐) · 머리 쪽 흰 시트 접힘 · 헤드보드에 기댄 베개 2 + 앞 캐멀 쿠션·세이지 작은 쿠션 */
+        const g = new T.Group(); bx(g, 1.56, .045, 1.96, 0, 0, 0, M.greyD); rb(g, 1.66, .255, 2.06, .03, 0, .045, 0, M.fabric); rb(g, 1.6, .24, 2, .05, 0, .3, 0, M.linen);
+        rb(g, 1.7, .07, 1.5, .03, 0, .52, .27, M.duvetQ); for (const sx of [-1, 1]) rb(g, .03, .24, 1.5, .012, sx * .835, .33, .27, M.duvet); rb(g, 1.7, .22, .03, .012, 0, .35, 1.03, M.duvet);
+        rb(g, 1.72, .03, .24, .014, 0, .585, -.35, M.linen); /* 머리 쪽으로 접어 내린 흰 시트 */
+        for (const x of [-.4, .4]) { const p = rb(g, .62, .15, .42, .07, x, .56, -.8, M.pillow); p.rotation.x = -.45; } /* 헤드보드에 기댄 베개 */
+        { const c = rb(g, .62, .17, .13, .06, -.06, .6, -.56, M.cushCamel); c.rotation.x = -.3; const c2 = rb(g, .34, .3, .12, .06, .42, .59, -.6, M.cushSage); c2.rotation.set(-.32, -.15, 0); } /* 앞 장식 쿠션 */
+        rb(g, 1.72, 1.02, .1, .035, 0, 0, -1.08, M.chanFab).material = M.chanFab; return g; } },
     { k: 'bunkSS', g: '침실', name: '수납 벙커침대(행거·서랍)', model: '삼익가구 빅룸 빅수납 행거 서랍 벙커침대 SS · C타입(행거+서랍+행거)', size: '본체 2000×1122×1026 · 계단 포함 길이 2400 · 안전가드 1200×400', note: '슈퍼싱글 · 행거 2칸(안 깊이 1055·높이 980) + 서랍 4 · 3단 수납계단(높이 900) · 문·서랍을 누르면 열림 · 매트리스 별도 · [좌우 바꾸기]로 계단 쪽', put: 'wall', room: ['알파룸', '침실2'], flip: true,
       build: () => { /* 상세 도면: 본체 2000(길이)×1122(깊이)×1026(높이), 앞(+z) = 왼 문(행거) · 서랍 4 · 오른 문(행거), 위 앞쪽 머리 쪽에 1200×400 안전가드, 발 쪽 끝에 400×900 3단 계단(단마다 서랍, 뒤로 갈수록 높아짐, 맨 위 900)
           몸통은 속이 빈 칸(옆판·윗판·바닥판·뒤판·칸막이) — 문·서랍·계단 서랍은 누르면(E·탭) 열림: 행거 칸엔 앞뒤 방향 봉에 옷, 서랍엔 개어 둔 옷 */
