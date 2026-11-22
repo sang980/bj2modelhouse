@@ -1434,6 +1434,13 @@ kInner(5.59, 6.22, .86, .9, .71, 2.12, M.counter);
     for (let x = xa; x <= xb + 1e-6; x += (xb - xa) / 6) kInner(x - .002, x + .002, y0, y1, .548, .55, M.chrome);
     for (const yy of [y0 + .005, y1 - .004]) { kInner(xa, xb, yy, yy + .004, .25, .254, M.chrome); kInner(xa, xb, yy, yy + .004, .546, .55, M.chrome); kInner(xa, xa + .004, yy, yy + .004, .25, .55, M.chrome); kInner(xb - .004, xb, yy, yy + .004, .25, .55, M.chrome); }
     for (let z = .29; z < .54; z += .04) kInner(xa, xb, y0 + .002, y0 + .005, z, z + .003, M.chrome); }
+  { const T = .9, bx = 6.66, bz = .2, sx = 6.52, sz = .31, ry = 0; /* 11-22 루프 주방 소품 퀄리티업: 싱크 옆 상판 — 젖빛 연두 주방세제 펌프병(흰 펌프·노즐) + 작은 흰 도자기 받침 위 수세미(노란 스펀지 + 초록 거친 면) */
+    mesh(new THREE.LatheGeometry([[0, 0], [.028, 0], [.031, .006], [.031, .13], [.024, .15], [.013, .162], [.013, .17], [0, .17]].map(([a, b]) => new THREE.Vector2(a, b)), 28), std(0xcfe3b9, .25, 0, { transparent: true, opacity: .82 }), WX(bx), T, WZ(bz), fixed);
+    mesh(new THREE.LatheGeometry([[0, .004], [.027, .004], [.027, .085], [0, .085]].map(([a, b]) => new THREE.Vector2(a, b)), 24), std(0x9cc46a, .5), WX(bx), T, WZ(bz), fixed, { cast: false });
+    mesh(CY(.012, .012, .012, 16), std(0xf6f6f3, .35), WX(bx), T + .176, WZ(bz), fixed, { cast: false }); mesh(CY(.004, .004, .022, 8), std(0xf6f6f3, .35), WX(bx), T + .192, WZ(bz), fixed, { cast: false });
+    { const hd = new THREE.Group(); hd.position.set(WX(bx), T + .205, WZ(bz)); hd.rotation.y = ry; fixed.add(hd); mesh(RB(.018, .012, .03, .004, 1), std(0xf6f6f3, .35), 0, 0, .006, hd, { cast: false }); mesh(CY(.003, .003, .02, 8), std(0xf6f6f3, .35), 0, -.002, .028, hd, { cast: false }).rotation.x = Math.PI / 2; }
+    const tr = new THREE.Group(); tr.position.set(WX(sx), T, WZ(sz)); tr.rotation.y = ry + .15; fixed.add(tr);
+    mesh(RB(.13, .012, .085, .006, 2), std(0xf3f1ec, .3), 0, .006, 0, tr, { cast: false }); mesh(RB(.095, .026, .062, .008, 2), std(0xf0cf4a, .9), 0, .025, 0, tr); mesh(RB(.095, .009, .062, .003, 1), std(0x3f8f4a, .95), 0, .0425, 0, tr, { cast: false }); }
   // 아치형 풀다운 수전(크롬): 세운 기둥 + 위로 휘었다 싱크 쪽으로 내려오는 꼭지 + 옆 레버
   mesh(CY(.022, .026, .03, 20), M.chrome, WX(7.1), .915, WZ(.17), k); mesh(CY(.014, .016, .3, 18), M.chrome, WX(7.1), 1.06, WZ(.17), k);
   const arc = new THREE.QuadraticBezierCurve3(new THREE.Vector3(WX(7.1), 1.2, WZ(.17)), new THREE.Vector3(WX(7.1), 1.32, WZ(.24)), new THREE.Vector3(WX(7.1), 1.13, WZ(.36)));
