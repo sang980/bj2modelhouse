@@ -533,7 +533,7 @@ function synthPlanned() {
             const lv = LVI[q % LVI.length]; push(5, lv, lv * 4.2 + 1, [W2(t, s0), W2(t + fw, s0), W2(t + fw, s0 + dp), W2(t, s0 + dp)]); nI++;
             for (let aa = -3; aa <= fw + 3; aa += 1) for (let bb = -3; bb <= dp + 3; bb += 1) { const p = W2(t + aa, s0 + bb); mark(p[0], p[1]); } t += fw + 5; } } } }
       console.log('industrial infill', nI); } }
-  let B2 = B; if (!LOW) { /* 11-23 루프 카카오 일반 지도·스카이뷰(같은 틀): 산성역 포레스티아 39동 — OSM 동이 두께 5m 막대 모양에 20~30m 어긋나고 106·108동 등이 빠져 위에서 보면 성글던 것 → 옛 동(층 8 이상, 단지 윤곽 안)을 빼고 지도 윤곽대로 라인(호) 단위 상자 170개로 다시 세움, 데스크톱(폰은 삼각형 예산 때문에 옛 동 그대로) */
+  let B2 = B; { /* 11-23 루프 카카오 일반 지도·스카이뷰(같은 틀): 산성역 포레스티아 39동 — OSM 동이 두께 5m 막대 모양에 20~30m 어긋나고 106·108동 등이 빠져 위에서 보면 성글던 것 → 옛 동(층 8 이상, 단지 윤곽 안)을 빼고 지도 윤곽대로 라인(호) 단위 상자 170개로 다시 세움, 모든 화질(폰 측정: 동 사이 나무가 덜 심겨 삼각형 1,630,251 → 1,617,631로 오히려 줄어듦) */
     const FP = (GEO.env.land || []).find(l => l.k === 'residential' && /포레스티아/.test(l.n || ''));
     if (FP) { const keep = []; let j = 0, rm = 0; while (j < B.length) { const np = B[j + 4], s0 = j; j += 5; let cx = 0, cz = 0; for (let k = 0; k < np; k++) { cx += B[j] * .2; cz += B[j + 1] * .2; j += 2; } cx /= np; cz /= np; if (B[s0] === 1 && B[s0 + 1] >= 8 && inPoly(FP.p, cx, cz)) { rm++; continue; } for (let k = s0; k < j; k++) keep.push(B[k]); } B2 = Int16Array.from(keep);
       for (const [x, z, ux, uz, L, D, lv, e] of FOYU) push(1, lv, lv * 2.9 + 1 + e, rectQ(x, z, ux, uz, L, D)); console.log('forestia rebuilt', rm, 'removed,', FOYU.length, 'units'); } }
