@@ -4212,6 +4212,13 @@ await yieldUI();
   const hole = new THREE.Path(); hole.absarc(0, .548, .0065, 0, Math.PI * 2, true); sh.holes.push(hole);
   const gg = new THREE.ExtrudeGeometry(sh, { depth: .003, bevelEnabled: true, bevelThickness: .0012, bevelSize: .0012, bevelSegments: 2, curveSegments: 10 }), pa = gg.attributes.position; for (let i = 0; i < pa.count; i++) { const y = pa.getY(i); if (y < .16) { const k = 1 - y / .16, xx = pa.getX(i) / .028; pa.setZ(i, pa.getZ(i) + (1 - xx * xx) * .01 * k); } } gg.computeVertexNormals();
   mesh(gg, std(0x6b4630, .45), 0, .975 - .548, .012, sg).rotation.z = .02; }
+{ const blk = std(0x1a1b1d, .45); { const ck = new THREE.Group(); ck.position.set(WX(8.346), 1.85, WZ(4.05)); ck.rotation.y = -Math.PI / 2; fixed.add(ck); /* 11-23 루프 소품 퀄리티업: 55A와 같은 둥근 벽시계를 식탁 옆 동쪽 벽(포스터 오른쪽)에 — 얇은 검정 테 + 흰 문자판(굵은 12·3·6·9 막대 + 가는 눈금, 10시 10분, 빨간 초침) + 엷은 유리 */
+    const fc = mkCanvas(256, 256), q = fc.getContext('2d'); q.fillStyle = '#f7f6f2'; q.fillRect(0, 0, 256, 256); q.translate(128, 128); q.strokeStyle = '#1f2023';
+    for (let i = 0; i < 60; i++) { const a = i / 60 * Math.PI * 2, big = i % 15 === 0, mid = i % 5 === 0, r0 = big ? 92 : mid ? 104 : 114; q.lineWidth = big ? 7 : mid ? 4 : 1.5; q.beginPath(); q.moveTo(Math.sin(a) * r0, -Math.cos(a) * r0); q.lineTo(Math.sin(a) * 120, -Math.cos(a) * 120); q.stroke(); }
+    q.lineCap = 'round'; for (const [a, r, lw] of [[(10 + 10 / 60) / 12 * Math.PI * 2, 62, 9], [10 / 60 * Math.PI * 2, 92, 6]]) { q.lineWidth = lw; q.beginPath(); q.moveTo(0, 0); q.lineTo(Math.sin(a) * r, -Math.cos(a) * r); q.stroke(); }
+    q.strokeStyle = '#c23a2c'; q.lineWidth = 2.5; q.beginPath(); q.moveTo(Math.sin(4.1) * -18, Math.cos(4.1) * 18); q.lineTo(Math.sin(4.1) * 104, -Math.cos(4.1) * 104); q.stroke(); q.fillStyle = '#1f2023'; q.beginPath(); q.arc(0, 0, 7, 0, 7); q.fill();
+    const rim = mesh(new THREE.CylinderGeometry(.165, .165, .034, 48, 1, true), blk, 0, 0, .017, ck); rim.rotation.x = Math.PI / 2; mesh(new THREE.RingGeometry(.152, .165, 48), blk, 0, 0, .034, ck, { cast: false }); mesh(new THREE.CircleGeometry(.165, 48), blk, 0, 0, .001, ck, { cast: false }).rotation.y = Math.PI;
+    mesh(new THREE.CircleGeometry(.153, 48), std(0xffffff, .6, 0, { map: toTex(fc) }), 0, 0, .012, ck, { cast: false }); mesh(new THREE.CircleGeometry(.153, 48), std(0xeef3f5, .05, 0, { transparent: true, opacity: .15, depthWrite: false }), 0, 0, .03, ck, { cast: false }); } }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
