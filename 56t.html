@@ -4205,6 +4205,13 @@ await yieldUI();
   pump(.065, cz + .06, .953, .15, .027, 0xf2f1ec); pump(.14, cz + .125, .953, .13, .025, 0xbfd3b6);
   mesh(RB(.055, .12, .032, .012, 2), std(0x9cc3d9, .35), U(.075), 1.253 + .074, WZ(cz + .07), fixed); mesh(CY(.014, .014, .014, 14), std(0xf2f1ec, .4), U(.075), 1.26, WZ(cz + .07), fixed, { cast: false });
   mesh(CY(.026, .026, .045, 22), std(0xf6f5f1, .3), U(.14), 1.253 + .0225, WZ(cz + .135), fixed); mesh(CY(.027, .027, .012, 22), std(0xd9d6cf, .4), U(.14), 1.253 + .051, WZ(cz + .135), fixed, { cast: false }); }
+{ /* 11-23 루프 현관 소품(55A와 같은 것): 현관 동쪽 벽(소화기 옆)에 작은 크롬 걸이 + 구멍으로 걸어 둔 긴 원목 구둣주걱(아래 숟가락 끝은 오목하게 휨) (로컬 +z = 벽에서 나오는 쪽) */
+  const sg = new THREE.Group(); sg.position.set(WX(3.46), 0, WZ(2.95)); sg.rotation.y = -Math.PI / 2; fixed.add(sg);
+  mesh(CY(.009, .009, .012, 16), M.chrome, 0, .975, .006, sg, { cast: false }).rotation.x = Math.PI / 2; mesh(CY(.0035, .0035, .03, 8), M.chrome, 0, .975, .025, sg, { cast: false }).rotation.x = Math.PI / 2;
+  const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.quadraticCurveTo(-.03, .002, -.026, .1); sh.quadraticCurveTo(-.016, .17, -.013, .2); sh.lineTo(-.013, .53); sh.quadraticCurveTo(-.014, .565, 0, .57); sh.quadraticCurveTo(.014, .565, .013, .53); sh.lineTo(.013, .2); sh.quadraticCurveTo(.016, .17, .026, .1); sh.quadraticCurveTo(.03, .002, 0, 0);
+  const hole = new THREE.Path(); hole.absarc(0, .548, .0065, 0, Math.PI * 2, true); sh.holes.push(hole);
+  const gg = new THREE.ExtrudeGeometry(sh, { depth: .003, bevelEnabled: true, bevelThickness: .0012, bevelSize: .0012, bevelSegments: 2, curveSegments: 10 }), pa = gg.attributes.position; for (let i = 0; i < pa.count; i++) { const y = pa.getY(i); if (y < .16) { const k = 1 - y / .16, xx = pa.getX(i) / .028; pa.setZ(i, pa.getZ(i) + (1 - xx * xx) * .01 * k); } } gg.computeVertexNormals();
+  mesh(gg, std(0x6b4630, .45), 0, .975 - .548, .012, sg).rotation.z = .02; }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
