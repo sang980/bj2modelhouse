@@ -4471,6 +4471,12 @@ await yieldUI();
   mesh(CY(.02, .024, .04, 16), bk, 0, .43, 0, fe); mesh(CY(.016, .016, .006, 16), std(0xf4f4f0, .4), 0, .43, .024, fe, { cast: false }).rotation.x = Math.PI / 2; mesh(CY(.012, .012, .002, 16), std(0x3a9a4a, .5), 0, .43, .0275, fe, { cast: false }).rotation.x = Math.PI / 2;
   { const lv = mesh(RB(.022, .01, .12, .004, 1), bk, 0, .462, -.035, fe); lv.rotation.x = -.18; const hd = mesh(RB(.022, .01, .1, .004, 1), bk, 0, .445, -.03, fe); hd.rotation.x = .12; } mesh(new THREE.TorusGeometry(.012, .0022, 6, 16), std(0xd9d9d6, .3, .7), .016, .45, .005, fe, { cast: false });
   { const cv = new THREE.CatmullRomCurve3([new THREE.Vector3(-.02, .43, 0), new THREE.Vector3(-.06, .42, .005), new THREE.Vector3(-.074, .33, .01), new THREE.Vector3(-.074, .14, .012)]); const hs = new THREE.Mesh(new THREE.TubeGeometry(cv, 16, .007, 8, false), bk); hs.castShadow = true; fe.add(hs); mesh(CY(.01, .008, .045, 10), bk, -.074, .12, .012, fe); } }
+{ const af = new THREE.Group(); af.position.set(WX(8.08), .9, WZ(.45)); af.rotation.y = 0; fixed.add(af); /* 11-23 루프 주방 소품: 싱크 오른쪽 커피머신 옆 상판에 바스켓형 에어프라이어 — 무광 검은 둥근 몸통 + 앞 서랍(조금 밝은 회색·가로 손잡이) + 위 앞쪽 검은 유리 조작판(주황 숫자 180·버튼 둘) + 뒤 위 통풍 줄 + 받침 발 (로컬 +z = 앞) */
+  const bk = std(0x2b2c2f, .75), dk = std(0x3a3c40, .6), c = mkCanvas(128, 48), x = c.getContext('2d'); x.fillStyle = '#0d0e10'; x.fillRect(0, 0, 128, 48); x.fillStyle = '#ff9a3c'; x.font = 'bold 26px monospace'; x.textAlign = 'center'; x.fillText('180', 64, 33); x.fillStyle = '#6b6f75'; x.beginPath(); x.arc(14, 24, 6, 0, 7); x.fill(); x.beginPath(); x.arc(114, 24, 6, 0, 7); x.fill();
+  mesh(RB(.27, .3, .3, .045, 3), bk, 0, .155, 0, af); for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) mesh(CY(.012, .012, .008, 10), std(0x1a1a1c, .9), sx * .1, .004, sz * .11, af, { cast: false });
+  mesh(RB(.235, .16, .02, .02, 2), dk, 0, .095, .148, af); mesh(RB(.13, .026, .035, .01, 2), std(0x1f2023, .6), 0, .13, .17, af); mesh(RB(.13, .006, .002, .002, 1), std(0x9a9da2, .35, .6), 0, .141, .1875, af, { cast: false });
+  { const p = mesh(new THREE.PlaneGeometry(.16, .06), std(0xffffff, .2, 0, { map: toTex(c), emissive: 0xffffff, emissiveMap: toTex(c), emissiveIntensity: .35 }), 0, .24, .1515, af, { cast: false }); }
+  for (let i = 0; i < 6; i++) mesh(BX(.15, .003, .012), std(0x141416, .8), 0, .3055, -.1 + i * .016, af, { cast: false }); }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
