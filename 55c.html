@@ -2488,6 +2488,13 @@ function towelHolder(x, z, ry, base, rod) { /* 11-23 루프 주방 소품 퀄리
   mesh(L([[.022, .014], [.06, .014], [.063, .018], [.063, .24], [.06, .244], [.022, .244]], 40), towelHolder.pm, 0, 0, 0, g); mesh(new THREE.CylinderGeometry(.0222, .0222, .228, 24, 1, true), towelHolder.core, 0, .129, 0, g, { cast: false });
   { const b = .32, fl = .078, f = mesh(new THREE.PlaneGeometry(fl, .222), towelHolder.fm, .0634 + fl / 2 * Math.sin(b), .129, fl / 2 * Math.cos(b), g, { cast: false }); f.rotation.y = Math.PI / 2 + b; } return g; }
 towelHolder(7.67, .2, -.7, std(0xf2f1ed, .4), M.chrome); /* 요리책 받침과 모서리 흰 머그 걸이 사이 상판 — 흰 받침·크롬 봉 */
+{ /* 11-23 루프 주방 소품 퀄리티업(55C): 쿡탑 옆 ㄱ자 상판(조리 자리, 비어 있던 곳)에 눕혀 둔 원목 도마(둥근 모서리 + 손잡이 탭·걸이 구멍 + 결정적 나뭇결) + 그 위 비스듬한 셰프 칼(스테인리스 날 + 검은 손잡이·크롬 리벳 2) */
+  const g = new THREE.Group(); g.position.set(WX(7.95), .9, WZ(.87)); g.rotation.y = .12; fixed.add(g);
+  const gc = mkCanvas(256, 128), q = gc.getContext('2d'); q.fillStyle = '#cfae82'; q.fillRect(0, 0, 256, 128); for (let i = 0; i < 22; i++) { const y0 = 3 + i * 5.6 + Math.sin(i * 1.9) * 1.5; q.strokeStyle = `rgba(130,92,55,${.18 + (i % 3) * .08})`; q.lineWidth = .7 + (i % 2) * .6; q.beginPath(); q.moveTo(0, y0); for (let x = 16; x <= 256; x += 16) q.lineTo(x, y0 + Math.sin(x * .04 + i * 1.3) * 1.8); q.stroke(); }
+  const wm = std(0xffffff, .6, 0, { map: toTex(gc) }); mesh(RB(.34, .018, .22, .01, 2), wm, 0, .009, 0, g); mesh(RB(.075, .018, .07, .012, 2), wm, .2, .009, 0, g); mesh(CY(.011, .011, .0185, 16), std(0x3a2a1c, .8), .212, .009, 0, g, { cast: false });
+  const kn = new THREE.Group(); kn.position.set(-.02, .0185, .015); kn.rotation.y = .45; g.add(kn);
+  const bs = new THREE.Shape(); bs.moveTo(0, -.02); bs.lineTo(0, .02); bs.lineTo(.15, .02); bs.quadraticCurveTo(.19, .018, .2, .005); bs.quadraticCurveTo(.15, -.024, 0, -.02); const bg = new THREE.ExtrudeGeometry(bs, { depth: .0016, bevelEnabled: false }); bg.rotateX(-Math.PI / 2); mesh(bg, std(0xd6d9dc, .25, .75), 0, 0, 0, kn, { cast: false });
+  mesh(RB(.11, .016, .024, .006, 2), std(0x1c1c1e, .45), -.057, .008, 0, kn, { cast: false }); for (const x of [-.03, -.08]) mesh(CY(.003, .003, .0165, 8), M.chrome, x, .008, 0, kn, { cast: false }); }
 // 주방 상판 소품(사진): 레트로 커피머신, 전기주전자, 블랙 레일 도구, 끝쪽 블랙 보틀·양념병·은색 볼·화이트 볼 화분
 // 좌표는 주방 반전 전 기준(k 그룹 안에서 함께 반전됨). 상판 높이 .9
 function kitchenProps(k) {
