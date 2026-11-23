@@ -508,6 +508,9 @@ function synthPlanned() {
     for (const [cx, cz, S, d] of [[-292, -1047, 48, 13], [-243, -1036, 54, 14]]) { const o = S / 2 - d / 2;
       push(3, 4, 16, rectQ(cx + vx * o, cz + vz * o, ux, uz, S, d)); push(3, 4, 16, rectQ(cx - vx * o, cz - vz * o, ux, uz, S, d));
       push(3, 4, 16, rectQ(cx + ux * o, cz + uz * o, vx, vz, S - 2 * d, d)); push(3, 4, 16, rectQ(cx - ux * o, cz - uz * o, vx, vz, S - 2 * d, d)); n += 4; } }
+  { /* 11-23 루프 카카오 스카이뷰 L2(같은 틀, 흙 운동장으로 맞춤 +7·+22px): 수진중학교(OSM 학교 윤곽만, 건물 없음) — 운동장 남쪽 회색 지붕 체육관 + ㅁ자 4층 교사동(가운데 중정) + 북동쪽 작은 동 */
+    push(3, 2, 10, rectQ(-1707.3, 1608.8, 1, 0, 26, 42)); push(3, 4, 16, rectQ(-1649.7, 1587, 1, 0, 14, 24));
+    { const cx = -1670.8, cz = 1621.6, S = 48, d = 13, o = S / 2 - d / 2; push(3, 4, 16, rectQ(cx, cz - o, 1, 0, S, d)); push(3, 4, 16, rectQ(cx, cz + o, 1, 0, S, d)); push(3, 4, 16, rectQ(cx - o, cz, 0, 1, S - 2 * d, d)); push(3, 4, 16, rectQ(cx + o, cz, 0, 1, S - 2 * d, d)); } n += 6; }
   if (!LOW) { const IP = (GEO.env.land || []).find(l => l.k === 'industrial' && l.n === '성남산업단지'); /* 11-23 루프 카카오 스카이뷰 L4(상대원동): 성남산업단지 안 빈 회색 블록 — 실제로는 2~5층 공장·지식산업센터가 빽빽 → 길 따라 공장 채우기(데스크톱만, OSM 건물·길·공원·주차장·물 피함, 결정적 순서) */
     if (IP) { let X0 = 1e9, X1 = -1e9, Z0 = 1e9, Z1 = -1e9; for (const [x, z] of IP.p) { X0 = Math.min(X0, x); X1 = Math.max(X1, x); Z0 = Math.min(Z0, z); Z1 = Math.max(Z1, z); }
       const R = 2, GW = Math.ceil((X1 - X0) / R) + 1, GH = Math.ceil((Z1 - Z0) / R) + 1, cv = cnv(GW, GH), g = cv.getContext('2d', { willReadFrequently: true }), path = P => { g.beginPath(); P.forEach((p, k) => { const x = (p[0] - X0) / R, z = (p[1] - Z0) / R; k ? g.lineTo(x, z) : g.moveTo(x, z); }); };
