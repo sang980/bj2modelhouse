@@ -411,7 +411,7 @@ function synthPlanned() {
     let cx = 0, cz = 0; for (const p of P) { cx += p[0]; cz += p[1]; } cx /= P.length; cz /= P.length; const dist = Math.hypot(cx, cz - 15);
     let rule = null;
     if (/해링턴스퀘어|상대원2구역/.test(nm)) rule = { f: [20, 29], L: 44, D: 14, su: 58, sv: 50 };
-    else if (/공동주택|엘리프|에듀포레/.test(nm)) rule = { f: [15, 25], L: 42, D: 14, su: 56, sv: 48 };
+    else if (/공동주택|엘리프|에듀포레|위례자이 더 파크/.test(nm)) rule = { f: [15, 25], L: 42, D: 14, su: 56, sv: 48 }; /* + 11-23 루프 카카오 스카이뷰 L3: 위례자이 더 파크(2026.12 입주 예정) — 5201~5222동 골조가 거의 다 올라간 공사 터가 빈 땅으로 보이던 것 */
     else if (/주상복합/.test(nm)) rule = { f: [28, 36], tower: true };
     else if (/업무시설|상업시설|도시지원|일반상업|글로벌센터/.test(nm) && dist < 3000) rule = { f: [8, 16], L: 40, D: 26, su: 62, sv: 50, kind: 2 }; /* 복정1지구 업무·상업 용지 */
     else if (!nm && dist < 1300) { let A = 0; for (let k = 0; k < P.length; k++) { const a = P[k], b = P[(k + 1) % P.length]; A += a[0] * b[1] - b[0] * a[1]; } if (Math.abs(A) / 2 > 20000) rule = { f: [18, 29], L: 42, D: 14, su: 56, sv: 48 }; } /* 11-21 로드뷰(2026.08)·스카이뷰: 산성역 헤리스톤 서쪽 부지(수정로 동쪽, 2.1만㎡)도 고층 골조가 올라감 — 3만→2만 */
