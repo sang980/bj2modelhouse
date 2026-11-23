@@ -4215,6 +4215,13 @@ await yieldUI();
     mesh(RB(.032, .13, .018, .008, 2), std(0xeceeef, .4), 0, -.085, .02, g, { cast: false }); mesh(CY(.005, .005, .0185, 12), std(0x3a3d40, .6), 0, -.03, .02, g, { cast: false }).rotation.x = Math.PI / 2;
     mesh(RB(.2, .03, .022, .008, 2), std(0x8fa3b3, .45), 0, -.162, .02, g, { cast: false }); mesh(BX(.198, .014, .005), std(0x1c1d1f, .7), 0, -.183, .02, g, { cast: false }); };
   squeegee(6.17, 5.632, 0, -1); /* 욕실2 샤워부스 고정 유리(z 5.64) 안쪽(북쪽) */ }
+{ const ap = new THREE.Group(); ap.position.set(WX(4.98), 0, WZ(10.94)); ap.rotation.y = -Math.PI / 2; fixed.add(ap); /* 11-23 루프 소품: 거실 TV장 남쪽 끝 옆 기둥과 창턱 앞(55B) 빈 바닥에 원통형 공기청정기 — 흰 몸통(아래로 살짝 넓어짐) + 둘레 작은 구멍 띠(흡입구) + 위 짙은 회색 둥근 토출 그릴(방사 날개) + 그릴 둘레 은은한 청록 링 불빛 + 앞 작은 표시창 + 아래 회색 받침 띠 (로컬 +z = 앞) */
+  const holes = toTex((() => { const c = mkCanvas(512, 256), x = c.getContext('2d'); x.fillStyle = '#f2f2ef'; x.fillRect(0, 0, 512, 256); x.fillStyle = '#c4c6c8'; for (let j = 0; j < 22; j++) for (let i = 0; i < 64; i++) { x.beginPath(); x.arc(4 + i * 8 + (j % 2) * 4, 6 + j * 11, 2, 0, 7); x.fill(); } return c; })());
+  mesh(CY(.14, .14, .04, 48), std(0x9a9ea2, .5), 0, .02, 0, ap); mesh(new THREE.CylinderGeometry(.135, .14, .42, 48, 1, true), std(0xffffff, .5, 0, { map: holes, side: THREE.DoubleSide }), 0, .25, 0, ap);
+  mesh(new THREE.CylinderGeometry(.13, .135, .18, 48), std(0xf4f4f1, .4), 0, .55, 0, ap); mesh(CY(.11, .11, .006, 48), std(0x3a3d40, .55), 0, .643, 0, ap, { cast: false });
+  for (let i = 0; i < 18; i++) { const s = mesh(BX(.1, .004, .005), std(0x55595d, .5), Math.cos(i / 18 * Math.PI * 2) * .055, .648, Math.sin(i / 18 * Math.PI * 2) * .055, ap, { cast: false }); s.rotation.y = -i / 18 * Math.PI * 2; }
+  { const r = mesh(new THREE.TorusGeometry(.12, .004, 6, 48), new THREE.MeshStandardMaterial({ color: 0xbdf3ee, emissive: 0x6fe0d6, emissiveIntensity: .8 }), 0, .642, 0, ap, { cast: false }); r.rotation.x = Math.PI / 2; }
+  mesh(RB(.06, .025, .006, .006, 2), std(0x1d1f22, .2), 0, .57, .1335, ap, { cast: false }); mesh(BX(.02, .006, .002), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x8fe8ff, emissiveIntensity: .7 }), 0, .57, .137, ap, { cast: false }); }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
