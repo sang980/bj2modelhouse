@@ -4422,6 +4422,11 @@ await yieldUI();
   mesh(CY(.044, .05, .07, 28), cg, 0, .94, .012, vc); mesh(CY(.03, .044, .026, 28), dk2, 0, .988, .012, vc, { cast: false });
   mesh(RB(.03, .13, .032, .012, 2), dk, 0, .945, -.052, vc); mesh(RB(.03, .022, .06, .008, 1), dk, 0, 1.013, -.03, vc, { cast: false }); mesh(RB(.052, .075, .058, .01, 2), dk2, 0, .855, -.048, vc); mesh(RB(.012, .006, .002, .002, 1), std(0x46d36a, .3, 0, { emissive: 0x2fbf55, emissiveIntensity: .8 }), 0, .87, -.018, vc, { cast: false });
   mesh(CY(.011, .011, .2, 12), dk, .036, .5, -.095, vc); mesh(RB(.034, .02, .022, .005, 1), wt, .028, .62, -.097, vc, { cast: false }); }
+{ const wt = new THREE.Group(); wt.position.set(WX(7.25), 0, WZ(.14)); wt.rotation.y = -.8; fixed.add(wt); /* 11-23 루프 주방 설비: 싱크 수전 오른쪽(세제병 사이) 상판에 직수 정수기 전용 꼭지(싱크대 아래 본체) — 둥근 받침판 + 가는 크롬 기둥 + 싱크 쪽으로 휜 꼭지 + 끝 원통 헤드(아래 출수구, 위 흰 터치 버튼, 파란 불빛 테) (로컬 +z = 싱크 쪽) */
+  mesh(CY(.024, .024, .006, 24), M.chrome, 0, .903, 0, wt, { cast: false }); mesh(CY(.013, .015, .05, 20), M.chrome, 0, .93, 0, wt); mesh(CY(.0095, .0095, .24, 14), M.chrome, 0, 1.07, 0, wt);
+  { const cv = new THREE.QuadraticBezierCurve3(new THREE.Vector3(0, 1.188, 0), new THREE.Vector3(0, 1.25, .05), new THREE.Vector3(0, 1.205, .145)); const sp = new THREE.Mesh(new THREE.TubeGeometry(cv, 14, .0085, 10, false), M.chrome); sp.castShadow = true; wt.add(sp); }
+  mesh(CY(.016, .014, .036, 20), M.chrome, 0, 1.19, .15, wt); mesh(CY(.007, .007, .003, 12), std(0x2a2b2d, .5), 0, 1.171, .15, wt, { cast: false }); mesh(CY(.0115, .0115, .003, 20), std(0xf6f6f3, .35), 0, 1.2095, .15, wt, { cast: false }); mesh(CY(.003, .003, .001, 10), std(0x3d8fe0, .3, 0, { emissive: 0x2d7fd8, emissiveIntensity: .7 }), 0, 1.2115, .15, wt, { cast: false });
+  { const lr = mesh(new THREE.TorusGeometry(.0152, .0015, 6, 28), std(0x7cc8ff, .3, 0, { emissive: 0x4fb6ff, emissiveIntensity: .9 }), 0, 1.2, .15, wt, { cast: false }); lr.rotation.x = Math.PI / 2; } }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
