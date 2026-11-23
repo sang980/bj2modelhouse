@@ -4288,6 +4288,10 @@ await yieldUI();
   mesh(RB(.12, .024, .07, .006, 2), bw, -.18, .03, 0, tr); wheels(-.18); for (const s of [-1, 1]) { mesh(BX(.12, .035, .006), blu, -.18, .059, s * .032, tr, { cast: false }); mesh(BX(.006, .035, .058), blu, -.18 + s * .057, .059, 0, tr, { cast: false }); }
   for (const [x, z, c, ry] of [[-.207, -.006, 0xf2c94c, .3], [-.178, .008, 0x6fb35a, -.25], [-.15, -.004, 0xd8453a, .55]]) mesh(BX(.026, .026, .026), std(c, .5), x, .055, z, tr, { cast: false }).rotation.y = ry;
   mesh(RB(.12, .024, .07, .006, 2), bw, -.34, .03, 0, tr); wheels(-.34); mesh(CY(.026, .026, .1, 20), std(0x6fb35a, .45), -.34, .07, 0, tr).rotation.z = Math.PI / 2; for (const x of [-.375, -.305]) mesh(CY(.028, .028, .006, 20), std(0xf2f0ea, .5), x, .07, 0, tr, { cast: false }).rotation.z = Math.PI / 2; }
+{ const hp = new THREE.Group(); hp.position.set(.33, .796, .08); hp.rotation.y = .5; alphaDesk.add(hp); /* 11-23 루프 소품: 55B 알파룸 D자 책상 둥근 쪽 끝에 눕혀 둔 크림색 헤드폰 — 반원 머리띠(안쪽 갈색 쿠션 띠) + 양쪽 둥근 귀 컵(바깥 은색 테) + 위를 보는 갈색 가죽 귀 패드·짙은 망 (책상과 같이 움직임) */
+  const cr = std(0xe3d7c3, .45), pd = std(0x7a5a42, .8), mt = std(0xc9ccd1, .3, .8);
+  { const b = mesh(new THREE.TorusGeometry(.085, .009, 10, 32, Math.PI), cr, 0, .012, 0, hp); b.rotation.x = -Math.PI / 2; const c = mesh(new THREE.TorusGeometry(.0765, .0055, 8, 28, Math.PI * .8), pd, 0, .012, 0, hp, { cast: false }); c.rotation.set(-Math.PI / 2, 0, Math.PI * .1); }
+  for (const s of [-1, 1]) { mesh(CY(.04, .043, .026, 28), cr, s * .085, .013, .01, hp); mesh(new THREE.TorusGeometry(.0425, .0018, 6, 28), mt, s * .085, .0045, .01, hp, { cast: false }).rotation.x = Math.PI / 2; mesh(new THREE.TorusGeometry(.031, .0105, 10, 28), pd, s * .085, .029, .01, hp).rotation.x = Math.PI / 2; mesh(CY(.024, .024, .004, 24), std(0x3a3b3e, .9), s * .085, .028, .01, hp, { cast: false }); } }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
