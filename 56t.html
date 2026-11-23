@@ -1126,6 +1126,11 @@ function addOpening(horiz, line, t, o, parent = structure) {
         Q(b0, b0 + .3, lh - .11, lh - .045, f, f + .05, bm); Q(b0 - .012, b0, lh - .105, lh - .05, f + .004, f + .046, dk2, { cast: false }); Q(b0 + .3, b0 + .312, lh - .105, lh - .05, f + .004, f + .046, dk2, { cast: false });
         Q(b0 + .27, b0 + .29, lh - .09, lh - .065, f + .05, f + .062, dk2, { cast: false }); Q(b0 + .12, b0 + .29, lh - .075, lh - .06, f + .062, f + .072, bm, { cast: false }); Q(b0 + .1, b0 + .13, lh - .075, lh - .005, f + .062, f + .072, bm, { cast: false }); Q(b0 + .07, b0 + .16, lh - .005, lh + .01, f + .03, f + .1, bm, { cast: false });
         const pm = (o.from + o.to) / 2; Q(pm - .013, pm + .013, 1.487, 1.513, f, f + .007, M.chrome, { cast: false }); Q(pm - .006, pm + .006, 1.494, 1.506, f + .007, f + .009, std(0x101114, .1, .2), { cast: false }); }
+      { /* 11-23 루프 설비 퀄리티업: 현관문 실내 쪽 잠금 쪽 위 도어가드(걸쇠) — 문틀 쪽 크롬 받침판 + 접어 둔 U자 막대 + 문짝 쪽 걸이 꼭지(받침 포함) */
+        const Q = put, f = lt / 2, e = o.to - fw, cr = M.chrome, cs = { cast: false };
+        Q(e - .012, e + .018, 1.46, 1.62, f, f + .006, cr, cs); Q(e - .006, e + .01, 1.48, 1.6, f + .006, f + .012, std(0x8f9398, .35, .7), cs);
+        for (const y of [1.505, 1.567]) Q(e - .112, e - .004, y, y + .008, f + .012, f + .018, cr, cs); Q(e - .12, e - .112, 1.505, 1.575, f + .012, f + .018, cr, cs);
+        Q(e - .1, e - .072, 1.524, 1.556, f, f + .006, cr, cs); Q(e - .092, e - .08, 1.532, 1.548, f + .006, f + .026, cr, cs); }
     } else {
       // 여닫이 문: 경첩(o.hinge 'a'|'b')을 축으로 회전, 열리는 쪽 o.side(+1/-1). 처음엔 열린 상태
       const hu = o.hinge === 'b' ? o.to - fw : o.from + fw;
