@@ -4385,6 +4385,13 @@ await yieldUI();
     for (const [dx, dz, w, d] of [[0, -hs, s + .03, .03], [0, hs, s + .03, .03], [-hs, 0, .03, s - .03], [hs, 0, .03, s - .03]]) mesh(BX(w, .006, d), fm, X + dx, H - .003, Z + dz, ceilingGroup, { cast: false });
     for (const [dx, dz, w, d] of [[0, -hs + .02, s - .04, .003], [0, hs - .02, s - .04, .003], [-hs + .02, 0, .003, s - .04], [hs - .02, 0, .003, s - .04]]) mesh(BX(w, .002, d), sm, X + dx, H - .0011, Z + dz, ceilingGroup, { cast: false });
     mesh(CY(.008, .008, .003, 16), sm, X + hs - .05, H - .0016, Z, ceilingGroup, { cast: false }); } }
+{ /* 11-23 루프 소품 퀄리티업(55C 아이방): 비어 있던 동쪽 벽(면 x 2.70, 책상과 스위치 사이)에 원목 키재기 자 — 50~190cm 눈금(1cm 짧은 선·5cm 중간·10cm 긴 선 + 숫자) + 위아래 황동 나사 + 112cm 자리 빨간 하트 표시 */
+  const kg = new THREE.Group(); kg.position.set(WX(2.698), 0, WZ(6.8)); kg.rotation.y = -Math.PI / 2; tagGroup('sp-base').add(kg); /* 기본 벽(sp-base)과 함께 보이고 숨음 — 1-1 통합·1-2 꺾음 옵션에선 이 벽 구간이 없어짐 */
+  const tx = toTex((() => { const c = mkCanvas(128, 1024), x = c.getContext('2d'); x.fillStyle = '#ead6b0'; x.fillRect(0, 0, 128, 1024); x.fillStyle = 'rgba(150,110,70,.16)'; for (let i = 0; i < 9; i++) x.fillRect(0, 60 + i * 110 + Math.sin(i * 2.1) * 20, 128, 2);
+    x.fillStyle = '#3a3330'; x.font = 'bold 22px sans-serif'; x.textAlign = 'right'; x.textBaseline = 'middle'; const pc = 1024 / 140; for (let cm = 50; cm <= 190; cm++) { const y = 1024 - (cm - 50) * pc, L = cm % 10 === 0 ? 44 : cm % 5 === 0 ? 28 : 16; x.fillRect(128 - L, y - 1, L, 2); if (cm % 10 === 0 && cm > 50 && cm < 190) x.fillText(String(cm), 128 - 50, y); } return c; })());
+  mesh(BX(.16, 1.4, .012), std(0xd9c19a, .7), 0, 1.2, .006, kg); mesh(new THREE.PlaneGeometry(.16, 1.4), std(0xffffff, .65, 0, { map: tx }), 0, 1.2, .0125, kg, { cast: false });
+  for (const y of [.56, 1.84]) mesh(CY(.006, .006, .004, 12), std(0xc9a24a, .35, .7), 0, y, .0135, kg, { cast: false }).rotation.x = Math.PI / 2;
+  { const sh = new THREE.Shape(); sh.moveTo(0, -.012); sh.bezierCurveTo(-.03, .006, -.012, .022, 0, .01); sh.bezierCurveTo(.012, .022, .03, .006, 0, -.012); mesh(new THREE.ExtrudeGeometry(sh, { depth: .003, bevelEnabled: false }), std(0xd8453f, .5), -.05, 1.12, .0128, kg, { cast: false }); } }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
