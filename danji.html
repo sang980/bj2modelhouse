@@ -499,6 +499,26 @@ function synthPlanned() {
     let fr = 0; for (let k = 0; k < occ.length; k++) fr += occ[k]; console.log('infill villas', nV, 'gap', nG, 'nogap', nNG, 'roads', RD.length, 'occ%', (fr / occ.length * 100).toFixed(1)); }
   { const Q = [[-647.7, 499.7], [-635.2, 531.9], [-669.0, 544.9], [-681.5, 512.6]], at = (u, v) => [Q[0][0] + (Q[1][0] - Q[0][0]) * u + (Q[3][0] - Q[0][0]) * v + (Q[0][0] - Q[1][0] + Q[2][0] - Q[3][0]) * u * v, Q[0][1] + (Q[1][1] - Q[0][1]) * u + (Q[3][1] - Q[0][1]) * v + (Q[0][1] - Q[1][1] + Q[2][1] - Q[3][1]) * u * v]; /* 11-22 카카오 스카이뷰: 지운 OSM 운동장(−658,522) 자리 = 빌라 4채(2×2 필지, 사이 골목 2m) */
     let k = 0; for (const [u0, u1] of [[.03, .47], [.53, .97]]) for (const [v0, v1] of [[.03, .47], [.53, .97]]) { const lv = [4, 3, 5, 4][k++]; push(0, lv, lv * 2.8 + .5, [at(u0, v0), at(u1, v0), at(u1, v1), at(u0, v1)]); n++; } }
+  if (!LOW) { const IP = (GEO.env.land || []).find(l => l.k === 'industrial' && l.n === '성남산업단지'); /* 11-23 루프 카카오 스카이뷰 L4(상대원동): 성남산업단지 안 빈 회색 블록 — 실제로는 2~5층 공장·지식산업센터가 빽빽 → 길 따라 공장 채우기(데스크톱만, OSM 건물·길·공원·주차장·물 피함, 결정적 순서) */
+    if (IP) { let X0 = 1e9, X1 = -1e9, Z0 = 1e9, Z1 = -1e9; for (const [x, z] of IP.p) { X0 = Math.min(X0, x); X1 = Math.max(X1, x); Z0 = Math.min(Z0, z); Z1 = Math.max(Z1, z); }
+      const R = 2, GW = Math.ceil((X1 - X0) / R) + 1, GH = Math.ceil((Z1 - Z0) / R) + 1, cv = cnv(GW, GH), g = cv.getContext('2d', { willReadFrequently: true }), path = P => { g.beginPath(); P.forEach((p, k) => { const x = (p[0] - X0) / R, z = (p[1] - Z0) / R; k ? g.lineTo(x, z) : g.moveTo(x, z); }); };
+      g.fillStyle = g.strokeStyle = '#000'; g.lineCap = g.lineJoin = 'round'; g.fillRect(0, 0, GW, GH); g.globalCompositeOperation = 'destination-out'; path(IP.p); g.closePath(); g.fill(); g.globalCompositeOperation = 'source-over';
+      const inB = p => p[0] > X0 - 40 && p[0] < X1 + 40 && p[1] > Z0 - 40 && p[1] < Z1 + 40;
+      g.lineWidth = 4 / R; for (const BB of [B, out]) { let j = 0; while (j < BB.length) { const np = BB[j + 4]; j += 5; const P = []; for (let k = 0; k < np; k++) { P.push([BB[j] * .2, BB[j + 1] * .2]); j += 2; } if (np >= 3 && P.some(inB)) { path(P); g.closePath(); g.fill(); g.stroke(); } } }
+      for (const l of [...(GEO.env.land || []), ...(GEO.env.green || [])]) if (l !== IP && l.p && l.p.length > 2 && l.p.some(inB)) { path(l.p); g.closePath(); g.fill(); }
+      for (const w of GEO.env.water || []) if (w.p && w.p.some(inB)) { if (w.line) { g.lineWidth = ((w.w || 10) + 14) / R; path(w.p); g.stroke(); } else { path(w.p); g.closePath(); g.fill(); } }
+      const RI = (GEO.env.roads || []).filter(r => r.t !== 1 && !/^(footway|path|steps|track|cycleway|pedestrian)$/.test(r.k) && r.p.some(inB)); for (const r of RI) { g.lineWidth = (r.w + 3) / R; path(r.p); g.stroke(); }
+      const d = g.getImageData(0, 0, GW, GH).data, oc = new Uint8Array(GW * GH); for (let k = 0; k < oc.length; k++) oc[k] = d[k * 4 + 3] > 40 ? 1 : 0; cv.width = cv.height = 1;
+      const fr = (x, z) => { const a = Math.floor((x - X0) / R), b = Math.floor((z - Z0) / R); return a >= 0 && b >= 0 && a < GW && b < GH && !oc[b * GW + a]; }, mark = (x, z) => { const a = Math.floor((x - X0) / R), b = Math.floor((z - Z0) / R); if (a >= 0 && b >= 0 && a < GW && b < GH) oc[b * GW + a] = 1; };
+      const FWI = [24, 32, 20, 38, 28, 22, 34], DPI = [26, 34, 22, 40, 30], LVI = [3, 2, 4, 3, 2, 5, 3, 2]; let q = 0, nI = 0;
+      for (const r of RI) { if (r.w > 30) continue; for (let k = 0; k < r.p.length - 1; k++) { const a = r.p[k], b = r.p[k + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 20) continue; const ux = (b[0] - a[0]) / L, uz = (b[1] - a[1]) / L;
+        for (const sg of [1, -1]) { const nx = -uz * sg, nz = ux * sg, s0 = r.w / 2 + 4, W2 = (tt, ss) => [a[0] + ux * tt + nx * ss, a[1] + uz * tt + nz * ss];
+          for (let t = 3; t < L - 12;) { let fw = FWI[q % FWI.length], dp = DPI[q % DPI.length]; q++; if (t + fw > L - 2) fw = Math.floor(L - 2 - t); if (fw < 14) break;
+            const fits = (f2, d2) => { for (let aa = -1; aa <= f2 + 1; aa += 2) for (let bb = 0; bb <= d2 + 1; bb += 2) { const p = W2(t + aa, s0 + bb); if (!fr(p[0], p[1])) return false; } return true; };
+            let ok = false; for (const d2 of [dp, 22, 16]) if (fits(fw, d2)) { dp = d2; ok = true; break; } if (!ok) { t += 4; continue; }
+            const lv = LVI[q % LVI.length]; push(5, lv, lv * 4.2 + 1, [W2(t, s0), W2(t + fw, s0), W2(t + fw, s0 + dp), W2(t, s0 + dp)]); nI++;
+            for (let aa = -3; aa <= fw + 3; aa += 1) for (let bb = -3; bb <= dp + 3; bb += 1) { const p = W2(t + aa, s0 + bb); mark(p[0], p[1]); } t += fw + 5; } } } }
+      console.log('industrial infill', nI); } }
   if (out.length) { const nb = new Int16Array(B.length + out.length); nb.set(B); nb.set(out, B.length); GEO.bld = nb; }
   console.log('planned/constructed apartments', n);
 }
