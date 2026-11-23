@@ -2632,6 +2632,13 @@ function diningPantry6() {
   fruitBowl(g, -1.065, .7525, 0); /* 6인 식탁: 가운데·서쪽 자리 매트 사이 */
   g.userData.len = L; return g;
 }
+function bedTray(par, x, y, z, ry) { const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; par.add(g); /* 11-23 루프 침대 위 장식품: 안방 이불 위 원목 쟁반(낮은 테두리) + 흰 도자기 찻주전자(둥근 몸통·주둥이·고리 손잡이·뚜껑 꼭지) + 받침 위 찻잔 2(홍차) — 침대와 같이 움직임 */
+  const wd = std(0xc9a275, .6), cer = std(0xf4f2ee, .3), L = (p, n) => new THREE.LatheGeometry(p.map(([a, b]) => new THREE.Vector2(a, b)), n);
+  mesh(RB(.46, .012, .3, .01, 2), wd, 0, .006, 0, g); for (const s of [-1, 1]) { mesh(BX(.46, .03, .012), wd, 0, .021, s * .144, g, { cast: false }); mesh(BX(.012, .03, .276), wd, s * .224, .021, 0, g, { cast: false }); }
+  { const t = new THREE.Group(); t.position.set(-.11, .012, -.02); g.add(t); mesh(L([[0, 0], [.035, 0], [.05, .014], [.056, .034], [.051, .056], [.037, .069], [.022, .072], [0, .072]], 28), cer, 0, 0, 0, t); mesh(new THREE.TorusGeometry(.021, .003, 6, 20), cer, 0, .072, 0, t, { cast: false }).rotation.x = Math.PI / 2; mesh(new THREE.SphereGeometry(.009, 12, 8), cer, 0, .081, 0, t, { cast: false });
+    { const sp = mesh(CY(.0055, .011, .065, 12), cer, .066, .052, 0, t); sp.rotation.z = -.85; } mesh(new THREE.TorusGeometry(.024, .0048, 8, 20), cer, -.064, .038, 0, t); }
+  for (const [cx, cz, r] of [[.06, -.07, .4], [.14, .065, -.6]]) { const c = new THREE.Group(); c.position.set(cx, .012, cz); c.rotation.y = r; g.add(c); mesh(CY(.046, .04, .006, 24), cer, 0, .003, 0, c, { cast: false });
+    mesh(L([[0, .006], [.02, .006], [.029, .03], [.032, .046], [.03, .046], [.027, .031], [.018, .01], [0, .01]], 24), cer, 0, 0, 0, c); mesh(CY(.026, .026, .002, 20), std(0x8a3f1c, .15), 0, .038, 0, c, { cast: false }); mesh(new THREE.TorusGeometry(.011, .0028, 6, 14), cer, .034, .03, 0, c, { cast: false }); } }
 function openBook(par, x, y, z, ry, col) { const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; par.add(g); /* 11-23 루프 소품 퀄리티업: 침대 위에 펼쳐 엎어 둔 책 — 표지 두 쪽이 책등에서 ㅅ자로 내려앉고 안쪽에 흰 종이 묶음, 책등 띠 */
   const cv = std(col, .7), pg = std(0xf5f1e6, .9); for (const s of [-1, 1]) { const h = new THREE.Group(); h.position.set(0, .045, 0); h.rotation.z = -s * .3; g.add(h); mesh(RB(.145, .005, .215, .002, 1), cv, s * .0725, .0025, 0, h); mesh(BX(.138, .012, .2), pg, s * .069, -.0065, 0, h, { cast: false }); }
   mesh(CY(.008, .008, .215, 10), cv, 0, .046, 0, g, { cast: false }).rotation.x = Math.PI / 2; return g; }
@@ -2742,7 +2749,7 @@ const diningS = diningSmall(), diningL = diningLarge(), diningP6 = diningPantry6
 const dining = diningS; // (예전 코드 호환용)
 // 평면도 방향: 침대 헤드는 서쪽 벽, 붙박이장(옵션 10)은 동쪽 벽
 bedSlippers(10.05, 7.66, 0xdcc0b4, 0); /* 안방 침대 남쪽 옆(러그 밖 바닥) 먼지 분홍 슬리퍼 */
-{ const b = bed(9.96, 6.45, Math.PI / 2, 1.6, 2.1, '침대'); openBook(b, .38, .55, -.05, .5, 0xb7673f); /* VR(55C): 밝은 원목 프레임 · 베이지 담요 · 베이지/흰 베개 */
+{ const b = bed(9.96, 6.45, Math.PI / 2, 1.6, 2.1, '침대'); openBook(b, .38, .55, -.05, .5, 0xb7673f); bedTray(b, -.3, .558, .06, .25); /* VR(55C): 밝은 원목 프레임 · 베이지 담요 · 베이지/흰 베개 */
   const beige = std(0xcfbea4, .98, 0, { map: M.throwBlue.map }), pb = std(0xcdb79c, .95, 0, { map: M.linen.map }), pw = std(0xf7f6f2, .95, 0, { map: M.linen.map });
   const lyG = pillowG(.64, .19, .4), rm = [], L = 2.1;
   b.traverse(o => { if (!o.isMesh) return; if (o.material === M.throwBlue) o.material = beige; else if (o.material === M.charcoal || o.material === M.check || o.geometry === lyG) rm.push(o); }); rm.forEach(o => o.parent.remove(o));
