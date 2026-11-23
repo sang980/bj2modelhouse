@@ -3236,6 +3236,14 @@ function doorSeams(g, face, a0, a1, n, y0 = .1, y1 = 2.28) { // face: {axis:'x'|
   const hole = new THREE.Path(); hole.absarc(0, .548, .0065, 0, Math.PI * 2, true); sh.holes.push(hole);
   const gg = new THREE.ExtrudeGeometry(sh, { depth: .003, bevelEnabled: true, bevelThickness: .0012, bevelSize: .0012, bevelSegments: 2, curveSegments: 10 }), pa = gg.attributes.position; for (let i = 0; i < pa.count; i++) { const y = pa.getY(i); if (y < .16) { const k = 1 - y / .16, xx = pa.getX(i) / .028; pa.setZ(i, pa.getZ(i) + (1 - xx * xx) * .01 * k); } } gg.computeVertexNormals();
   mesh(gg, std(0x6b4630, .45), 0, .975 - .548, .012, sg).rotation.z = .02; }
+{ /* 11-23 루프 현관 소품: 기본 신발장(앞면 x 2.14) 문 앞에 기대 세운 카키 장우산 — 접힌 천은 8갈래 주름(회전체 반지름을 각도로 물결) + 감는 띠·똑딱단추 + 크롬 끝 꼭지·위 꼭지 + 가는 대 + 짙은 원목 J 손잡이(갈고리는 신발장 면을 따라 옆으로) */
+  const ug = new THREE.Group(); ug.position.set(WX(2.235), OV + .002, WZ(3.25)); ug.rotation.set(.03, 0, .09); fixed.add(ug); const u = new THREE.Group(); u.rotation.y = Math.PI / 2; ug.add(u);
+  const kh = std(0xa38a63, .82), V2 = THREE.Vector2, cg = new THREE.LatheGeometry([[0, .03], [.006, .034], [.024, .12], [.031, .21], [.029, .36], [.022, .54], [.013, .66], [.006, .69], [0, .695]].map(([a, b]) => new V2(a, b)), 40), pa = cg.attributes.position;
+  for (let i = 0; i < pa.count; i++) { const x = pa.getX(i), z = pa.getZ(i), a = Math.atan2(z, x) + pa.getY(i) * 1.2, k = .86 + .3 * Math.abs(Math.cos(4 * a)); /* 8갈래 둥근 주름 + 사이 골 */ pa.setX(i, x * k); pa.setZ(i, z * k); } cg.computeVertexNormals(); mesh(cg, kh, 0, 0, 0, u);
+  mesh(CY(.0035, .0016, .03, 10), M.chrome, 0, .015, 0, u, { cast: false }); mesh(CY(.0062, .0062, .012, 14), M.chrome, 0, .69, 0, u, { cast: false });
+  mesh(CY(.0332, .0332, .02, 28), std(0x8f7754, .85), 0, .4, 0, u, { cast: false }); mesh(CY(.005, .005, .004, 12), M.chrome, .0335, .4, 0, u, { cast: false }).rotation.z = Math.PI / 2;
+  mesh(CY(.0042, .0042, .1, 10), M.chrome, 0, .74, 0, u); const wd = std(0x4e3324, .5); mesh(CY(.0115, .011, .1, 16), wd, 0, .835, 0, u);
+  const hk = mesh(new THREE.TorusGeometry(.033, .0105, 12, 28, Math.PI), wd, -.033, .885, 0, u); mesh(new THREE.SphereGeometry(.0105, 14, 10), wd, -.066, .885, 0, u, { cast: false }); }
 // 복도팬트리: 주방 쪽으로 확장된 공간(x 3.96–4.94), 도어는 복도(남쪽, z=4.2)를 향함
 const PAN = { x0: 3.96, x1: 4.94, z0: 2.41, z1: 3.70 }; /* 평면도: 남쪽 벽 z 3.72 */
 // 복도팬트리: 안으로 들어가는 워크인 공간 + 복도 쪽 양여닫이 문(클릭으로 열고 닫기)
