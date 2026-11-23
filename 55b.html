@@ -4229,6 +4229,16 @@ await yieldUI();
     [[-.034, .055], [-.0115, .068], [.0115, .072], [.034, .06]].forEach(([z, L]) => { const f = mesh(cap(L), rub, .05 + L / 2 + .0105, .008, z * s, g, { cast: false }); f.scale.y = .72; });
     { const t = mesh(cap(.045), rub, .01, .008, .058 * s, g, { cast: false }); t.scale.y = .72; t.rotation.y = -.65 * s; } };
   glove(0, 0, 0, 0, false); glove(.018, .0145, -.008, .14, true); }
+{ const vc = new THREE.Group(); vc.position.set(WX(5.585), 0, WZ(6.95)); vc.rotation.y = -Math.PI / 2; fixed.add(vc); /* 11-23 루프 소품: 복도 동쪽 벽 남쪽 끝(거실 들어가기 전) 빈 바닥에 무선 스틱 청소기 + 충전 거치대 — 짙은 회색 바닥판, 벽 쪽 흰 기둥·윗받침(충전 단자), 판 위 바닥 솔 헤드(검은 솔 롤러·샴페인 띠), 알루미늄 긴 관, 위 투명 먼지통(안 사이클론)·샴페인 모터·뒤 손잡이·배터리(초록 불), 기둥 옆 틈새 솔 (로컬 +z = 방 쪽) */
+  const dk = std(0x34373c, .6), dk2 = std(0x24262a, .7), wt = std(0xeeeeec, .45), al = std(0xb9bcc0, .3, .65), cg = std(0xc9a97a, .35, .45);
+  mesh(RB(.26, .018, .22, .008, 2), dk, 0, .009, 0, vc, { cast: false }); mesh(RB(.2, .004, .15, .004, 1), std(0x4a4e54, .55), 0, .02, .01, vc, { cast: false });
+  mesh(RB(.045, 1.1, .026, .008, 2), wt, 0, .57, -.097, vc); mesh(RB(.09, .045, .06, .01, 2), wt, 0, 1.0, -.072, vc); mesh(RB(.02, .012, .006, .003, 1), std(0x8c9096, .4, .6), 0, .99, -.04, vc, { cast: false });
+  mesh(RB(.25, .045, .085, .016, 3), dk, 0, .046, .035, vc); { const r = mesh(CY(.024, .024, .23, 20), dk2, 0, .046, .074, vc, { cast: false }); r.rotation.z = Math.PI / 2; } mesh(RB(.2, .006, .012, .003, 1), cg, 0, .07, .062, vc, { cast: false });
+  mesh(CY(.02, .022, .045, 16), dk, 0, .09, .01, vc); mesh(CY(.016, .016, .62, 16), al, 0, .42, .0, vc);
+  mesh(CY(.05, .05, .17, 32), std(0x9aa4ad, .08, 0, { transparent: true, opacity: .42, depthWrite: false }), 0, .82, .012, vc, { cast: false }); mesh(CY(.022, .034, .14, 20), std(0xa9adb2, .4, .5), 0, .83, .012, vc, { cast: false }); mesh(CY(.052, .052, .012, 32), dk, 0, .735, .012, vc, { cast: false });
+  mesh(CY(.044, .05, .07, 28), cg, 0, .94, .012, vc); mesh(CY(.03, .044, .026, 28), dk2, 0, .988, .012, vc, { cast: false });
+  mesh(RB(.03, .13, .032, .012, 2), dk, 0, .945, -.052, vc); mesh(RB(.03, .022, .06, .008, 1), dk, 0, 1.013, -.03, vc, { cast: false }); mesh(RB(.052, .075, .058, .01, 2), dk2, 0, .855, -.048, vc); mesh(RB(.012, .006, .002, .002, 1), std(0x46d36a, .3, 0, { emissive: 0x2fbf55, emissiveIntensity: .8 }), 0, .87, -.018, vc, { cast: false });
+  mesh(CY(.011, .011, .2, 12), dk, .036, .5, -.095, vc); mesh(RB(.034, .02, .022, .005, 1), wt, .028, .62, -.097, vc, { cast: false }); }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
