@@ -4234,6 +4234,10 @@ await yieldUI();
   { const fp = new THREE.Group(); fp.position.set(0, H - L / 2 * Math.cos(a), L / 2 * Math.sin(a)); fp.rotation.x = -a; cal.add(fp); mesh(BX(.165, L, .003), bd, 0, 0, 0, fp); mesh(new THREE.PlaneGeometry(.155, .1356), std(0xffffff, .85, 0, { map: pg }), 0, -.0035, .0017, fp, { cast: false }); }
   { const bp = new THREE.Group(); bp.position.set(0, H - L / 2 * Math.cos(a), -L / 2 * Math.sin(a)); bp.rotation.x = a; cal.add(bp); mesh(BX(.165, L, .003), kr, 0, 0, 0, bp); }
   { const rg = new THREE.TorusGeometry(.0055, .0011, 6, 14), rm = std(0xc9ccd1, .3, .8); for (let i = 0; i < 11; i++) { const r = mesh(rg, rm, -.07 + i * .014, H - .002, 0, cal, { cast: false }); r.rotation.y = Math.PI / 2; } } }
+{ const rt = new THREE.Group(); rt.position.set(.73, 0, .95); rt.rotation.y = 0; kidBed.add(rt); /* 11-23 루프 소품(아이방 장난감): 56T 알파룸 아이 침대 발치 옆 바닥(침대와 같이 숨김) 무지개 링 쌓기 — 원목 받침·기둥 + 아래부터 빨강·주황·노랑·초록·파랑 도넛 링(위로 갈수록 작게, 서로 닿게) + 보라 꼭지 공, 옆 바닥에 빠진 하늘색 링 하나 */
+  const wd = std(0xe6c793, .6); mesh(CY(.075, .08, .025, 28), wd, 0, .0125, 0, rt); mesh(CY(.012, .012, .2, 12), wd, 0, .12, 0, rt, { cast: false });
+  let y = .025; for (const [R, r, c] of [[.058, .022, 0xe0503f], [.05, .02, 0xf29a38], [.043, .018, 0xf2cf45], [.036, .016, 0x6fb35a], [.03, .014, 0x3f7fc4]]) { y += r; mesh(new THREE.TorusGeometry(R, r, 12, 28), std(c, .42), 0, y, 0, rt).rotation.x = Math.PI / 2; y += r; }
+  mesh(new THREE.SphereGeometry(.024, 20, 14), std(0x8e5cc4, .4), 0, y + .02, 0, rt); mesh(new THREE.TorusGeometry(.04, .016, 12, 26), std(0x7fc6e8, .42), .14, .016, .05, rt).rotation.x = Math.PI / 2; }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
