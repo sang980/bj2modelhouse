@@ -4209,6 +4209,12 @@ await yieldUI();
     for (const [dx, dz, w, d] of [[0, -hs, s + .03, .03], [0, hs, s + .03, .03], [-hs, 0, .03, s - .03], [hs, 0, .03, s - .03]]) mesh(BX(w, .006, d), fm, X + dx, H - .003, Z + dz, ceilingGroup, { cast: false });
     for (const [dx, dz, w, d] of [[0, -hs + .02, s - .04, .003], [0, hs - .02, s - .04, .003], [-hs + .02, 0, .003, s - .04], [hs - .02, 0, .003, s - .04]]) mesh(BX(w, .002, d), sm, X + dx, H - .0011, Z + dz, ceilingGroup, { cast: false });
     mesh(CY(.008, .008, .003, 16), sm, X + hs - .05, H - .0016, Z, ceilingGroup, { cast: false }); } }
+{ const squeegee = (x, z, nx, nz) => { const g = new THREE.Group(); g.position.set(WX(x), 1.42, WZ(z)); g.rotation.y = Math.atan2(nx, nz); fixed.add(g); /* 11-23 루프 욕실 소품: 샤워부스 고정 유리 안쪽에 흡착 고리로 걸어 둔 물기 제거 스퀴지 — 반투명 흡착판 + 크롬 고리 + 흰 손잡이(걸이 구멍) + 회청색 날 받침 + 검은 고무 날 (로컬 +z = 샤워 안쪽) */
+    { const c = mesh(CY(.017, .017, .004, 20), std(0xdfe3e6, .2, 0, { transparent: true, opacity: .55, depthWrite: false }), 0, 0, .002, g, { cast: false }); c.rotation.x = Math.PI / 2; }
+    { const st = mesh(CY(.003, .003, .012, 8), M.chrome, 0, 0, .009, g, { cast: false }); st.rotation.x = Math.PI / 2; const hk = mesh(new THREE.TorusGeometry(.007, .0018, 6, 14, Math.PI), M.chrome, 0, -.004, .016, g, { cast: false }); hk.rotation.set(Math.PI / 2, 0, Math.PI / 2); }
+    mesh(RB(.032, .13, .018, .008, 2), std(0xeceeef, .4), 0, -.085, .02, g, { cast: false }); mesh(CY(.005, .005, .0185, 12), std(0x3a3d40, .6), 0, -.03, .02, g, { cast: false }).rotation.x = Math.PI / 2;
+    mesh(RB(.2, .03, .022, .008, 2), std(0x8fa3b3, .45), 0, -.162, .02, g, { cast: false }); mesh(BX(.198, .014, .005), std(0x1c1d1f, .7), 0, -.183, .02, g, { cast: false }); };
+  squeegee(6.17, 5.632, 0, -1); /* 욕실2 샤워부스 고정 유리(z 5.64) 안쪽(북쪽) */ }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
