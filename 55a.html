@@ -4442,6 +4442,13 @@ await yieldUI();
   for (let i = 0; i < 18; i++) { const s = mesh(BX(.1, .004, .005), std(0x55595d, .5), Math.cos(i / 18 * Math.PI * 2) * .055, .648, Math.sin(i / 18 * Math.PI * 2) * .055, ap, { cast: false }); s.rotation.y = -i / 18 * Math.PI * 2; }
   { const r = mesh(new THREE.TorusGeometry(.12, .004, 6, 48), new THREE.MeshStandardMaterial({ color: 0xbdf3ee, emissive: 0x6fe0d6, emissiveIntensity: .8 }), 0, .642, 0, ap, { cast: false }); r.rotation.x = Math.PI / 2; }
   mesh(RB(.06, .025, .006, .006, 2), std(0x1d1f22, .2), 0, .57, .1335, ap, { cast: false }); mesh(BX(.02, .006, .002), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x8fe8ff, emissiveIntensity: .7 }), 0, .57, .137, ap, { cast: false }); }
+{ const gl = new THREE.Group(); gl.position.set(WX(7.43), .9, WZ(.58)); gl.rotation.y = Math.PI; fixed.add(gl); /* 11-23 루프 주방 소품: 개수대 오른쪽 앞쪽 상판에 겹쳐 눕혀 둔 분홍 고무장갑 한 켤레 — 손목 덮개(끝단 띠) + 손바닥 + 손가락 4(길이 다르게, 끝 둥근 캡슐) + 비스듬한 엄지, 위 장갑은 엄지가 반대쪽(뒤집힘) (로컬 +x = 손가락 쪽) */
+  const rub = std(0xe8748e, .38), rub2 = std(0xd9627d, .42), cap = (L) => { const g = new THREE.CapsuleGeometry(.0105, L, 4, 10); g.rotateZ(Math.PI / 2); return g; };
+  const glove = (ox, oy, oz, ry, flip) => { const g = new THREE.Group(); g.position.set(ox, oy, oz); g.rotation.y = ry; gl.add(g); const s = flip ? -1 : 1;
+    mesh(RB(.12, .013, .108, .006, 2), rub, -.11, .0065, 0, g, { cast: false }); mesh(RB(.012, .015, .112, .005, 1), rub2, -.172, .0075, 0, g, { cast: false }); mesh(RB(.1, .016, .094, .008, 2), rub, 0, .008, 0, g, { cast: false });
+    [[-.034, .055], [-.0115, .068], [.0115, .072], [.034, .06]].forEach(([z, L]) => { const f = mesh(cap(L), rub, .05 + L / 2 + .0105, .008, z * s, g, { cast: false }); f.scale.y = .72; });
+    { const t = mesh(cap(.045), rub, .01, .008, .058 * s, g, { cast: false }); t.scale.y = .72; t.rotation.y = -.65 * s; } };
+  glove(0, 0, 0, 0, false); glove(.018, .0145, -.008, .14, true); }
 makeDecorPieces(); rebuildFurnColliders(); /* 11-21: 장식 → 선택·삭제 가능한 묶음(병합 전, 가구 목록 맨 뒤) + 단단한 장식(TV장·책장) 충돌 */
 await phase('가볍게 최적화하는 중', 86);
 collectFixtures(); // 모든 조명이 만들어진 뒤: 풀 조명만 셰이더에 들어가게
