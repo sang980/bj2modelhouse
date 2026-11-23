@@ -1890,6 +1890,14 @@ decorStart('복도 그림'); { const g = fixed, z = 5.26;
   pbox(1.94, x - .04, 0, .1, a + .02, b - .02, M.black, g);
   shoeCabinet({ parent: g, axis: 'x', front: x, back: 1.9, a0: a, a1: b, n: 3, mat: M.mirrorEntry, frame: true }); // VR: 블랙 테 전신거울 문 3짝(클릭하면 열림) + 안쪽 선반·신발
   /* 11-23 루프 현관 소품: 현관 바닥에 벗어 둔 운동화 한 켤레 — 뒤꿈치는 실내 단 쪽, 앞코는 현관문 쪽(신발장 안 운동화와 같은 모양, 흰 테라조에 묻히지 않게 진한 색 + 흰 밑창) */ shoePair(g, WX(2.8), OV + .002, WZ(3.95), Math.PI + .07, 'sneaker', 0x34405a);
+  { /* 11-23 루프 현관 소품(55A·55B·55C와 같은 우산): 거울 신발장(앞면 x 2.28) 문 앞에 기대 세운 카키 장우산 — 8갈래 주름 접힌 천 + 감는 띠·똑딱단추 + 크롬 끝 꼭지·위 꼭지 + 가는 대 + 짙은 원목 J 손잡이(갈고리는 신발장 면을 따라 실내 쪽으로) */
+    const ug = new THREE.Group(); ug.position.set(WX(2.375), OV + .002, WZ(3.3)); ug.rotation.set(.03, 0, .09); g.add(ug); const u = new THREE.Group(); u.rotation.y = Math.PI / 2; ug.add(u);
+    const kh = std(0xa38a63, .82), V2 = THREE.Vector2, cg = new THREE.LatheGeometry([[0, .03], [.006, .034], [.024, .12], [.031, .21], [.029, .36], [.022, .54], [.013, .66], [.006, .69], [0, .695]].map(([a, b]) => new V2(a, b)), 40), pa = cg.attributes.position;
+    for (let i = 0; i < pa.count; i++) { const x = pa.getX(i), z = pa.getZ(i), a = Math.atan2(z, x) + pa.getY(i) * 1.2, k = .86 + .3 * Math.abs(Math.cos(4 * a)); pa.setX(i, x * k); pa.setZ(i, z * k); } cg.computeVertexNormals(); mesh(cg, kh, 0, 0, 0, u);
+    mesh(CY(.0035, .0016, .03, 10), M.chrome, 0, .015, 0, u, { cast: false }); mesh(CY(.0062, .0062, .012, 14), M.chrome, 0, .69, 0, u, { cast: false });
+    mesh(CY(.0332, .0332, .02, 28), std(0x8f7754, .85), 0, .4, 0, u, { cast: false }); mesh(CY(.005, .005, .004, 12), M.chrome, .0335, .4, 0, u, { cast: false }).rotation.z = Math.PI / 2;
+    mesh(CY(.0042, .0042, .1, 10), M.chrome, 0, .74, 0, u); const wd = std(0x4e3324, .5); mesh(CY(.0115, .011, .1, 16), wd, 0, .835, 0, u);
+    mesh(new THREE.TorusGeometry(.033, .0105, 12, 28, Math.PI), wd, -.033, .885, 0, u); mesh(new THREE.SphereGeometry(.0105, 14, 10), wd, -.066, .885, 0, u, { cast: false }); }
   wallBoxes.push({ minX: WX(1.9), maxX: WX(x), minZ: WZ(a), maxZ: WZ(b) });
   ceilingPanel(2.65, 3.15, 3.0, 3.5, 1.0, 2.6);
 }
