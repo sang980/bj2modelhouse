@@ -1561,7 +1561,7 @@ await phase('거실을 꾸미는 중', 56);
 pbox(8.74, 8.76, 0, H, 5.16, 8.05, M.woodPanel, fixed);
 decorStart('TV·TV장', true); /* 11-21: TV·콘솔·화병 한 묶음으로 선택·삭제 */
 tvBody(fixed, 8.695, 8.74, 1.0, 1.75, 6.25, 7.55); tvScreen(fixed, WX(8.6925), 1.375, WZ(6.9), 1.29, .74);
-pbox(8.34, 8.74, .2, .42, 5.35, 8.0, M.marbleW, fixed); for (let k = 1; k < 4; k++) { const zc = 5.35 + 2.65 * k / 4; pbox(8.338, 8.342, .214, .406, zc - .0015, zc + .0015, seamMat, fixed, { cast: false }); } pbox(8.338, 8.342, .392, .395, 5.37, 7.98, seamMat, fixed, { cast: false }); /* 11-22 소품 퀄리티업: 통짜 대리석 상자이던 TV장 앞면 — 푸시 도어 4짝 줄눈 + 위 손가락 홈 띠 */
+pbox(8.34, 8.74, .2, .42, 5.35, 8.0, M.marbleW, fixed); for (let k = 1; k < 4; k++) { const zc = 5.35 + 2.65 * k / 4; pbox(8.338, 8.342, .214, .406, zc - .0015, zc + .0015, seamMat, fixed, { cast: false }); } pbox(8.338, 8.342, .392, .395, 5.37, 7.98, seamMat, fixed, { cast: false }); /* 11-22 소품 퀄리티업: 통짜 대리석 상자이던 TV장 앞면 — 푸시 도어 4짝 줄눈 + 위 손가락 홈 띠 */ for (let k = 0; k < 4; k++) { const za = 5.35 + 2.65 * k / 4 + .002, zb = 5.35 + 2.65 * (k + 1) / 4 - .002; mesh(RB(.018, .186, zb - za, .003, 2), M.marbleW, WX(8.34 - .009), .295, WZ((za + zb) / 2), fixed); if (k) pbox(8.324, 8.34, .202, .388, za - .004, za, seamMat, fixed, { cast: false }); } /* 11-28 루프: 푸시 도어 4짝을 18mm 대리석 판(둥근 모서리 3mm)으로, 틈은 어두운 줄 */
 pbox(8.36, 8.72, .185, .2, 5.37, 7.98, M.ledWarm, fixed, { cast: false });
 ledRect(8.36, 8.69, 5.45, 7.9, .17, -1, 0xffd9a8, 1.6, 3.2);
 decorEnd(); /* 충돌은 이제 TV장 묶음이 맡음(지우면 지나갈 수 있게) */
