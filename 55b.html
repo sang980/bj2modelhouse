@@ -2085,8 +2085,8 @@ await phase('침실을 꾸미는 중', 66);
 { const g = item('b-book', '백라이트 책장'); decorStart('백라이트 책장', true, [g]); /* 11-21: 책장·소품·뒤 조명 한 묶음 */
   const x0 = 1.33, x1 = 3.39, z0 = 2.8, z1 = 3.14, wb = std(0xf4f3f0, .5);
   pbox(x0, x1, .1, 2.25, z0, z0 + .02, std(0xf6efe0, .6, 0, { emissive: 0xffe6c2, emissiveIntensity: .6 }), g); /* VR: 칸 뒤판이 따뜻하게 빛남(백라이트) */
-  for (const y of [.1, .52, .94, 1.36, 1.78, 2.22]) pbox(x0, x1, y, y + .025, z0, z1, wb, g);
-  for (let i = 0; i <= 5; i++) { const x = x0 + (x1 - x0) * i / 5; pbox(x - .012, x + .012, .1, 2.245, z0, z1, wb, g); }
+  /* 11-28 루프 가구 퀄리티업: 선반·칸막이 날카로운 판 → 모서리 둥근 판(4mm, 앞 모서리에 빛이 걸림) */ for (const y of [.1, .52, .94, 1.36, 1.78, 2.22]) mesh(RB(x1 - x0, .025, z1 - z0 - .004, .004, 3), wb, WX((x0 + x1) / 2), y + .0125, WZ((z0 + z1) / 2 + .002), g);
+  for (let i = 0; i <= 5; i++) { const x = x0 + (x1 - x0) * i / 5; mesh(RB(.024, 2.145, z1 - z0 - .004, .004, 3), wb, WX(x), 1.1725, WZ((z0 + z1) / 2 + .002), g); }
   const rod = new THREE.CylinderGeometry(.006, .006, 1, 10); rod.rotateZ(Math.PI / 2);
   for (const y of [.5, .92, 1.34, 1.76, 2.2]) for (let c = 0; c < 5; c++) { const a = x0 + (x1 - x0) * c / 5 + .03, b2 = x0 + (x1 - x0) * (c + 1) / 5 - .03, r = new THREE.Mesh(rod, M.ledWarm); r.scale.set(b2 - a, 1, 1); r.position.set(WX((a + b2) / 2), y - .012, WZ(z0 + .07)); g.add(r); }
   pbox(x0, x1, 0, .1, z0, z1, M.white, g);
