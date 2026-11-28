@@ -3000,8 +3000,17 @@ await yieldUI();
 }
 function nestTables(x, z) { // 원형 2단 네스팅 테이블(베이지 우드 상판 + 원통 받침)
   const g = piece('커피테이블', x, z, 0), wood = std(0xcbbdab, .45), base = std(0xb7a994, .5); /* VR: 그레이지 */
-  mesh(CY(.42, .42, .035, 48), wood, -.15, .45, -.2, g); mesh(CY(.25, .28, .43, 40), base, -.15, .215, -.2, g);
-  mesh(CY(.36, .36, .035, 48), wood, .3, .32, .35, g); mesh(CY(.22, .25, .3, 40), base, .3, .15, .35, g);
+  /* 11-29 루프 소품 퀄리티업: 네스팅 테이블 — 원통 상판 + 원통 받침 → 둥근 모서리(불노즈) 원목 상판(윗면 결정적 나뭇결·결 따라 살짝 오돌토돌) + 상판 밑 그늘 틈 + 세로 홈 32줄이 파인 그레이지 받침(아래로 살짝 넓어짐) + 바닥 쪽 들어간 걸레받이 띠 */
+  { const hh = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }, c = mkCanvas(512, 512), x = c.getContext('2d'); x.fillStyle = '#cbbdab'; x.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 150; i++) { const y0 = hh(i, 3) * 512, a = 2 + hh(i, 5) * 6, f = .004 + hh(i, 7) * .01, ph = hh(i, 9) * 6, d = hh(i, 11) < .5; x.strokeStyle = d ? `rgba(120,100,78,${.05 + hh(i, 13) * .12})` : `rgba(240,232,220,${.05 + hh(i, 13) * .1})`; x.lineWidth = .6 + hh(i, 15) * 1.8; x.beginPath(); for (let t = 0; t <= 512; t += 8) { const yy = y0 + Math.sin(t * f + ph) * a; t ? x.lineTo(t, yy) : x.moveTo(t, yy); } x.stroke(); }
+    for (let i = 0; i < 4; i++) { const cx = hh(i, 21) * 512, cy = hh(i, 23) * 512; x.strokeStyle = 'rgba(110,90,70,.12)'; for (let r = 4; r < 30; r += 5) { x.beginPath(); x.ellipse(cx, cy, r * 3, r * .6, 0, 0, 7); x.stroke(); } }
+    const topM = std(0xffffff, .42, 0, { map: toTex(c), bumpMap: toTex(c, { srgb: false }), bumpScale: .4 });
+    const topRim = (R) => new THREE.LatheGeometry([[R - .012, 0], [R - .004, .003], [R, .0175], [R - .004, .032], [R - .012, .035]].map(([a, b]) => new THREE.Vector2(a, b)), 64);
+    const fluted = (r0, r1, h) => { const gq = new THREE.CylinderGeometry(r0, r1, h, 256, 1, true), p = gq.attributes.position; for (let i = 0; i < p.count; i++) { const px = p.getX(i), pz = p.getZ(i), th = Math.atan2(pz, px), k = 1 - .045 * Math.pow(Math.max(0, Math.cos(th * 32)), 2); p.setX(i, px * k); p.setZ(i, pz * k); } gq.computeVertexNormals(); return gq; };
+    for (const [R, br0, br1, H, cx, cz, rot] of [[.42, .25, .28, .43, -.15, -.2, .3], [.36, .22, .25, .3, .3, .35, 1.1]]) { const yt = H + .02;
+      const tp = mesh(new THREE.CircleGeometry(R - .011, 64).rotateX(-Math.PI / 2), topM, cx, yt + .0175, cz, g); tp.rotation.y = rot; mesh(new THREE.CircleGeometry(R - .011, 64).rotateX(Math.PI / 2), wood, cx, yt - .0175, cz, g, { cast: false }); mesh(topRim(R), wood, cx, yt - .0175, cz, g);
+      mesh(CY(br0 - .02, br0 - .02, .012, 40), std(0x8c8072, .8), cx, H + .002 - .006, cz, g, { cast: false });
+      mesh(fluted(br0, br1, H - .04), base, cx, .04 + (H - .04) / 2, cz, g); mesh(CY(br0 - .002, br0 - .002, .004, 40), base, cx, H - .002, cz, g, { cast: false }); mesh(CY(br1 - .015, br1 - .015, .04, 40), std(0x9d917f, .6), cx, .02, cz, g); } }
   tablePlant(g, -.2, .47, -.25);
   tvRemote(g, -.33, .4675, .02, .45); /* 검은 화병(.05,-.02)·화분 피해 위판 앞쪽 */
   for (let i = 0; i < 2; i++) mesh(BOOK.geo(.22 - i * .03, .028, .28 - i * .03, 'lie'), BOOK.mats[[7, 0][i]], .35, .352 + i * .028, .3, g).rotation.y = .3 - i * .15; /* 11-21: 단색 상자 → 책등 글자·표지·종이 단면 */ /* 책 2권 */
