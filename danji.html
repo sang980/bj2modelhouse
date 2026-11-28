@@ -5482,11 +5482,12 @@ async function capHome(spec) {
   const rot = (x, y, z) => new THREE.Vector3(x * ca + z * sa, y, -x * sa + z * ca);
   setFly(false); camera.position.copy(eye); controls.target.set(eye.x + v.fx, eye.y, eye.z + v.fz); controls.update(); await wait(700); /* 주변 LOD·그림자가 그 자리에 맞게 몇 프레임 */
   renderer.setPixelRatio(1); renderer.setSize(N, N, false); camera.fov = 90; camera.aspect = 1; camera.near = NEAR ? RC : .25; camera.updateProjectionMatrix(); /* 주변 3D를 따로 보낼 때는 사진에서 그 안쪽을 잘라 냄 */
-  const faces = [];
+  const faces = []; /* 11-28 사용자(108동 301호 거실창 양옆에 위에서 늘어진 막대): 일반 층은 우리 동 외벽면에서 2m 안쪽(윗층 발코니 기둥·선홈통·난간 등 우리 동 외벽 부재)을 찍지 않음 — 창으로는 외벽면 바깥만 보이므로 이웃·풍경은 그대로 */
+  renderer.clippingPlanes = v.fl > 0 ? [new THREE.Plane(new THREE.Vector3(v.fx, 0, v.fz), -(v.fx * (eye.x + v.fx * 4.5) + v.fz * (eye.z + v.fz * 4.5)))] : [];
   for (const F of CAP_FACES) { const d = rot(F[0], F[1], F[2]), u = rot(F[3], F[4], F[5]);
     camera.position.copy(eye); camera.up.copy(u); camera.lookAt(eye.x + d.x, eye.y + d.y, eye.z + d.z); camera.updateMatrixWorld();
     sky.position.copy(eye); scene.fog.density = .000205 * (1 - .55 * smooth(350, 1800, eye.y)); scene.traverse(o => { if (o.isSprite) o.visible = false; });
-    renderer.render(scene, camera); faces.push(renderer.domElement.toDataURL('image/jpeg', .86)); await wait(30); }
+    renderer.render(scene, camera); faces.push(renderer.domElement.toDataURL('image/jpeg', .86)); await wait(30); } renderer.clippingPlanes = [];
   /* 일조용 가림 높이각: 거실 창 바로 바깥(테라스는 그 자리)에서 주변 건물·산을 흰색(하늘은 검정)으로 찍어, 방위(북=0) 1°마다
      지평선에서부터 끊기지 않고 솟은 가림의 꼭대기 각도(위에 떠 있는 우리 동 지붕 난간 등은 빼고) — 옆 4면(위로 약 35~45°까지) */
   const hzA = new Array(360).fill(-2);
