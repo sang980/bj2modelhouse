@@ -2611,16 +2611,16 @@ function buildSchools() {
       /* 11-28 사진 확대 5: 본관 동쪽 끝(체육관 옆) 운동장 쪽 = 짙은 파란 틀 계단탑 — 양옆 기둥·층 띠·꼭대기 띠, 틀 안 흰 벽에 층마다 창 2(흰 틀·가운데 살) */
       const TW = 7.5, t0 = -L / 2 + TW / 2, NV = W6(G.navyF), WH = W6(G.hdWhite), FR = W6(G.hdFrame), H0 = top + .55;
       { const c = at(.2, t0); obox(c[0], c[1], u[0], u[1], TW - 1.6, .4, yb, top, WH); }
-      for (const [tt, w] of [[t0 - TW / 2 + .45, .9], [t0 + TW / 2 - .45, .9]]) { const c = at(.35, tt); obox(c[0], c[1], u[0], u[1], w, .7, yb, H0, NV); }
-      { const c = at(.35, t0); obox(c[0], c[1], u[0], u[1], TW, .7, top - .5, H0, NV); } for (let f = 1; f <= 3; f++) { const c = at(.3, t0); obox(c[0], c[1], u[0], u[1], TW - 1.6, .6, yb + f * 3.6 - .1, yb + f * 3.6 + .12, NV); }
+      for (const [tt, w] of [[t0 - TW / 2 + .42, .96], [t0 + TW / 2 - .42, .96]]) { const c = at(.35, tt); obox(c[0], c[1], u[0], u[1], w, .7, yb, H0, NV); }
+      { const c = at(.35, t0); obox(c[0], c[1], u[0], u[1], TW + .12, .7, top - .5, H0, NV); } for (let f = 1; f <= 3; f++) { const c = at(.3, t0); obox(c[0], c[1], u[0], u[1], TW - 1.6, .6, yb + f * 3.6 - .1, yb + f * 3.6 + .12, NV); }
       for (let f = 0; f < 4; f++) for (const k of [-1, 1]) { const wc = t0 + k * 1.45, ww = 2.3, wy = yb + f * 3.6 + 1.05, wh = 1.6, u0 = ((f + (k > 0 ? 1 : 0)) & 1) * .5, v0 = (f & 1) * .5; { const c = at(.42, wc); obox(c[0], c[1], fu[0], fu[1], ww, .02, wy, wy + wh, { front: { gb: G.hdGlassC, uv: () => [u0 + .02, v0 + .02, u0 + .48, v0 + .02, u0 + .48, v0 + .48, u0 + .02, v0 + .48] } }); }
         for (const yy of [wy - .07, wy + wh]) { const c = at(.45, wc); obox(c[0], c[1], fu[0], fu[1], ww + .14, .1, yy, yy + .07, FR); } for (const tt of [wc - ww / 2 - .035, wc, wc + ww / 2 + .035]) { const c = at(.45, tt); obox(c[0], c[1], fu[0], fu[1], .07, .1, wy, wy + wh, FR); } } } }
     const ia = near(-50, 175), ib = near(-40, 168.6); if (ia >= 0 && ib >= 0) { const { m, u, n, L, fu } = fr2(P[ia], P[ib], [-30, 200]), at = (d, t) => [m[0] + n[0] * d + u[0] * t, m[1] + n[1] * d + u[1] * t];
       { /* 11-28 사진 확대 3: '회색 계단탑'은 서쪽 날개 끝 면 전체를 감싼 짙은 회색 틀 — 양옆 굵은 회색 기둥·가운데 기둥·층 띠·꼭대기 띠(로고 + '성남여자중학교'), 틀 안 흰 벽에 층마다 창 4(흰 틀·가운데 살), 아래 3층 창 밑판에 흰 X 가새, 왼쪽 기둥 옆면에 세로 학교 이름 (전의 좁은 회색 탑 대신) */
         const GR = T6(G.towerG), WH = W6(G.hdWhite), FR = W6(G.hdFrame), H0 = top + 1.6, P3 = (d, t, yy) => { const c = at(d, t); return [c[0], yy, c[1]]; }, nn = [n[0], 0, n[1]];
         { const c = at(.06, 0); obox(c[0], c[1], u[0], u[1], L - .3, .12, yb, top, WH); }
-        for (const [t, w, dp] of [[-L / 2 + .6, 1.2, .75], [L / 2 - .6, 1.2, .75], [0, .8, .6]]) { const c = at(dp / 2, t); obox(c[0], c[1], u[0], u[1], w, dp, yb, H0, GR); }
-        { const c = at(.375, 0); obox(c[0], c[1], u[0], u[1], L, .75, top, H0, GR); }
+        for (const [t, w, dp] of [[-L / 2 + .57, 1.26, .75], [L / 2 - .57, 1.26, .75], [0, .8, .6]]) /* 11-28 z-fighting 검사: 양끝 기둥 옆면이 이웃 벽면과 같은 평면이던 것 — 6cm 바깥으로 */ { const c = at(dp / 2, t); obox(c[0], c[1], u[0], u[1], w, dp, yb, H0, GR); }
+        { const c = at(.375, 0); obox(c[0], c[1], u[0], u[1], L + .12, .75, top, H0, GR); }
         for (let f = 1; f <= 3; f++) { const c = at(.2, 0); obox(c[0], c[1], u[0], u[1], L - .4, .4, yb + f * 3.6 - .08, yb + f * 3.6 + .08, GR); }
         for (let f = 0; f < 4; f++) for (const [ta, tb] of [[-L / 2 + 1.2, -.4], [.4, L / 2 - 1.2]]) { const bw = tb - ta; for (let k = 0; k < 2; k++) { const w0 = ta + .12 + k * bw / 2, w1 = ta + (k + 1) * bw / 2 - .12, wc = (w0 + w1) / 2, ww = w1 - w0, fy = yb + f * 3.6, wy = fy + 1.05, wh = 1.6, u0 = ((k + f) & 1) * .5, v0 = (f & 1) * .5;
             { const c = at(.14, wc); obox(c[0], c[1], fu[0], fu[1], ww, .02, wy, wy + wh, { front: { gb: G.hdGlassC, uv: () => [u0 + .02, v0 + .02, u0 + .48, v0 + .02, u0 + .48, v0 + .48, u0 + .02, v0 + .48] } }); }
@@ -2632,7 +2632,7 @@ function buildSchools() {
             tube(P3(dB, ta + .12, yE), P3(dB, tm, yM), .22); tube(P3(dB, tm, yM), P3(dB, tb - .12, yE), .22);
             for (const [pt, yy] of [[ta + .3, yE], [tm, yM], [tb - .3, yE]]) { const c = at(dB - .06, pt); obox(c[0], c[1], u[0], u[1], .62, .3, yy - .2, yy + .2, W6(G.hdFrame)); } } }
         { const c = at(.77, -L / 4 + .3); obox(c[0], c[1], fu[0], fu[1], 5.2, .02, top + .32, top + 1.27, { front: { gb: G.signSN2, uv: FULL } }); }
-        { const c = at(.375, -L / 2 - .01); obox(c[0], c[1], u[0], u[1], .01, .5, y + 3, top - .5, { left: { gb: G.signSNv, uv: FULL } }); } } }
+        { const c = at(.375, -L / 2 - .095); obox(c[0], c[1], u[0], u[1], .01, .5, y + 3, top - .5, { left: { gb: G.signSNv, uv: FULL } }); } } }
     const ic = near(-20.8, 153.6), id = near(-10.6, 147); if (ic >= 0 && id >= 0) { const { m, u, n, fu } = fr2(P[ic], P[id], [0, 176]), at = (d, t) => [m[0] + n[0] * d + u[0] * t, m[1] + n[1] * d + u[1] * t];
       { const c = at(.06, 0); obox(c[0], c[1], fu[0], fu[1], 5, .08, y, y + 2.8, { front: { gb: G.glassD } }); for (let q = -2; q <= 2; q++) { const c2 = at(.1, q * 1.25); obox(c2[0], c2[1], fu[0], fu[1], .08, .06, y, y + 2.8, W6(G.hdFrame)); } }
       { /* 11-28 사진 확대: 현관 캐노피 = 사각 슬래브(4.2m 내밈·폭 9m) + 회색 테 + 위 초록 인조잔디 + 앞 붉은 간판 띠 + 회색 기둥 2 (전에 넣은 흰 반원 캐노피 대신) */
@@ -2817,7 +2817,7 @@ function buildSchools() {
         for (const sz of [-1, 1]) { const R = [[sx0, y + 1.55, pz + sz * w], [sx1, y + .2, pz + sz * w], [sx1, y + .45, pz + sz * w], [sx0, y + 1.8, pz + sz * w]]; G.playY.quad(R[0], R[1], R[2], R[3], [0, 0, sz]); G.playY.quad(R[3], R[2], R[1], R[0], [0, 0, -sz]); }
         for (let k = 1; k <= 4; k++) obox(px - 1.05, pz, 0, 1, .9, .06, y + k * .32, y + k * .32 + .05, W6(G.playB)); } } };
   const nrAnnex = y => { /* 11-28 사용자 사진(q03 확대)·카카오 스카이뷰: 신흥초 본관 동쪽 계단탑과 새나리관 북쪽 끝 사이 흰 지붕 3층 부속동(새나리관 축 a −14~2, b −33~−20) — 남색 두꺼운 틀(위 띠 = 옥상 난간 + 양끝 기둥), 흰 판넬 벽, 층마다 2.2m 창 띠(1.4m마다 파란 세로 멀리언이 위아래로 이어짐, 흰 가로살·가운데 살·창턱), 단지 쪽(북) 바깥 철제 계단(디딤판 20·옆판·난간 살, 2층 문 앞 층계참 + 콘크리트 받침) + 1층 유리문, 옥상 실외기·계단 출입 상자 */
-    const yb = y - .6, yT = y + 3 * 3.6, C2 = (a, b) => [111 + ux * a - uz * b, 138 + uz * a + ux * b], P = [C2(-14, -33), C2(2, -33), C2(2, -20.05), C2(-14, -20.05)];
+    const yb = y - .6, yT = y + 3 * 3.6, C2 = (a, b) => [111 + ux * a - uz * b, 138 + uz * a + ux * b], P = [C2(-13.8, -33), C2(2, -33), C2(2, -20.05), C2(-13.8, -20.05)]; /* 서쪽 벽이 새나리관 서쪽 벽과 같은 평면이면 깜빡임 — 0.2m 안으로 */
     const F5 = gb => ({ front: { gb }, left: { gb }, right: { gb }, top: { gb }, bottom: { gb } }), F6 = gb => ({ front: { gb }, back: { gb }, left: { gb }, right: { gb }, top: { gb }, bottom: { gb } }), CELL = k => [k / 4 + .004, 0, (k + 1) / 4 - .004, 0, (k + 1) / 4 - .004, 1, k / 4 + .004, 1];
     let fi = 0; for (const e of edgesOf(P)) { fi++; const dn = e.nx * -uz + e.nz * ux; if (dn > .9) continue; const north = dn < -.9, L = e.L, n = [e.nx, 0, e.nz];
       const ob = (t, d, w, dp, y0, y1, gb, f = F5) => { const c = WP(e, t, 0, d); obox(c[0], c[2], e.rx, e.rz, w, dp, y0, y1, f(gb)); };
@@ -2832,8 +2832,8 @@ function buildSchools() {
         for (let k = 0; k < nb; k++) { const t0 = 1 + k * bw, t1 = t0 + bw, tm = (t0 + t1) / 2, DR = north && f === 1 ? DOOR2 : north && f === 0 ? DOOR1 : null; if (DR && t1 > DR[0] && t0 < DR[1]) continue;
           wq(G.anxGlass, t0 + .05, t1 - .05, sY, hY, .04, CELL(Math.floor(hash2(k * 7 + fi * 31, f * 13 + 211) * 4))); ob(tm, .05, .05, .08, sY, hY - .72, G.hdFrame); } }
       if (north) { const d0 = .45, d1 = 1.9, dm = (d0 + d1) / 2, wd = d1 - d0, rise = 3.6 / 5.6, sl = (t, d, yy) => WP(e, t, yy, d), PW = .05;
-        ob((DOOR1[0] + DOOR1[1]) / 2, .06, DOOR1[1] - DOOR1[0] + .16, .12, y, y + 2.5, G.libMull); wq(G.anxGlass, DOOR1[0], DOOR1[1], y + .05, y + 2.35, .125, CELL(3)); ob((DOOR1[0] + DOOR1[1]) / 2, .14, .05, .04, y + .05, y + 2.35, G.libMull); ob((DOOR1[0] + DOOR1[1]) / 2, .5, DOOR1[1] - DOOR1[0] + 1.2, 1.0, y + 2.6, y + 2.75, G.anxNavy, F6);
-        ob((DOOR2[0] + DOOR2[1]) / 2, .06, DOOR2[1] - DOOR2[0], .12, y + 3.6, y + 5.75, G.libMull); wq(G.anxGlass, DOOR2[0] + .12, DOOR2[1] - .12, y + 4.6, y + 5.6, .125, CELL(2));
+        ob((DOOR1[0] + DOOR1[1]) / 2, .06, DOOR1[1] - DOOR1[0] + .16, .12, y, y + 2.5, G.libMull); wq(G.anxGlass, DOOR1[0], DOOR1[1], y + .05, y + 2.35, .14, CELL(3)); ob((DOOR1[0] + DOOR1[1]) / 2, .14, .05, .04, y + .05, y + 2.35, G.libMull); ob((DOOR1[0] + DOOR1[1]) / 2, .5, DOOR1[1] - DOOR1[0] + 1.2, 1.0, y + 2.6, y + 2.75, G.anxNavy, F6);
+        ob((DOOR2[0] + DOOR2[1]) / 2, .06, DOOR2[1] - DOOR2[0], .12, y + 3.6, y + 5.75, G.libMull); wq(G.anxGlass, DOOR2[0] + .12, DOOR2[1] - .12, y + 4.6, y + 5.6, .14, CELL(2));
         ob((tL0 + tL1) / 2, dm, tL1 - tL0, wd, y + 3.42, y + 3.6, G.poleM, F6); ob((tL0 + tL1) / 2, dm - .05, tL1 - tL0 - .3, wd - .35, yb, y + 3.42, G.hdSill, F6);
         for (let i = 1; i <= 20; i++) { const t0 = tS + (i - 1) * .28; ob(t0 + .14, dm, .3, wd - .1, y + i * .18 - .05, y + i * .18, G.poleM, F6); }
         for (const ds of [d0 + .03, d1 - .03]) { for (const sg of [-1, 1]) { const dd = ds + sg * .03; QN(G.pilD, sl(tS, dd, y - .27), sl(tL0, dd, y + 3.6 - .27), sl(tL0, dd, y + 3.65), sl(tS, dd, y + .05), [sg * e.nx, 0, sg * e.nz], null); }
@@ -2922,7 +2922,7 @@ function buildSchools() {
   drapePoly([[25.6, 90.2], [108, 98], [96, 114], [56, 122], [64, 164], [61.6, 164]], PAVE, .06, 3); /* 11-21 신흥초 교사 둘레 마당(운동장·경계 풀 비탈 제외, 105동 거실에서 넓게 보이던 회색 맨바닥) → 보도블록 */
   /* 신흥초: 흙 운동장 + 태양광 지붕 강당(스카이뷰 동쪽) + 무지개 담장 */
   { const y = 106.3 - Y0; pad(106.3, [[56, 122], [96, 114], [104, 156], [64, 164]]);
-    if (LOW) { { const F = { gb: G.gymW, uv: w => [0, 0, w / 13, 0, w / 13, 1, 0, 1] }; obox(111, 138, ux, uz, 28, 40, y - .6, y + 15.2, { front: F, back: F, left: F, right: F, top: { gb: G.roofW } }); } { const c = [111 + ux * -6 - uz * -26.525, 138 + uz * -6 + ux * -26.525], F = { gb: G.roofW }; obox(c[0], c[1], ux, uz, 16, 12.95, y - .6, y + 11.8, { front: F, back: F, left: F, right: F, top: F }); } /* 11-28 신흥초 부속동(휴대폰: 상자 하나) */ obox(111, 138, ux, uz, 25, 37, y + 15.25, y + 15.3, { top: { gb: G.solar } }); } else { nrGym(111, 138, y); shYard(y); nrAnnex(y); } /* 새나리관(체육관, 위성사진: 지붕 전체 태양광) — 높이 신흥초 교사와 비슷하게 */
+    if (LOW) { { const F = { gb: G.gymW, uv: w => [0, 0, w / 13, 0, w / 13, 1, 0, 1] }; obox(111, 138, ux, uz, 28, 40, y - .6, y + 15.2, { front: F, back: F, left: F, right: F, top: { gb: G.roofW } }); } { const c = [111 + ux * -5.9 - uz * -26.525, 138 + uz * -5.9 + ux * -26.525], F = { gb: G.roofW }; obox(c[0], c[1], ux, uz, 15.8, 12.95, y - .6, y + 11.8, { front: F, back: F, left: F, right: F, top: F }); } /* 11-28 신흥초 부속동(휴대폰: 상자 하나) */ obox(111, 138, ux, uz, 25, 37, y + 15.25, y + 15.3, { top: { gb: G.solar } }); } else { nrGym(111, 138, y); shYard(y); nrAnnex(y); } /* 새나리관(체육관, 위성사진: 지붕 전체 태양광) — 높이 신흥초 교사와 비슷하게 */
     for (const [p0, p1] of [[[64, 166], [106, 158]], [[106, 158], [128, 156]]]) { const L = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), vx = (p1[0] - p0[0]) / L, vz = (p1[1] - p0[1]) / L;
       obox((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, vx, vz, L, .3, y - 1, y + 1.6, { front: { gb: G.wallR, uv: uvTile(6, 1.6) }, back: { gb: G.wallR, uv: uvTile(6, 1.6) }, top: { gb: G.roofW } }); } }
   { /* 11-28 신흥초 어린이보호구역(정문·새나리관 앞 공원로436번길, OSM 도로 (−14,264)→(181,143)): 붉은 포장 + 흰 가장자리 선 + 노면 글자 '어린이 보호구역'(양방향, 운전자 쪽에서 읽히게 길이 방향으로 늘림) + 맞은편 보도 노란 보호 울타리(데스크톱: 기둥·가로대·세로 살) */
@@ -4087,7 +4087,7 @@ function buildOSM() {
         const bar = (A2, B2, w, gb) => { const D = [B2[0] - A2[0], B2[1] - A2[1], B2[2] - A2[2]], l = Math.hypot(...D) || 1, dv = D.map(v => v / l), s1 = [E.ux, 0, E.uz], s2 = [dv[1] * s1[2] - dv[2] * s1[1], dv[2] * s1[0] - dv[0] * s1[2], dv[0] * s1[1] - dv[1] * s1[0]], ng = v => v.map(x => -x);
           for (const [p, q] of [[s1, s2], [s2, ng(s1)], [ng(s1), ng(s2)], [ng(s2), s1]]) { const o0 = [0, 1, 2].map(i => (p[i] + q[i]) * w / 2), o1 = [0, 1, 2].map(i => (p[i] - q[i]) * w / 2), a = [A2[0] + o1[0], A2[1] + o1[1], A2[2] + o1[2]], b = [B2[0] + o1[0], B2[1] + o1[1], B2[2] + o1[2]], c = [B2[0] + o0[0], B2[1] + o0[1], B2[2] + o0[2]], d = [A2[0] + o0[0], A2[1] + o0[1], A2[2] + o0[2]]; gb.quad(a, b, c, d, p); gb.quad(a, d, c, b, p); } };
         const S3 = (tt, dd, yy) => { const q = RB(tt, dd); return [q[0], yy, q[1]]; };
-        { const q = RB(0, -.27); obox(q[0], q[1], E.ux, E.uz, 18, .03, top + .05, top + 1.75, F6(cp)); } for (const [yy0, yy1] of [[top + 1.75, top + 1.83], [top - .03, top + .05]]) { const q = RB(0, -.3); obox(q[0], q[1], E.ux, E.uz, 18.16, .1, yy0, yy1, F6(fr)); } for (const tt of [-9.04, 9.04]) { const q = RB(tt, -.3); obox(q[0], q[1], E.ux, E.uz, .08, .1, top - .03, top + 1.83, F6(fr)); }
+        { const q = RB(0, -.23); obox(q[0], q[1], E.ux, E.uz, 18, .03, top + .05, top + 1.75, F6(cp)); } for (const [yy0, yy1] of [[top + 1.75, top + 1.83], [top - .03, top + .05]]) { const q = RB(0, -.3); obox(q[0], q[1], E.ux, E.uz, 18.16, .1, yy0, yy1, F6(fr)); } for (const tt of [-9.04, 9.04]) { const q = RB(tt, -.3); obox(q[0], q[1], E.ux, E.uz, .08, .1, top - .03, top + 1.83, F6(fr)); }
         for (let k = 0; k < 7; k++) { const tt = -8.4 + k * 2.8, q = RB(tt, 1.0); obox(q[0], q[1], E.ux, E.uz, .14, .14, top - .05, top + 1.9, F6(dr)); const qb = RB(tt, 1.6); obox(qb[0], qb[1], E.ux, E.uz, .5, 1.6, top - .02, top + .04, F6(dr));
           for (const yy of [top + .35, top + 1.55]) bar(S3(tt, 1.0, yy), S3(tt, -.24, yy), .1, dr); bar(S3(tt, 2.6, top + .05), S3(tt, 1.0, top + 1.5), .1, dr); }
         for (const yy of [top + .35, top + 1.55]) { const q = RB(0, 1.0); obox(q[0], q[1], E.ux, E.uz, 17, .1, yy - .05, yy + .05, F6(dr)); } }
