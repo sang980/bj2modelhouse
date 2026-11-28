@@ -3626,7 +3626,7 @@ function buildTrees(planData, PW, PH, PK) {
 
 /* ---------- 실제 주변 건물(OSM 윤곽·층수) ----------
    한 층 한 줄 창 무늬(층고 = 높이/층수), 용도별 외벽, 큰길가 1층 상가, 옥상 계단실·기계실. 색은 정점 색으로 건물마다 다르게 */
-function facadeTex(w, h, draw, clampT) { const c = cnv(w, h), g = c.getContext('2d'); draw(g, w, h); const t = tex(c); if (clampT) t.wrapT = THREE.ClampToEdgeWrapping; return t; }
+function facadeTex(w, h, draw, clampT) { const S = LOW ? 1 : 2, c = cnv(w * S, h * S), g = c.getContext('2d'); if (S > 1) g.scale(S, S); /* 11-28 루프: 주변 건물 외벽 그림 31종 — 데스크톱은 같은 그림 명령을 2배 캔버스에(난수 순서·모양 그대로, 창틀·글자 선명) */ draw(g, w, h); const t = tex(c); if (clampT) t.wrapT = THREE.ClampToEdgeWrapping; return t; }
 const OSMTX = {
   villa: () => facadeTex(512, 256, g => { noiseFill(g, 512, 256, '#f1f0ec', .07, 1800); const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(60,50,40,.12)'); g.fillStyle = gr; g.fillRect(0, 0, 512, 256);
     g.fillStyle = 'rgba(0,0,0,.15)'; g.fillRect(0, 0, 512, 9);
