@@ -3012,6 +3012,14 @@ function buildSchools() {
           for (let a = -18; a <= 18.01; a += 2) { const c = at(a, 17.5), gy = heightAt(c[0], c[2]); cyl(G.hdSill, c[0], c[2], .12, gy, gy + .85, 8, true); } } }
       hdCurtain(PP, y - .6, TOPN - .4, 5, { glass: G.poolGlass, gw: 8, spand: G.libSpand, mull: G.libMull, bay: 2, clad: f => f === 3 ? G.libSpand : f >= 2 ? G.poolClad : null }); /* 위 금속 패널 사이 4층은 짙은 유리 띠(가로 루버) */
       extRoof(PP, TOPN - .4, 'roofW', false);
+      { /* 11-28 수영장 위 금속 패널 층(3·5층)에 입체 가로 루버 — 0.45m마다 알루미늄 날개(깊이 0.28m), 3m마다 짙은 세로 받침 핀, 4층 짙은 유리 띠 위아래 흰 슬래브 턱(데스크톱). 도서관과 붙은 칸·'수영장' 간판 자리는 비움 */
+        const fhP = (TOPN - .4 - (y - .6)) / 5, yb0 = y - .6, E2 = edgesOf(PP), sE = E2.find(e => e.nx < -.55 || e.nz < -.55);
+        for (const e of E2) { const isS = e === sE, sk = (t0, t1, y0, y1) => isS && t1 > e.L / 2 - 4.8 && t0 < e.L / 2 + 4.8 && y1 > TOPN - 5.3 && y0 < TOPN - 2.85, inL = t => { const q = WP(e, t, 0, 1.0); return inPoly(PL, q[0], q[2]); };
+          const NB = Math.max(1, Math.round((e.L - .6) / 3)), bw = (e.L - .6) / NB;
+          for (const f of [2, 4]) { const f0 = yb0 + f * fhP, f1 = f0 + fhP;
+            for (let k = 0; k <= NB; k++) { const t = .3 + k * bw; if (inL(t) || sk(t - .1, t + .1, f0, f1)) continue; const c = WP(e, t, 0, .2); obox(c[0], c[2], e.rx, e.rz, .08, .4, f0 + .05, f1 - .05, F5(G.libMull)); }
+            for (let k = 0; k < NB; k++) { const t0 = .3 + k * bw + .05, t1 = t0 + bw - .1; if (inL((t0 + t1) / 2)) continue; for (let yy = f0 + .25; yy < f1 - .15; yy += .45) { if (sk(t0, t1, yy, yy + .05)) continue; const c = WP(e, (t0 + t1) / 2, 0, .2); obox(c[0], c[2], e.rx, e.rz, t1 - t0, .28, yy, yy + .045, F5(G.poolClad)); } } }
+          for (const yy of [yb0 + 3 * fhP, yb0 + 4 * fhP]) for (let k = 0; k < NB; k++) { const t0 = .3 + k * bw - (k === 0 ? .45 : 0), t1 = .3 + (k + 1) * bw + (k === NB - 1 ? .45 : 0); if (inL((t0 + t1) / 2) || sk(t0, t1, yy - .1, yy + .1)) continue; const c = WP(e, (t0 + t1) / 2, 0, .15); obox(c[0], c[2], e.rx, e.rz, t1 - t0, .3, yy - .1, yy + .1, F5(G.hdFrame)); } } }
       { /* 11-28 수영장 지붕(단지 고층에서 크게 보임): 북향 톱날 천창 5줄(세운 유리 + 1.6m 멀리언 + 금속 경사면 + 양끝 삼각 판 + 용마루 덮개) + 대형 공조기 2(몸체·윗면 팬 3·덕트) */
         const vx = v[0], vz = v[1], wx = -vz, wz = vx, yr = TOPN - .4, P3 = (a, b, yy) => [186 + vx * a + wx * b, yy, 104 + vz * a + wz * b], F6 = gb => ({ front: { gb }, back: { gb }, left: { gb }, right: { gb }, top: { gb }, bottom: { gb } });
         const TRI = (gb, A, B, C, n) => { const cx = (B[1] - A[1]) * (C[2] - A[2]) - (B[2] - A[2]) * (C[1] - A[1]), cy = (B[2] - A[2]) * (C[0] - A[0]) - (B[0] - A[0]) * (C[2] - A[2]), cz = (B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0]); (cx * n[0] + cy * n[1] + cz * n[2] >= 0) ? gb.tri(A, B, C, n) : gb.tri(A, C, B, n); };
