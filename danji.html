@@ -2811,6 +2811,11 @@ function buildSchools() {
       const piece = (t0, t1, arch) => { const N = arch ? 10 : 1; for (let i = 0; i < N; i++) { const ta = t0 + (t1 - t0) * i / N, tb = t0 + (t1 - t0) * (i + 1) / N, ya = arch ? yLo + (yHi - yLo) * Math.sin(Math.PI * i / N) : yLo, yb2 = arch ? yLo + (yHi - yLo) * Math.sin(Math.PI * (i + 1) / N) : yLo;
           QN(G.hdStucco, WP(e, ta, ya, BD), WP(e, tb, yb2, BD), WP(e, tb, yT, BD), WP(e, ta, yT, BD), n, uvC(ta, tb, ya, yT)); QN(G.hdStucco, WP(e, ta, ya, 0), WP(e, tb, yb2, 0), WP(e, tb, yb2, BD), WP(e, ta, ya, BD), [0, -1, 0], null); }
         QN(G.hdStucco, WP(e, t0, yT, 0), WP(e, t1, yT, 0), WP(e, t1, yT, BD), WP(e, t0, yT, BD), [0, 1, 0], null); };
+      { /* 11-28 단지 고층에서 내려다보는 신흥초 옥상(데스크톱): 크림 띠 난간벽 안쪽 면 + 위 흰 금속 갓 + 갓 위 피뢰 도선, 모서리마다 피뢰침, 변마다 루프 드레인 2(흰 테 + 짙은 그레이팅) */
+        const ni = [-e.nx, 0, -e.nz]; QN(G.hdStucco, WP(e, -.02, top, -.16), WP(e, e.L + .02, top, -.16), WP(e, e.L + .02, yT, -.16), WP(e, -.02, yT, -.16), ni, uvC(-.02, e.L + .02, top, yT)); QN(G.hdStucco, WP(e, -.02, yT, -.16), WP(e, e.L + .02, yT, -.16), WP(e, e.L + .02, yT, 0), WP(e, -.02, yT, 0), [0, 1, 0], null);
+        { const c = WP(e, e.L / 2, 0, (BD - .16) / 2); obox(c[0], c[2], e.rx, e.rz, e.L + .1, BD + .24, yT, yT + .05, F5(G.hdFrame)); obox(c[0], c[2], e.rx, e.rz, e.L, .03, yT + .05, yT + .08, F5(G.poleM)); }
+        { const c = WP(e, 0, 0, -.05); obox(c[0], c[2], e.rx, e.rz, .04, .04, yT + .05, yT + 1.55, F5(G.poleM)); }
+        if (e.L > 6) for (const f of [.18, .82]) { const c = WP(e, e.L * f, 0, -.6); obox(c[0], c[2], e.rx, e.rz, .44, .44, top + .005, top + .022, F5(G.hdFrame)); obox(c[0], c[2], e.rx, e.rz, .3, .3, top + .022, top + .036, F5(G.pilD)); } }
       if (nm < 2) { piece(-.02, e.L + .02, false); continue; } const fins = []; for (let m = 0; m <= nm; m++) if (m % 2 === 0 || m === nm) fins.push(off + m * mod);
       piece(-.02, fins[0] + .02, false); for (let k = 0; k < fins.length - 1; k++) piece(fins[k], fins[k + 1], true); piece(fins[fins.length - 1] - .02, e.L + .02, false);
       if (front && Math.abs(e.s - front.s) < .01) { const c = WP(e, e.L / 2, 0, BD + .03); obox(c[0], c[2], e.rx, e.rz, Math.min(e.L * .92, 24), .02, yLo + .55, yT - .15, { front: { gb: G.shLetters, uv: FULL } }); } }
