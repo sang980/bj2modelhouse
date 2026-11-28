@@ -1321,8 +1321,11 @@ for (const [x0, x1] of [[-.11, .73], [2.22, 3.5], [4.69, 5.4], [8.33, 9.0]]) pbo
   mesh(CY(.004, .004, .022, 10), ch, WX(.165), fy + .022, WZ(fz), fixed, { cast: false }); { const lv = mesh(RB(.06, .008, .014, .003, 2), ch, WX(.19), fy + .035, WZ(fz), fixed, { cast: false }); lv.rotation.z = -.15; }
   { const c2 = mkCanvas(128, 128), q2 = c2.getContext('2d'); q2.fillStyle = '#bfc2c5'; q2.fillRect(0, 0, 128, 128); q2.fillStyle = '#2a2c2e'; for (let r = 18; r < 56; r += 12) { const n = Math.round(r * .55); for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2; q2.beginPath(); q2.arc(64 + Math.cos(a) * r, 64 + Math.sin(a) * r, 2.6, 0, 7); q2.fill(); } } q2.beginPath(); q2.arc(64, 64, 7, 0, 7); q2.fill();
     const rimM = std(0x9a9da1, .4, .8); mesh(CY(.065, .065, .004, 40), [rimM, std(0xffffff, .35, .85, { map: toTex(c2) }), rimM], WX(.36), -.0005, WZ(fz), fixed, { cast: false }).userData.keep = true; }
-  const brz = std(0x2e2b27, .45, .6), lens = std(0xfff1d6, .3, 0, { emissive: 0xffd9a0, emissiveIntensity: .5 });
-  for (const x of [5.045, 8.665]) { const X = WX(x), Z = WZ(8.42); mesh(RB(.075, .13, .012, .004, 2), brz, X, 2.0, Z + .006, fixed, { cast: false }); mesh(BX(.03, .03, .05), brz, X, 2.0, Z + .037, fixed, { cast: false }); mesh(CY(.042, .042, .2, 28), brz, X, 2.0, Z + .1, fixed); for (const sg of [-1, 1]) mesh(CY(.034, .034, .003, 24), lens, X, 2.0 + sg * .1015, Z + .1, fixed, { cast: false }); } }
+  const brz = std(0x2e2b27, .45, .6), lens = (M.terrLamp = std(0xfff1d6, .3, 0, { emissive: 0xffd9a0, emissiveIntensity: .35 })); /* 저녁 모드에서 밝게 켜짐(setTime) */
+  for (const x of [5.045, 8.665]) { const X = WX(x), Z = WZ(8.42); mesh(RB(.075, .13, .012, .004, 2), brz, X, 2.0, Z + .006, fixed, { cast: false }); mesh(BX(.03, .03, .05), brz, X, 2.0, Z + .037, fixed, { cast: false }); mesh(CY(.042, .042, .2, 28), brz, X, 2.0, Z + .1, fixed); for (const sg of [-1, 1]) mesh(CY(.034, .034, .003, 24), lens, X, 2.0 + sg * .1015, Z + .1, fixed, { cast: false }); }
+  { /* 저녁: 벽등 위아래로 벽기둥에 퍼지는 빛 자국(더하기 혼합, 낮엔 투명) */ const c = mkCanvas(64, 256), q = c.getContext('2d'); for (let y = 0; y < 256; y++) { const t = y / 255, a = Math.pow(1 - t, 1.6) * .9, w = 8 + t * 22, g = q.createLinearGradient(32 - w, 0, 32 + w, 0); g.addColorStop(0, 'rgba(255,214,150,0)'); g.addColorStop(.5, 'rgba(255,214,150,' + a + ')'); g.addColorStop(1, 'rgba(255,214,150,0)'); q.fillStyle = g; q.fillRect(0, y, 64, 1); }
+    const wm = (M.terrWash = new THREE.MeshBasicMaterial({ map: toTex(c), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })), hU = Math.max(.1, H - 2.13);
+    for (const x of [5.045, 8.665]) { mesh(new THREE.PlaneGeometry(.55, 1.0), wm, WX(x), 1.4, WZ(8.42) + .002, fixed, { cast: false, recv: false }); const up = mesh(new THREE.PlaneGeometry(.45, hU), wm, WX(x), 2.11 + hU / 2, WZ(8.42) + .002, fixed, { cast: false, recv: false }); up.rotation.z = Math.PI; } } }
 /* ───────── floors / ceiling ───────── */
 floorRect(0, 12.32, .45, 8.15, 0, M.floor);
 const OV = .004;
@@ -3757,6 +3760,7 @@ function setTime(eve) {
   M.downlight.emissiveIntensity = eve ? 3.5 : .6;
   M.ledStrip.emissiveIntensity = eve ? 4 : 2.2;
   M.globe.emissiveIntensity = eve ? 3 : 1.2;
+  if (M.terrLamp) M.terrLamp.emissiveIntensity = eve ? 3.2 : .35; if (M.terrWash) M.terrWash.opacity = eve ? .55 : 0; /* 11-29: 테라스 업다운 벽등 — 저녁엔 렌즈가 환하게 */
   envBoost = eve ? .75 : .85;
   setEnvIntensity();
   renderer.toneMappingExposure = BASE_EXPOSURE * (eve ? 1.1 : 1.0);
