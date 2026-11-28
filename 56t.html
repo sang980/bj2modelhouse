@@ -1310,6 +1310,19 @@ for (const [x0, x1, z0, z1] of [[.11, 12.43, 12.09, 12.31], [12.21, 12.43, 9.661
   { const r1 = thinX ? 12.2 - .035 : A1, L = r1 - A0, rg = thinX ? RB(.07, .045, L, .018, 3) : RB(L, .045, .07, .018, 3); mesh(rg, std(0x3a3835, .35, .7), thinX ? WX(wc) : WX(A0 + L / 2), 1.1725, thinX ? WZ(A0 + L / 2) : WZ(wc), structure); }
 }
 for (const [x0, x1] of [[-.11, .73], [2.22, 3.5], [4.69, 5.4], [8.33, 9.0]]) pbox(x0 + .002, x1 - .002, 0, H - .002, 8.15, 8.42, M.brick, structure); // 창 옆면(벽 끝면)과 같은 면이 되지 않게 2mm 안쪽으로
+/* 11-29 루프 설비 퀄리티업: 테라스 설비 — 타일 바닥·벽뿐이던 테라스에 (1) 남쪽 난간벽 밑 스테인리스 트렌치 배수구(폭 14cm, 가로 슬롯 격자) (2) 서쪽 높은 담장 외부 수전(둥근 받침·크롬 몸통·아래로 꺾인 호스 꼭지·위 레버) + 그 아래 둥근 바닥 배수구(구멍 고리) (3) 거실 테라스 문 양옆 벽기둥에 브론즈 원통 업다운 벽등 2(위아래 따뜻한 빛 렌즈) */
+{ const L = 12.19 - .13, c = mkCanvas(256, 64), q = c.getContext('2d'); q.fillStyle = '#c4c7ca'; q.fillRect(0, 0, 256, 64); q.fillStyle = '#9a9da1'; q.fillRect(0, 0, 256, 5); q.fillRect(0, 59, 256, 5); q.fillStyle = '#25272a'; for (let x = 0; x < 256; x += 16) q.fillRect(x + 5, 12, 6, 40); q.fillStyle = 'rgba(255,255,255,.25)'; for (let x = 0; x < 256; x += 16) q.fillRect(x + 4, 12, 1, 40);
+  const sideM = std(0x9a9da1, .4, .8); mesh(BX(L, .0035, .14), [sideM, sideM, std(0xffffff, .35, .85, { map: toTex(c, { rep: [L / .24, 1] }) }), sideM, sideM, sideM], WX(.13 + L / 2), -.00025, WZ(12.01), fixed, { cast: false }).userData.keep = true; /* 재질 배열 메시는 고정 소품 병합에서 빼야 보임 */
+  const ch = M.chrome, fz = 11.5, fy = .5;
+  { const e = mesh(CY(.03, .03, .008, 28), ch, WX(.114), fy, WZ(fz), fixed, { cast: false }); e.rotation.z = Math.PI / 2; }
+  { const b = mesh(CY(.013, .013, .075, 20), ch, WX(.11 + .0425), fy, WZ(fz), fixed); b.rotation.z = Math.PI / 2; }
+  mesh(new THREE.SphereGeometry(.0135, 16, 12), ch, WX(.19), fy, WZ(fz), fixed, { cast: false }); mesh(CY(.011, .011, .045, 18), ch, WX(.19), fy - .025, WZ(fz), fixed);
+  { const t = mesh(new THREE.TorusGeometry(.0115, .0025, 8, 20), ch, WX(.19), fy - .048, WZ(fz), fixed, { cast: false }); t.rotation.x = Math.PI / 2; }
+  mesh(CY(.004, .004, .022, 10), ch, WX(.165), fy + .022, WZ(fz), fixed, { cast: false }); { const lv = mesh(RB(.06, .008, .014, .003, 2), ch, WX(.19), fy + .035, WZ(fz), fixed, { cast: false }); lv.rotation.z = -.15; }
+  { const c2 = mkCanvas(128, 128), q2 = c2.getContext('2d'); q2.fillStyle = '#bfc2c5'; q2.fillRect(0, 0, 128, 128); q2.fillStyle = '#2a2c2e'; for (let r = 18; r < 56; r += 12) { const n = Math.round(r * .55); for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2; q2.beginPath(); q2.arc(64 + Math.cos(a) * r, 64 + Math.sin(a) * r, 2.6, 0, 7); q2.fill(); } } q2.beginPath(); q2.arc(64, 64, 7, 0, 7); q2.fill();
+    const rimM = std(0x9a9da1, .4, .8); mesh(CY(.065, .065, .004, 40), [rimM, std(0xffffff, .35, .85, { map: toTex(c2) }), rimM], WX(.36), -.0005, WZ(fz), fixed, { cast: false }).userData.keep = true; }
+  const brz = std(0x2e2b27, .45, .6), lens = std(0xfff1d6, .3, 0, { emissive: 0xffd9a0, emissiveIntensity: .5 });
+  for (const x of [5.045, 8.665]) { const X = WX(x), Z = WZ(8.42); mesh(RB(.075, .13, .012, .004, 2), brz, X, 2.0, Z + .006, fixed, { cast: false }); mesh(BX(.03, .03, .05), brz, X, 2.0, Z + .037, fixed, { cast: false }); mesh(CY(.042, .042, .2, 28), brz, X, 2.0, Z + .1, fixed); for (const sg of [-1, 1]) mesh(CY(.034, .034, .003, 24), lens, X, 2.0 + sg * .1015, Z + .1, fixed, { cast: false }); } }
 /* ───────── floors / ceiling ───────── */
 floorRect(0, 12.32, .45, 8.15, 0, M.floor);
 const OV = .004;
