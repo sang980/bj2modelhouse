@@ -1614,7 +1614,9 @@ decorStart('헤드보드 벽판'); /* 11-21 사용자: 안방 벽 장식도 지�
 M.fluted.bumpMap.repeat.set(3, 1); M.fluted.map.repeat.set(3, 1);
 pbox(8.88, 8.94, 1.15, 1.19, 5.32, 7.7, M.black, fixed);
 pbox(8.94, 8.95, 1.12, 1.15, 5.37, 7.65, M.ledStrip, fixed, { cast: false });
-pbox(8.88, 8.9, 1.19, H, 5.32, 7.7, std(0xffffff, .8, 0, { map: toTex(grooveCanvas('#e9e6e0', 3)) }), fixed);
+{ /* 11-28 루프 마감 퀄리티업: 헤드보드 위 벽판 — 그림으로 그린 줄눈 2줄 → 실제 판 3장(둥근 모서리 4mm, 판 사이 6mm 틈) + 틈 뒤 어두운 바탕 */
+  pbox(8.88, 8.887, 1.19, H, 5.32, 7.7, std(0x8f8b84, .9), fixed, { cast: false }); const pw = (7.7 - 5.32) / 3, pm = std(0xe9e6e0, .8);
+  for (let i = 0; i < 3; i++) mesh(RB(.014, H - 1.19 - .004, pw - .006, .004, 3), pm, WX(8.893), (1.19 + H) / 2, WZ(5.32 + pw * (i + .5)), fixed); }
 ledRectWall(8.97, 1.6, 6.45, 2.5, .8, 1, 0, 0xffdcb0, .5, 1.6); decorEnd();
 let _pendBlk = null, _pendBrass = null;
 for (const z of [5.3, 7.6]) { const x = 9.17, y = 1.15; decorStart('침대 옆 펜던트');
