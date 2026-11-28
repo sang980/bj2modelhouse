@@ -1608,7 +1608,9 @@ ceilingPanel(2.4, 2.9, 2.7, 3.2, .9, 2.6);
 await phase('침실을 꾸미는 중', 61);
 // ── 침실1: 루버 헤드보드 + LED, 침대 옆 블랙 펜던트, 평판등, 커튼 ──
 // 평면도 방향: 헤드보드는 서쪽 벽(x=8.88), 침실 문(북서쪽) 바로 남쪽부터
-decorStart('헤드보드 벽판'); /* 11-21 사용자: 안방 벽 장식도 지울 수 있게 */ pbox(8.88, 8.92, 0, 1.15, 5.32, 7.7, M.fluted, fixed).material = M.fluted; /* 문 옆 스위치·온도조절기(z ~5.18)가 벽판에 묻히지 않게 5.32부터 */
+decorStart('헤드보드 벽판'); /* 11-21 사용자: 안방 벽 장식도 지울 수 있게 */ pbox(8.88, 8.915, 0, 1.15, 5.32, 7.7, std(0xe2dfd8, .85), fixed); { /* 11-28 루프 마감 퀄리티업: 그림(텍스처)으로만 그린 세로 홈 → 실제 반원 세로 루버 80줄(폭 3cm, 16각 반원통) — 사이 골은 바탕판 그늘 */
+  const N = 80, w = (7.7 - 5.32) / N, r = w / 2 * .97, parts = []; for (let i = 0; i < N; i++) parts.push(new THREE.CylinderGeometry(r, r, 1.15, 8, 1, true, 0, Math.PI).translate(WX(8.915), .575, WZ(5.32 + w * (i + .5))));
+  const fg = mergeGeometries(parts, false); mesh(fg, std(0xf3f1ec, .72), 0, 0, 0, fixed); } /* 문 옆 스위치·온도조절기(z ~5.18)가 벽판에 묻히지 않게 5.32부터 */
 M.fluted.bumpMap.repeat.set(3, 1); M.fluted.map.repeat.set(3, 1);
 pbox(8.88, 8.94, 1.15, 1.19, 5.32, 7.7, M.black, fixed);
 pbox(8.94, 8.95, 1.12, 1.15, 5.37, 7.65, M.ledStrip, fixed, { cast: false });
