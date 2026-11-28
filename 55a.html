@@ -1439,13 +1439,15 @@ function artCanvas2(kind) {
   }
   return c;
 }
-function rugAlphabet() {
-  const S = 512, c = mkCanvas(S, S), x = c.getContext('2d');
-  x.fillStyle = '#e8b81c'; x.beginPath(); x.arc(S / 2, S / 2, S / 2 - 2, 0, 7); x.fill();
-  x.fillStyle = '#16171a'; x.font = 'bold 44px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+function rugAlphabet(bump) { /* 11-29 루프 소품 퀄리티업: 알파벳 러그 — 512 그림 → 1024 고해상도 + 털 뭉치 결(결정적 잔점, 밝고 어두운 올) + 털에 묻혀 가장자리가 살짝 번진 글자 + 바깥 짙은 테 줄 · bump=true면 같은 무늬의 높낮이 맵(글자 둘레 홈) */
+  const S = 1024, c = mkCanvas(S, S), x = c.getContext('2d'), hh = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); };
+  x.fillStyle = bump ? '#9a9a9a' : '#e8b81c'; x.fillRect(0, 0, S, S);
+  for (let i = 0; i < 26000; i++) { const px = hh(i, 1) * S, py = hh(i, 2) * S, v = hh(i, 3); x.fillStyle = bump ? (v < .5 ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.35)') : (v < .5 ? `rgba(255,236,160,${.12 + v * .2})` : `rgba(150,105,0,${.06 + (v - .5) * .22})`); x.beginPath(); x.arc(px, py, 1 + hh(i, 4) * 1.6, 0, 7); x.fill(); }
+  x.strokeStyle = bump ? '#555' : '#2a2416'; x.lineWidth = 10; x.beginPath(); x.arc(S / 2, S / 2, S / 2 - 26, 0, 7); x.stroke();
+  x.font = 'bold 92px "Arial Rounded MT Bold", "Nunito", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = bump ? '#444' : 'rgba(20,20,22,.55)'; x.shadowBlur = 5; x.fillStyle = bump ? '#3a3a3a' : '#17181b';
   const L = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  for (let i = 0; i < L.length; i++) { const a = i / L.length * Math.PI * 2; x.save(); x.translate(S / 2 + Math.cos(a) * (S / 2 - 40), S / 2 + Math.sin(a) * (S / 2 - 40)); x.rotate(a + Math.PI / 2); x.fillText(L[i], 0, 0); x.restore(); }
-  return c;
+  for (let i = 0; i < L.length; i++) { const a = i / L.length * Math.PI * 2; x.save(); x.translate(S / 2 + Math.cos(a) * (S / 2 - 100), S / 2 + Math.sin(a) * (S / 2 - 100)); x.rotate(a + Math.PI / 2); x.fillText(L[i], 0, 0); x.restore(); }
+  x.shadowBlur = 0; return c;
 }
 
 // ── 주방: 북쪽 일렬 + 서쪽 ㄱ자(쿡탑) + 서쪽 키큰장·냉장고장, 싱크 위 작은 창 ──
@@ -1729,7 +1731,8 @@ function laptopHQ(parent, { x = 0, y = 0, z = 0, ry = 0, body = 0xc9ccd0, metal 
   laptopHQ(lp, { body: 0x1e1f22, metal: .3, rough: .35, keyCol: 0x0e0f11, pad: 0x26282c, wall: 1 }); } /* VR: 검정 노트북 — 공용 고품질 노트북 */
 for (let i = 0; i < 2; i++) { const w = .2 - i * .02, d2 = .26 - i * .02, bk = new THREE.Group(); bk.position.set(-.2, .747 + i * .03, .16); bk.rotation.y = .4 - i * .2; alphaTable.add(bk); mesh(RB(w, .03, d2, .003), [std(0xf2efe8, .7), std(0x26282c, .5)][i], 0, 0, 0, bk); mesh(BX(w - .01, .022, d2 - .008), std(0xf3efe4, .9), .005, 0, 0, bk, { cast: false }); mesh(BX(.004, .027, d2 + .002), [std(0xc9a64a, .4, .6), std(0xb8433a, .6)][i], -w / 2 + .012, 0, 0, bk, { cast: false }); } /* 책 2권(11-21: 하드커버·종이 단면·책등 띠) */
 const alphaRug = piece('알파벳 러그', 3.8, 7.2, 0, { solid: false });
-{ const r = alphaRug; mesh(CY(.85, .85, .01, 64), std(0xffffff, 1, 0, { map: toTex(rugAlphabet()) }), 0, .006, 0, r, { cast: false }); }
+{ const r = alphaRug, rm = std(0xffffff, 1, 0, { map: toTex(rugAlphabet()), bumpMap: toTex(rugAlphabet(true), { srgb: false }), bumpScale: 2.2 }); mesh(new THREE.CircleGeometry(.84, 96).rotateX(-Math.PI / 2), rm, 0, .0125, 0, r, { cast: false });
+  mesh(new THREE.LatheGeometry([[.84, 0], [.849, .0008], [.853, .004], [.852, .0085], [.846, .0118], [.835, .0125]].map(([a, b]) => new THREE.Vector2(a, b)), 96), std(0xd9a914, 1), 0, 0, 0, r, { cast: false }); } /* 털 두께 1.25cm + 둥근 가장자리 */
 decorStart('블라인드'); { const g = fixed; const bz = 8.08; // 롤/우드 블라인드 (창 윗부분)
   slatBlind(3.3, 4.51, 2.25, 7, .045, bz, false, -1, 0xf2efe8); /* 새 창(1.23–2.25) 윗부분 — 기운 날개·사다리 끈 */ } decorEnd();
 decorStart('커튼'); curtain(2.94, 3.32, 7.95, 2.27, fixed, M.curtainGrey, 7, .04); curtain(4.49, 4.92, 7.95, 2.27, fixed, M.curtainGrey, 7, .04); decorEnd();
