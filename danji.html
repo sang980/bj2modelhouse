@@ -2845,7 +2845,12 @@ function buildSchools() {
         hdFacade(C4, yb + 3.6, H, 4, 3.6, { wall: G.hdBrick, tw: 2, th: 1, glass: G.hdGlassH, frame: G.hdFrame, sillM: G.hdFrame, mod: 2.9, pier: .3, sill: 1.0, head: 2.85, rail: true }); extRoof(C4, H, 'roofW');
         { const cf = at(t, d0 + TD / 2 + .06); obox(cf[0], cf[2], e.rx, e.rz, .9, .14, y + .2, H + .9, F5(G.hdStucco)); }
         for (let f = 1; f <= 5; f++) { const yy = yb + 3.6 * f - .05; if (yy > H - .2) continue; const c = at(t, d0); obox(c[0], c[2], e.rx, e.rz, TW + .14, TD + .14, yy, yy + .16, F6(G.hdFrame)); }
-        { const c = at(t, d0); obox(c[0], c[2], e.rx, e.rz, TW + .2, TD + .2, H + .9, H + 1.0, F6(G.hdFrame)); }
+        { /* 11-28 계단탑 옥상(단지 고층에서 내려다보임): 통짜 흰 뚜껑 → 벽돌 난간벽 4면 + 흰 갓 고리, 안에 점검구 상자(짙은 뚜껑)·환기관 2·가운데 피뢰침 */
+          const W = { gb: G.hdBrick, uv: uvTile(2, 1) };
+          for (const [a, b, lw, ld] of [[0, -TD / 2 + .1, TW + .2, .2], [0, TD / 2 - .1, TW + .2, .2], [-TW / 2 + .1, 0, .2, TD - .2], [TW / 2 - .1, 0, .2, TD - .2]]) { const c = at(t + a, d0 + b); obox(c[0], c[2], e.rx, e.rz, lw, ld, H, H + .9, { front: W, back: W, left: W, right: W }); obox(c[0], c[2], e.rx, e.rz, lw + .06, ld + .06, H + .9, H + 1.0, F6(G.hdFrame)); }
+          { const c = at(t - 1.2, d0 + .8); obox(c[0], c[2], e.rx, e.rz, 1.1, 1.1, H, H + .55, F6(G.hdStucco)); obox(c[0], c[2], e.rx, e.rz, 1.2, 1.2, H + .55, H + .62, F6(G.pilD)); }
+          for (const [a, b] of [[1.6, -1.4], [2.1, -1.4]]) { const c = at(t + a, d0 + b); obox(c[0], c[2], e.rx, e.rz, .14, .14, H, H + .8, F6(G.poleM)); }
+          { const c = at(t, d0); obox(c[0], c[2], e.rx, e.rz, .05, .05, H + 1.0, H + 2.6, F5(G.poleM)); } }
         /* 11-28 사진(q03 확대): 1층 파란 문은 크림 세로 띠 오른쪽(문틀·가운데 맞댐 줄·손잡이), 왼쪽엔 작은 가로창(흰 틀), 동쪽 탑 정면 3·4층 창 사이 남색 이름판(흰 글자·보라 교표, 흰 테) */
         const tD = t + 1.75, cd = at(tD, d0 + TD / 2 + .03); obox(cd[0], cd[2], e.rx, e.rz, 1.6, .04, y, y + 2.3, { front: { gb: G.bandB } }); const cd2 = at(tD, d0 + TD / 2 + .05); obox(cd2[0], cd2[2], e.rx, e.rz, 1.8, .06, y + 2.3, y + 2.4, F5(G.hdFrame)); for (const dx of [-.85, .85]) { const cj = at(tD + dx, d0 + TD / 2 + .05); obox(cj[0], cj[2], e.rx, e.rz, .08, .08, y, y + 2.36, F5(G.hdFrame)); }
         { const cm = at(tD, d0 + TD / 2 + .06); obox(cm[0], cm[2], e.rx, e.rz, .03, .02, y + .05, y + 2.25, F5(G.libMull)); for (const dx of [-.18, .18]) { const ch = at(tD + dx, d0 + TD / 2 + .08); obox(ch[0], ch[2], e.rx, e.rz, .04, .04, y + 1.0, y + 1.25, F5(G.poleM)); } }
