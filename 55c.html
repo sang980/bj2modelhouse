@@ -4263,7 +4263,7 @@ async function mergeStatic(parent) { // 8ms마다 양보 — 큰 묶음(고정 �
   const buckets = new Map(), victims = []; let ts = performance.now();
   for (const m of [...parent.children]) {
     if (performance.now() - ts > 8) { await yieldUI(); ts = performance.now(); }
-    if (!m.isMesh || m.userData.keep || !m.visible) continue;
+    if (!m.isMesh || m.userData.keep || !m.visible || Array.isArray(m.material)) continue; /* 11-29: 재질 배열(면마다 다른 재질) 메시는 합치면 그룹이 사라져 안 보임 → 그대로 둠 */
     const key = m.material.uuid + '|' + m.castShadow + '|' + m.receiveShadow;
     m.updateMatrix();
     let g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone();
