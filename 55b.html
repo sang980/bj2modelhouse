@@ -2123,7 +2123,12 @@ await phase('침실을 꾸미는 중', 66);
 { const pleat = toTex((() => { const c = mkCanvas(16, 32), x = c.getContext('2d'), gr = x.createLinearGradient(0, 0, 0, 32); gr.addColorStop(0, '#8a7058'); gr.addColorStop(.25, '#c7ab8e'); gr.addColorStop(.75, '#b39579'); gr.addColorStop(1, '#7d654f'); x.fillStyle = gr; x.fillRect(0, 0, 16, 32); return c; })(), { rep: [1, 34] }); /* VR: 촘촘한 허니콤(셀룰러) 블라인드 주름 */
   const sh = std(0xffffff, .95, 0, { map: pleat });
   decorStart('로만셰이드'); cellShade(.45, 2.62, 1.7, 2.3, 1.31, true, 1, 0xb39579, 0xd9cdbd); decorEnd(); /* 11-22: 그림 판 → 실제 아코디언 주름 + 헤드레일·아래 바 */
-  const gp = std(0x6f8a55, .95), gl = std(0x5c7647, .95);
+  /* 11-28 루프 마감 퀄리티업: 초록 패브릭 벽판 — 단색 → 잔 직조 패브릭(가로·세로 실 교차 + 굵은 실 마디, 결정적 값) 색 텍스처 + 같은 결의 요철(bump), 쿠션은 결이 세로로 흐르게 */
+  const hh = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }, fabCv = base => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = base; x.fillRect(0, 0, 256, 256);
+      for (let y = 0; y < 256; y += 2) for (let xx = 0; xx < 256; xx += 2) { const v = (hh(xx + 3, y * 7 + 1) - .5) * .12 + (((xx >> 1) + (y >> 1)) % 2 ? .05 : -.05); x.fillStyle = v > 0 ? `rgba(235,245,220,${v})` : `rgba(10,25,5,${-v})`; x.fillRect(xx, y, 2, 2); }
+      for (let k = 0; k < 70; k++) { const y = Math.floor(hh(k, 91) * 256), w = 20 + hh(k, 93) * 90, x0 = hh(k, 97) * 256; x.fillStyle = `rgba(${hh(k, 99) < .5 ? '230,240,215' : '15,30,8'},${.05 + hh(k, 101) * .07})`; x.fillRect(x0, y, w, 1); } return c; };
+  const fabC = fabCv('#6f8a55'), fabL = fabCv('#5c7647');
+  const gp = std(0xffffff, .95, 0, { map: toTex(fabC, { rep: [1, 6] }), bumpMap: toTex(fabC, { srgb: false, rep: [1, 6] }), bumpScale: .35 }), gl = std(0xffffff, .95, 0, { map: toTex(fabL, { rep: [12, 4] }), bumpMap: toTex(fabL, { srgb: false, rep: [12, 4] }), bumpScale: .35 });
   decorStart('초록 패브릭 벽판'); pbox(1.31, 3.6, 0, 1.0, .11, .13, gl, fixed); pbox(1.31, 1.33, 0, 1.0, .13, 1.2, gl, fixed); /* 바탕판 */
   { const nN = 14, cwN = (3.6 - 1.37) / nN, nW = 6, cwW = (1.2 - .18) / nW; /* 둥글게 부푼 세로 채널 쿠션 */
     for (let i = 0; i < nN; i++) mesh(RB(cwN - .006, .97, .05, .02, 3), gp, WX(1.37 + cwN * (i + .5)), .5, WZ(.155), fixed);
