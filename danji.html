@@ -1947,10 +1947,22 @@ function buildYard() {
       const rm = new THREE.Mesh(rg.build(), pm); rm.receiveShadow = true; scene.add(rm); }
     flat(strip(YARD.path, 2.6), pm, .13, uvP, 112 - Y0); for (const br of YARD.branches) flat(strip(br, 2), pm, .135, uvP, 112 - Y0); } /* 마당 높이(FH 112)에 딱 붙게 */
   /* 117·118동 사이 산책로 가운데 짙은 회색 정자(모형 VN10·VE16) */
-  if (BLD[118]) { const p = BLD[118].pieces[0], fx = -p.uz, fz = p.ux, off = DEP / 2 + CORE_D + 3.6, pg = new GB(), F = { front: { gb: pg }, back: { gb: pg }, left: { gb: pg }, right: { gb: pg }, top: { gb: pg } };
+  if (BLD[118]) { const JZ = [], p = BLD[118].pieces[0], fx = -p.uz, fz = p.ux, off = DEP / 2 + CORE_D + 3.6, pg = new GB(), F = { front: { gb: pg }, back: { gb: pg }, left: { gb: pg }, right: { gb: pg }, top: { gb: pg } };
     for (const sh of [-(p.L / 2 + 6), p.L / 2 + 14]) { const c = [p.cx - fx * off + p.ux * sh, p.cz - fz * off + p.uz * sh], y0 = levelAt(c[0], c[1]); /* 11-16 모형 VE17: 산책로에 정자 두 개 */
+    if (!LOW) { JZ.push([c[0], y0, c[1], p.ux, p.uz]); continue; }
     for (const [a2, b2] of [[-1.6, -1.2], [1.6, -1.2], [1.6, 1.2], [-1.6, 1.2]]) obox(c[0] + p.ux * a2 + fx * b2, c[1] + p.uz * a2 + fz * b2, p.ux, p.uz, .18, .18, y0, y0 + 2.6, F);
-    obox(c[0], c[1], p.ux, p.uz, 3.8, 3, y0 + 2.6, y0 + 2.9, F); } const m2 = new THREE.Mesh(pg.build(), new THREE.MeshStandardMaterial({ color: '#2f3134', roughness: .6 })); m2.castShadow = true; scene.add(m2); }
+    obox(c[0], c[1], p.ux, p.uz, 3.8, 3, y0 + 2.6, y0 + 2.9, F); } if (LOW) { const m2 = new THREE.Mesh(pg.build(), new THREE.MeshStandardMaterial({ color: '#2f3134', roughness: .6 })); m2.castShadow = true; scene.add(m2); }
+    for (const [x, y, z, ux, uz] of JZ) { /* 11-29 루프 퀄리티업(데스크톱): 정자 — 네모 기둥 4 + 판 지붕 → 밝은 판석 바닥(줄눈) + 짙은 회색 각강관 기둥(아래 받침판·볼트, 위 기둥머리) + 둘레 보 + 처마 내민 지붕판(아래 물끊기 띠, 위 밝은 회색 마감) + 지붕 밑 가로 살대 12 + 긴 두 면 안쪽 원목 벤치(강철 다리) + 가운데 둥근 매입등 */
+      const G = new THREE.Group(); G.position.set(x, y, z); G.rotation.y = Math.atan2(-uz, ux); scene.add(G); const add = (geo, m, px, py, pz, sh = true) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = sh; o.receiveShadow = true; G.add(o); envMeshes.push(o); return o; };
+      const dk = new THREE.MeshStandardMaterial({ color: '#2f3134', roughness: .5, metalness: .35 }), dk2 = new THREE.MeshStandardMaterial({ color: '#26282a', roughness: .55, metalness: .3 }), top = new THREE.MeshStandardMaterial({ color: '#8d8f91', roughness: .8 }), wood = new THREE.MeshStandardMaterial({ color: '#a8804f', roughness: .62 });
+      { const c2 = cnv(256, 256), g2 = c2.getContext('2d'); g2.fillStyle = '#8e8b85'; g2.fillRect(0, 0, 256, 256); for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++) { const v = 196 + (hash2(i + j * 7, 981) - .5) * 22 | 0; g2.fillStyle = `rgb(${v},${v - 2},${v - 6})`; g2.fillRect(i * 64 + 2, j * 64 + 2, 60, 60); } for (let k = 0; k < 1200; k++) { g2.fillStyle = `rgba(0,0,0,${hash2(k, 983) * .08})`; g2.fillRect(hash2(k, 987) * 256, hash2(k, 989) * 256, 2, 2); }
+        const t2 = new THREE.CanvasTexture(c2); t2.colorSpace = THREE.SRGBColorSpace; t2.wrapS = t2.wrapT = THREE.RepeatWrapping; t2.repeat.set(1.05, .85); t2.anisotropy = ANISO; add(new THREE.BoxGeometry(4.2, .1, 3.4), new THREE.MeshStandardMaterial({ map: t2, roughness: .85 }), 0, .05, 0, false); }
+      for (const [a2, b2] of [[-1.6, -1.2], [1.6, -1.2], [1.6, 1.2], [-1.6, 1.2]]) { add(new THREE.BoxGeometry(.15, 2.45, .15), dk, a2, .1 + 1.225, b2); add(new THREE.BoxGeometry(.3, .02, .3), dk2, a2, .11, b2); for (const [i, j] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) add(new THREE.CylinderGeometry(.012, .012, .025, 8), dk2, a2 + i * .11, .13, b2 + j * .11, false); add(new THREE.BoxGeometry(.19, .05, .19), dk2, a2, 2.53, b2); }
+      for (const b2 of [-1.2, 1.2]) add(new THREE.BoxGeometry(3.5, .22, .12), dk, 0, 2.62, b2); for (const a2 of [-1.6, 1.6]) add(new THREE.BoxGeometry(.12, .22, 2.5), dk, a2, 2.62, 0);
+      for (let k = 0; k < 12; k++) add(new THREE.BoxGeometry(.05, .1, 2.28), dk2, -1.43 + k * 2.86 / 11, 2.68, 0, false);
+      add(new THREE.BoxGeometry(3.9, .16, 3.1), dk, 0, 2.81, 0); add(new THREE.BoxGeometry(3.84, .015, 3.04), top, 0, 2.8975, 0, false); add(new THREE.BoxGeometry(3.94, .03, 3.14), dk2, 0, 2.73, 0, false);
+      add(new THREE.CylinderGeometry(.16, .16, .03, 24), new THREE.MeshStandardMaterial({ color: '#e9e6df', roughness: .4, emissive: '#fff1d6', emissiveIntensity: .25 }), 0, 2.72, 0, false);
+      for (const b2 of [-.95, .95]) { add(new THREE.BoxGeometry(2.6, .045, .38), wood, 0, .53, b2); for (const a2 of [-1.05, 0, 1.05]) add(new THREE.BoxGeometry(.05, .42, .32), dk2, a2, .31, b2); } } }
   /* 북쪽 큰 놀이터(모형 VN18: 모래 마당) + 122동 옆 작은 놀이터 — 같은 모래 바닥, 놀이기구 */
   for (const [Q, big] of [[YARD.sandN, true], [YARD.sandW, false]]) { const y2 = flat(Q, new THREE.MeshStandardMaterial({ color: '#c2a37c', /* 11-17 모형 VN18: 모래는 살구빛 베이지(225,194,151) — 누런 올리브빛이던 것 · 11-21 확인: 360 사진(WF·WG)은 노랑을 크게 과장(같은 북쪽 모래가 영상 227,197,152 ↔ 360 219,177,65) — 서쪽도 이 색 그대로 */ roughness: 1, envMapIntensity: .15, ...off }), .1);
     const qx = Q.reduce((s, p) => s + p[0], 0) / 4, qz = Q.reduce((s, p) => s + p[1], 0) / 4, du = [Q[1][0] - Q[0][0], Q[1][1] - Q[0][1]], dl = Math.hypot(...du), vx = du[0] / dl, vz = du[1] / dl, wx = -vz, wz = vx, at2 = (a, b) => [qx + vx * a + wx * b, qz + vz * a + wz * b];
@@ -3798,6 +3810,7 @@ function buildTrees(planData, PW, PH, PK) {
       if (nearTree(jx, jz)) { ST.tree++; continue; } ST.ok++;
       shrubs.push([jx, y0, jz, .3 + hash2(jx * 23 | 0, jz * 29 | 0) * .34, edge]); }
   }
+  if (BLD[118]) { const p = BLD[118].pieces[0], fx = -p.uz, fz = p.ux, off = DEP / 2 + CORE_D + 3.6, JC = [-(p.L / 2 + 6), p.L / 2 + 14].map(sh => [p.cx - fx * off + p.ux * sh, p.cz - fz * off + p.uz * sh]); for (let i = pts.length - 1; i >= 0; i--) if (JC.some(([cx, cz]) => Math.hypot(pts[i][0] - cx, pts[i][2] - cz) < 3.2)) pts.splice(i, 1); } /* 11-29: 정자 지붕을 뚫고 나오던 나무 — 정자 자리(반경 3.2m)는 비움 */
   const con = pts.filter(t => t[4] === 2); for (let i = pts.length - 1; i >= 0; i--) if (pts[i][4] === 2) pts.splice(i, 1);
   { const c1 = new THREE.ConeGeometry(1, .62, 8).translate(0, .31, 0), c2 = new THREE.ConeGeometry(.72, .55, 8).translate(0, .66, 0); /* 2단 원뿔: 소나무·잣나무 느낌 */
     const cgc = mergeShade([c1, c2], .55); const im = new THREE.InstancedMesh(cgc, new THREE.MeshLambertMaterial({ color: '#ffffff', vertexColors: true }), con.length);
