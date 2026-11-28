@@ -2151,8 +2151,13 @@ await phase('침실을 꾸미는 중', 66);
   wallArt(fixed, { name: '포스터', cx: 2.17, cy: 1.475, cz: 5.04, nx: 0, nz: -1, w: 1.5, h: 1.05, d: .03, frame: null, art: poster, edge: 0xf6f6f4, shadowOp: .25 }); } /* 흰 아크릴 판: 앞면 그림 + 흰 옆면 + 벽 그림자 */ /* 1.5 × 1.05m */
 // ── 침실1: 패브릭 헤드보드 벽판 + 위 간접등, 창 커튼 ──
 { const g = fixed, x = 5.9; /* 평면도: 침실1 서쪽 벽 면 5.90 */
-  decorStart('헤드보드 벽판'); /* 11-21 사용자: 안방 벽 장식도 지울 수 있게 */ pbox(x, x + .06, .45, 1.25, 8.6, 10.6, std(0xe8e4dc, .95), g);
-  for (let z = 8.8; z < 10.6; z += .2) pbox(x + .06, x + .062, .45, 1.25, z - .002, z + .002, std(0xcfcac1, .9), g);
+  decorStart('헤드보드 벽판'); /* 11-21 사용자: 안방 벽 장식도 지울 수 있게 */ { /* 11-28 루프 마감 퀄리티업: 평판 + 가는 줄 → 바탕판 위 둥글게 부푼 세로 채널 쿠션 10줄(폭 20cm, 둥근 모서리) + 베이지 잔 직조 패브릭 텍스처·같은 결 요철(결정적 값) */
+    const hh = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }, c = mkCanvas(256, 256), cx = c.getContext('2d'); cx.fillStyle = '#e8e4dc'; cx.fillRect(0, 0, 256, 256);
+    for (let y = 0; y < 256; y += 2) for (let xx = 0; xx < 256; xx += 2) { const v = (hh(xx + 5, y * 3 + 2) - .5) * .09 + (((xx >> 1) + (y >> 1)) % 2 ? .035 : -.035); cx.fillStyle = v > 0 ? `rgba(255,255,250,${v})` : `rgba(70,60,45,${-v})`; cx.fillRect(xx, y, 2, 2); }
+    for (let k = 0; k < 60; k++) { cx.fillStyle = `rgba(${hh(k, 7) < .5 ? '255,255,250' : '90,80,60'},${.04 + hh(k, 9) * .06})`; cx.fillRect(hh(k, 11) * 256, Math.floor(hh(k, 13) * 256), 20 + hh(k, 15) * 80, 1); }
+    const fab = std(0xffffff, .95, 0, { map: toTex(c, { rep: [1, 4] }), bumpMap: toTex(c, { srgb: false, rep: [1, 4] }), bumpScale: .35 });
+    pbox(x, x + .02, .45, 1.25, 8.6, 10.6, std(0xbdb6aa, .95), g);
+    for (let i = 0; i < 10; i++) mesh(RB(.05, .78, .194, .022, 3), fab, WX(x + .045), .85, WZ(8.6 + .2 * (i + .5)), g); }
   pbox(x, x + .1, 1.25, 1.28, 8.6, 10.6, std(0xf2f1ee, .4), g); pbox(x + .02, x + .08, 1.245, 1.25, 8.65, 10.55, M.ledWarm, g, { cast: false });
   ledRectWall(x + .12, 1.5, 9.6, 1.9, .6, 1, 0, 0xffd9a8, .3, .9); decorEnd();
   decorStart('커튼'); curtain(6.0, 6.55, 11.0, 2.27, fixed, M.sheer); curtain(8.25, 8.8, 11.0, 2.27, fixed, M.sheer);
