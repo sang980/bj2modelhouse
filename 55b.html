@@ -1481,9 +1481,11 @@ const shelfMatB = std(0xe9e7e2, .5);
 // 검은 리본이 S자로 오르내리며 와인병 3개를 눕혀 품는 물결 와인랙(로컬: x 길이 방향, y 위, 병은 z 방향으로 누움)
 function waveWineRack(parent, x, y, z, ry = 0) { const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; parent.add(g);
   const P = [[-.11, .006], [.02, .006], [.085, .03], [.092, .075], [.05, .098], [-.04, .1], [-.09, .125], [-.092, .17], [-.05, .192], [.04, .196], [.085, .222], [.088, .265], [.04, .288], [-.03, .29]].map(([a, b]) => new THREE.Vector3(a, b, 0));
-  const sh = new THREE.Shape(); sh.moveTo(-.003, -.045); sh.lineTo(.003, -.045); sh.lineTo(.003, .045); sh.lineTo(-.003, .045); sh.lineTo(-.003, -.045);
-  mesh(new THREE.ExtrudeGeometry(sh, { steps: 90, bevelEnabled: false, extrudePath: new THREE.CatmullRomCurve3(P) }), std(0x141416, .35, .3), 0, 0, 0, g);
-  for (const [bx, by] of [[.022, .049], [-.03, .148], [.024, .238]]) wineBottle(g, bx, by, 0);
+  /* 11-29 루프 소품 퀄리티업: 물결 와인랙 — 6mm 판을 9cm 굵기 S자로 오려 낸 것(옆에서 둥근 검은 원판 덩어리처럼 보임) → 병 몸통 쪽·어깨 쪽 두 줄 16mm 강철 띠(두께 6mm, 모서리 둥근 단면, 매끄러운 곡선) + 띠 사이 둥근 가로봉 5개, 반무광 분체도장 · 병은 띠 고리 바닥에 닿게 내림 */
+  const sh = new THREE.Shape(), hx = .008, hy = .003, rr = .0025; sh.moveTo(-hx, -hy + rr); sh.lineTo(-hx, hy - rr); sh.quadraticCurveTo(-hx, hy, -hx + rr, hy); sh.lineTo(hx - rr, hy); sh.quadraticCurveTo(hx, hy, hx, hy - rr); sh.lineTo(hx, -hy + rr); sh.quadraticCurveTo(hx, -hy, hx - rr, -hy); sh.lineTo(-hx + rr, -hy); sh.quadraticCurveTo(-hx, -hy, -hx, -hy + rr);
+  const cv = new THREE.CatmullRomCurve3(P, false, 'centripetal'), rg = new THREE.ExtrudeGeometry(sh, { steps: 180, bevelEnabled: false, curveSegments: 3, extrudePath: cv }), rm = std(0x161618, .5, .35);
+  for (const oz of [-.07, .055]) mesh(rg, rm, 0, 0, oz, g); for (const t of [.015, .26, .5, .74, .985]) { const p = cv.getPoint(t); mesh(CY(.0035, .0035, .141, 10), rm, p.x, p.y, -.0075, g, { cast: false }).rotation.x = Math.PI / 2; }
+  for (const [bx, by] of [[.022, .046], [-.03, .141], [.024, .236]]) wineBottle(g, bx, by, 0);
   return g; }
 let WB_G = null; function wineBottle(parent, x, y, z) { /* 11-29 루프 소품 퀄리티업: 와인병 — 7점 단면 통 + 원통 마개 → 보르도 병 단면(바닥 오목한 펀트·둥근 굽·곧은 몸통·완만한 어깨·목·입구 테), 짙은 녹색 유광 유리(클리어코트), 버건디 호일 캡슐(위 원판·아래 뜯는 줄), 몸통 라벨은 병 둘레에 맞춤 */
   if (!WB_G) { const V2 = p => p.map(([a, b]) => new THREE.Vector2(a, b)); WB_G = { body: new THREE.LatheGeometry(V2([[0, .012], [.012, .01], [.022, .004], [.03, .0005], [.0345, .002], [.0362, .008], [.0366, .02], [.0366, .19], [.0355, .205], [.032, .217], [.026, .229], [.019, .241], [.0145, .252], [.013, .262], [.0128, .284], [.0142, .287], [.0145, .296], [.0125, .3], [0, .3]]), 40),
