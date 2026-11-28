@@ -1120,9 +1120,13 @@ function addOpening(horiz, line, t, o, parent = structure) {
     }
     if (o.rail) {
       const vOut = (o.out ?? 1) * (t / 2 + .12), top = Math.max(y0 + .25, 1.2);
-      put(o.from, o.to, top - .04, top, vOut - .025, vOut + .025, M.rail);
-      put(o.from, o.to, .08, .12, vOut - .015, vOut + .015, M.rail);
-      for (let u = o.from + .06; u < o.to - .03; u += .11) put(u - .009, u + .009, .1, top, vOut - .009, vOut + .009, M.rail, { cast: true, recv: false });
+      { /* 11-29 루프 퀄리티업: 창 밖 안전난간 — 납작한 상자 손잡이·네모 막대 살 → 모서리 둥근 손스침 + 그 밑 살 받침 띠, 둥근 강봉 살(지름 17mm), 둥근 아래 띠, 양끝·가운데 각기둥, 벽에 붙는 고정판(볼트 둘) — 한 덩어리로 합침 */
+        const parts = [], L = o.to - o.from, lay = (g, u, y, v) => { if (!horiz) g.rotateY(Math.PI / 2); return parts.push(horiz ? g.translate(WX(u), y, WZ(line + v)) : g.translate(WX(line + v), y, WZ(u))); }, cu = (o.from + o.to) / 2;
+        lay(RB(L, .042, .058, .018, 3), cu, top - .021, vOut); lay(new THREE.BoxGeometry(L - .02, .012, .03), cu, top - .048, vOut); lay(RB(L - .02, .034, .034, .01, 2), cu, .1, vOut);
+        const yb = .117, yt = top - .054; for (let u = o.from + .06; u < o.to - .03; u += .11) lay(new THREE.CylinderGeometry(.0085, .0085, yt - yb, 10), u, (yb + yt) / 2, vOut);
+        const posts = [o.from + .03, o.to - .03]; if (L > 2.2) posts.push(cu); for (const u of posts) lay(RB(.04, top - .1, .04, .008, 2), u, (top - .02 + .08) / 2, vOut);
+        for (const [u, sg] of [[o.from + .004, 1], [o.to - .004, -1]]) for (const y of [top - .03, .1]) { lay(RB(.008, .09, .07, .003, 2), u, y, vOut); for (const dy of [-.026, .026]) lay(new THREE.CylinderGeometry(.006, .006, .006, 10).rotateZ(Math.PI / 2), u + sg * .005, y + dy, vOut); }
+        const mg = mergeGeometries(parts.map(g => g.index ? g.toNonIndexed() : g), false); mesh(mg, M.rail, 0, 0, 0, grp, { cast: true, recv: false }); }
       // balcony slab lip
       put(o.from - .1, o.to + .1, -.12, 0, (o.out ?? 1) * t / 2, vOut + (o.out ?? 1) * .08, M.matte);
     }
