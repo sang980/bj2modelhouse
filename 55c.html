@@ -1685,8 +1685,10 @@ decorStart('백라이트 책장', true); { const g = new THREE.Group(); g.userDa
   ledRectWall(4.7, 1.1, 6.85, 1.7, 1.9, -1, 0, 0xeaf3ff, .5, 1.3); } decorEnd();
 const alphaTable = piece('원형 테이블', 3.75, 7.15, 0);
 { const t = alphaTable;
-  mesh(CY(.38, .38, .025, 40), M.white, 0, .72, 0, t); mesh(CY(.03, .03, .7), M.chrome, 0, .36, 0, t);
-  for (const a of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) { const f = mesh(BX(.3, .015, .03), M.chrome, Math.cos(a) * .15, .01, Math.sin(a) * .15, t); f.rotation.y = -a; }
+  /* 11-28 루프 가구 퀄리티업: 납작한 원판 + 상자 다리 → 둥근 테 상판(돌림판, 가장자리 반원 테·아래 살짝 들어간 면) + 위·아래 고정 칼라 있는 크롬 기둥 + 끝으로 가늘어지는 둥근 십자 다리(위로 살짝 굽음) + 다리 끝 고무 받침 */
+  mesh(new THREE.LatheGeometry([[0, .7075], [.355, .7075], [.366, .709], [.375, .714], [.38, .72], [.379, .727], [.374, .731], [.366, .7325], [0, .7325]].map(([a, b]) => new THREE.Vector2(a, b)), 64), M.white, 0, 0, 0, t);
+  mesh(CY(.028, .03, .66, 24), M.chrome, 0, .37, 0, t); mesh(CY(.06, .045, .02, 28), M.chrome, 0, .697, 0, t); mesh(CY(.05, .062, .03, 28), M.chrome, 0, .045, 0, t);
+  for (const a of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) { const g2 = new THREE.Group(); g2.rotation.y = -a; t.add(g2); const leg = new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(new THREE.Vector3(.03, .045, 0), new THREE.Vector3(.17, .035, 0), new THREE.Vector3(.3, .022, 0)), 10, .012, 10, false); mesh(leg, M.chrome, 0, 0, 0, g2); mesh(new THREE.SphereGeometry(.013, 10, 6), M.chrome, .3, .022, 0, g2, { cast: false }); mesh(CY(.016, .018, .01, 14), std(0x2b2b2d, .8), .3, .005, 0, g2, { cast: false }); }
 }
 /* 고품질 노트북(공용): 둥근 모서리·베벨 몸체 + 낱개 키캡(인스턴스 1회 그리기) + 유리 트랙패드 + 스피커 그릴 + 힌지 + 얇은 상판(검은 유리 베젤·바탕화면 창·카메라). 뒤(-z)가 힌지, 앞(+z)이 사용자 */
 function laptopHQ(parent, { x = 0, y = 0, z = 0, ry = 0, body = 0xc9ccd0, metal = .75, rough = .3, keyCol = 0x1c1d20, pad = null, open = -.3, wall = 0 } = {}) {
