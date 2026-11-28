@@ -1485,10 +1485,14 @@ function waveWineRack(parent, x, y, z, ry = 0) { const g = new THREE.Group(); g.
   mesh(new THREE.ExtrudeGeometry(sh, { steps: 90, bevelEnabled: false, extrudePath: new THREE.CatmullRomCurve3(P) }), std(0x141416, .35, .3), 0, 0, 0, g);
   for (const [bx, by] of [[.022, .049], [-.03, .148], [.024, .238]]) wineBottle(g, bx, by, 0);
   return g; }
-function wineBottle(parent, x, y, z) { const geo = new THREE.LatheGeometry([[0, 0], [.034, 0], [.035, .19], [.03, .23], [.013, .26], [.013, .3], [0, .3]].map(([a, b]) => new THREE.Vector2(a, b)), 28);
-  const b = mesh(geo, std(0x1c2a22, .12, .25), x, y, z - .15, parent); b.rotation.x = Math.PI / 2; // 병목이 앞(+z)
-  const c = mesh(CY(.0145, .0145, .045, 16), std(0x5a1420, .4, .3), x, y, z + .13, parent); c.rotation.x = Math.PI / 2;
-  const l = mesh(CY(.0352, .0352, .07, 24, 1, true), labelMat('wine'), x, y, z - .05, parent); l.rotation.set(Math.PI / 2, Math.PI / 2, 0); /* 라벨 글자가 위(보이는 쪽)로 */ } /* 11-21: 인쇄 라벨 */
+let WB_G = null; function wineBottle(parent, x, y, z) { /* 11-29 루프 소품 퀄리티업: 와인병 — 7점 단면 통 + 원통 마개 → 보르도 병 단면(바닥 오목한 펀트·둥근 굽·곧은 몸통·완만한 어깨·목·입구 테), 짙은 녹색 유광 유리(클리어코트), 버건디 호일 캡슐(위 원판·아래 뜯는 줄), 몸통 라벨은 병 둘레에 맞춤 */
+  if (!WB_G) { const V2 = p => p.map(([a, b]) => new THREE.Vector2(a, b)); WB_G = { body: new THREE.LatheGeometry(V2([[0, .012], [.012, .01], [.022, .004], [.03, .0005], [.0345, .002], [.0362, .008], [.0366, .02], [.0366, .19], [.0355, .205], [.032, .217], [.026, .229], [.019, .241], [.0145, .252], [.013, .262], [.0128, .284], [.0142, .287], [.0145, .296], [.0125, .3], [0, .3]]), 40),
+      cap: new THREE.LatheGeometry(V2([[.0151, .25], [.0156, .252], [.0156, .3], [.0152, .3035], [0, .304]]), 32), top: new THREE.CircleGeometry(.0118, 28), ring: new THREE.TorusGeometry(.0157, .0006, 4, 32), label: new THREE.CylinderGeometry(.0369, .0369, .085, 40, 1, true),
+      glass: new THREE.MeshPhysicalMaterial({ color: 0x12241a, roughness: .05, metalness: 0, clearcoat: 1, clearcoatRoughness: .04, specularIntensity: 1, envMapIntensity: 1.4 }), foil: std(0x5c1422, .28, .65), foilTop: std(0x7a2232, .22, .7) }; }
+  const G = WB_G, b = mesh(G.body, G.glass, x, y, z - .15, parent); b.rotation.x = Math.PI / 2; /* 병목이 앞(+z) */
+  const c = mesh(G.cap, G.foil, x, y, z - .15, parent, { cast: false }); c.rotation.x = Math.PI / 2;
+  mesh(G.top, G.foilTop, x, y, z + .1541, parent, { cast: false }); mesh(G.ring, G.foilTop, x, y, z + .104, parent, { cast: false });
+  const l = mesh(G.label, labelMat('wine'), x, y, z - .045, parent, { cast: false }); l.rotation.set(Math.PI / 2, Math.PI / 2, 0); /* 라벨 글자가 위(보이는 쪽)로 */ } /* 11-21: 인쇄 라벨 */
 function wineGlass(parent, x, y, z) { const geo = new THREE.LatheGeometry([[0, 0], [.034, 0], [.035, .003], [.005, .008], [.004, .095], [.022, .105], [.038, .14], [.04, .175], [.036, .2], [.034, .2], [.036, .175], [.034, .14], [.02, .11], [0, .108]].map(([a, b]) => new THREE.Vector2(a, b)), 32);
   mesh(geo, std(0xf2f6f7, .03, 0, { transparent: true, opacity: .32, side: THREE.DoubleSide, depthWrite: false }), x, y, z, parent, { cast: false });
   mesh(new THREE.LatheGeometry([[0, .1095], [.012, .1102], [.0215, .1135], [.029, .124], [.0328, .138], [0, .138]].map(([a, b]) => new THREE.Vector2(a, b)), 32), std(0x5a0d18, .06, 0, { transparent: true, opacity: .9 }), x, y, z, parent, { cast: false }); } /* 11-22 주방 소품 퀄리티업: 빈 잔 → 잔 아래 곡면을 따라 담긴 짙은 레드 와인(평평한 수면) */
