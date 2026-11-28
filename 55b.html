@@ -1836,8 +1836,10 @@ await phase('거실을 꾸미는 중', 56);
 { const g = fixed, x = 5.7; /* 평면도: 거실 동쪽 벽 면 5.70 */
   // VR: 연회색 대형 석재 타일(세로 0.6×1.2m, 곧은 줄눈) — 갈라진 무늬 없이 은은한 결만
   const slab = std(0xffffff, .38, 0, { map: toTex(tileCanvas(1, 1, [218, 216, 211], '#d0cdc6', { j: 4, veins: 3, gap: 0 })) });
-  pbox(x - .03, x, 0, H, 8.14, 11.1, slab, g);   // 침실1 문(7.2~8.05) 문틀 뒤에서 시작
-  { const seam = std(0xb9b5ad, .7); for (let z = 8.14 + .6; z < 11.08; z += .6) pbox(x - .034, x - .03, 0, H, z - .0015, z + .0015, seam, g, { cast: false }); pbox(x - .034, x - .03, 1.2 - .0015, 1.2 + .0015, 8.14, 11.1, seam, g, { cast: false }); }
+  pbox(x - .012, x, 0, H, 8.14, 11.1, std(0x9f9b94, .8), g);   /* 침실1 문(7.2~8.05) 문틀 뒤에서 시작 · 11-28 루프: 줄눈 뒤 어두운 바탕 */
+  { /* 11-28 루프 마감 퀄리티업: 통판 + 앞에 붙인 줄눈 선 → 0.6×1.2m 석재 타일 낱장(두께 18mm, 모서리 2mm 둥글게, 사이 3mm 틈) — 이웃 타일은 결 방향을 뒤집어 같은 무늬 반복이 덜 보이게 */
+    const zs = []; for (let z = 8.14; z < 11.099; z += .6) zs.push([z, Math.min(11.1, z + .6)]); const ys = [[0, 1.2], [1.2, H]];
+    zs.forEach(([z0, z1], i) => ys.forEach(([y0, y1], j) => { const t = mesh(RB(.018, y1 - y0 - .003, z1 - z0 - .003, .002, 2), slab, WX(x - .021), (y0 + y1) / 2, WZ((z0 + z1) / 2), g); if ((i + j) % 2) t.rotation.x = Math.PI; })); }
   decorStart('TV·TV장', true); /* 11-21: TV·TV장·화병 한 묶음으로 선택·삭제 */
   tvBody(g, x - .07, x - .034, .98, 1.72, 8.75, 10.3); tvScreen(g, WX(x - .0725), 1.35, WZ(9.525), 1.54, .73); // 벽걸이 TV(11-21 화면 테·반사광·대기등)
   decorEnd();
