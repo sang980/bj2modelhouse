@@ -1572,7 +1572,9 @@ await phase('거실을 꾸미는 중', 56);
 // ── 거실: 나무결 TV 아트월 + 대리석 플로팅 콘솔(하부 간접등) ──
 // 아트월·콘솔은 거실 서쪽 벽(z 5.16~)에만 — 현관 복도에서 거실로 들어오는 입구(z 4.2~5.1)는 비워 둠
 // 평면도 방향(견본주택 반전): TV 아트월·콘솔은 동쪽 벽(x=8.76, 침실1 문 남쪽 z 5.16~)
-pbox(8.74, 8.76, 0, H, 5.16, 8.05, M.woodPanel, fixed);
+{ /* 11-28 루프 마감 퀄리티업: 나무결 TV 아트월 — 통판 한 장(결 그림 6줄) → 실제 세로 널 6장(모서리 2mm 둥글게, 널 사이 3mm 틈 + 뒤 어두운 바탕), 널마다 결 그림의 제 줄만 보이게 UV를 나눔 */
+  pbox(8.757, 8.76, 0, H, 5.16, 8.05, std(0x6f675c, .9), fixed, { cast: false }); const N = 6, w = (8.05 - 5.16) / N;
+  for (let i = 0; i < N; i++) { const gq = RB(.017, H - .002, w - .003, .002, 2), uv = gq.attributes.uv; for (let k = 0; k < uv.count; k++) uv.setX(k, (i + uv.getX(k)) / N); mesh(gq, M.woodPanel, WX(8.7485), H / 2, WZ(5.16 + w * (i + .5)), fixed); } }
 decorStart('TV·TV장', true); /* 11-21: TV·콘솔·화병 한 묶음으로 선택·삭제 */
 tvBody(fixed, 8.695, 8.74, 1.0, 1.75, 6.25, 7.55); tvScreen(fixed, WX(8.6925), 1.375, WZ(6.9), 1.29, .74);
 pbox(8.34, 8.74, .2, .42, 5.35, 8.0, M.marbleW, fixed); for (let k = 1; k < 4; k++) { const zc = 5.35 + 2.65 * k / 4; pbox(8.338, 8.342, .214, .406, zc - .0015, zc + .0015, seamMat, fixed, { cast: false }); } pbox(8.338, 8.342, .392, .395, 5.37, 7.98, seamMat, fixed, { cast: false }); /* 11-22 소품 퀄리티업: 통짜 대리석 상자이던 TV장 앞면 — 푸시 도어 4짝 줄눈 + 위 손가락 홈 띠 */ for (let k = 0; k < 4; k++) { const za = 5.35 + 2.65 * k / 4 + .002, zb = 5.35 + 2.65 * (k + 1) / 4 - .002; mesh(RB(.018, .186, zb - za, .003, 2), M.marbleW, WX(8.34 - .009), .295, WZ((za + zb) / 2), fixed); if (k) pbox(8.324, 8.34, .202, .388, za - .004, za, seamMat, fixed, { cast: false }); } /* 11-28 루프: 푸시 도어 4짝을 18mm 대리석 판(둥근 모서리 3mm)으로, 틈은 어두운 줄 */
