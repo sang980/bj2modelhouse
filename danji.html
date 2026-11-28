@@ -3743,6 +3743,8 @@ function buildOSM() {
   ROOF.aptK = ROOF.apt; ROOF.forestia = ['#9ba1a6', '#a7acaf'].map(vc); ROOF.forestiaBase = ROOF.forestia;
   WALL.villaGray = ['#ffffff', '#e9ebe6', '#dfe3e6', '#ece6dc'].map(vc);
   for (const k of ['aptK', 'forestia', 'forestiaBase', 'forestiaSide', 'xi', 'xiB', 'xiBase', 'gov', 'govBase', 'lib', 'hosp', 'cmty', 'youth', 'youthBase', 'seomun', 'schoolBrick', 'villaGray']) if (!G[k]) { G[k] = new GB(); M[k] = new THREE.MeshLambertMaterial({ map: OSMTX[k](), vertexColors: true }); }
+  if (!LOW) for (const k in M) { /* 11-28 사용자(거실창 밖 조감도가 밋밋함): 주변 건물(빌라·아파트·상가·사무실·공공·공장·포레스티아·자이 등) 외벽도 신흥초처럼 PBR(데스크톱) — Lambert는 하늘 환경광을 못 받아 그늘진 면이 평평하던 것 → MeshPhysical(도장 무광 스페큘러·IOR 1.5 + 그림 명암 요철, 유리 칸만 매끈한 클리어코트로 하늘 반사), 폰은 그대로 */
+    const m0 = M[k]; if (!m0 || !m0.isMeshLambertMaterial || !m0.map || !m0.map.image || !m0.map.image.width || m0.transparent) continue; const rt = roughFrom(m0.map); M[k] = toPhys(m0, { ...PAINT_P, roughnessMap: rt, bumpMap: m0.map, bumpScale: .03, clearcoat: 1, clearcoatMap: ccFrom(rt), clearcoatRoughness: .05, envMapIntensity: .85 }); }
   if (!G.foSign) { G.foSign = new GB(); M.foSign = new THREE.MeshLambertMaterial({ map: foSignTex(), transparent: true, alphaTest: .35, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }); }
   for (const k in M) if (k !== 'foSign' && M[k].map) { M[k].emissiveMap = M[k].map; M[k].emissive = new THREE.Color('#5c5c5c'); } /* 그늘진 면도 하늘빛을 받아 너무 어둡지 않게(주변 건물은 환경광 반사가 없음) */
   const FOREST_P = ((GEO.env && GEO.env.land) || []).filter(l => l.n && /포레스티아/.test(l.n)).map(l => l.p);
