@@ -2059,6 +2059,10 @@ pbox(10.67, 10.69, 0, H, 2.3, 3.16, M.stoneTile, fixed); pbox(10.67, 10.69, 2.12
   const d = makeDoor({ parent: fixed, horiz: false, line: gx, t: .02, hu: 3.15, du: 1, side: 1, lw: .74, lh: 2.0, lt: .012, style: 'glass', from: 3.14, to: 3.92, name: '샤워부스 문', startOpen: false });
   const bar = new THREE.Group(); d.pivot.add(bar);
   for (const s of [-1, 1]) { const b = mesh(CY(.009, .009, .5, 12), chrome, .4, 1.0, s * .045, bar); b.rotation.z = Math.PI / 2; for (const x of [.16, .64]) mesh(CY(.007, .007, .045, 8), chrome, x, 1.0, s * .022, bar).rotation.x = Math.PI / 2; }
+  { /* 11-29 루프 설비 퀄리티업(55B·56T와 같게): 샤워부스 유리문 — 손잡이 막대 끝 둥근 마개 + 받침봉 양면 와셔 + 경첩 쪽 유리 경첩 2개(나사) + 문 끝 세로 자석 고무 바(반투명) */
+    for (const s of [-1, 1]) { for (const e of [-1, 1]) mesh(new THREE.SphereGeometry(.0095, 12, 8), chrome, .4 + e * .25, 1.0, s * .045, bar, { cast: false }); for (const x of [.16, .64]) mesh(CY(.012, .012, .004, 16), chrome, x, 1.0, s * .008, bar, { cast: false }).rotation.x = Math.PI / 2; }
+    for (const yy of [.3, 1.7]) { mesh(RB(.065, .095, .034, .006, 2), chrome, .025, yy, 0, bar, { cast: false }); for (const s of [-1, 1]) mesh(CY(.006, .006, .003, 10), std(0x9a9da0, .3, .8), .03, yy, s * .0175, bar, { cast: false }).rotation.x = Math.PI / 2; }
+    mesh(BX(.012, 1.96, .016), new THREE.MeshStandardMaterial({ color: 0xe8f0f0, roughness: .2, transparent: true, opacity: .45 }), .734, 1.0, 0, bar, { cast: false }); }
   for (const m of bar.children) { m.userData.door = d; doorMeshes.push(m); }
   // 샤워 수전 기둥(서쪽 벽, 북쪽 모서리 쪽) + 해바라기 헤드 + 핸드샤워 + 선반 바구니
   const sx = 8.51, sz = 3.25;
