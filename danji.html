@@ -3612,7 +3612,11 @@ function buildTrees(planData, PW, PH, PK) {
   if (HI && HI.items.length) { const im = new THREE.InstancedMesh(crownHD(), new THREE.MeshLambertMaterial({ color: '#ffffff', vertexColors: true }), HI.items.length); HI.items.forEach(([m, c], i) => { im.setMatrixAt(i, m); im.setColorAt(i, c); }); im.castShadow = true; im.receiveShadow = true; scene.add(im); window.__hiTrees = HI.items.length;
     const TK = HI.items.filter(it => it[2]); if (TK.length) { const tm = new THREE.InstancedMesh(trunkHD(), new THREE.MeshLambertMaterial({ color: '#5a4636' }), TK.length); TK.forEach((it, i) => tm.setMatrixAt(i, it[2])); tm.castShadow = true; scene.add(tm); } }
   /* 데크 관목(위에서 모은 것): 납작한 덩어리 2개, 모형처럼 짙은 올리브~밝은 초록 섞임 */
-  if (shrubs.length) { const sh = new THREE.InstancedMesh(crown(0, 2), new THREE.MeshLambertMaterial({ color: '#ffffff', vertexColors: true }), shrubs.length);
+  const shrubHD = () => { /* 11-28 루프: 단지 안 관목(데스크톱) — 덩어리 2개(40면) → 잎 뭉치 5개(80면씩, 부드러운 굴곡·잔 흔들림, 결정적 hash2) 둥근 덤불, 같은 자리·크기·색 */
+    const parts = [[0, 0, 0, .9], [.5, -.2, .15, .6], [-.45, -.18, -.2, .62], [.1, -.22, -.5, .55], [-.15, .2, .35, .55]].map(([ox, oy, oz, r], li) => { const g = new THREE.IcosahedronGeometry(1, 1), p = g.attributes.position, nr = g.attributes.normal, f1 = hash2(li + 801, 803) * 6.28, f2 = hash2(li + 807, 809) * 6.28;
+      for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), l = Math.hypot(x, y, z) || 1, v = 1 + .12 * Math.sin(x * 4.3 + f1) * Math.sin(z * 3.9 + f2) + (hash2(Math.round(x * 50) + li * 13, Math.round(z * 50 + y * 29)) - .5) * .08; nr.setXYZ(i, x / l, y / l, z / l); p.setXYZ(i, ox + x * v * r, oy + y * v * r * .85, oz + z * v * r); } return g; });
+    return mergeShade(parts, .55); };
+  if (shrubs.length) { const sh = new THREE.InstancedMesh(LOW ? crown(0, 2) : shrubHD(), new THREE.MeshLambertMaterial({ color: '#ffffff', vertexColors: true }), shrubs.length);
     shrubs.forEach((t, i) => { const r = t[3]; ps.set(t[0], t[1] + r * .55, t[2]); sc.set(r * (1 + hash2(i, 3) * .5), r * .78, r * (1 + hash2(i, 5) * .5)); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), hash2(i, 7) * 6.28); m4.compose(ps, q, sc); sh.setMatrixAt(i, m4);
       const v = hash2(i, 11); col.setHSL(.21 + v * .07, .34 + hash2(i, 13) * .22, v < .7 ? .07 + hash2(i, 17) * .04 : .12 + hash2(i, 19) * .05); sh.setColorAt(i, col); }); /* 30%는 조금 밝은 연두(모형 사진 1·WE9) */
     sh.castShadow = !LOW; sh.receiveShadow = true; scene.add(sh); window.__shrubs = shrubs.length; }
