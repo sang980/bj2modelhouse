@@ -2501,7 +2501,10 @@ function buildModelSigns() {
     g.font = '800 64px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText(t1, 256, t2 ? 66 : 66); if (t2) { g.font = '600 38px "IBM Plex Sans KR", "Noto Sans KR", sans-serif'; g.fillText(t2, 256, 136); }
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; const w = 5, hh = w * c.height / 512, sm2 = new THREE.MeshStandardMaterial({ map: t, roughness: .6 }), m = new THREE.Group(); for (const r of [0, Math.PI]) { const f = new THREE.Mesh(new THREE.PlaneGeometry(w, hh), sm2); f.rotation.y = r; f.position.z = r ? -.02 : .02; m.add(f); } /* 11-16: 앞뒤 두 장 — 뒤에서 보면 글자가 거울처럼 뒤집혀 보이던 것 */
     const yS = y + h + hh / 2; m.position.set(x, yS, z); m.lookAt(x - .4, yS, z + .92); scene.add(m);
-    obox(x, z, 1, 0, .1, .1, y, yS - hh / 2, { front: { gb: post }, back: { gb: post }, left: { gb: post }, right: { gb: post } }); };
+    if (LOW) obox(x, z, 1, 0, .1, .1, y, yS - hh / 2, { front: { gb: post }, back: { gb: post }, left: { gb: post }, right: { gb: post } });
+    else { /* 11-29 루프 퀄리티업(데스크톱): 지붕 위 시설 이름판 — 앞뒤 두 장 판(옆에서 보면 4cm 틈) + 가운데 가는 기둥 하나 → 판 뒤 짙은 금속 몸통(둘레 2cm 테로 보임) + 위 갓 띠 + 양쪽 기둥 둘(판 폭 ±32%) */
+      t.anisotropy = ANISO; const ed = new THREE.MeshStandardMaterial({ color: '#3b3a37', roughness: .5, metalness: .4 }), bx = new THREE.Mesh(new THREE.BoxGeometry(w + .04, hh + .04, .036), ed), cap = new THREE.Mesh(new THREE.BoxGeometry(w + .1, .04, .07), ed); cap.position.y = hh / 2 + .04; bx.castShadow = cap.castShadow = true; m.add(bx, cap);
+      const zl = Math.hypot(.4, .92), ax = .92 / zl, az = .4 / zl; for (const sg of [-1, 1]) obox(x + ax * sg * w * .32, z + az * sg * w * .32, ax, az, .08, .08, y, yS - hh / 2, { front: { gb: post }, back: { gb: post }, left: { gb: post }, right: { gb: post } }); } };
   one('주민공동시설3', '(다함께돌봄센터)', -129.73, 9.61, 138.6 - Y0, 1.0); one('주민공동시설1', '(어린이집)', -109.59, 29.14, 138.6 - Y0, 1.0); /* 배치도·360 사진 WG7·WG9: 북서쪽 건물 = 주민공동시설3, 정문 옆 큰 건물 지붕 = 주민공동시설1(어린이집) */
   { /* 모형 사진 1 확대: 진입광장 북쪽 건물 정면(1층 위)에 붙은 비스듬한 사인 — 서쪽 주민공동시설2, 동쪽 주민공동시설4 */
     const wall = (t1, t2, A, B, C) => { const c = cnv(640, 176), g = c.getContext('2d'); g.fillStyle = '#4b4a47'; g.fillRect(0, 0, 640, 176); g.fillStyle = 'rgba(255,255,255,.2)'; g.fillRect(0, 0, 640, 6); g.fillStyle = '#f3f2ee'; g.textAlign = 'center'; g.textBaseline = 'middle';
