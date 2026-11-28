@@ -2387,9 +2387,12 @@ function coffeeTable(x, z, rot) {
   const g = piece('커피테이블', x, z, rot); // 사진: 스모크 유리 타원 상판 + 흰 판재 다리, 뒤쪽 흰 원형 보조테이블
   tvRemote(g, -.17, .389, .4, .9);
   const top = mesh(CY(.5, .5, .018, 48), new THREE.MeshStandardMaterial({ color: 0x15171a, roughness: .06, metalness: .3, transparent: true, opacity: .86 }), 0, .38, 0, g); top.scale.set(.75, 1, 1.25); /* VR: 짙은 스모크 유리 */
-  mesh(BX(.012, .37, .62), M.whiteGloss, 0, .185, 0, g); mesh(BX(.42, .37, .012), M.whiteGloss, 0, .185, .1, g);
-  { const d = new THREE.CylinderGeometry(.38, .38, .03, 48, 1, false, Math.PI / 2, Math.PI); mesh(d, M.whiteGloss, .02, .44, -.4, g); /* VR: 유리 테이블 끝에 겹친 흰 D자 상판 */
-    const b = mesh(new THREE.CylinderGeometry(.34, .34, .425, 48, 1, true, Math.PI / 2, Math.PI), M.whiteGloss, .02, .2125, -.4, g); mesh(BX(.68, .425, .012), M.whiteGloss, .02, .2125, -.4, g); } /* 곡면 받침 + 곧은 뒤판 */
+  /* 11-29 루프 가구 퀄리티업: 유리 커피테이블·D자 보조테이블 — 날카로운 흰 판 다리 2장 → 모서리 둥근 유광 판(3mm 라운드) + 유리 상판 둘레 밝은 연마 단면 띠 · D자 상판: 반원 원통 → 모서리 둥근(베벨) 두께 3cm 판 + 반원 받침 위아래 마감 + 바닥 쪽 들어간 그늘 띠 */
+  mesh(RB(.014, .37, .62, .004, 2), M.whiteGloss, 0, .185, 0, g); mesh(RB(.42, .37, .014, .004, 2), M.whiteGloss, 0, .185, .1, g);
+  { const e = mesh(new THREE.CylinderGeometry(.5, .5, .018, 64, 1, true), new THREE.MeshStandardMaterial({ color: 0x5f6e70, roughness: .05, metalness: .2, transparent: true, opacity: .9 }), 0, .38, 0, g, { cast: false }); e.scale.set(.752, 1, 1.252); }
+  { const sh = new THREE.Shape(); sh.moveTo(0, -.37); sh.absarc(0, 0, .37, -Math.PI / 2, Math.PI / 2, false); sh.lineTo(0, -.37); const dg = new THREE.ExtrudeGeometry(sh, { depth: .022, bevelEnabled: true, bevelThickness: .004, bevelSize: .006, bevelSegments: 3, curveSegments: 48 }); dg.rotateX(Math.PI / 2); dg.rotateY(Math.PI / 2); mesh(dg, M.whiteGloss, .02, .455, -.4, g); /* VR: 유리 테이블 끝에 겹친 흰 D자 상판 */
+    const b = mesh(new THREE.CylinderGeometry(.34, .34, .405, 64, 1, true, Math.PI / 2, Math.PI), M.whiteGloss, .02, .2225, -.4, g); mesh(RB(.68, .405, .014, .004, 2), M.whiteGloss, .02, .2225, -.4, g);
+    mesh(new THREE.CylinderGeometry(.325, .325, .02, 64, 1, true, Math.PI / 2, Math.PI), std(0x8d8a85, .9), .02, .01, -.4, g, { cast: false }); mesh(BX(.65, .02, .006), std(0x8d8a85, .9), .02, .01, -.4, g, { cast: false }); } /* 곡면 받침 + 곧은 뒤판 + 바닥 그늘 띠 */
   // VR: 유리 상판 위 펼친 잡지(사진·글) + 남색 타원 트레이 위 파란 유리 화병·은색 구
   { const page = side => toTex((() => { const c = mkCanvas(384, 512), x = c.getContext('2d'); x.scale(4, 4); x.fillStyle = '#f6f4ef'; x.fillRect(0, 0, 96, 128);
       if (side) { x.fillStyle = '#7f8ea0'; x.fillRect(10, 12, 76, 52); x.fillStyle = '#3c4654'; x.fillRect(10, 40, 76, 24); x.fillStyle = '#d9d2c4'; x.fillRect(52, 72, 34, 40); }
