@@ -3561,10 +3561,14 @@ function buildTrees(planData, PW, PH, PK) {
   const con = pts.filter(t => t[4] === 2); for (let i = pts.length - 1; i >= 0; i--) if (pts[i][4] === 2) pts.splice(i, 1);
   { const c1 = new THREE.ConeGeometry(1, .62, 8).translate(0, .31, 0), c2 = new THREE.ConeGeometry(.72, .55, 8).translate(0, .66, 0); /* 2단 원뿔: 소나무·잣나무 느낌 */
     const cgc = mergeShade([c1, c2], .55); const im = new THREE.InstancedMesh(cgc, new THREE.MeshLambertMaterial({ color: '#ffffff', vertexColors: true }), con.length);
-    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), col = new THREE.Color();
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), col = new THREE.Color(), CN = [], Z0 = new THREE.Matrix4().makeScale(0, 0, 0);
     con.forEach((t, i) => { const r = t[3] * .62; ps.set(t[0], t[1] + 1.5, t[2]); sc.set(r, r * (3 + rand() * .8), r); q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rand() * 6.28); m4.compose(ps, q, sc); im.setMatrixAt(i, m4);
-      if (polyDist(SITE, t[0], t[2]) < 0) col.setHSL(.21 + rand() * .05, .42 + rand() * .15, .062 + rand() * .035); else col.setHSL(.3 + rand() * .06, .3 + rand() * .15, .12 + rand() * .07); im.setColorAt(i, col); }); /* 단지 안 침엽수도 모형처럼 짙은 올리브 */
-    im.castShadow = true; im.receiveShadow = true; scene.add(im); }
+      if (polyDist(SITE, t[0], t[2]) < 0) col.setHSL(.21 + rand() * .05, .42 + rand() * .15, .062 + rand() * .035); else col.setHSL(.3 + rand() * .06, .3 + rand() * .15, .12 + rand() * .07); im.setColorAt(i, col); if (!LOW && Math.hypot(t[0], t[2] - 15) < 250) { CN.push([m4.clone(), col.clone()]); im.setMatrixAt(i, Z0); } }); /* 단지 안 침엽수도 모형처럼 짙은 올리브 */
+    im.castShadow = true; im.receiveShadow = true; scene.add(im);
+    if (CN.length) { /* 11-28 루프: 단지 반경 250m 안 침엽수(데스크톱) — 원뿔 2단(48면) → 층층이 처진 가지 단 5(16각, 아래 가장자리 들쭉날쭉·처짐, 결정적 hash2) + 꼭대기 순, 약 430면 — 같은 자리·크기·색 */
+      const parts = []; for (let k = 0; k < 5; k++) { const r = 1 - k * .18, h = .32 - k * .02, y0 = k * .15, g = new THREE.ConeGeometry(r, h, 16, 2).translate(0, y0 + h / 2, 0), p = g.attributes.position;
+        for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), rr = Math.hypot(x, z); if (rr < r * .55) continue; const a = Math.atan2(z, x), w = 1 + (hash2(Math.round((a + 4) * 40) + k * 31, 701) - .5) * .26, dr = (hash2(Math.round((a + 4) * 40) + k * 37, 709)) * .05; p.setXYZ(i, x * w, y - (y < y0 + .01 ? dr : 0), z * w); } g.computeVertexNormals(); parts.push(g); }
+      parts.push(new THREE.ConeGeometry(.09, .18, 8).translate(0, .84, 0)); const cg = new THREE.InstancedMesh(mergeShade(parts, .5), new THREE.MeshLambertMaterial({ color: '#ffffff', vertexColors: true }), CN.length); CN.forEach(([m, c], i) => { cg.setMatrixAt(i, m); cg.setColorAt(i, c); }); cg.castShadow = true; cg.receiveShadow = true; scene.add(cg); window.__conHD = CN.length; } }
   /* 나무다운 수관: 크고 작은 울퉁불퉁한 덩어리 2~3개를 합친 모양 + 아래쪽은 그늘지게(정점 색) — 인스턴스 색과 곱해짐 */
   const crown = (det, lumps) => { const L = lumps === 5 ? [[0, 0, 0, 1], [.56, -.2, .22, .64], [-.42, -.14, -.4, .6], [.12, .34, -.3, .52], [-.3, -.28, .46, .56]] : lumps === 3 ? [[0, 0, 0, 1], [.56, -.2, .22, .64], [-.42, -.14, -.4, .6]] : [[0, 0, 0, 1], [.45, -.25, -.18, .68]];
     const parts = L.map(([ox, oy, oz, r], li) => { const g = new THREE.IcosahedronGeometry(1, det), p = g.attributes.position, nr = g.attributes.normal;
