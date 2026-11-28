@@ -1725,7 +1725,7 @@ function buildDong(D, G, MAT) {
       const ex = ccx - fx * (CORE_D / 2 + 1.1), ez = ccz - fz * (CORE_D / 2 + 1.1);
       /* 공동현관(모형 VE22·VE24): 코어 뒤로 튀어나온 작은 밝은 회색 상자 + 짙은 문 */
       obox(ex, ez, ux, uz, 4.4, 2.4, yBackR - .1, yBackR + 3.3, { front: { gb: G.white }, back: { gb: G.white }, left: { gb: G.white }, right: { gb: G.white }, top: { gb: G.white } });
-      obox(ex - fx * 1.22, ez - fz * 1.22, ux, uz, 2.2, .04, yBackR, yBackR + 2.5, { back: { gb: G.fin } }); if (!LOW) ENTR.push([ex, ez, ux, uz, fx, fz, yBackR, D.d]); }
+      obox(ex - fx * 1.22, ez - fz * 1.22, ux, uz, 2.2, .04, yBackR, yBackR + 2.5, { back: { gb: G.fin } }); if (!LOW) ENTR.push([ex, ez, ux, uz, fx, fz, yBackR + YOFF, D.d]); } /* 11-29: obox처럼 동 바닥 높이(YOFF)를 더해야 단 높이가 다른 동에서도 문·캐노피가 상자에 맞음 */
     /* 테라스(56T): 테라스 층 앞 포디움(낮은 단 ~ 테라스 바닥) — 앞 옹벽까지, 위는 옥상정원 */
     if (t) { const TB = [111, 112, 113].includes(D.d) ? G.white : G.brick; /* 모형 VE27·VN17: 111~113동 테라스 난간·처마는 밝은 회색 */ const shallow = t === 1 && dW && dW - DEP / 2 < 1.5, dep0 = shallow ? Math.max(.9, dW - DEP / 2) : Math.max(3.8, (dW || DEP / 2 + 3.8) - DEP / 2), dep = t === 1 ? Math.min(dep0, 4.6) : dep0, /* 11-16 도면: 104·105동은 옹벽이 건물 면 바로 앞 → 테라스가 앞으로 나오지 않음 */ ox = DEP / 2 + dep / 2, F = (gb, uv) => ({ gb, uv }); /* 모형 VE04: 한 줄 56T 테라스는 폭 약 4.5m(그 앞은 낮은 화단 띠) */
       /* 도장 옹벽(아래 단 ~ 테라스 바닥) + 테라스 바닥 */
