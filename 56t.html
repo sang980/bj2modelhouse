@@ -1858,6 +1858,9 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
     for (const [z0, z1] of [[a + .07, (a + b) / 2 - .006], [(a + b) / 2 + .006, b - .07]]) pbox(xf - .02, xf, 1.0, 1.79, z0, z1, glassDoorMat(0xf3f2ee), k0); /* 위 수납장(1.8~)과 앞면이 겹치지 않게 1.79까지 */
     for (const [y0, y1] of [[.52, .98], [.04, .5]]) pbox(xf - .02, xf, y0, y1, a + .07, b - .07, glassDoorMat(0xdfd3c2), k0);
     { const zc = (a + b) / 2; for (const [y0, y1, z0, z1] of [[1.0, 1.8, zc - .006, zc + .006], [.98, 1.0, a + .06, b - .06], [.5, .52, a + .06, b - .06], [.03, 1.8, a + .055, a + .065], [.03, 1.8, b - .065, b - .055], [1.79, 1.8, a + .06, b - .06]]) pbox(xf, xf + .004, y0, y1, z0, z1, M.black, k0); } // VR: 검은 줄눈
+    { /* 11-29 루프 설비 퀄리티업: 김치냉장고 손잡이 — 손잡이 없던 유리 문 → 위 문 2짝은 가운데 줄눈 옆 세로 홈 손잡이(어두운 홈 + 바깥쪽 은색 테), 아래 서랍 2단은 윗단 가로 홈 손잡이 */
+      const sl = std(0x16171a, .6), lp = std(0xb9bcc0, .25, .85), zc = (a + b) / 2; for (const sg of [-1, 1]) { const zi = zc + sg * .014, zo = zc + sg * .03; pbox(xf, xf + .003, 1.08, 1.45, Math.min(zi, zo), Math.max(zi, zo), sl, k0, { cast: false }); pbox(xf, xf + .0035, 1.08, 1.45, Math.min(zo, zo + sg * .004), Math.max(zo, zo + sg * .004), lp, k0, { cast: false }); }
+      for (const yt of [.95, .47]) { pbox(xf, xf + .003, yt - .016, yt, a + .12, b - .12, sl, k0, { cast: false }); pbox(xf, xf + .0035, yt - .02, yt - .016, a + .12, b - .12, lp, k0, { cast: false }); } }
     pbox(5.21, xf, 1.8, H, a, b, M.kdoor, k0); pbox(5.21, xf, 0, 1.8, a, a + .02, M.kdoor, k0); pbox(5.21, xf, 0, 1.8, b - .02, b, M.kdoor, k0);
     // 5-1: 바닥~천장 키큰장 2도어
     pbox(5.21, xf, 0, H, a, b, M.kdoor, k1); pbox(xf, xf + .003, .1, 2.28, (a + b) / 2 - .001, (a + b) / 2 + .001, seamMat, k1); pbox(xf, xf + .003, 1.0, 1.003, a, b, seamMat, k1);
@@ -1886,6 +1889,9 @@ function basin(x, z, rot) { // 반다리형 세면기(사진)
   // VR: 가전 문 테두리·사이 줄눈이 검은색(냉장고·김치냉장고)
   { const z0 = r0, z1 = r1, zc = (z0 + z1) / 2; kb(xf, xf + .004, .03, 1.86, zc - .006, zc + .006, M.black); kb(xf, xf + .004, .98, 1.01, z0 + .01, z1 - .01, M.black);
     kb(xf, xf + .004, .03, 1.86, z0 + .002, z0 + .012, M.black); kb(xf, xf + .004, .03, 1.86, z1 - .012, z1 - .002, M.black); kb(xf, xf + .004, 1.85, 1.87, z0, z1, M.black); }
+  { /* 11-29 루프 설비 퀄리티업: 4도어 냉장고 손잡이 — 손잡이 없던 유리 문 → 위 문 2짝은 가운데 줄눈 옆 세로 홈 손잡이(어두운 홈 + 바깥쪽 은색 테), 아래 문 2짝은 윗단 가로 홈 손잡이 */
+    const sl = std(0x16171a, .6), lp = std(0xb9bcc0, .25, .85), zc = (r0 + r1) / 2; for (const sg of [-1, 1]) { const zi = zc + sg * .014, zo = zc + sg * .03; kb(xf, xf + .003, 1.15, 1.6, Math.min(zi, zo), Math.max(zi, zo), sl); kb(xf, xf + .0035, 1.15, 1.6, Math.min(zo, zo + sg * .004), Math.max(zo, zo + sg * .004), lp); }
+    for (const [z0, z1] of [[r0 + .09, zc - .09], [zc + .09, r1 - .09]]) { kb(xf, xf + .003, .935, .951, z0, z1, sl); kb(xf, xf + .0035, .931, .935, z0, z1, lp); } }
   kb(5.21, xf, 1.85, H, 2.55, r1);
   // 키큰 수납장(남쪽 끝) + 측판
   kb(5.21, xf, 0, H, r1, 4.1); kb(xf, xf + .003, .1, 2.28, (r1 + 4.1) / 2 - .001, (r1 + 4.1) / 2 + .001, seamMat); kb(5.21, xf + .04, 0, H, 4.1, 4.26, std(0xf4f3ef, .62)); /* 측판 앞면을 복도 벽 면(z 4.26)과 맞춤 */
