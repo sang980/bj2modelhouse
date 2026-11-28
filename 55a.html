@@ -1637,8 +1637,8 @@ curtainSet(9.3, 12.0, 9.55, 11.37);
 decorStart('백라이트 책장', true); { const g = new THREE.Group(); g.userData = { name: '백라이트 책장', solid: true }; fixed.add(g);
   const x0 = 4.72, x1 = 5.06, z0 = 5.95, z1 = 7.75;
   pbox(x1 - .02, x1, .1, 2.1, z0, z1, M.blueShelf, g);
-  for (const y of [.1, .52, .94, 1.36, 1.78, 2.1]) pbox(x0, x1, y, y + .025, z0, z1, M.blueShelf, g);
-  for (const z of [z0, z0 + .45, z0 + .9, z0 + 1.35, z1 - .02]) pbox(x0, x1, .1, 2.12, z, z + .02, M.blueShelf, g);
+  /* 11-28 루프 가구 퀄리티업: 선반·칸막이 날카로운 판 → 모서리 둥근 판(4mm, 앞 모서리에 빛이 걸림) */ for (const y of [.1, .52, .94, 1.36, 1.78, 2.1]) mesh(RB(x1 - x0 - .004, .025, z1 - z0, .004, 3), M.blueShelf, WX((x0 + x1) / 2 - .002), y + .0125, WZ((z0 + z1) / 2), g);
+  for (const z of [z0, z0 + .45, z0 + .9, z0 + 1.35, z1 - .02]) mesh(RB(x1 - x0 - .004, 2.02, .02, .004, 3), M.blueShelf, WX((x0 + x1) / 2 - .002), 1.11, WZ(z + .01), g);
   // 칸마다 안쪽(뒤판 가까이) 선반 밑에 가느다란 막대형 LED — 사진처럼 수수깡 굵기
   { const rod = new THREE.CylinderGeometry(.006, .006, 1, 10); rod.rotateX(Math.PI / 2);
     const cells = [z0, z0 + .45, z0 + .9, z0 + 1.35, z1 - .02];
