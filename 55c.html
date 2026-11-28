@@ -4383,12 +4383,16 @@ await yieldUI();
 { /* 11-22 욕실 설비 퀄리티업: 바닥 배수구(유가) — 욕실마다 아래로 광선을 쏴 위에 아무것도 없고(변기·세면대·욕조·매트 아님) 둘레 15cm도 같은 높이인 타일 바닥 자리에 스테인리스 사각 배수구(테 + 슬롯 덮개 그림) */
   const rc = new THREE.Raycaster(), down = new THREE.Vector3(0, -1, 0), o3 = new THREE.Vector3(), ms = []; scene.traverse(o => { if (o.isMesh) ms.push(o); });
   const hitY = (x, z) => { rc.set(o3.set(x, 1.2, z), down); rc.far = 1.4; const h = rc.intersectObjects(ms, false).find(h => visibleDeep(h.object) && !(h.object.material && h.object.material.transparent)); return h ? h.point.y : null; };
-  const c = mkCanvas(128, 128), x = c.getContext('2d'); x.fillStyle = '#c9ccd0'; x.fillRect(0, 0, 128, 128); x.fillStyle = '#26282c'; for (let i = 0; i < 9; i++) x.fillRect(20, 20 + i * 10.3, 88, 5); x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = 3; x.strokeRect(11, 11, 106, 106); x.fillStyle = 'rgba(255,255,255,.25)'; x.fillRect(4, 4, 120, 3);
-  const fm = std(0xffffff, .3, .85, { map: toTex(c) }), rimM = std(0xc9ccd0, .3, .85), rimG = RB(.125, .004, .125, .0015, 2);
-  for (const r of rooms) { if (!r.sp || !/욕실|화장실/.test(r.n)) continue; const cx = (r.x0 + r.x1) / 2, cz = (r.z0 + r.z1) / 2;
-    for (const [a, b] of [[.55, .55], [-.55, .55], [.55, -.55], [-.55, -.55], [0, .55], [0, -.55], [.55, 0], [-.55, 0], [0, 0]]) { const X = WX(cx + a * (r.x1 - r.x0) / 2), Z = WZ(cz + b * (r.z1 - r.z0) / 2), y = hitY(X, Z); if (y == null || y > .009 || y < -.05) continue;
-      if ([[.15, 0], [-.15, 0], [0, .15], [0, -.15], [.1, .1], [-.1, -.1]].some(([dx, dz]) => { const yy = hitY(X + dx, Z + dz); return yy == null || Math.abs(yy - y) > .003; })) continue;
-      mesh(rimG, rimM, X, y + .0015, Z, fixed, { cast: false }); const p = mesh(new THREE.PlaneGeometry(.105, .105), fm, X, y + .0042, Z, fixed, { cast: false }); p.rotation.x = -Math.PI / 2; break; } } }
+  /* 11-28 사용자: '욕실·화장실·세탁실에 물 빠지는 드레인이 없다' — 자동 자리 찾기(빈 바닥 광선 검사)는 자리를 못 찾으면 빠지고 12.5cm라 잘 안 보이던 것 → 평면도 배수구(⊕) 자리 기준으로 욕실마다(샤워 쪽 따로) + 세탁실까지 정해 둔 자리에 15cm 스테인리스 사각 유가(헤어라인 결 판 + 둘레 틈 + 둥근 구멍 고리 + 가운데 마개 + 나사 4, 입체 테) */
+  const DR = [[1.28, 4.2, '욕실1 세면대 앞'], [8.88, 3.45, '욕실2 샤워 쪽'], [9.9, 3.45, '욕실2 변기 앞'], [3.72, .82, '세탁실 개수대 앞']];
+  const c = mkCanvas(256, 256), x = c.getContext('2d'); { const gg = x.createLinearGradient(0, 0, 256, 256); gg.addColorStop(0, '#dadde0'); gg.addColorStop(1, '#aab0b5'); x.fillStyle = gg; x.fillRect(0, 0, 256, 256); }
+  x.strokeStyle = 'rgba(255,255,255,.16)'; x.lineWidth = 1; for (let i = 1; i < 256; i += 3) { x.beginPath(); x.moveTo(0, i); x.lineTo(256, i); x.stroke(); }
+  x.fillStyle = '#25272b'; x.fillRect(14, 14, 228, 6); x.fillRect(14, 236, 228, 6); x.fillRect(14, 14, 6, 228); x.fillRect(236, 14, 6, 228);
+  x.fillStyle = '#1d1f23'; for (let r = 34; r <= 98; r += 16) { const n = Math.round(r * .55); for (let k = 0; k < n; k++) { const a = (k + (r / 16 % 2) * .5) / n * Math.PI * 2; x.beginPath(); x.arc(128 + Math.cos(a) * r, 128 + Math.sin(a) * r, 3.4, 0, 7); x.fill(); } }
+  x.beginPath(); x.arc(128, 128, 17, 0, 7); x.fill(); x.fillStyle = '#c3c7cb'; x.beginPath(); x.arc(128, 128, 11, 0, 7); x.fill(); x.fillStyle = '#7d8187'; for (const [a, b] of [[34, 34], [222, 34], [34, 222], [222, 222]]) { x.beginPath(); x.arc(a, b, 5, 0, 7); x.fill(); }
+  const fm = std(0xffffff, .28, .85, { map: toTex(c) }), rimM = std(0xc9ccd0, .25, .9), rimG = RB(.155, .005, .155, .002, 3), gw = new THREE.PlaneGeometry(.132, .132);
+  for (const [mx, mz] of DR) { const X = WX(mx), Z = WZ(mz); let y = hitY(X, Z); if (y == null || y > .012 || y < -.08) y = .004;
+    mesh(rimG, rimM, X, y + .0025, Z, fixed, { cast: false }); const p = mesh(gw, fm, X, y + .0053, Z, fixed, { cast: false }); p.rotation.x = -Math.PI / 2; } }
 { /* 11-22 설비 퀄리티업: 욕실 천장 점검구 — 욕실마다 45cm 사각 점검구(얇은 흰 테 + 안쪽 어두운 틈 줄 + 잠금 구멍), 환기구·매입등·감지기 등 천장 설비와 18cm 넘게 떨어진 첫 자리(벽에서 35cm 안쪽)를 자동으로 고름 */
   ceilingGroup.updateMatrixWorld(true); const pts = [], v3 = new THREE.Vector3(); ceilingGroup.traverse(o => { if (o.isMesh) { o.getWorldPosition(v3); pts.push([v3.x, v3.z]); } });
   const fm = std(0xf1f1ee, .5), sm = std(0x6b6d70, .8), s = .45, hs = s / 2;
