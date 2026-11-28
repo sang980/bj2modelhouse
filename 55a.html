@@ -2072,7 +2072,7 @@ pbox(10.67, 10.69, 0, H, 2.3, 3.16, M.stoneTile, fixed); pbox(10.67, 10.69, 2.12
   { /* 11-29 루프 설비 퀄리티업(55B·56T와 같게): 샤워부스 유리문 — 손잡이 막대 끝 둥근 마개 + 받침봉 양면 와셔 + 경첩 쪽 유리 경첩 2개(나사) + 문 끝 세로 자석 고무 바(반투명) */
     for (const s of [-1, 1]) { for (const e of [-1, 1]) mesh(new THREE.SphereGeometry(.0095, 12, 8), chrome, .4 + e * .25, 1.0, s * .045, bar, { cast: false }); for (const x of [.16, .64]) mesh(CY(.012, .012, .004, 16), chrome, x, 1.0, s * .008, bar, { cast: false }).rotation.x = Math.PI / 2; }
     for (const yy of [.3, 1.7]) { mesh(RB(.065, .095, .034, .006, 2), chrome, .025, yy, 0, bar, { cast: false }); for (const s of [-1, 1]) mesh(CY(.006, .006, .003, 10), std(0x9a9da0, .3, .8), .03, yy, s * .0175, bar, { cast: false }).rotation.x = Math.PI / 2; }
-    mesh(BX(.012, 1.96, .016), new THREE.MeshStandardMaterial({ color: 0xe8f0f0, roughness: .2, transparent: true, opacity: .45 }), .734, 1.0, 0, bar, { cast: false }); }
+    mesh(BX(.012, 1.96, .016), new THREE.MeshStandardMaterial({ color: 0xe8f0f0, roughness: .2, transparent: true, opacity: .45 }), .737, 1.0, 0, bar, { cast: false }); }
   for (const m of bar.children) { m.userData.door = d; doorMeshes.push(m); }
   // 샤워 수전 기둥(서쪽 벽, 북쪽 모서리 쪽) + 해바라기 헤드 + 핸드샤워 + 선반 바구니
   const sx = 8.51, sz = 3.25;
@@ -4512,7 +4512,7 @@ await yieldUI();
   x.beginPath(); x.arc(128, 128, 17, 0, 7); x.fill(); x.fillStyle = '#c3c7cb'; x.beginPath(); x.arc(128, 128, 11, 0, 7); x.fill(); x.fillStyle = '#7d8187'; for (const [a, b] of [[34, 34], [222, 34], [34, 222], [222, 222]]) { x.beginPath(); x.arc(a, b, 5, 0, 7); x.fill(); }
   const fm = std(0xffffff, .28, .85, { map: toTex(c) }), rimM = std(0xc9ccd0, .25, .9), rimG = RB(.155, .005, .155, .002, 3), gw = new THREE.PlaneGeometry(.132, .132);
   for (const [mx, mz] of DR) { const X = WX(mx), Z = WZ(mz); let y = hitY(X, Z); if (y == null || y > .012 || y < -.08) y = .004;
-    mesh(rimG, rimM, X, y + .0025, Z, fixed, { cast: false }); const p = mesh(gw, fm, X, y + .0053, Z, fixed, { cast: false }); p.rotation.x = -Math.PI / 2; } }
+    mesh(rimG, rimM, X, y + .0025, Z, fixed, { cast: false }); const p = mesh(gw, fm, X, y + .0062, Z, fixed, { cast: false }); /* 11-29: 테 윗면(y+.005)과 0.3mm라 멀리서 깜빡이던 것 → 1.2mm 위 */ p.rotation.x = -Math.PI / 2; } }
 { /* 11-22 설비 퀄리티업: 욕실 천장 점검구 — 욕실마다 45cm 사각 점검구(얇은 흰 테 + 안쪽 어두운 틈 줄 + 잠금 구멍), 환기구·매입등·감지기 등 천장 설비와 18cm 넘게 떨어진 첫 자리(벽에서 35cm 안쪽)를 자동으로 고름 */
   ceilingGroup.updateMatrixWorld(true); const pts = [], v3 = new THREE.Vector3(); ceilingGroup.traverse(o => { if (o.isMesh) { o.getWorldPosition(v3); pts.push([v3.x, v3.z]); } });
   const fm = std(0xf1f1ee, .5), sm = std(0x6b6d70, .8), s = .45, hs = s / 2;
