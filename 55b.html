@@ -2984,9 +2984,13 @@ function laptopHQ(parent, { x = 0, y = 0, z = 0, ry = 0, body = 0xc9ccd0, metal 
 const alphaDesk = piece('D자 책상', 2.55, 4.0, 0); { const t = alphaDesk, gm = std(0x4a4c50, .55);
   const sh = new THREE.Shape(); sh.moveTo(-.55, -.36); sh.lineTo(.15, -.36); sh.absarc(.15, 0, .36, -Math.PI / 2, Math.PI / 2, false); sh.lineTo(-.55, .36); sh.lineTo(-.55, -.36);
   const tg = new THREE.ExtrudeGeometry(sh, { depth: .05, bevelEnabled: true, bevelThickness: .012, bevelSize: .012, bevelSegments: 3, curveSegments: 32 }); tg.rotateX(Math.PI / 2);
-  mesh(tg, gm, 0, .77, 0, t);
-  mesh(BX(.09, .7, .5), gm, -.42, .35, 0, t);                                   // 창 쪽 판재 다리
-  for (const s of [-1, 1]) mesh(CY(.045, .045, .7, 20), gm, .28, .35, s * .17, t);   // 둥근 쪽 원기둥 다리
+  /* 11-29 루프 가구 퀄리티업: D자 책상 — 단색 회색 판 → 무광 라미네이트(짙은 웜그레이 잔점·결정적 값, 같은 무늬 요철) 상판 + 모서리 둥근 판 다리(아래 수평 조절 받침) + 아래로 살짝 좁아지는 둥근 다리(검은 바닥 받침) + 상판 창 쪽 검은 전선 구멍 */
+  const lam = (() => { const hh = (a, b) => { const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return v - Math.floor(v); }, c = mkCanvas(512, 512), x = c.getContext('2d'); x.fillStyle = '#4c4945'; x.fillRect(0, 0, 512, 512); for (let i = 0; i < 9000; i++) { const v = hh(i, 3); x.fillStyle = v < .5 ? `rgba(255,255,255,${.03 + v * .06})` : `rgba(0,0,0,${.03 + (v - .5) * .1})`; x.fillRect(hh(i, 5) * 512, hh(i, 7) * 512, 1 + hh(i, 9) * 1.5, 1 + hh(i, 11) * 1.5); } return c; })();
+  const tm = std(0xffffff, .72, 0, { map: toTex(lam, { rep: [2, 2] }), bumpMap: toTex(lam, { srgb: false, rep: [2, 2] }), bumpScale: .25 }), lg = std(0x45474b, .45, .3), ft = std(0x1c1d1f, .7);
+  mesh(tg, [tm, gm], 0, .77, 0, t);
+  mesh(RB(.09, .68, .5, .012, 3), gm, -.42, .36, 0, t); /* 창 쪽 판재 다리 */ for (const z of [-.2, .2]) mesh(CY(.018, .02, .02, 14), ft, -.42, .01, z, t, { cast: false });
+  for (const s of [-1, 1]) { mesh(new THREE.LatheGeometry([[0, .02], [.036, .02], [.04, .04], [.046, .66], [.046, .7], [0, .7]].map(([a, b]) => new THREE.Vector2(a, b)), 28), lg, .28, 0, s * .17, t); mesh(CY(.034, .036, .02, 20), ft, .28, .01, s * .17, t, { cast: false }); } /* 둥근 쪽 원기둥 다리 */
+  { const gr = mesh(new THREE.TorusGeometry(.028, .006, 8, 28), ft, -.45, .7965, .22, t, { cast: false }); gr.rotation.x = Math.PI / 2; mesh(new THREE.CircleGeometry(.028, 24), std(0x0c0c0d, .9), -.45, .7962, .22, t, { cast: false }).rotation.x = -Math.PI / 2; }
   laptopHQ(t, { y: .7955, z: -.05 }); /* 노트북 퀄리티업: 공용 고품질 노트북 — 상판(위 .795)에 묻히지 않게 */
   diningChair(t, .02, .58, Math.PI);
   // VR: 책상 곧은 쪽 끝에 흰 도자기 곡선 조형물 + 고사리 화분
