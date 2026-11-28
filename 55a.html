@@ -3676,7 +3676,7 @@ const wrVar = (g, z1, nLong, nShort) => { for (const [arr, z0, n] of [[wrLong, 4
   framed(5.95, 6.55, astro); }
 /* VR(55A 침실2): 침대 위 서쪽 벽 흰 플로팅 선반 + 파란 도자기 곰 2, 그 아래 달 무드등 — 통합형 붙박이장(12)이면 숨김 */
 { const g = item('b2unit', '침실2 벽선반', false), wt = std(0xf6f5f2, .4), blu = std(0x8fb6de, .25, .05);
-  pbox(.11, .31, 1.52, 1.545, 6.62, 7.22, wt, g);
+  mesh(RB(.2, .036, .6, .007, 3), wt, WX(.21), 1.527, WZ(6.92), g); pbox(.11, .113, 1.509, 1.545, 6.6, 7.24, std(0xc9c6bf, .8), g, { cast: false }); /* 11-28 루프: 2.5cm 각진 판 → 3.6cm 둥근 모서리 플로팅 선반 + 벽과 맞닿는 그늘 띠(숨은 받침) */
   for (const [z, s, ry] of [[6.84, 1, .5], [6.97, .85, -.3]]) { const b = new THREE.Group(); b.position.set(WX(.21), 1.545, WZ(z)); b.rotation.y = Math.PI / 2 + ry; b.scale.setScalar(s); g.add(b);
     /* 11-22 소품 퀄리티업: 공 몇 개이던 파란 도자기 곰 → 앉은 곰(배 불룩한 몸통·앞으로 뻗은 다리 + 연한 발바닥·옆에 붙인 팔), 툭 튀어나온 연한 주둥이 + 남색 코·눈, 귀 안쪽 연한 유약, 반짝이는 유약 */
     const gz = std(0x86afdc, .3, .02), lt = std(0xc4dbf1, .38), dk = std(0x1f2c47, .2); mesh(new THREE.LatheGeometry([[0, 0], [.026, 0], [.033, .01], [.036, .027], [.032, .047], [.023, .06], [.012, .066], [0, .067]].map(([u, v]) => new THREE.Vector2(u, v)), 36), gz, 0, 0, 0, b);
