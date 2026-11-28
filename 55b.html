@@ -2909,8 +2909,13 @@ const desk2 = piece('책상', 1.66, 1.88, Math.PI / 2);
       const st = mesh(BX(.026, .094, .004), std(0xcdb995, .9), 0, .05, -.026, fg, { cast: false }); st.rotation.x = .36; } } decorEnd();
   // 흰 구형 펜던트(침대 머리 쪽 창 모서리)
   decorStart('구형 펜던트'); { const g = fixed; mesh(CY(.003, .003, H - 1.66, 6), M.black, WX(1.62), (H + 1.66) / 2, WZ(.48), g, { cast: false });
-    mesh(new THREE.SphereGeometry(.1, 28, 18), new THREE.MeshStandardMaterial({ color: 0xfaf6ee, roughness: .5, emissive: 0xffe4c0, emissiveIntensity: .55 }), WX(1.62), 1.56, WZ(.48), g, { cast: false });
-    mesh(CY(.028, .05, .05, 24), std(0x3f5a3a, .5), WX(1.62), 1.665, WZ(.48), g, { cast: false }); mesh(CY(.045, .045, .018, 24), std(0xe2bb4c, .4, .15), WX(1.62), H - .009, WZ(.48), g, { cast: false }); } decorEnd(); /* VR: 초록 갓 + 노란 천장 받침 */
+    /* 11-29 루프 소품 퀄리티업: 구형 펜던트 — 흰 공 + 원통 갓 + 납작한 받침 → 목이 있는 젖빛 유리 구(돌림판 단면, 위 목 테) + 안쪽 전구 빛(가운데가 더 밝게 비침) + 어깨가 둥근 초록 금속 갓(아래 테·줄 고정 꼭지) + 둥근 노란 천장 받침(가장자리 라운드·작은 나사) */
+    { const L = (pts, n) => new THREE.LatheGeometry(pts.map(([a, b]) => new THREE.Vector2(a, b)), n), X = WX(1.62), Z = WZ(.48), yc = 1.56, gp = [[0, -.1]]; for (let k = 1; k <= 22; k++) { const t = -Math.PI / 2 + k / 22 * (Math.PI - .29); gp.push([Math.cos(t) * .1, Math.sin(t) * .1]); } gp.push([.03, .1], [.031, .112], [.0285, .114]);
+      mesh(L(gp, 40), new THREE.MeshStandardMaterial({ color: 0xfbf7ef, roughness: .35, emissive: 0xffe2bc, emissiveIntensity: .42, transparent: true, opacity: .94 }), X, yc, Z, g, { cast: false });
+      mesh(new THREE.SphereGeometry(.032, 18, 12), new THREE.MeshBasicMaterial({ color: 0xfff3dc, transparent: true, opacity: .55 }), X, yc + .01, Z, g, { cast: false });
+      mesh(L([[.0315, 0], [.036, .002], [.044, .012], [.046, .026], [.04, .042], [.022, .056], [.01, .06], [0, .061]], 32), std(0x3f5a3a, .42, .35), X, yc + .108, Z, g, { cast: false }); mesh(new THREE.TorusGeometry(.0318, .0022, 6, 28).rotateX(Math.PI / 2), std(0x334a2f, .4, .4), X, yc + .109, Z, g, { cast: false });
+      mesh(CY(.007, .009, .022, 12), std(0x3f5a3a, .42, .35), X, yc + .18, Z, g, { cast: false });
+      mesh(L([[0, 0], [.044, 0], [.0475, .003], [.048, .012], [.045, .018], [.012, .02], [0, .02]], 32), std(0xe2bb4c, .38, .2), X, H - .02, Z, g, { cast: false }); mesh(CY(.004, .004, .004, 8), std(0xb99a3a, .3, .6), X, H - .022, Z + .03, g, { cast: false }); } } decorEnd(); /* VR: 초록 갓 + 노란 천장 받침 */
   // 남쪽 벽(z 2.68, 북쪽을 향함) 토끼 그림 — 통합형(1-1)이면 벽이 없어지므로 따로 묶어 숨김
   { const g = item('b-rabbit', '토끼 그림', false);
     const art = toTex((() => { const c = mkCanvas(960, 1380), x = c.getContext('2d'); x.scale(3, 3); x.fillStyle = '#f4f0ea'; /* 3배 해상도 */ x.fillRect(0, 0, 320, 460); /* VR: 흰 바탕에 서 있는 연갈색 토끼(긴 뾰족 귀·털결·수염) */
