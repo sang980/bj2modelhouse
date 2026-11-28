@@ -1294,9 +1294,16 @@ terraceSlide(9.68, 11.13, 8.15, 2.2, '침실1 발코니 문');
 { pbox(-.25, .11, 0, 1.75, 8.15, 12.31, M.brick, structure); wallBoxes.push({ minX: WX(-.25), maxX: WX(.11), minZ: WZ(8.15), maxZ: WZ(12.31) }); pbox(-.27, .13, 1.75, 1.8, 8.13, 12.33, std(0x2b2c2e, .5, .4), structure); } // 조감도: 테라스 서쪽은 높은 벽돌 담장
 for (const [x0, x1, z0, z1] of [[.11, 12.43, 12.09, 12.31], [12.21, 12.43, 9.661, 12.09]]) { // 모서리에서 서로·벽과 겹치지 않게(겹친 면이 깜빡임)
   pbox(x0, x1, 0, .55, z0, z1, M.brick, structure); wallBoxes.push({ minX: WX(x0), maxX: WX(x1), minZ: WZ(z0), maxZ: WZ(z1) });
-  const glassR = new THREE.MeshStandardMaterial({ color: 0xdfe9e8, roughness: .05, metalness: .1, transparent: true, opacity: .25, side: THREE.DoubleSide, depthWrite: false });
-  const thinX = (x1 - x0) < (z1 - z0), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2; pbox(thinX ? cx - .006 : x0, thinX ? cx + .006 : x1, .55, 1.15, thinX ? z0 : cz - .006, thinX ? z1 : cz + .006, glassR, structure, { cast: false });
-  pbox(x0, x1, 1.15, 1.19, z0, z1, std(0x2b2c2e, .5, .4), structure);
+  /* 11-29 루프 퀄리티업: 테라스 난간 — 벽돌 위에 통유리 한 장 + 네모 검은 막대 → 벽돌 위 화강석 갓돌(양옆 1.5cm 내밈) + 1.2~1.4m마다 짙은 브론즈 각기둥, 기둥 사이 낱장 강화유리(물리 유리·옆면 연녹색) + 둥근 알루미늄 손스침, 유리 아래 받침 채널 */
+  const glassR = new THREE.MeshPhysicalMaterial({ color: 0xe4eeed, roughness: .03, metalness: 0, transparent: true, opacity: .2, ior: 1.52, specularIntensity: 1, envMapIntensity: 1.3, side: THREE.DoubleSide, depthWrite: false }), gEdge = std(0x9fc4b8, .2, 0, { transparent: true, opacity: .55 }), bronze = std(0x2e2c29, .4, .6), cope = std(0xb8b3aa, .58);
+  const thinX = (x1 - x0) < (z1 - z0), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, wc = thinX ? cx : cz, A0 = thinX ? z0 : x0, A1 = thinX ? z1 : x1;
+  const B = (a0, a1, y0, y1, h0, h1, m, o) => thinX ? pbox(wc + h0, wc + h1, y0, y1, a0, a1, m, structure, o) : pbox(a0, a1, y0, y1, wc + h0, wc + h1, m, structure, o);
+  const hw = (thinX ? x1 - x0 : z1 - z0) / 2; B(A0, thinX ? A1 - .015 : A1, .55, .58, -hw - .015, hw + .015, cope); /* 갓돌(모서리에서 남쪽 갓돌과 겹치지 않게 동쪽 줄은 1.5cm 짧게) */
+  B(A0 + .03, A1 - .03, .58, .62, -.022, .022, bronze, { cast: false }); /* 유리 받침 채널 */
+  const n = Math.max(1, Math.round((A1 - A0) / 1.3)), at = k => A0 + .03 + (A1 - A0 - .06) * k / n;
+  for (let k = 0; k <= n; k++) { const a = at(k); B(a - .02, a + .02, .58, 1.15, -.02, .02, bronze); }
+  for (let k = 0; k < n; k++) { const a0 = at(k) + .028, a1 = at(k + 1) - .028; B(a0, a1, .6, 1.13, -.006, .006, glassR, { cast: false }); for (const ae of [a0, a1 - .002]) B(ae, ae + .002, .6, 1.13, -.006, .006, gEdge, { cast: false }); }
+  { const r1 = thinX ? 12.2 - .035 : A1, L = r1 - A0, rg = thinX ? RB(.07, .045, L, .018, 3) : RB(L, .045, .07, .018, 3); mesh(rg, std(0x3a3835, .35, .7), thinX ? WX(wc) : WX(A0 + L / 2), 1.1725, thinX ? WZ(A0 + L / 2) : WZ(wc), structure); }
 }
 for (const [x0, x1] of [[-.11, .73], [2.22, 3.5], [4.69, 5.4], [8.33, 9.0]]) pbox(x0 + .002, x1 - .002, 0, H - .002, 8.15, 8.42, M.brick, structure); // 창 옆면(벽 끝면)과 같은 면이 되지 않게 2mm 안쪽으로
 /* ───────── floors / ceiling ───────── */
