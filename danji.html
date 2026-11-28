@@ -758,6 +758,42 @@ function buildRoads() {
         for (const [gb, col] of [[pc2, '#a7a8a6'], [pt2, '#5b5d60']]) if (gb.i.length) { const m = new THREE.Mesh(gb.build(), new THREE.MeshLambertMaterial({ color: col })); scene.add(m); }
         if (W2.length) scene.add(wireRibbon(W2));
         console.log('alley poles', nP); }
+      { /* 11-28 루프: 길바닥 맨홀 뚜껑·빗물받이(데스크톱) — 단지 450m 안 6m+ 차도. 맨홀은 차로 가운데쯤 40m마다(주철 둥근 뚜껑: 테·틈·격자 돌기·가운데 원·고리 구멍 + 둘레 땜질 아스팔트, hash2 녹), 빗물받이는 연석 쪽 22m마다(철 격자 판 + 물 얼룩). 교차로·터널·본선 깎기 구간·북서 비탈은 빼고, 길 띠와 같은 6m 조각 높이를 따라 2.5cm 위 */
+        const MH = [], GR = [];
+        env.roads.forEach((r, ri) => { if (r.t === 1 || r.fire || r.w < 6 || PATHK.test(r.k)) return; const pts = r.ugCut || r.p, lift = r.w >= 16 ? .42 : r.w >= 10 ? .4 : .38; let acc = 0;
+          for (let i = 0; i < pts.length - 1; i++) { const a2 = pts[i], b2 = pts[i + 1], L = Math.hypot(b2[0] - a2[0], b2[1] - a2[1]); if (L < .1) continue; const ux = (b2[0] - a2[0]) / L, uz = (b2[1] - a2[1]) / L, nx = -uz, nz = ux, n = Math.max(1, Math.ceil(L / 6));
+            const yAt = t => { const q = Math.min(n - 1, Math.floor(t / L * n)), t0 = q / n * L, t1 = (q + 1) / n * L, f = (t - t0) / (t1 - t0); return heightAt(a2[0] + ux * t0, a2[1] + uz * t0) * (1 - f) + heightAt(a2[0] + ux * t1, a2[1] + uz * t1) * f + lift; };
+            const ok = (x, z) => Math.hypot(x, z - 15) < 450 && polyDist(SITE, x, z) > 6 && !inTunnel(x, z) && !overTunnel(x, z) && !nwZone(x, z) && !inMain(x, z) && !inCorr(x, z) && !onOther(ri, x, z, ux, uz, 3);
+            for (let t = (40 - (acc + 20) % 40) % 40; t < L; t += 40) { const x = a2[0] + ux * t, z = a2[1] + uz * t; if (!ok(x, z)) continue; const dv = r.w >= 16 ? dualSide(ri, x - ux, z - uz, x + ux, z + uz) : 0, sg = dv ? -Math.sign(dv) : hash2(ri, Math.round(acc + t)) < .5 ? 1 : -1, o = sg * r.w * .22;
+              MH.push([x + nx * o, yAt(t) + .025, z + nz * o, Math.atan2(ux, uz) + hash2(ri, Math.round(t * 7)) * 6.28]); }
+            for (let t = (22 - acc % 22) % 22; t < L; t += 22) { const x = a2[0] + ux * t, z = a2[1] + uz * t; if (!ok(x, z)) continue; const dv = r.w >= 16 ? dualSide(ri, x - ux, z - uz, x + ux, z + uz) : 0, sides = dv > 0 ? [-1] : dv < 0 ? [1] : [1, -1];
+              for (const sg of sides) { const o = sg * (r.w / 2 - .32); GR.push([x + nx * o, yAt(t) + .026, z + nz * o, Math.atan2(ux, uz)]); } }
+            acc += L; } });
+        const M4 = new THREE.Matrix4(), Q4 = new THREE.Quaternion(), YA = new THREE.Vector3(0, 1, 0), S1 = new THREE.Vector3(1, 1, 1);
+        const decal = (canvas, geo, list, name, rough, metal) => { if (!list.length) return; const t = new THREE.CanvasTexture(canvas); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANISO;
+          const bt = new THREE.CanvasTexture(canvas); bt.anisotropy = ANISO;
+          const im = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ map: t, bumpMap: bt, bumpScale: 1.2, roughness: rough, metalness: metal, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -8 }), list.length);
+          list.forEach(([x, y, z, a], i) => { Q4.setFromAxisAngle(YA, a); M4.compose(new THREE.Vector3(x, y, z), Q4, S1); im.setMatrixAt(i, M4); }); im.receiveShadow = true; im.renderOrder = 2; im.name = name; scene.add(im); };
+        { const c = cnv(256, 256), g = c.getContext('2d'), C = 128; g.clearRect(0, 0, 256, 256);
+          for (let k = 0; k < 18; k++) { const rr = 124 - k * 2.2; g.fillStyle = `rgba(28,29,31,${.025 + k * .012})`; g.beginPath(); g.arc(C, C, rr, 0, 7); g.fill(); }
+          g.fillStyle = '#5a5853'; g.beginPath(); g.arc(C, C, 85, 0, 7); g.fill(); g.fillStyle = '#1f1e1d'; g.beginPath(); g.arc(C, C, 76, 0, 7); g.fill();
+          g.fillStyle = '#4a4843'; g.beginPath(); g.arc(C, C, 74, 0, 7); g.fill();
+          g.save(); g.beginPath(); g.arc(C, C, 67, 0, 7); g.clip(); for (let y = 4; y < 256; y += 8) for (let x = 4; x < 256; x += 8) { const v = hash2(x * 3 + 1, y * 5 + 7); g.fillStyle = v < .33 ? '#6a6862' : v < .66 ? '#63615b' : '#5c5a55'; g.fillRect(x - 2.4, y - 2.4, 4.8, 4.8); } g.restore();
+          g.strokeStyle = '#6b6963'; g.lineWidth = 2.6; for (const rr of [67, 42]) { g.beginPath(); g.arc(C, C, rr, 0, 7); g.stroke(); }
+          g.fillStyle = '#4c4a45'; g.beginPath(); g.arc(C, C, 40, 0, 7); g.fill(); g.strokeStyle = '#66645e'; g.lineWidth = 2; g.beginPath(); g.arc(C, C, 30, 0, 7); g.stroke();
+          for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; g.beginPath(); g.moveTo(C + Math.cos(a) * 30, C + Math.sin(a) * 30); g.lineTo(C + Math.cos(a) * 40, C + Math.sin(a) * 40); g.stroke(); }
+          g.fillStyle = '#6e6c66'; g.beginPath(); g.arc(C, C, 12, 0, 7); g.fill(); g.fillStyle = '#4c4a45'; g.beginPath(); g.arc(C, C, 7, 0, 7); g.fill();
+          g.fillStyle = '#121212'; for (const a of [0, Math.PI]) { g.save(); g.translate(C + Math.cos(a) * 55, C + Math.sin(a) * 55); g.rotate(a); g.fillRect(-2, -7, 4, 14); g.restore(); }
+          for (let k = 0; k < 160; k++) { const a = hash2(k, 301) * 6.283, rr = hash2(k, 303) * 84, sz = 1 + hash2(k, 307) * 4; g.fillStyle = `rgba(${120 + (hash2(k, 311) * 30 | 0)},${70 + (hash2(k, 313) * 20 | 0)},40,${.1 + hash2(k, 317) * .15})`; g.beginPath(); g.arc(C + Math.cos(a) * rr, C + Math.sin(a) * rr, sz, 0, 7); g.fill(); }
+          decal(c, new THREE.CircleGeometry(.5, 28).rotateX(-Math.PI / 2), MH, 'manholes', .5, .45); }
+        { const c = cnv(64, 160), g = c.getContext('2d'); g.clearRect(0, 0, 64, 160);
+          for (let k = 0; k < 8; k++) { g.fillStyle = `rgba(22,23,25,${.04 + k * .025})`; g.fillRect(k, k * 1.6, 64 - k * 2, 160 - k * 3.2); }
+          g.fillStyle = '#56544f'; g.fillRect(8, 14, 48, 132); g.fillStyle = '#3c3b38'; g.fillRect(11, 17, 42, 126);
+          for (let y = 21; y < 140; y += 7) { g.fillStyle = '#0c0c0d'; g.fillRect(14, y, 36, 4); g.fillStyle = '#625f5a'; g.fillRect(14, y + 4, 36, 1); }
+          g.fillStyle = '#0c0c0d'; g.fillRect(31, 19, 2, 122);
+          for (let k = 0; k < 70; k++) { g.fillStyle = `rgba(${115 + (hash2(k, 331) * 30 | 0)},72,42,${.12 + hash2(k, 337) * .15})`; g.fillRect(8 + hash2(k, 341) * 46, 14 + hash2(k, 347) * 130, 1 + hash2(k, 349) * 3, 1 + hash2(k, 353) * 3); }
+          decal(c, new THREE.PlaneGeometry(.52, 1.3).rotateX(-Math.PI / 2), GR, 'stormGrates', .55, .4); }
+        console.log('manholes', MH.length, 'grates', GR.length); }
       { const AC = [], APT = (env.land || []).filter(l => l.k === 'residential' && l.n && /아파트|단지|자이|푸르지오|포레스티아|위브|센트리빌|아이파크|힐스테이트|래미안|편한세상|캐슬|호반|더샵|주공|타운/.test(l.n) && !/빌라|연립|빌리지/.test(l.n)).map(l => l.p); /* 11-22 카카오 스카이뷰(태평동·신흥동 빌라 골목): 골목 한쪽 가장자리에 줄지어 선 주차 차 — 전신주와 같은 옛 동네 범위(동쪽 새 개발지·북쪽 제외), 전신주 반대쪽, 5.6m 칸에 약 60%(hash), 교차로·학교·아파트 단지 안·우리 단지 30m 안은 비움. 데스크톱만 */
         const SGA = new Map(), PKP = (env.land || []).filter(l => l.k === 'parking').map(l => l.p); env.roads.forEach((r, ri) => { if (r.t === 1 || PATHK.test(r.k) || r.w < 4) return; for (let i = 0; i < r.p.length - 1; i++) { const a2 = r.p[i], b2 = r.p[i + 1]; for (let gx = Math.floor(Math.min(a2[0], b2[0]) / 40); gx <= Math.floor(Math.max(a2[0], b2[0]) / 40); gx++) for (let gz = Math.floor(Math.min(a2[1], b2[1]) / 40); gz <= Math.floor(Math.max(a2[1], b2[1]) / 40); gz++) { const k = gx + ',' + gz; if (!SGA.has(k)) SGA.set(k, []); SGA.get(k).push([ri, a2, b2, r.w]); } } });
         const nearOther = (ri, x, z, mg) => { const seen = new Set(); for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) for (const sg of SGA.get((Math.floor(x / 40) + dx) + ',' + (Math.floor(z / 40) + dz)) || []) { if (sg[0] === ri || seen.has(sg)) continue; seen.add(sg); if (pathDist([sg[1], sg[2]], x, z) < sg[3] / 2 + mg) return true; } return false; }; /* 골목(service 5m 포함) 교차로·막다른 진입로 앞은 비움 */
