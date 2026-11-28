@@ -3020,7 +3020,14 @@ function buildSchools() {
       const RQ = (cx, cz, vx, vz, L, D) => [[cx - vx * L / 2 + vz * D / 2, cz - vz * L / 2 - vx * D / 2], [cx + vx * L / 2 + vz * D / 2, cz + vz * L / 2 - vx * D / 2], [cx + vx * L / 2 - vz * D / 2, cz + vz * L / 2 + vx * D / 2], [cx - vx * L / 2 - vz * D / 2, cz - vz * L / 2 + vx * D / 2]], FULL = () => [0, 0, 1, 0, 1, 1, 0, 1];
       const PL = RQ(196, 76, v[0], v[1], 40, 22), PP = RQ(186, 104, v[0], v[1], 38, 26), entE = e => e.nz < -.55 && e.L > 30, F5 = gb => ({ front: { gb }, left: { gb }, right: { gb }, top: { gb }, bottom: { gb } });
       hdCurtain(PL, y - .6, TOPN, 5, { vRows: 4, vRow: f => [0, 1, 3, 2, 3][f] ?? 2, glass: G.libGlass, gw: 6, spand: G.libSpand, mull: G.libMull, wood: G.libWood, lv: e => (e.nz > .5 || e.nx < -.5) && !entE(e) });
-      extRoof(PL, TOPN, 'roofW', false); { /* 11-28 도서관 옥상 정원(단지 고층에서 내려다보임, 데스크톱): 나무 데크 바닥 37×19 + 화단 4(콘크리트 턱 0.45m·초록 식재·위 두겁) + 작은 나무 10(줄기 + 잎 덩어리 구 60면) + 관목 24(구 32면) + 가운데 데크 길에 능선형 유리 천창 4(턱·흰 살·용마루) + 나무 벤치 4 + 가운데 퍼걸러(기둥 4·보 2·살 9) + 둘레 유리 난간(철 기둥 1.5m·손스침) */
+      extRoof(PL, TOPN, 'roofW', false);
+      { /* 11-28 도서관 북·동쪽 유리면(나무 루버 없는 면)에 층마다 알루미늄 가로 차양(라이트 셸프) — 깊이 0.9m·두께 0.08 + 앞 끝 짙은 테, 3m마다 받침 팔, 2~5층(데스크톱). 수영장과 붙은 칸은 비움 */
+        const fhL = (TOPN - (y - .6)) / 5;
+        for (const e of edgesOf(PL)) { if ((e.nz > .5 || e.nx < -.5) && !entE(e)) continue; const NB = Math.max(1, Math.round(e.L / 3)), bw = e.L / NB, inP = t => { const q = WP(e, t, 0, 1.5); return inPoly(PP, q[0], q[2]); };
+          for (let f = 1; f < 5; f++) { const yy = y - .6 + f * fhL + fhL * .78;
+            for (let k = 0; k < NB; k++) { const t0 = k * bw + .05, t1 = (k + 1) * bw - .05, tm = (t0 + t1) / 2; if (inP(tm)) continue; const c = WP(e, tm, 0, .5); obox(c[0], c[2], e.rx, e.rz, t1 - t0, .9, yy, yy + .08, F5(G.poleM)); const c2 = WP(e, tm, 0, .93); obox(c2[0], c2[2], e.rx, e.rz, t1 - t0, .06, yy - .1, yy + .1, F5(G.libMull)); }
+            for (let k = 0; k <= NB; k++) { const t = Math.min(e.L - .1, Math.max(.1, k * bw)); if (inP(t)) continue; const c = WP(e, t, 0, .45); obox(c[0], c[2], e.rx, e.rz, .06, .9, yy - .35, yy, F5(G.libMull)); } } } }
+      { /* 11-28 도서관 옥상 정원(단지 고층에서 내려다보임, 데스크톱): 나무 데크 바닥 37×19 + 화단 4(콘크리트 턱 0.45m·초록 식재·위 두겁) + 작은 나무 10(줄기 + 잎 덩어리 구 60면) + 관목 24(구 32면) + 가운데 데크 길에 능선형 유리 천창 4(턱·흰 살·용마루) + 나무 벤치 4 + 가운데 퍼걸러(기둥 4·보 2·살 9) + 둘레 유리 난간(철 기둥 1.5m·손스침) */
         const c = [196, 76], n = [-v[1], v[0]], W = (t, s2) => [c[0] + v[0] * t + n[0] * s2, c[1] + v[1] * t + n[1] * s2], F6 = gb => ({ front: { gb }, back: { gb }, left: { gb }, right: { gb }, top: { gb }, bottom: { gb } }), yD = TOPN + .14, CU = { gb: G.hdSill };
         const ob = (t, s2, ax, L, D, y0, y1, gb) => { const q = W(t, s2), a = ax ? v : n; obox(q[0], q[1], a[0], a[1], L, D, y0, y1, F6(gb)); }, P3 = (t, s2, yy) => { const q = W(t, s2); return [q[0], yy, q[1]]; };
         const sph = (gb, cx, cy, cz, r, ry, la, lo) => { const U = (i, j) => { const th = Math.PI * i / la, ph = 2 * Math.PI * j / lo; return [Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph)]; }, S = q => [cx + q[0] * r, cy + q[1] * ry, cz + q[2] * r];
